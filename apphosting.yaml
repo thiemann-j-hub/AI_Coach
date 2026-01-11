@@ -1,7 +1,22 @@
-# Settings to manage and configure a Firebase App Hosting backend.
-# https://firebase.google.com/docs/app-hosting/configure
-
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
+  minInstances: 0
+
+env:
+  # non-secret config
+  - variable: GEMINI_TEXT_MODEL
+    value: "gemini-1.5-flash"
+  - variable: PINECONE_INDEX_HOST
+    value: "script-coach-cards-fcudb5g.svc.gcp-europe-west4-de1d.pinecone.io"
+  - variable: PINECONE_NAMESPACE
+    value: "cards_v3"
+
+  # secrets (Cloud Secret Manager)
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+
+  - variable: PINECONE_API_KEY
+    secret: PINECONE_API_KEY
+
+  # IMPORTANT: env var name must NOT start with FIREBASE_
+  - variable: SERVICE_ACCOUNT_JSON
+    secret: FIREBASE_SERVICE_ACCOUNT_JSON
