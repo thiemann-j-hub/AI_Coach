@@ -1,7 +1,7 @@
 // src/app/api/analyze/route.ts
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { generateDynamicFeedback } from "../../../ai/flows/generate-dynamic-feedback";
+import { generateDynamicFeedback } from "@/ai/flows/generate-dynamic-feedback";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +11,7 @@ const requestSchema = z.object({
   conversationSubType: z.string().optional().nullable(),
   goal: z.string().optional().nullable(),
   transcriptText: z.string().min(1),
+
   lang: z.string().optional(),
   jurisdiction: z.string().optional(),
 });
