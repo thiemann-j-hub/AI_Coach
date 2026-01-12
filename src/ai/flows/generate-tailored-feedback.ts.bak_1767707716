@@ -32,7 +32,7 @@ const GenerateTailoredFeedbackOutputSchema = z.object({
   improvements: z.array(z.string()).describe('Areas for improvement.'),
   rewrites: z.array(z.string()).describe('Suggested rewrites.'),
   riskFlags: z.array(z.string()).describe('Potential risks identified.'),
-  scores: z.object({ overall: z.number().min(0).max(10).optional() }).catchall(z.number()).describe('Scores for different aspects.'),
+  scores: z.record(z.number()).describe('Scores for different aspects.'),
 });
 export type GenerateTailoredFeedbackOutput = z.infer<
   typeof GenerateTailoredFeedbackOutputSchema
@@ -82,9 +82,3 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
     return output!;
   }
 );
-
-/** Compatibility export (used by generate-dynamic-feedback) */
-export { generateTailoredFeedbackFlow };
-
-/** Compatibility default export */
-export { generateTailoredFeedbackFlow as default };

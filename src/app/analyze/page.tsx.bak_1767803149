@@ -1,0 +1,20 @@
+// src/app/analyze/page.tsx
+import AnalyzeForm from "./AnalyzeForm";
+
+export default function AnalyzePage() {
+  return (
+    <main style={{ maxWidth: 980, margin: "0 auto", padding: 24 }}>
+      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Conversation Analysis</h1>
+      <p style={{ marginTop: 0, opacity: 0.8 }}>
+        UI → <code>/api/analyze</code> → Ergebnis JSON. Pinecone & Gemini bleiben serverseitig.
+      </p>
+
+      <AnalyzeForm />
+
+      <hr style={{ margin: "24px 0" }} />
+      <p style={{ opacity: 0.7, fontSize: 14 }}>
+        Healthchecks: <code>/api/pinecone-smoke</code> und <code>/api/analyze</code>
+      </p>
+    </main>
+  );
+}

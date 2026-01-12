@@ -82,9 +82,3 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
     return output!;
   }
 );
-
-/** Compatibility export (used by generate-dynamic-feedback) */
-export { generateTailoredFeedbackFlow };
-
-/** Compatibility default export */
-export { generateTailoredFeedbackFlow as default };

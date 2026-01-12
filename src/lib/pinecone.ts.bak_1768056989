@@ -1,8 +1,8 @@
 // src/lib/pinecone.ts
 //
-// Pinecone "Search with text" (Integrated Embedding) – stable per REST
+// Pinecone "Search with text" (Integrated Embedding) – stabil per REST
 // Endpoint: POST https://{INDEX_HOST}/records/namespaces/{namespace}/search
-// Wichtig: X-Pinecone-Api-Version setzen.
+// Wichtig: X-Pinecone-Api-Version setzen, sonst fällt man auf alte Default-Versionen zurück.
 
 function mustEnv(key: string): string {
   const v = process.env[key];
@@ -11,6 +11,7 @@ function mustEnv(key: string): string {
 }
 
 function cleanHost(host: string): string {
+  // akzeptiert "https://host/" und macht "host"
   return host.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
 }
 
@@ -19,29 +20,25 @@ function isObject(v: unknown): v is Record<string, any> {
 }
 
 function coerceTopK(v: unknown, fallback = 5): number {
-  const n =
-    typeof v === "string" ? Number(v) : typeof v === "number" ? v : fallback;
+  const n = typeof v === "string" ? Number(v) : typeof v === "number" ? v : fallback;
   if (!Number.isFinite(n) || n <= 0) return fallback;
   return Math.floor(n);
 }
 
-/**
- * Lazy ENV loading: verhindert 500 beim Import,
- * damit Route-try/catch sauber JSON-Errors liefern kann.
- */
-function getPineconeConfig() {
-  const apiKey = mustEnv("PINECONE_API_KEY");
-  const indexHost = cleanHost(mustEnv("PINECONE_INDEX_HOST"));
-  const namespace =
-    (process.env.PINECONE_NAMESPACE ?? "__default__").trim() || "__default__";
-  return { apiKey, indexHost, namespace };
-}
+const PINECONE_API_KEY = mustEnv("PINECONE_API_KEY");
+const PINECONE_INDEX_HOST = cleanHost(mustEnv("PINECONE_INDEX_HOST"));
+const PINECONE_NAMESPACE = (process.env.PINECONE_NAMESPACE ?? "__default__").trim() || "__default__";
 
 export type PineconeSearchArgs = {
   text: string;
   topK?: number | string;
   lang?: string;
+
+  // Optional: freier Filter (Pinecone metadata filter language)
+  // Beispiele: {"lang":"de"} oder {"skill":{"$in":["conflict","listening"]}}
   filter?: Record<string, any>;
+
+  // Optional: welche Felder zurückkommen sollen
   fields?: string[];
 };
 
@@ -61,30 +58,16 @@ export type PineconeCompatResult = {
 
 const DEFAULT_FIELDS = [
   "chunk_text",
-  "title",
-  "card_group_id",
-  "card_type",
-  "card_version",
-  "version",
-  "dataset_version",
-  "status",
   "lang",
   "conversation_type",
-  "conversation_types",
   "skill",
-  "skills",
-  "competency_ids",
-  "competency_primary",
-  "competency_secondary",
+  "card_type",
   "seniority",
   "jurisdiction",
-  "workplace_context",
-  "level_min",
-  "level_max",
   "source_id",
   "source_ref",
-  "created_at",
-  "updated_at",
+  "version",
+  "dataset_version",
 ];
 
 type NormalizedArgs = {
@@ -94,6 +77,7 @@ type NormalizedArgs = {
   fields: string[];
 };
 
+// Robust gegen unterschiedliche Call-Shapes (das hat euch "Missing search text" erspart)
 function normalizeArgs(arg1: any, arg2?: any): NormalizedArgs {
   const textCandidate =
     typeof arg1 === "string"
@@ -125,6 +109,7 @@ function normalizeArgs(arg1: any, arg2?: any): NormalizedArgs {
 
   const topK = coerceTopK(topKCandidate, 5);
 
+  // filter/lang
   const filterCandidate = arg2?.filter ?? arg1?.filter ?? arg1?.query?.filter;
   const langCandidate =
     arg2?.lang ??
@@ -133,9 +118,7 @@ function normalizeArgs(arg1: any, arg2?: any): NormalizedArgs {
     filterCandidate?.lang ??
     arg1?.query?.filter?.lang;
 
-  let filter: Record<string, any> | undefined = isObject(filterCandidate)
-    ? { ...filterCandidate }
-    : undefined;
+  let filter: Record<string, any> | undefined = isObject(filterCandidate) ? { ...filterCandidate } : undefined;
 
   if (typeof langCandidate === "string" && langCandidate.trim()) {
     const lang = langCandidate.trim();
@@ -144,24 +127,20 @@ function normalizeArgs(arg1: any, arg2?: any): NormalizedArgs {
   }
 
   const fieldsCandidate = arg2?.fields ?? arg1?.fields ?? arg1?.query?.fields;
-  const fields =
-    Array.isArray(fieldsCandidate) && fieldsCandidate.length > 0
-      ? fieldsCandidate
-      : DEFAULT_FIELDS;
+  const fields = Array.isArray(fieldsCandidate) && fieldsCandidate.length > 0 ? fieldsCandidate : DEFAULT_FIELDS;
 
   return { text, topK, filter, fields };
 }
 
 async function searchWithTextViaRest(args: NormalizedArgs) {
-  const { apiKey, indexHost, namespace } = getPineconeConfig();
-
-  const url = `https://${indexHost}/records/namespaces/${encodeURIComponent(
-    namespace
+  const url = `https://${PINECONE_INDEX_HOST}/records/namespaces/${encodeURIComponent(
+    PINECONE_NAMESPACE
   )}/search`;
 
+  // Wichtig: inputs ist OBJEKT {text: "..."} – NICHT Array.
   const body: any = {
     query: {
-      inputs: { text: args.text }, // inputs ist OBJEKT {text:"..."}
+      inputs: { text: args.text },
       top_k: args.topK,
     },
     fields: args.fields,
@@ -176,7 +155,7 @@ async function searchWithTextViaRest(args: NormalizedArgs) {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      "Api-Key": apiKey,
+      "Api-Key": PINECONE_API_KEY,
       "X-Pinecone-Api-Version": "2025-10",
     },
     body: JSON.stringify(body),
@@ -184,12 +163,7 @@ async function searchWithTextViaRest(args: NormalizedArgs) {
 
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
-    throw new Error(
-      `Pinecone REST search failed (${res.status} ${res.statusText}): ${txt.slice(
-        0,
-        800
-      )}`
-    );
+    throw new Error(`Pinecone REST search failed (${res.status} ${res.statusText}): ${txt.slice(0, 800)}`);
   }
 
   return await res.json();
@@ -210,18 +184,22 @@ function toCompat(raw: any): PineconeCompatResult {
     raw,
     hits,
     matches,
-    results: matches,
+    results: matches, // alias
     count: matches.length,
   };
 }
 
-export async function pineconeSearchCards(
-  arg1: any,
-  arg2?: any
-): Promise<PineconeCompatResult> {
+/**
+ * Hauptfunktion für Retrieval.
+ * Nutze die in RAG-Flows: pineconeSearchCards({text, topK, lang, filter})
+ */
+export async function pineconeSearchCards(arg1: any, arg2?: any): Promise<PineconeCompatResult> {
   const args = normalizeArgs(arg1, arg2);
   const raw = await searchWithTextViaRest(args);
   return toCompat(raw);
 }
 
+/**
+ * Alias, falls du in älteren Codepfaden "smokeSearchCards" nutzt.
+ */
 export const smokeSearchCards = pineconeSearchCards;
