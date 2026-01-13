@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview Generates tailored coaching feedback based on input text, conversation type, and defined goals.
@@ -11,7 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const GenerateTailoredFeedbackInputSchema = z.object({
+export const GenerateTailoredFeedbackInputSchema = z.object({
   inputText: z.string().describe('The input text to analyze.'),
   conversationType: z
     .string()
@@ -26,13 +25,13 @@ export type GenerateTailoredFeedbackInput = z.infer<
   typeof GenerateTailoredFeedbackInputSchema
 >;
 
-const GenerateTailoredFeedbackOutputSchema = z.object({
+export const GenerateTailoredFeedbackOutputSchema = z.object({
   summary: z.string().describe('A summary of the feedback.'),
   strengths: z.array(z.string()).describe('Identified strengths.'),
   improvements: z.array(z.string()).describe('Areas for improvement.'),
   rewrites: z.array(z.string()).describe('Suggested rewrites.'),
   riskFlags: z.array(z.string()).describe('Potential risks identified.'),
-  scores: z.record(z.number()).describe('Scores for different aspects.'),
+  scores: z.object({ overall: z.number().min(0).max(10).optional() }).catchall(z.number()).describe('Scores for different aspects.'),
 });
 export type GenerateTailoredFeedbackOutput = z.infer<
   typeof GenerateTailoredFeedbackOutputSchema
@@ -82,3 +81,9 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
     return output!;
   }
 );
+
+/** Compatibility export (used by generate-dynamic-feedback) */
+export { generateTailoredFeedbackFlow };
+
+/** Compatibility default export */
+export { generateTailoredFeedbackFlow as default };

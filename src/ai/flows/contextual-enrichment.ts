@@ -1,4 +1,3 @@
-'use server';
 
 /**
  * @fileOverview A Genkit flow for contextual enrichment using RAG with Pinecone.

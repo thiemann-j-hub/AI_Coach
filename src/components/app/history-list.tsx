@@ -1,95 +1,173 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import type { HistoryItem } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { History, Star } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-type HistoryListProps = {
-  sessionId: string | null;
+type RunsListItem = {
+  id: string;
+  createdAt?: string;
+  conversationType?: string;
+  conversationSubType?: string | null;
+  goal?: string | null;
+  scoreOverall?: number | null;
+  summary?: string | null;
+  hasTranscript?: boolean;
 };
 
-export function HistoryList({ sessionId }: HistoryListProps) {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+type RunsListResponse = {
+  ok: boolean;
+  runs?: RunsListItem[];
+  error?: string;
+};
 
+const STORAGE_KEY = 'commscoach_sessionId';
+
+function newSessionId(): string {
+  const c: any = globalThis.crypto as any;
+  if (c?.randomUUID) return c.randomUUID();
+  return `dev-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getOrCreateSessionId(): string {
+  try {
+    const existing = localStorage.getItem(STORAGE_KEY);
+    if (existing && existing.trim()) return existing;
+    const id = newSessionId();
+    localStorage.setItem(STORAGE_KEY, id);
+    return id;
+  } catch {
+    // Fallback (z.B. wenn localStorage blockiert ist)
+    return 'dev-session';
+  }
+}
+
+function fmtIso(iso?: string) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString();
+}
+
+export type HistoryListProps = {
+  sessionId?: string;
+  limit?: number;
+  className?: string;
+};
+
+function HistoryList(props: HistoryListProps) {
+  const { sessionId: sessionIdProp, limit = 20, className } = props;
+
+  const [sessionId, setSessionId] = useState<string | null>(sessionIdProp ?? null);
+  const [runs, setRuns] = useState<RunsListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // SessionId nur im Browser holen
   useEffect(() => {
-    if (!sessionId) {
-      setIsLoading(false);
+    if (sessionIdProp) {
+      setSessionId(sessionIdProp);
       return;
     }
+    setSessionId(getOrCreateSessionId());
+  }, [sessionIdProp]);
 
-    const q = query(
-      collection(db, 'runs'),
-      where('sessionId', '==', sessionId),
-      orderBy('createdAt', 'desc')
-    );
+  const fetchRuns = useCallback(async () => {
+    if (!sessionId) return;
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const items: HistoryItem[] = [];
-      querySnapshot.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() } as HistoryItem);
-      });
-      setHistory(items);
-      setIsLoading(false);
-    }, (error) => {
-        console.error("Error fetching history:", error);
-        setIsLoading(false);
-    });
+    setLoading(true);
+    setError(null);
 
-    return () => unsubscribe();
+    try {
+      const url = `/api/runs/list?sessionId=${encodeURIComponent(sessionId)}`;
+      const res = await fetch(url, { method: 'GET' });
+
+      const text = await res.text();
+      let data: RunsListResponse;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Antwort ist kein JSON (HTTP ${res.status}): ${text.slice(0, 120)}`);
+      }
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+
+      const list = Array.isArray(data.runs) ? data.runs : [];
+      setRuns(list);
+    } catch (e: any) {
+      setError(e?.message ?? 'Unbekannter Fehler');
+      setRuns([]);
+    } finally {
+      setLoading(false);
+    }
   }, [sessionId]);
 
+  useEffect(() => {
+    fetchRuns();
+  }, [fetchRuns]);
+
+  const shown = useMemo(() => runs.slice(0, Math.max(1, limit)), [runs, limit]);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2">
-          <History className="h-5 w-5" />
-          Run History
-        </CardTitle>
-        <CardDescription>
-          Recent analyses from your current session.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+    <div className={className}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h3 style={{ margin: 0 }}>History</h3>
+        <button
+          type="button"
+          onClick={fetchRuns}
+          style={{ padding: '6px 10px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}
+        >
+          Aktualisieren
+        </button>
+      </div>
+
+      <div style={{ marginTop: 12, fontSize: 13, color: '#666' }}>
+        Session: <code>{sessionId ?? '—'}</code>
+      </div>
+
+      {loading && <div style={{ marginTop: 12 }}>Lade…</div>}
+
+      {!loading && error && (
+        <div style={{ marginTop: 12, color: '#b00020' }}>
+          Fehler beim Laden der History: {error}
+          <div style={{ marginTop: 6, color: '#666' }}>
+            Tipp: Wenn du vorher Firestore direkt genutzt hast, kommen hier oft „Missing or insufficient permissions“.
+            Mit dieser Version kommt alles über <code>/api/runs/list</code>.
           </div>
-        ) : history.length > 0 ? (
-          <ul className="space-y-4">
-            {history.map((item) => (
-              <li key={item.id} className="rounded-lg border p-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-semibold capitalize">{item.conversationType.replace(/-/g, ' ')}</p>
-                    <p className="text-sm text-muted-foreground truncate max-w-[150px]">
-                      Goal: {item.goal}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <div className="flex items-center justify-end gap-1 text-sm text-muted-foreground">
-                      <Star className={`h-4 w-4 ${item.rating && item.rating > 0 ? 'text-yellow-400 fill-yellow-400' : ''}`} />
-                      <span>{item.rating || 'N/A'}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {item.createdAt ? formatDistanceToNow(item.createdAt.toDate(), { addSuffix: true }) : ''}
-                    </p>
-                  </div>
+        </div>
+      )}
+
+      {!loading && !error && shown.length === 0 && (
+        <div style={{ marginTop: 12, color: '#666' }}>
+          Keine Runs gefunden (für diese Session).
+        </div>
+      )}
+
+      {!loading && !error && shown.length > 0 && (
+        <ul style={{ marginTop: 12, paddingLeft: 18 }}>
+          {shown.map((r) => (
+            <li key={r.id} style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 600 }}>
+                <Link href={`/runs/${encodeURIComponent(sessionId ?? '')}/${encodeURIComponent(r.id)}`}>
+                  {r.conversationType ?? 'run'}{r.conversationSubType ? ` / ${r.conversationSubType}` : ''} — {r.id}
+                </Link>
+              </div>
+              <div style={{ fontSize: 13, color: '#666' }}>
+                {fmtIso(r.createdAt)} · Score: {r.scoreOverall ?? '—'}
+              </div>
+              {r.summary && (
+                <div style={{ fontSize: 13, color: '#333', marginTop: 4 }}>
+                  {r.summary}
                 </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            No history yet. Run an analysis to get started.
-          </p>
-        )}
-      </CardContent>
-    </Card>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
+
+export default HistoryList;
+export { HistoryList };
