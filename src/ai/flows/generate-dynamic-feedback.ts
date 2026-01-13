@@ -1,11 +1,11 @@
 /**
- * @fileOverview A Genkit flow that combines Pinecone RAG with a generation flow.
+ * @fileOverview Orchestrates Pinecone retrieval + tailored feedback generation.
  *
- * - generateDynamicFeedback - A function that orchestrates retrieval and generation.
- * - GenerateDynamicFeedbackInput - The input type for the generateDynamicFeedback function.
+ * We do retrieval explicitly (instead of relying on tool calls) so we can:
+ * - guarantee retrieval happens
+ * - return rag_context_* fields back to the UI
  */
 
-import { ai } from '@/ai/genkit';
 import { pineconeSearchCards } from '@/lib/pinecone';
 import { z } from 'zod';
 import * as tailoredMod from './generate-tailored-feedback';
@@ -20,7 +20,8 @@ export const GenerateDynamicFeedbackInputSchema = z.object({
 });
 export type GenerateDynamicFeedbackInput = z.infer<typeof GenerateDynamicFeedbackInputSchema>;
 
-// Helper functions
+type RagCard = { id: string; score: number; metadata: Record<string, any> };
+
 function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && v.trim().length > 0;
 }
@@ -34,102 +35,58 @@ function truncate(s: string, maxChars: number): string {
 function buildRetrievalQuery(input: GenerateDynamicFeedbackInput): string {
   const parts: string[] = [];
   parts.push(`conversationType: ${input.conversationType}`);
-  if (isNonEmptyString(input.conversationSubType)) parts.push(`conversationSubType: ${input.conversationSubType}`);
+  if (isNonEmptyString(input.conversationSubType))
+    parts.push(`conversationSubType: ${input.conversationSubType}`);
   if (isNonEmptyString(input.goal)) parts.push(`goal: ${input.goal}`);
   parts.push(input.transcriptText);
   return truncate(parts.join('\n'), 4000);
 }
 
-// Define the Pinecone search as a Genkit tool
-const searchCoachingCardsTool = ai.defineTool(
-  {
-    name: 'searchCoachingCards',
-    description: 'Search for relevant coaching cards from the knowledge base (Pinecone).',
-    inputSchema: z.object({
-      query: z.string().describe('The search query string.'),
-      lang: z.string().optional().describe('The language for the search (e.g., "de").'),
-      jurisdiction: z.string().optional().describe('The jurisdiction for the search (e.g., "de_eu").'),
-      conversationType: z.string().describe('The type of conversation (e.g., "feedback").'),
-    }),
-    outputSchema: z.array(z.string()).describe('An array of relevant snippets from the coaching cards.'),
-  },
-  async (input) => {
-    try {
-      const baseFilter: Record<string, any> = { conversation_type: input.conversationType };
-      if (isNonEmptyString(input.jurisdiction)) baseFilter.jurisdiction = input.jurisdiction;
+function buildBaseFilter(input: GenerateDynamicFeedbackInput): Record<string, any> {
+  const f: Record<string, any> = {};
+  if (isNonEmptyString(input.conversationType)) f.conversation_type = input.conversationType;
+  if (isNonEmptyString(input.jurisdiction)) f.jurisdiction = input.jurisdiction;
+  return f;
+}
 
-      const first = await pineconeSearchCards({
-        text: input.query,
-        topK: 8,
-        lang: input.lang,
-        filter: baseFilter,
-      });
+function cardsToSnippets(cards: RagCard[]): string[] {
+  return (cards ?? []).slice(0, 8).map((c) => {
+    const id = String((c as any)?.id ?? '');
+    const score = Number.isFinite((c as any)?.score) ? Number((c as any).score) : 0;
+    const chunk = String((c as any)?.metadata?.chunk_text ?? '');
+    const header = `[#${id} score=${score.toFixed(3)}]`;
+    return truncate(`${header}\n${chunk}`, 1800);
+  });
+}
 
-      // Fallback: if lang is set and 0 results, try again without lang
-      const effective =
-        isNonEmptyString(input.lang) && first.count === 0
-          ? await pineconeSearchCards({ text: input.query, topK: 8, filter: baseFilter })
-          : first;
+async function retrieveCards(
+  input: GenerateDynamicFeedbackInput
+): Promise<{ cards: RagCard[]; error: string | null }> {
+  try {
+    const query = buildRetrievalQuery(input);
+    const baseFilter = buildBaseFilter(input);
+    const filter = Object.keys(baseFilter).length ? baseFilter : undefined;
 
-      const cards = (effective.results ?? []) as Array<{ id: string; score: number; metadata: Record<string, any> }>;
-      
-      return cards.slice(0, 8).map((c) => {
-        const id = String(c.id ?? '');
-        const score = Number.isFinite(c.score) ? c.score : 0;
-        const chunk = String(c.metadata?.chunk_text ?? '');
-        const header = `[#${id} score=${score.toFixed(3)}]`;
-        return truncate(`${header}\n${chunk}`, 1800);
-      });
-    } catch (e: any) {
-      console.error('Pinecone tool error:', e);
-      // Return empty array on error to not break the flow
-      return [];
-    }
-  }
-);
-
-// Define a new prompt that uses the tool
-const dynamicFeedbackPrompt = ai.definePrompt({
-  name: 'dynamicFeedbackPrompt',
-  input: { schema: tailoredMod.GenerateTailoredFeedbackInputSchema },
-  output: { schema: tailoredMod.GenerateTailoredFeedbackOutputSchema },
-  tools: [searchCoachingCardsTool],
-  prompt: `You are an AI-powered communication coach. Analyze the provided input text, considering the conversation type and defined goal, to generate tailored feedback.
-  
-  IMPORTANT: Before answering, you MUST use the 'searchCoachingCards' tool to find relevant snippets from the knowledge base. Use the conversation details to form a good query for the tool.
-  
-  Use the retrieved snippets to inform your feedback, summary, and suggestions.
-  
-  Input Text: {{{inputText}}}
-  Conversation Type: {{{conversationType}}}
-  Goal: {{{goal}}}
-  `,
-});
-
-// Main flow that calls the prompt with tools
-const generateDynamicFeedbackFlow = ai.defineFlow(
-  {
-    name: 'generateDynamicFeedbackFlow',
-    inputSchema: GenerateDynamicFeedbackInputSchema,
-    outputSchema: tailoredMod.GenerateTailoredFeedbackOutputSchema,
-  },
-  async (input) => {
-    const { output } = await dynamicFeedbackPrompt({
-      inputText: input.transcriptText,
-      conversationType: input.conversationType,
-      goal: input.goal || 'Provide clear, constructive coaching feedback.',
-      // The tool will be called automatically by the LLM based on the prompt instructions.
-      // We pass the required inputs for the tool here.
-      query: buildRetrievalQuery(input),
+    const first = await pineconeSearchCards({
+      text: query,
+      topK: 8,
       lang: input.lang,
-      jurisdiction: input.jurisdiction,
+      filter,
     });
-    return output!;
+
+    // If lang is set but we got nothing: try again without lang
+    const effective =
+      isNonEmptyString(input.lang) && first.count === 0
+        ? await pineconeSearchCards({ text: query, topK: 8, filter })
+        : first;
+
+    const cards = (effective.results ?? []) as RagCard[];
+    return { cards: cards.slice(0, 8), error: null };
+  } catch (e: any) {
+    return { cards: [], error: e?.message ?? String(e) };
   }
-);
+}
 
-
-// The exported function that the API route will call
 export async function generateDynamicFeedback(input: GenerateDynamicFeedbackInput): Promise<any> {
   const conversationType = String(input.conversationType ?? '').trim();
   const transcriptText = String(input.transcriptText ?? '').trim();
@@ -137,16 +94,20 @@ export async function generateDynamicFeedback(input: GenerateDynamicFeedbackInpu
   if (!conversationType) throw new Error('Missing conversationType');
   if (!transcriptText) throw new Error('Missing transcriptText');
 
-  // The new flow handles everything now.
-  const result = await generateDynamicFeedbackFlow(input);
+  const rag = await retrieveCards(input);
+  const relevantSnippets = cardsToSnippets(rag.cards);
 
-  // We add the `rag_` fields for compatibility with the frontend.
-  // In this new setup, there's no direct access to the raw RAG results here,
-  // as the tool call is managed by Genkit. We will return empty/default values.
+  const result = await tailoredMod.generateTailoredFeedback({
+    inputText: transcriptText,
+    conversationType,
+    goal: isNonEmptyString(input.goal) ? input.goal : 'Provide clear, constructive coaching feedback.',
+    relevantSnippets: relevantSnippets.length ? relevantSnippets : undefined,
+  });
+
   return {
     ...result,
-    rag_context_cards: [],
-    rag_context_count: 0, 
-    rag_error: null,
+    rag_context_cards: rag.cards,
+    rag_context_count: rag.cards.length,
+    rag_error: rag.error,
   };
 }
