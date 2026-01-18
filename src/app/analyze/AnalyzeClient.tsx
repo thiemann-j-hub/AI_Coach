@@ -1,353 +1,723 @@
 'use client';
 
-import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import AppShell from '@/components/app/app-shell';
+import PdfUpload from '@/components/app/pdf-upload';
 
-type AnalyzeRequest = {
-  conversationType: string;
-  conversationSubType?: string;
-  goal?: string;
-  transcriptText: string;
-  lang?: string;
-  jurisdiction?: string;
-};
-
-type RunsListItem = {
-  id: string;
-  createdAt?: string;
-  conversationType?: string;
-  conversationSubType?: string | null;
-  goal?: string | null;
-  scoreOverall?: number | null;
-  summary?: string | null;
-};
+type AnalyzeResult = any;
 
 const STORAGE_KEY = 'commscoach_sessionId';
 
 function newSessionId(): string {
-  // Browser crypto is fine; fallback for older environments
   const c: any = globalThis.crypto as any;
   if (c?.randomUUID) return c.randomUUID();
   return `dev-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function fmtIso(iso?: string) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString();
+function shortId(id?: string, n = 18) {
+  const s = String(id ?? '');
+  if (!s) return '—';
+  if (s.length <= n) return s;
+  return s.slice(0, n) + '…';
 }
 
-export default function AnalyzePage() {
-  const [sessionId, setSessionId] = useState('');
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-  const [conversationType, setConversationType] = useState('feedback');
-  const [conversationSubType, setConversationSubType] = useState('kritisch');
-  const [goal, setGoal] = useState('klar und fair, ohne Eskalation');
-  const [lang, setLang] = useState('de');
-  const [jurisdiction, setJurisdiction] = useState('de_eu');
+function replaceToken(text: string, token: string, replacement: string) {
+  const t = (token ?? '').trim();
+  if (!t) return text;
 
-  const [transcriptText, setTranscriptText] = useState('FK: Mir ist aufgefallen ...\nMA: ...');
+  const pattern = `(?<![\\p{L}\\p{N}_])${escapeRegExp(t)}(?![\\p{L}\\p{N}_])`;
+  try {
+    const re = new RegExp(pattern, 'gu');
+    return text.replace(re, replacement);
+  } catch {
+    return text.split(t).join(replacement);
+  }
+}
 
-  const [autoSave, setAutoSave] = useState(true);
-  const [storeTranscript, setStoreTranscript] = useState(false);
+function parseExtraTerms(raw: string): string[] {
+  return (raw ?? '')
+    .split(/[,;\n]/g)
+    .map((x) => x.trim())
+    .filter((x) => x.length >= 2);
+}
 
-  const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+function cleanTeamsTranscript(text: string): string {
+  const lines = String(text ?? '').split(/\r?\n/);
+  const kept = lines.filter((line) => {
+    const s = line.trim();
+    if (/^\d{2}:\d{2}:\d{2}\s+/.test(s)) return true; // Teams timestamp
+    if (/^[A-Za-zÄÖÜäöüß]{1,8}:\s+/.test(s)) return true; // FK: / MA: etc.
+    if (/^(Datum|Dauer)\s*:/i.test(s)) return true;
+    return false;
+  });
 
-  const [runs, setRuns] = useState<RunsListItem[]>([]);
-  const [runsLoading, setRunsLoading] = useState(false);
-  const [runsError, setRunsError] = useState<string | null>(null);
+  return (kept.length ? kept.join('\n') : String(text ?? '')).trim();
+}
 
-  // init sessionId
-  useEffect(() => {
-    const existing = localStorage.getItem(STORAGE_KEY);
-    const sid = existing && existing.trim() ? existing.trim() : newSessionId();
-    localStorage.setItem(STORAGE_KEY, sid);
-    setSessionId(sid);
-  }, []);
 
-  // persist changes
-  useEffect(() => {
-    if (sessionId) localStorage.setItem(STORAGE_KEY, sessionId);
-  }, [sessionId]);
+function detectSpeakers(text: string): string[] {
+  const speakers = new Set<string>();
+  const lines = String(text ?? '').split(/\r?\n/);
 
-  const runsListHref = useMemo(() => {
-    if (!sessionId) return null;
-    return `/runs/${encodeURIComponent(sessionId)}`;
-  }, [sessionId]);
+  // Ignore common metadata labels that look like "Label: ..."
+  const IGNORE = new Set([
+    'datum',
+    'dauer',
+    'date',
+    'duration',
+    'uhrzeit',
+    'time',
+    'subject',
+    'betreff',
+    'organizer',
+    'organisator',
+  ]);
 
-  async function refreshRuns() {
-    if (!sessionId) return;
-    setRunsLoading(true);
-    setRunsError(null);
+  for (const line of lines) {
+    const s = line.trim();
 
-    try {
-      const res = await fetch(`/api/runs/list?sessionId=${encodeURIComponent(sessionId)}`, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-      });
+    // Teams format: "00:00:00 Anna Müller: ..."
+    const m = s.match(/^\d{2}:\d{2}:\d{2}\s+([^:]{1,120}):\s+/);
+    if (m?.[1]) {
+      const name = m[1].trim();
+      const key = name.toLowerCase();
+      if (name && key !== 'microsoft teams' && !IGNORE.has(key)) speakers.add(name);
+      continue;
+    }
 
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || !json?.ok) {
-        throw new Error(json?.error ?? `Runs list failed (${res.status})`);
-      }
-
-      setRuns(Array.isArray(json.runs) ? json.runs : []);
-    } catch (e: any) {
-      setRunsError(e?.message ?? String(e));
-      setRuns([]);
-    } finally {
-      setRunsLoading(false);
+    // Simple label format: "FK: ..." / "MA: ..." / etc.
+    const m2 = s.match(/^([A-Za-zÄÖÜäöüß]{1,16}):\s+/);
+    if (m2?.[1]) {
+      const name = m2[1].trim();
+      const key = name.toLowerCase();
+      if (name && !IGNORE.has(key)) speakers.add(name);
     }
   }
 
-  // initial load after sessionId resolved
-  useEffect(() => {
-    if (sessionId) refreshRuns();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  return Array.from(speakers);
+}
 
-  async function onAnalyze() {
-    setLoading(true);
-    setError(null);
 
-    const req: AnalyzeRequest = {
-      conversationType: conversationType.trim(),
-      conversationSubType: conversationSubType.trim() || undefined,
-      goal: goal.trim() || undefined,
-      transcriptText: transcriptText,
-      lang: lang.trim() || undefined,
-      jurisdiction: jurisdiction.trim() || undefined,
-    };
+/**
+ * Client-side privacy sanitizer (NO LLM).
+ */
+function sanitizeTranscript(
+  text: string,
+  opts: {
+    leaderLabel: string;
+    employeeLabel: string;
+    detectedSpeakers: string[];
+    extraTerms: string[];
+  }
+) {
+  let out = String(text ?? '');
 
-    try {
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(req),
-      });
+  // basic patterns
+  out = out.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[EMAIL]');
+  out = out.replace(/\bhttps?:\/\/\S+/gi, '[URL]');
+  out = out.replace(/\bwww\.\S+/gi, '[URL]');
+  out = out.replace(/(\+?\d[\d\s().-]{7,}\d)/g, '[TEL]');
 
-      const json = await res.json().catch(() => null);
+  // quoted projects/customers
+  out = out.replace(/\bProjekt\s*[“"„']([^”"“„'\n]{1,120})[”"“„']/giu, 'Projekt [PROJEKT]');
+  out = out.replace(/\b(Kunde|Kunden|Customer)\s*[“"„']([^”"“„'\n]{1,120})[”"“„']/giu, '$1 [KUNDE]');
 
-      if (!res.ok || !json?.ok) {
-        throw new Error(json?.error ? JSON.stringify(json.error) : `Analyze failed (${res.status})`);
-      }
+  // speaker mapping
+  const leader = (opts.leaderLabel ?? '').trim();
+  const employee = (opts.employeeLabel ?? '').trim();
 
-      setAnalysis(json.result ?? null);
+  const speakerMap = new Map<string, string>();
+  if (leader) speakerMap.set(leader, 'Führungskraft');
+  if (employee) speakerMap.set(employee, 'Mitarbeiter:in');
 
-      if (autoSave) {
-        const saveRes = await fetch('/api/runs/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            request: req,
-            result: json.result ?? null,
-            storeTranscript,
-          }),
-        });
-
-        const saveJson = await saveRes.json().catch(() => null);
-
-        if (!saveRes.ok || !saveJson?.ok) {
-          throw new Error(saveJson?.error ?? `Save failed (${saveRes.status})`);
-        }
-
-        // after save: refresh list
-        await refreshRuns();
-      }
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
-    } finally {
-      setLoading(false);
-    }
+  let personIdx = 1;
+  for (const sp of opts.detectedSpeakers ?? []) {
+    const k = String(sp ?? '').trim();
+    if (!k) continue;
+    if (speakerMap.has(k)) continue;
+    speakerMap.set(k, `Person ${personIdx++}`);
   }
 
-  function clearResult() {
-    setAnalysis(null);
-    setError(null);
+  // replace full names first, then parts
+  const keys = Array.from(speakerMap.keys()).sort((a, b) => b.length - a.length);
+  for (const k of keys) {
+    const rep = speakerMap.get(k)!;
+    out = replaceToken(out, k, rep);
+    const parts = k.split(/\s+/).map((p) => p.trim()).filter((p) => p.length >= 3);
+    for (const p of parts) out = replaceToken(out, p, rep);
   }
 
+  // extra terms
+  const extras = (opts.extraTerms ?? []).map((t) => t.trim()).filter((t) => t.length >= 2);
+  const uniqueExtras = Array.from(new Set(extras)).sort((a, b) => b.length - a.length);
+  uniqueExtras.forEach((term, i) => {
+    out = replaceToken(out, term, `[ANON_${i + 1}]`);
+  });
+
+  out = out.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  return out;
+}
+
+async function readErrorText(res: Response) {
+  const t = await res.text();
+  try {
+    const j = JSON.parse(t);
+    return String(j?.error || j?.message || t || res.statusText);
+  } catch {
+    return String(t || res.statusText);
+  }
+}
+
+function Card(props: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <main style={{ maxWidth: 980, margin: '0 auto', padding: 24, fontFamily: 'system-ui' }}>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Conversation Analysis</h1>
-
-      <div style={{ opacity: 0.8, marginBottom: 16 }}>
-        UI → <code>/api/analyze</code> → Ergebnis JSON. Pinecone &amp; Gemini bleiben serverseitig.
+    <section className="bg-[#111826] border border-[#1F2937] rounded-2xl p-5 md:p-6">
+      <div className="mb-4">
+        <div className="text-base font-semibold text-white">{props.title}</div>
+        {props.subtitle ? <div className="text-sm text-slate-400 mt-1">{props.subtitle}</div> : null}
       </div>
-
-      <section style={{ border: '1px solid #ddd', borderRadius: 10, padding: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ minWidth: 320 }}>
-            <div style={{ fontSize: 12, opacity: 0.8 }}>Session</div>
-            <input
-              value={sessionId}
-              onChange={(e) => setSessionId(e.target.value)}
-              style={{ width: '100%', padding: 8, border: '1px solid #ccc', borderRadius: 8 }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
-              Auto Save nach Analyse
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="checkbox"
-                checked={storeTranscript}
-                onChange={(e) => setStoreTranscript(e.target.checked)}
-              />
-              Transkript speichern
-            </label>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 }}>
-          <Field label="conversationType" value={conversationType} onChange={setConversationType} />
-          <Field label="conversationSubType (optional)" value={conversationSubType} onChange={setConversationSubType} />
-          <Field label="goal (optional)" value={goal} onChange={setGoal} />
-          <div />
-          <Field label="lang (optional)" value={lang} onChange={setLang} />
-          <Field label="jurisdiction (optional)" value={jurisdiction} onChange={setJurisdiction} />
-        </div>
-
-        <div style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>transcriptText</div>
-          <textarea
-            value={transcriptText}
-            onChange={(e) => setTranscriptText(e.target.value)}
-            rows={8}
-            style={{ width: '100%', padding: 10, border: '1px solid #ccc', borderRadius: 8, fontFamily: 'inherit' }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-          <button
-            onClick={onAnalyze}
-            disabled={loading || !sessionId || !conversationType.trim() || !transcriptText.trim()}
-            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #999', cursor: 'pointer' }}
-          >
-            {loading ? 'Analysiere…' : 'Analyse starten'}
-          </button>
-
-          <button
-            onClick={clearResult}
-            type="button"
-            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #999', cursor: 'pointer' }}
-          >
-            Clear
-          </button>
-
-          {runsListHref ? (
-            <Link
-              href={runsListHref}
-              style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #999', textDecoration: 'none' }}
-            >
-              Runs öffnen →
-            </Link>
-          ) : null}
-        </div>
-
-        {error ? (
-          <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: '#ffecec', border: '1px solid #f3b1b1' }}>
-            <strong>Fehler:</strong> <span style={{ whiteSpace: 'pre-wrap' }}>{error}</span>
-          </div>
-        ) : null}
-      </section>
-
-      <section style={{ marginTop: 18 }}>
-        <h2 style={{ fontSize: 18, marginBottom: 8 }}>Ergebnis</h2>
-        {!analysis ? (
-          <div style={{ opacity: 0.7 }}>Noch keine Analyse ausgeführt.</div>
-        ) : (
-          <pre style={{ padding: 12, border: '1px solid #ddd', borderRadius: 10, overflow: 'auto' }}>
-{JSON.stringify(analysis, null, 2)}
-          </pre>
-        )}
-      </section>
-
-      <section style={{ marginTop: 18 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <h2 style={{ fontSize: 18, marginBottom: 0 }}>Saved Runs</h2>
-          <button
-            onClick={refreshRuns}
-            disabled={runsLoading || !sessionId}
-            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #999', cursor: 'pointer' }}
-          >
-            {runsLoading ? 'Lade…' : 'Refresh'}
-          </button>
-        </div>
-
-        {runsError ? (
-          <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: '#fff7e6', border: '1px solid #f1d18a' }}>
-            <strong>Hinweis:</strong> <span style={{ whiteSpace: 'pre-wrap' }}>{runsError}</span>
-          </div>
-        ) : null}
-
-        {runs.length === 0 ? (
-          <div style={{ marginTop: 10, opacity: 0.75 }}>Noch keine Runs gespeichert.</div>
-        ) : (
-          <div style={{ marginTop: 10, display: 'grid', gap: 10 }}>
-            {runs.map((r) => (
-              <div key={r.id} style={{ border: '1px solid #ddd', borderRadius: 10, padding: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                  <div>
-                    <strong>{r.conversationType ?? '—'}</strong>
-                    {r.conversationSubType ? ` · ${r.conversationSubType}` : ''}
-                  </div>
-                  <div style={{ opacity: 0.75 }}>{fmtIso(r.createdAt)}</div>
-                </div>
-
-                <div style={{ marginTop: 6, fontSize: 13, opacity: 0.8 }}>
-                  runId: <code>{r.id}</code> · score: <code>{r.scoreOverall ?? '—'}</code>
-                </div>
-
-                {r.goal ? <div style={{ marginTop: 6 }}><strong>Ziel:</strong> {r.goal}</div> : null}
-                {r.summary ? <div style={{ marginTop: 6, opacity: 0.9 }}>{r.summary}</div> : null}
-
-                <div style={{ marginTop: 10 }}>
-                  <Link
-                    href={`/runs/${encodeURIComponent(sessionId)}/${encodeURIComponent(r.id)}`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    Run öffnen →
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div style={{ marginTop: 24, opacity: 0.7, fontSize: 12 }}>
-        Healthchecks: <code>/api/pinecone-smoke</code> und <code>/api/analyze</code>
-      </div>
-    </main>
+      {props.children}
+    </section>
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
+export default function AnalyzeClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [sessionId, setSessionId] = useState<string>('');
+
+  const [lang, setLang] = useState<'de' | 'en'>('de');
+  const [goal, setGoal] = useState<string>('');
+
+  const [transcriptText, setTranscriptText] = useState<string>('');
+  const [undoTranscript, setUndoTranscript] = useState<string | null>(null);
+
+  const detectedSpeakers = useMemo(() => {
+    const raw = detectSpeakers(transcriptText);
+    const blocked = new Set(['datum', 'dauer', 'date', 'duration']);
+    return raw.filter((sp) => !blocked.has(String(sp ?? '').trim().toLowerCase()));
+  }, [transcriptText]);
+
+  const [leaderLabel, setLeaderLabel] = useState<string>('');
+  const [employeeLabel, setEmployeeLabel] = useState<string>('');
+
+  const leaderFound = useMemo(() => {
+    const l = leaderLabel.trim();
+    return !!l && transcriptText.includes(l);
+  }, [leaderLabel, transcriptText]);
+
+  const employeeFound = useMemo(() => {
+    const e = employeeLabel.trim();
+    return !!e && transcriptText.includes(e);
+  }, [employeeLabel, transcriptText]);
+
+  const [privacyMode, setPrivacyMode] = useState(true);
+  const [extraTerms, setExtraTerms] = useState('');
+  const [autoSave, setAutoSave] = useState(true);
+  const [saveTranscript, setSaveTranscript] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // sessionId sync (URL <-> localStorage)
+  useEffect(() => {
+    const urlSid = searchParams.get('sessionId');
+    if (urlSid && urlSid.trim()) {
+      const sid = urlSid.trim();
+      setSessionId(sid);
+      try {
+        localStorage.setItem(STORAGE_KEY, sid);
+      } catch {}
+      return;
+    }
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored && stored.trim()) {
+        setSessionId(stored.trim());
+        router.replace(`/analyze?sessionId=${encodeURIComponent(stored.trim())}`);
+        return;
+      }
+    } catch {}
+
+    const sid = newSessionId();
+    setSessionId(sid);
+    try {
+      localStorage.setItem(STORAGE_KEY, sid);
+    } catch {}
+    router.replace(`/analyze?sessionId=${encodeURIComponent(sid)}`);
+  }, [searchParams, router]);
+
+  // prefill labels if transcript uses FK/MA
+  useEffect(() => {
+    if (!transcriptText) return;
+    if (!leaderLabel && transcriptText.includes('FK:')) setLeaderLabel('FK');
+    if (!employeeLabel && transcriptText.includes('MA:')) setEmployeeLabel('MA');
+  }, [transcriptText, leaderLabel, employeeLabel]);
+
+  const privacyPreview = useMemo(() => {
+    if (!privacyMode) return '';
+    const l = leaderLabel.trim();
+    const e = employeeLabel.trim();
+    if (!l || !e) return '';
+    try {
+      const sanitized = sanitizeTranscript(transcriptText, {
+        leaderLabel: l,
+        employeeLabel: e,
+        detectedSpeakers,
+        extraTerms: parseExtraTerms(extraTerms),
+      });
+      return sanitized.slice(0, 400);
+    } catch {
+      return '';
+    }
+  }, [privacyMode, transcriptText, leaderLabel, employeeLabel, detectedSpeakers, extraTerms]);
+
+  const actions = (
+    <button
+      className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10"
+      onClick={() => {
+        const sid = sessionId.trim();
+        if (!sid) return;
+        router.push(`/runs-dashboard?sessionId=${encodeURIComponent(sid)}`);
+      }}
+    >
+      <span className="material-symbols-outlined">history</span>
+      Verlauf
+    </button>
+  );
+
+  async function onAnalyze() {
+    setError(null);
+
+    const sid = sessionId.trim();
+    if (!sid) {
+      setError('SessionId fehlt.');
+      return;
+    }
+
+    const t = transcriptText.trim();
+    if (!t) {
+      setError('Bitte zuerst ein Transkript einfügen oder PDF hochladen.');
+      return;
+    }
+
+    const l = leaderLabel.trim();
+    const e = employeeLabel.trim();
+    if (!l || !e) {
+      setError('Bitte Sprecher zuordnen: Führungskraft und Mitarbeiter:in.');
+      return;
+    }
+
+    setLoading(true);
+    setStep('Analyse läuft…');
+
+    try {
+      const transcriptToSend = privacyMode
+        ? sanitizeTranscript(transcriptText, {
+            leaderLabel: l,
+            employeeLabel: e,
+            detectedSpeakers,
+            extraTerms: parseExtraTerms(extraTerms),
+          })
+        : transcriptText;
+
+      // Wir bleiben (vorerst) beim Mitarbeitendengespräch, aber senden technisch weiterhin eine stabile conversationType,
+      // damit RAG nicht ins Leere läuft. Später machen wir das sauber als Auswahl.
+      const payload = {
+        conversationType: 'feedback',
+        conversationSubType: 'mitarbeitendengespräch',
+        goal: goal.trim() || undefined,
+        transcriptText: transcriptToSend,
+        lang,
+        jurisdiction: lang === 'de' ? 'de_eu' : 'en_us',
+        leaderLabel: l,
+        employeeLabel: e,
+      };
+
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const msg = await readErrorText(res);
+        throw new Error(msg);
+      }
+
+      const j = await res.json();
+      if (!j?.ok) throw new Error(String(j?.error || 'Analyse fehlgeschlagen.'));
+      const result: AnalyzeResult = j.result;
+
+      if (!autoSave) {
+        setStep('Analyse fertig (nicht gespeichert).');
+        setLoading(false);
+        return;
+      }
+
+      setStep('Speichere Run…');
+
+      const savePayload = {
+        sessionId: sid,
+        request: {
+          conversationType: payload.conversationType,
+          conversationSubType: payload.conversationSubType,
+          goal: payload.goal ?? null,
+          lang: payload.lang,
+          jurisdiction: payload.jurisdiction,
+          leaderLabel: payload.leaderLabel,
+          employeeLabel: payload.employeeLabel,
+          transcriptText: saveTranscript ? transcriptToSend : null,
+        },
+        result,
+      };
+
+      const saveRes = await fetch('/api/runs/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(savePayload),
+      });
+
+      if (!saveRes.ok) {
+        const msg = await readErrorText(saveRes);
+        throw new Error(msg);
+      }
+
+      const sj = await saveRes.json();
+      if (!sj?.ok || !sj?.runId) throw new Error(String(sj?.error || 'Speichern fehlgeschlagen.'));
+      const runId = String(sj.runId);
+
+      setStep('Öffne Bericht…');
+      router.push(`/runs/${encodeURIComponent(sid)}/${encodeURIComponent(runId)}`);
+    } catch (e: any) {
+      setError(String(e?.message || e || 'Unbekannter Fehler'));
+    } finally {
+      setLoading(false);
+      setStep(null);
+    }
+  }
+
   return (
-    <label style={{ display: 'block' }}>
-      <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>{label}</div>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ width: '100%', padding: 8, border: '1px solid #ccc', borderRadius: 8 }}
-      />
-    </label>
+    <AppShell title="Analyse" subtitle={`Session: ${shortId(sessionId)}`} actions={actions}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Transcript */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card title="Transkript" subtitle="PDF hochladen oder Text einfügen">
+              <div className="space-y-4">
+                {/* PDF Upload (deine vorhandene Komponente) */}
+                <PdfUpload
+                  onApplyText={(txt, mode) => {
+                    setUndoTranscript(transcriptText);
+                    if (mode === 'append' && transcriptText.trim()) {
+                      setTranscriptText(`${transcriptText.trim()}\n\n${txt.trim()}`);
+                    } else {
+                      setTranscriptText(txt);
+                    }
+                  }}
+                  cleaner={cleanTeamsTranscript}
+                />
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
+                    onClick={() => {
+                      setUndoTranscript(transcriptText);
+                      setTranscriptText(cleanTeamsTranscript(transcriptText));
+                    }}
+                    disabled={!transcriptText.trim() || loading}
+                  >
+                    <span className="material-symbols-outlined">auto_fix_high</span>
+                    Teams bereinigen
+                  </button>
+
+                  <button
+                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
+                    onClick={() => {
+                      const l = leaderLabel.trim();
+                      const e = employeeLabel.trim();
+                      if (!l || !e) return;
+                      setUndoTranscript(transcriptText);
+                      setTranscriptText(
+                        sanitizeTranscript(transcriptText, {
+                          leaderLabel: l,
+                          employeeLabel: e,
+                          detectedSpeakers,
+                          extraTerms: parseExtraTerms(extraTerms),
+                        })
+                      );
+                    }}
+                    disabled={!transcriptText.trim() || !leaderLabel.trim() || !employeeLabel.trim() || loading}
+                  >
+                    <span className="material-symbols-outlined">shield_person</span>
+                    Anonymisieren
+                  </button>
+
+                  <button
+                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
+                    onClick={() => {
+                      if (!undoTranscript) return;
+                      const cur = transcriptText;
+                      setTranscriptText(undoTranscript);
+                      setUndoTranscript(cur);
+                    }}
+                    disabled={!undoTranscript || loading}
+                  >
+                    <span className="material-symbols-outlined">undo</span>
+                    Undo
+                  </button>
+
+                  <button
+                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
+                    onClick={() => {
+                      setUndoTranscript(transcriptText);
+                      setTranscriptText('');
+                    }}
+                    disabled={!transcriptText.trim() || loading}
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                    Clear
+                  </button>
+                </div>
+
+                {/* Textarea */}
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Transkript</div>
+                  <textarea
+                    className="w-full min-h-[340px] rounded-2xl bg-[#0B1221] border border-[#1F2937] p-4 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/20"
+                    placeholder="Hier steht nach dem PDF-Upload der Text… oder du fügst ihn manuell ein."
+                    value={transcriptText}
+                    onChange={(e) => setTranscriptText(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Right: Settings */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card title="Einstellungen">
+              <div className="space-y-4">
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Sprache</div>
+                  <select
+                    className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 outline-none focus:border-sky-400/50"
+                    value={lang}
+                    onChange={(e) => setLang(e.target.value as any)}
+                    disabled={loading}
+                  >
+                    <option value="de">Deutsch</option>
+                    <option value="en">Englisch</option>
+                  </select>
+                  <div className="text-xs text-slate-500 mt-2">
+                    (Deutsch/Englisch ist vorbereitet – Logik kann später erweitert werden.)
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Ziel (optional)</div>
+                  <input
+                    className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/20"
+                    placeholder="z.B. klar und fair, ohne Eskalation"
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-xs text-slate-400 mb-1">Gesprächsart</div>
+                  <div className="text-sm font-medium text-white">Mitarbeitendengespräch</div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    (Conversation-Type ist aktuell technisch fix, damit RAG stabil bleibt.)
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card title="Sprecher zuordnen" subtitle="Wähle: wer ist Führungskraft / Mitarbeiter:in?">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <div className="text-xs text-slate-400 mb-2">Führungskraft Label</div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="flex-1 rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50"
+                        placeholder='z.B. "Anna Müller" oder "FK"'
+                        value={leaderLabel}
+                        onChange={(e) => setLeaderLabel(e.target.value)}
+                        disabled={loading}
+                      />
+                      <span className={leaderFound ? 'text-emerald-400' : 'text-slate-500'} title="Im Transkript gefunden">
+                        <span className="material-symbols-outlined">{leaderFound ? 'check_circle' : 'help'}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-slate-400 mb-2">Mitarbeiter:in Label</div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="flex-1 rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50"
+                        placeholder='z.B. "Tom Becker" oder "MA"'
+                        value={employeeLabel}
+                        onChange={(e) => setEmployeeLabel(e.target.value)}
+                        disabled={loading}
+                      />
+                      <span className={employeeFound ? 'text-emerald-400' : 'text-slate-500'} title="Im Transkript gefunden">
+                        <span className="material-symbols-outlined">{employeeFound ? 'check_circle' : 'help'}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#1F2937] pt-4">
+                  <div className="text-xs text-slate-400 mb-3">Erkannte Sprecher</div>
+                  {detectedSpeakers.length === 0 ? (
+                    <div className="text-sm text-slate-500">Noch keine Sprecher erkannt (Transkript fehlt oder Format unbekannt).</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {detectedSpeakers.map((sp) => (
+                        <div key={sp} className="flex items-center justify-between gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2">
+                          <div className="text-sm text-slate-100 truncate">{sp}</div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              className={`rounded-lg px-2 py-1 text-xs border ${
+                                leaderLabel === sp
+                                  ? 'bg-sky-400/15 border-sky-400/30 text-sky-300'
+                                  : 'bg-transparent border-white/10 text-slate-300 hover:bg-white/5'
+                              }`}
+                              onClick={() => setLeaderLabel(sp)}
+                              disabled={loading}
+                            >
+                              FK
+                            </button>
+                            <button
+                              className={`rounded-lg px-2 py-1 text-xs border ${
+                                employeeLabel === sp
+                                  ? 'bg-sky-400/15 border-sky-400/30 text-sky-300'
+                                  : 'bg-transparent border-white/10 text-slate-300 hover:bg-white/5'
+                              }`}
+                              onClick={() => setEmployeeLabel(sp)}
+                              disabled={loading}
+                            >
+                              MA
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            <Card title="Datenschutz">
+              <div className="space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 accent-sky-400"
+                    checked={privacyMode}
+                    onChange={(e) => setPrivacyMode(e.target.checked)}
+                    disabled={loading}
+                  />
+                  <div>
+                    <div className="text-sm font-medium text-white">Vor Analyse anonymisieren (empfohlen)</div>
+                    <div className="text-xs text-slate-400">
+                      Passiert im Browser, bevor etwas an die API geht.
+                    </div>
+                  </div>
+                </label>
+
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Zusätzliche Begriffe anonymisieren (kommagetrennt)</div>
+                  <input
+                    className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50"
+                    placeholder="z.B. Kundenportal, ACME GmbH, Kunde Schmidt"
+                    value={extraTerms}
+                    onChange={(e) => setExtraTerms(e.target.value)}
+                    disabled={!privacyMode || loading}
+                  />
+                </div>
+
+                {privacyMode && privacyPreview ? (
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
+                    <div className="text-xs text-slate-400 mb-2">Preview (erste 400 Zeichen, anonymisiert)</div>
+                    <div className="text-xs text-slate-200 whitespace-pre-wrap">{privacyPreview}</div>
+                  </div>
+                ) : null}
+
+                <div className="text-xs text-slate-500">
+                  Hinweis: Wenn „Transkript speichern“ aktiv ist, speichern wir genau das, was an die Analyse gesendet wird
+                  (bei Datenschutz also anonymisiert).
+                </div>
+              </div>
+            </Card>
+
+            <Card title="Speichern & Ablauf">
+              <div className="space-y-3">
+                <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
+                  <span className="text-sm text-slate-200">Auto Save nach Analyse</span>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-sky-400"
+                    checked={autoSave}
+                    onChange={(e) => setAutoSave(e.target.checked)}
+                    disabled={loading}
+                  />
+                </label>
+
+                <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
+                  <span className="text-sm text-slate-200">Transkript speichern</span>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-sky-400"
+                    checked={saveTranscript}
+                    onChange={(e) => setSaveTranscript(e.target.checked)}
+                    disabled={loading}
+                  />
+                </label>
+              </div>
+            </Card>
+
+            {error ? (
+              <div className="bg-[#111826] border border-red-500/30 rounded-2xl p-5 text-red-200">
+                <div className="font-semibold mb-1">Fehler</div>
+                <div className="text-sm whitespace-pre-wrap">{error}</div>
+              </div>
+            ) : null}
+
+            <button
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-400 hover:bg-sky-300 text-black px-4 py-3 text-sm font-semibold shadow-lg shadow-sky-400/20 disabled:opacity-50"
+              onClick={onAnalyze}
+              disabled={
+                loading ||
+                !sessionId.trim() ||
+                !transcriptText.trim() ||
+                !leaderLabel.trim() ||
+                !employeeLabel.trim()
+              }
+            >
+              {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">analytics</span>}
+              Analyse starten
+            </button>
+
+            {step ? (
+              <div className="text-xs text-slate-400 text-center">{step}</div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }
