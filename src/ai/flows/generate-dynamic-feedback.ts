@@ -17,6 +17,10 @@ export const GenerateDynamicFeedbackInputSchema = z.object({
   transcriptText: z.string(),
   lang: z.string().optional(),
   jurisdiction: z.string().optional(),
+
+  // NEW: speaker labels (who is leader / employee in transcript)
+  leaderLabel: z.string().optional(),
+  employeeLabel: z.string().optional(),
 });
 export type GenerateDynamicFeedbackInput = z.infer<typeof GenerateDynamicFeedbackInputSchema>;
 
@@ -100,7 +104,12 @@ export async function generateDynamicFeedback(input: GenerateDynamicFeedbackInpu
   const result = await tailoredMod.generateTailoredFeedback({
     inputText: transcriptText,
     conversationType,
+    conversationSubType: input.conversationSubType,
     goal: isNonEmptyString(input.goal) ? input.goal : 'Provide clear, constructive coaching feedback.',
+    lang: input.lang,
+    jurisdiction: input.jurisdiction,
+    leaderLabel: input.leaderLabel,
+    employeeLabel: input.employeeLabel,
     relevantSnippets: relevantSnippets.length ? relevantSnippets : undefined,
   });
 

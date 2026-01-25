@@ -31,7 +31,7 @@ function toIso(v: any): string | null {
 export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const sessionId = sp.get("sessionId") ?? "";
-  const runId = sp.get("runId") ?? "";
+  const runId = sp.get("runId") ?? sp.get("id") ?? "";
 
   const p1 = sessionIdSchema.safeParse(sessionId);
   if (!p1.success) {

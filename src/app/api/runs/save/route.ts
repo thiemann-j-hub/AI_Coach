@@ -21,6 +21,8 @@ const requestSchema = z
     transcriptText: z.string().optional().nullable(),
     lang: z.string().optional().nullable(),
     jurisdiction: z.string().optional().nullable(),
+    leaderLabel: z.string().optional().nullable(),
+    employeeLabel: z.string().optional().nullable(),
   })
   .passthrough();
 
@@ -43,26 +45,57 @@ function isObject(v: unknown): v is Record<string, any> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-function pickRequest(body: any) {
-  if (isObject(body?.request)) return body.request;
+function safeTrimString(v: any): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t ? t : null;
+}
 
-  // Fallback: UI schickt evtl. conversationType/... top-level
-  if (isObject(body) && typeof body.conversationType === "string") {
-    return {
+/**
+ * Like coerceBool, but returns undefined when the value is "not provided".
+ * This allows fallback chaining (storeTranscript -> saveTranscript).
+ */
+function pickBool(v: any): boolean | undefined {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase();
+    if (s === "true" || s === "1") return true;
+    if (s === "false" || s === "0") return false;
+  }
+  return undefined;
+}
+
+function pickRequest(body: any) {
+  // 1) preferred: body.request
+  let req: any = isObject(body?.request) ? body.request : null;
+
+  // 2) fallback: legacy top-level fields
+  if (!req && isObject(body) && typeof body.conversationType === "string") {
+    req = {
       conversationType: body.conversationType,
       conversationSubType: body.conversationSubType ?? null,
       goal: body.goal ?? null,
       transcriptText: body.transcriptText ?? null,
       lang: body.lang ?? null,
       jurisdiction: body.jurisdiction ?? null,
+      leaderLabel: body.leaderLabel ?? null,
+      employeeLabel: body.employeeLabel ?? null,
     };
   }
 
-  return null;
+  // 3) IMPORTANT: If UI sends transcriptText top-level (but request exists),
+  // merge it in so "Transkript speichern" works.
+  if (isObject(req)) {
+    const have = safeTrimString((req as any).transcriptText);
+    const top = safeTrimString(body?.transcriptText);
+    if (!have && top) req = { ...req, transcriptText: top };
+  }
+
+  return req ?? null;
 }
 
 function pickResult(body: any) {
-  // Akzeptiere mehrere Felder, damit UI nicht ständig "Schema mismatch" produziert
+  // accept multiple keys to reduce UI/backend mismatch issues
   return (
     body?.result ??
     body?.analysis ??
@@ -73,28 +106,32 @@ function pickResult(body: any) {
   );
 }
 
-function coerceBool(v: any): boolean {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") return v === "1" || v.toLowerCase() === "true";
-  return false;
+function pickPractice7Days(result: any): string | null {
+  const cands = [
+    result?.practice7Days,
+    result?.sevenDayPractice,
+    result?.practice,
+    result?.exercise7Days,
+    result?.exercise,
+    result?.next7Days,
+  ];
+  for (const c of cands) {
+    const s = safeTrimString(c);
+    if (s) return s;
+  }
+  return null;
 }
 
 export async function POST(req: Request) {
   try {
     const json = await req.json().catch(() => null);
     if (!json || !isObject(json)) {
-      return NextResponse.json(
-        { ok: false, error: "Invalid JSON body" },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
     }
 
     const parsed = bodySchema.safeParse(json);
     if (!parsed.success) {
-      return NextResponse.json(
-        { ok: false, error: parsed.error.flatten() },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
     }
 
     const sessionId = parsed.data.sessionId;
@@ -102,64 +139,62 @@ export async function POST(req: Request) {
     const reqCandidate = pickRequest(json);
     const reqParsed = requestSchema.safeParse(reqCandidate);
     if (!reqParsed.success) {
-      return NextResponse.json(
-        { ok: false, error: reqParsed.error.flatten() },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: reqParsed.error.flatten() }, { status: 400 });
     }
 
     const request = reqParsed.data;
 
     const result = pickResult(json);
     if (!isObject(result)) {
-      return NextResponse.json(
-        { ok: false, error: "Missing result (expected body.result)" },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: "Missing result (expected body.result)" }, { status: 400 });
     }
 
-    const storeTranscript =
+    const transcriptCandidate =
+      safeTrimString((request as any).transcriptText) ??
+      safeTrimString((json as any).transcriptText);
+
+    // storeTranscript:
+    // - explicit flags win (options.storeTranscript / storeTranscript / saveTranscript)
+    // - otherwise: if transcriptText is provided, we store it (UI only sends it when toggle is on)
+    const storeTranscriptExplicit =
       parsed.data.options?.storeTranscript ??
-      coerceBool((json as any).storeTranscript) ??
-      coerceBool((json as any).saveTranscript);
+      pickBool((json as any).storeTranscript) ??
+      pickBool((json as any).saveTranscript);
 
-    const transcriptText =
-      storeTranscript && typeof request.transcriptText === "string" && request.transcriptText.trim()
-        ? request.transcriptText
-        : null;
+    const storeTranscript =
+      typeof storeTranscriptExplicit === "boolean" ? storeTranscriptExplicit : !!transcriptCandidate;
 
-    // Normalisiere Analyse-Felder (damit Liste/Detail stabil sind)
+    const transcriptText = storeTranscript && transcriptCandidate ? transcriptCandidate : null;
+
+    // Normalize analysis fields (stable for list/detail UI)
     const analysisJson = {
-      summary: typeof (result as any).summary === "string" ? (result as any).summary : null,
+      summary: safeTrimString((result as any).summary),
       strengths: Array.isArray((result as any).strengths) ? (result as any).strengths : [],
       improvements: Array.isArray((result as any).improvements) ? (result as any).improvements : [],
       rewrites: Array.isArray((result as any).rewrites) ? (result as any).rewrites : [],
       riskFlags: Array.isArray((result as any).riskFlags) ? (result as any).riskFlags : [],
+      practice7Days: pickPractice7Days(result),
       scores: isObject((result as any).scores) ? (result as any).scores : {},
+      competency_ratings: Array.isArray((result as any).competency_ratings)
+        ? (result as any).competency_ratings
+        : [],
+      competency_error: typeof (result as any).competency_error === "string" ? (result as any).competency_error : null,
     };
 
     const ragContext = {
       cards: Array.isArray((result as any).rag_context_cards) ? (result as any).rag_context_cards : [],
-      count:
-        typeof (result as any).rag_context_count === "number"
-          ? (result as any).rag_context_count
-          : null,
+      count: typeof (result as any).rag_context_count === "number" ? (result as any).rag_context_count : null,
       error: typeof (result as any).rag_error === "string" ? (result as any).rag_error : null,
     };
 
     const scoreOverall =
-      typeof (analysisJson.scores as any)?.overall === "number"
-        ? (analysisJson.scores as any).overall
-        : null;
+      typeof (analysisJson.scores as any)?.overall === "number" ? (analysisJson.scores as any).overall : null;
 
     const db = getAdminDb();
     const sessionRef = db.collection("sessions").doc(sessionId);
 
-    // Session "touch" (optional, aber praktisch)
-    await sessionRef.set(
-      { updatedAt: FieldValue.serverTimestamp() },
-      { merge: true }
-    );
+    // Session touch
+    await sessionRef.set({ updatedAt: FieldValue.serverTimestamp() }, { merge: true });
 
     const runRef = await sessionRef.collection("runs").add({
       createdAt: FieldValue.serverTimestamp(),
@@ -170,14 +205,11 @@ export async function POST(req: Request) {
       lang: request.lang ?? null,
       jurisdiction: request.jurisdiction ?? null,
 
-      // Optional speichern
       transcriptText,
 
-      // Analyse
       analysisJson,
       ragContext,
 
-      // Für Listen-View
       summary: analysisJson.summary,
       scoreOverall,
     });

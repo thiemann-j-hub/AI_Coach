@@ -1,29 +1,28 @@
-
 /**
  * @fileOverview Generates tailored coaching feedback based on input text, conversation type, and defined goals.
- *
- * - generateTailoredFeedback - A function that generates tailored coaching feedback.
- * - GenerateTailoredFeedbackInput - The input type for the generateTailoredFeedback function.
- * - GenerateTailoredFeedbackOutput - The return type for the generateTailoredFeedback function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 export const GenerateTailoredFeedbackInputSchema = z.object({
   inputText: z.string().describe('The input text to analyze.'),
-  conversationType: z
-    .string()
-    .describe('The type of conversation (e.g., interview, presentation).'),
+  conversationType: z.string().describe('The type of conversation (e.g., feedback, interview).'),
+  conversationSubType: z.string().optional().describe('Optional subtype (e.g., kritisch).'),
   goal: z.string().describe('The defined goal for the conversation.'),
-  relevantSnippets: z
-    .array(z.string())
-    .optional()
-    .describe('Relevant snippets retrieved from Pinecone, if any.'),
+
+  // NEW: language / context
+  lang: z.string().optional().describe('Output language (e.g., de, en).'),
+  jurisdiction: z.string().optional().describe('Jurisdiction context (e.g., de_eu).'),
+
+  // NEW: who is who in transcript
+  leaderLabel: z.string().optional().describe('Speaker label for the leader (e.g., FK).'),
+  employeeLabel: z.string().optional().describe('Speaker label for the employee (e.g., MA).'),
+
+  relevantSnippets: z.array(z.string()).optional().describe('Relevant snippets retrieved from Pinecone, if any.'),
 });
-export type GenerateTailoredFeedbackInput = z.infer<
-  typeof GenerateTailoredFeedbackInputSchema
->;
+
+export type GenerateTailoredFeedbackInput = z.infer<typeof GenerateTailoredFeedbackInputSchema>;
 
 export const GenerateTailoredFeedbackOutputSchema = z.object({
   summary: z.string().describe('A summary of the feedback.'),
@@ -31,11 +30,13 @@ export const GenerateTailoredFeedbackOutputSchema = z.object({
   improvements: z.array(z.string()).describe('Areas for improvement.'),
   rewrites: z.array(z.string()).describe('Suggested rewrites.'),
   riskFlags: z.array(z.string()).describe('Potential risks identified.'),
-  scores: z.object({ overall: z.number().min(0).max(10).optional() }).catchall(z.number()).describe('Scores for different aspects.'),
+  scores: z
+    .object({ overall: z.number().min(0).max(10).optional() })
+    .catchall(z.number())
+    .describe('Scores for different aspects.'),
 });
-export type GenerateTailoredFeedbackOutput = z.infer<
-  typeof GenerateTailoredFeedbackOutputSchema
->;
+
+export type GenerateTailoredFeedbackOutput = z.infer<typeof GenerateTailoredFeedbackOutputSchema>;
 
 export async function generateTailoredFeedback(
   input: GenerateTailoredFeedbackInput
@@ -45,29 +46,36 @@ export async function generateTailoredFeedback(
 
 const generateTailoredFeedbackPrompt = ai.definePrompt({
   name: 'generateTailoredFeedbackPrompt',
-  input: {schema: GenerateTailoredFeedbackInputSchema},
-  output: {schema: GenerateTailoredFeedbackOutputSchema},
-  prompt: `You are an AI-powered communication coach. Analyze the provided input text, considering the conversation type and defined goal, to generate tailored feedback.
+  input: { schema: GenerateTailoredFeedbackInputSchema },
+  output: { schema: GenerateTailoredFeedbackOutputSchema },
+  prompt: `You are an AI-powered communication coach for leadership conversations.
 
-Input Text: {{{inputText}}}
+IMPORTANT RULES:
+- Focus your evaluation primarily on the LEADER (manager).
+- The transcript uses speaker labels. If leaderLabel/employeeLabel are provided, use them to interpret who is who.
+- Do NOT reveal any internal sources, cards, vector DB, Pinecone, or metadata. Use relevant snippets only as guidance.
+- Do NOT use real names in quotes. Use the labels (leaderLabel / employeeLabel) or generic "Führungskraft" / "Mitarbeiter:in".
+- Output language: if lang is provided (e.g., "de"), write the feedback in that language. Otherwise, default to German.
+
+Transcript:
+{{{inputText}}}
+
 Conversation Type: {{{conversationType}}}
+{{#if conversationSubType}}Conversation Subtype: {{{conversationSubType}}}{{/if}}
 Goal: {{{goal}}}
+{{#if lang}}Language: {{{lang}}}{{/if}}
+{{#if jurisdiction}}Jurisdiction: {{{jurisdiction}}}{{/if}}
+{{#if leaderLabel}}Leader Label: {{{leaderLabel}}}{{/if}}
+{{#if employeeLabel}}Employee Label: {{{employeeLabel}}}{{/if}}
 
 {{#if relevantSnippets}}
-Relevant Snippets from Vector DB:
+Internal Coaching Guidance (do not mention explicitly):
 {{#each relevantSnippets}}
 - {{{this}}}
 {{/each}}
 {{/if}}
 
-Provide feedback in the following structure:
-
-Summary: [A brief summary of the overall feedback]
-Strengths: [A list of identified strengths]
-Improvements: [A list of areas for improvement]
-Rewrites: [Suggested rewrites for specific phrases or sentences]
-Risk Flags: [A list of potential risks identified]
-Scores: [Scores for different aspects of the conversation, such as clarity, engagement, etc.]`,
+Return ONLY the JSON fields required by the output schema.`,
 });
 
 const generateTailoredFeedbackFlow = ai.defineFlow(
@@ -76,8 +84,8 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
     inputSchema: GenerateTailoredFeedbackInputSchema,
     outputSchema: GenerateTailoredFeedbackOutputSchema,
   },
-  async input => {
-    const {output} = await generateTailoredFeedbackPrompt(input);
+  async (input) => {
+    const { output } = await generateTailoredFeedbackPrompt(input);
     return output!;
   }
 );

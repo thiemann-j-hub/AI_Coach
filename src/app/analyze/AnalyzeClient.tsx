@@ -309,9 +309,27 @@ export default function AnalyzeClient() {
     }
 
     const l = leaderLabel.trim();
-    const e = employeeLabel.trim();
-    if (!l || !e) {
-      setError('Bitte Sprecher zuordnen: Führungskraft und Mitarbeiter:in.');
+    let e = employeeLabel.trim();
+
+    // Auto-Ableitung: wenn genau 2 Sprecher und MA noch leer
+    if (!e && l && detectedSpeakers.length === 2) {
+      const other = detectedSpeakers.find((s) => s !== l) ?? '';
+      if (other) {
+        e = other;
+        if (employeeLabel.trim() !== other) setEmployeeLabel(other);
+      }
+    }
+
+    if (!l) {
+      setError('Bitte Führungskraft wählen.');
+      return;
+    }
+    if (!e) {
+      setError('Bitte Mitarbeitende wählen.');
+      return;
+    }
+    if (l === e) {
+      setError('Führungskraft und Mitarbeitende dürfen nicht identisch sein.');
       return;
     }
 
@@ -376,6 +394,7 @@ export default function AnalyzeClient() {
           employeeLabel: payload.employeeLabel,
           transcriptText: saveTranscript ? transcriptToSend : null,
         },
+        options: { storeTranscript: saveTranscript },
         result,
       };
 
@@ -544,77 +563,91 @@ export default function AnalyzeClient() {
               </div>
             </Card>
 
-            <Card title="Sprecher zuordnen" subtitle="Wähle: wer ist Führungskraft / Mitarbeiter:in?">
+            <Card title="Rollen im Gespräch" subtitle="Wähle die Führungskraft (Mitarbeitende wird automatisch gesetzt)">
               <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <div className="text-xs text-slate-400 mb-2">Führungskraft Label</div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        className="flex-1 rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50"
-                        placeholder='z.B. "Anna Müller" oder "FK"'
-                        value={leaderLabel}
-                        onChange={(e) => setLeaderLabel(e.target.value)}
-                        disabled={loading}
-                      />
-                      <span className={leaderFound ? 'text-emerald-400' : 'text-slate-500'} title="Im Transkript gefunden">
-                        <span className="material-symbols-outlined">{leaderFound ? 'check_circle' : 'help'}</span>
-                      </span>
-                    </div>
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Führungskraft (Ich)</div>
+                  <div className="relative">
+                    <select
+                      className="w-full appearance-none rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 pr-10 text-sm text-slate-100 outline-none focus:border-sky-400/50"
+                      value={leaderLabel}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setLeaderLabel(v);
+
+                        // Wenn genau 2 Sprecher erkannt: Mitarbeitende automatisch setzen
+                        if (detectedSpeakers.length === 2) {
+                          const other = detectedSpeakers.find((s) => s !== v) ?? '';
+                          setEmployeeLabel(other || '');
+                        } else {
+                          // Bei >2 Sprechern: falls alte Auswahl unlogisch ist, zurücksetzen
+                          if (employeeLabel.trim() === v) setEmployeeLabel('');
+                        }
+                      }}
+                      disabled={loading || detectedSpeakers.length === 0}
+                    >
+                      <option value="">
+                        {detectedSpeakers.length === 0 ? 'Transkript einfügen…' : 'Bitte auswählen…'}
+                      </option>
+                      {detectedSpeakers.map((sp) => (
+                        <option key={sp} value={sp}>
+                          {sp} (Ich)
+                        </option>
+                      ))}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                      expand_more
+                    </span>
                   </div>
 
-                  <div>
-                    <div className="text-xs text-slate-400 mb-2">Mitarbeiter:in Label</div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        className="flex-1 rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50"
-                        placeholder='z.B. "Tom Becker" oder "MA"'
-                        value={employeeLabel}
-                        onChange={(e) => setEmployeeLabel(e.target.value)}
-                        disabled={loading}
-                      />
-                      <span className={employeeFound ? 'text-emerald-400' : 'text-slate-500'} title="Im Transkript gefunden">
-                        <span className="material-symbols-outlined">{employeeFound ? 'check_circle' : 'help'}</span>
-                      </span>
-                    </div>
+                  <div className="text-xs text-slate-500 mt-2">
+                    Tipp: Nach Upload/Einfügen werden Sprecher automatisch erkannt.
                   </div>
                 </div>
 
-                <div className="border-t border-[#1F2937] pt-4">
-                  <div className="text-xs text-slate-400 mb-3">Erkannte Sprecher</div>
-                  {detectedSpeakers.length === 0 ? (
-                    <div className="text-sm text-slate-500">Noch keine Sprecher erkannt (Transkript fehlt oder Format unbekannt).</div>
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Mitarbeitende</div>
+
+                  {detectedSpeakers.length <= 2 ? (
+                    <input
+                      className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none"
+                      value={
+                        employeeLabel ||
+                        (leaderLabel.trim() && detectedSpeakers.length === 2
+                          ? (detectedSpeakers.find((s) => s !== leaderLabel.trim()) ?? '')
+                          : '')
+                      }
+                      readOnly
+                      placeholder={leaderLabel.trim() ? 'wird automatisch gesetzt…' : 'wähle zuerst die Führungskraft…'}
+                    />
                   ) : (
                     <div className="space-y-2">
-                      {detectedSpeakers.map((sp) => (
-                        <div key={sp} className="flex items-center justify-between gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2">
-                          <div className="text-sm text-slate-100 truncate">{sp}</div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              className={`rounded-lg px-2 py-1 text-xs border ${
-                                leaderLabel === sp
-                                  ? 'bg-sky-400/15 border-sky-400/30 text-sky-300'
-                                  : 'bg-transparent border-white/10 text-slate-300 hover:bg-white/5'
-                              }`}
-                              onClick={() => setLeaderLabel(sp)}
-                              disabled={loading}
-                            >
-                              FK
-                            </button>
-                            <button
-                              className={`rounded-lg px-2 py-1 text-xs border ${
-                                employeeLabel === sp
-                                  ? 'bg-sky-400/15 border-sky-400/30 text-sky-300'
-                                  : 'bg-transparent border-white/10 text-slate-300 hover:bg-white/5'
-                              }`}
-                              onClick={() => setEmployeeLabel(sp)}
-                              disabled={loading}
-                            >
-                              MA
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                      <div className="relative">
+                        <select
+                          className="w-full appearance-none rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 pr-10 text-sm text-slate-100 outline-none focus:border-sky-400/50"
+                          value={employeeLabel}
+                          onChange={(e) => setEmployeeLabel(e.target.value)}
+                          disabled={loading || !leaderLabel.trim()}
+                        >
+                          <option value="">
+                            {leaderLabel.trim() ? 'Bitte auswählen…' : 'wähle zuerst die Führungskraft…'}
+                          </option>
+                          {detectedSpeakers
+                            .filter((sp) => sp !== leaderLabel.trim())
+                            .map((sp) => (
+                              <option key={sp} value={sp}>
+                                {sp}
+                              </option>
+                            ))}
+                        </select>
+                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          expand_more
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-slate-500">
+                        Mehr als 2 Sprecher erkannt – bitte Mitarbeitende explizit wählen.
+                      </div>
                     </div>
                   )}
                 </div>
@@ -699,13 +732,14 @@ export default function AnalyzeClient() {
 
             <button
               className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-400 hover:bg-sky-300 text-black px-4 py-3 text-sm font-semibold shadow-lg shadow-sky-400/20 disabled:opacity-50"
+              type="button"
               onClick={onAnalyze}
               disabled={
                 loading ||
                 !sessionId.trim() ||
                 !transcriptText.trim() ||
                 !leaderLabel.trim() ||
-                !employeeLabel.trim()
+                (!employeeLabel.trim() && !(leaderLabel.trim() && detectedSpeakers.length === 2))
               }
             >
               {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">analytics</span>}

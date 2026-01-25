@@ -45,3 +45,10 @@ firebase-debug.log
 firestore-debug.log
 # Firebase Admin keys
 workspace/*.json
+
+# --- Firebase Studio / lokale Artefakte: NICHT deployen ---
+*.bak_*
+handover_dump_*.md
+/localStorage/
+/generate/
+/trotzdem
