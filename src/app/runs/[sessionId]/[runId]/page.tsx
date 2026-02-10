@@ -101,6 +101,14 @@ export default async function RunDetailPage({
         : Array.isArray(analysis?.competencies)
           ? analysis.competencies
           : [],
+      transcriptText:
+        typeof data?.transcriptText === "string"
+          ? data.transcriptText
+          : typeof data?.request?.transcriptText === "string"
+            ? data.request.transcriptText
+            : typeof analysis?.transcriptText === "string"
+              ? analysis.transcriptText
+              : null,
   };
 
   const metaChips: { label: string; value: string }[] = [];
