@@ -17,11 +17,22 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['"Source Code Pro"', 'monospace'],
+        body: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
+        headline: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
+        code: ['var(--font-geist-mono)', '"Source Code Pro"', 'monospace'],
+        sans: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'monospace'],
+      },
+      boxShadow: {
+        neon: "0 0 10px rgba(0, 145, 255, 0.5)",
+        "primary-glow": "0 0 20px rgba(0, 145, 255, 0.3)",
       },
       colors: {
+        "surface-dark": "#112240",
+        "surface-light": "#1d3454",
+        "primary-dark": "#0066b3",
+        "text-main": "#CCD6F6",
+        "text-muted-custom": "#8892b0",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

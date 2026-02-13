@@ -4,128 +4,85 @@
 
 @layer base {
   :root {
-    /* --- Stitch Palette (Light) --- */
-    --background: 210 40% 96.1%;            /* #F1F5F9 */
-    --foreground: 215 25% 26.7%;            /* #334155 */
+    /* PulseCraft AI Theme (Dark Default) */
+    --background: 216 65% 11%;              /* #0A192F */
+    --foreground: 226 70% 88%;              /* #CCD6F6 (Text Main) */
 
-    --card: 0 0% 100%;                      /* #FFFFFF */
-    --card-foreground: 215 25% 26.7%;       /* #334155 */
+    --card: 218 58% 16%;                    /* #112240 (Surface Dark) */
+    --card-foreground: 226 70% 88%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 26.7%;
+    --popover: 218 58% 16%;
+    --popover-foreground: 226 70% 88%;
 
-    --primary: 198 93.2% 59.6%;             /* #38BDF8 */
-    --primary-foreground: 0 0% 100%;        /* white (wie Stitch) */
+    --primary: 206 100% 50%;                /* #0091FF */
+    --primary-foreground: 0 0% 100%;        /* White */
 
-    --secondary: 204 93.8% 93.7%;           /* #E0F2FE */
-    --secondary-foreground: 215 25% 26.7%;  /* #334155 */
+    --secondary: 215 49% 22%;               /* #1d3454 (Surface Light) */
+    --secondary-foreground: 226 70% 88%;
 
-    --muted: 210 40% 96.1%;                 /* #F1F5F9 */
-    --muted-foreground: 215 20.2% 65.1%;    /* #94A3B8 */
+    --muted: 215 49% 22%;                   /* Surface Light */
+    --muted-foreground: 225 23% 61%;        /* #8892b0 (Text Muted) */
 
-    --accent: 204 93.8% 93.7%;              /* #E0F2FE */
-    --accent-foreground: 215 25% 26.7%;
+    --accent: 273 67% 59%;                  /* #9D4EDD */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;           /* #EF4444 */
-    --destructive-foreground: 210 40% 98%;  /* #F8FAFC */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 220 13% 91%;                  /* #E5E7EB */
-    --input: 220 13% 91%;
-    --ring: 198 93.2% 59.6%;                /* #38BDF8 */
+    --border: 215 49% 22%;                  /* Surface Light for subtle borders */
+    --input: 218 58% 16%;                   /* Surface Dark */
+    --ring: 206 100% 50%;                   /* Primary */
 
-    /* Optional helpers (wie im Stitch Export) */
-    --primary-dark: 200 98% 39.4%;          /* #0284C7 */
-    --primary-light: 204 93.8% 93.7%;       /* #E0F2FE */
-
-    /* Semantic Accents */
-    --accent-green: 160 84.1% 39.4%;        /* #10B981 */
-    --accent-orange: 38 92.1% 50.2%;        /* #F59E0B */
-    --accent-red: 0 84.2% 60.2%;            /* #EF4444 */
-
-    /* Charts */
-    --chart-1: 198 93.2% 59.6%;             /* primary */
-    --chart-2: 200 98% 39.4%;               /* primary-dark */
-    --chart-3: 215 20.2% 65.1%;             /* muted text */
-    --chart-4: 38 92.1% 50.2%;              /* orange */
-    --chart-5: 160 84.1% 39.4%;             /* green */
-
-    /* Stitch uses fairly round cards */
-    --radius: 1rem;
+    --radius: 1rem;                         /* 16px (rounded-2xl) */
   }
 
   .dark {
-    /* --- Stitch Palette (Dark) --- */
-    --background: 219 53.8% 5.1%;           /* #060B14 */
-    --foreground: 210 40% 98%;              /* #F8FAFC */
-
-    --card: 220 38.2% 10.8%;                /* #111826 */
-    --card-foreground: 210 40% 98%;
-
-    --popover: 220 38.2% 10.8%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 198 93.2% 59.6%;             /* #38BDF8 */
+    /* Same as root for consistency */
+    --background: 216 65% 11%;
+    --foreground: 226 70% 88%;
+    --card: 218 58% 16%;
+    --card-foreground: 226 70% 88%;
+    --popover: 218 58% 16%;
+    --popover-foreground: 226 70% 88%;
+    --primary: 206 100% 50%;
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 221 50% 8.6%;              /* #0B1221 (Stitch Sidebar Dark) */
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 221 50% 8.6%;                  /* #0B1221 */
-    --muted-foreground: 215 20.2% 65.1%;    /* #94A3B8 */
-
-    --accent: 221 50% 8.6%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84.2% 60.2%;           /* #EF4444 */
+    --secondary: 215 49% 22%;
+    --secondary-foreground: 226 70% 88%;
+    --muted: 215 49% 22%;
+    --muted-foreground: 225 23% 61%;
+    --accent: 273 67% 59%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 215 27.9% 16.9%;              /* #1F2937 (gray-800) */
-    --input: 215 27.9% 16.9%;
-    --ring: 198 93.2% 59.6%;
-
-    --primary-dark: 200 98% 39.4%;
-    --primary-light: 204 93.8% 93.7%;
-
-    --accent-green: 160 84.1% 39.4%;
-    --accent-orange: 38 92.1% 50.2%;
-    --accent-red: 0 84.2% 60.2%;
-
-    --chart-1: 198 93.2% 59.6%;
-    --chart-2: 200 98% 39.4%;
-    --chart-3: 215 20.2% 65.1%;
-    --chart-4: 38 92.1% 50.2%;
-    --chart-5: 160 84.1% 39.4%;
+    --border: 215 49% 22%;
+    --input: 218 58% 16%;
+    --ring: 206 100% 50%;
   }
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
-  ::selection {
-    background: hsl(var(--primary));
-    color: white;
+@layer utilities {
+  .glass-panel {
+    @apply bg-[#112240]/70 backdrop-blur-md border border-white/5 rounded-2xl shadow-lg p-6;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
   }
 
-  /* Stitch-like scrollbars */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-  .dark ::-webkit-scrollbar-thumb { background: #1e293b; }
-}
-
-/* Material Symbols helpers */
-.material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 500,
-    'GRAD' 0,
-    'opsz' 24;
-}
-.material-symbols-outlined.filled {
-  font-variation-settings:
-    'FILL' 1,
-    'wght' 500,
-    'GRAD' 0,
-    'opsz' 24;
+  .shadow-neon {
+    box-shadow: 0 0 10px rgba(0, 145, 255, 0.5);
+  }
+  
+  .shadow-primary-glow {
+    box-shadow: 0 0 20px rgba(0, 145, 255, 0.3);
+  }
 }

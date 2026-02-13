@@ -29,19 +29,19 @@ export function UserNav() {
   return (
     <div className="flex items-center gap-3">
       <div className="text-right hidden sm:block">
-        <div className="text-sm font-bold text-white leading-none mb-1">
+        <div className="text-sm font-bold text-foreground leading-none mb-1">
           {user.displayName || "User"}
         </div>
         <button 
           onClick={onSignOut} 
-          className="text-xs text-slate-400 hover:text-white transition-colors"
+          className="text-xs text-muted-foreground hover:text-primary transition-colors"
         >
           Logout
         </button>
       </div>
-      <Avatar className="h-10 w-10 border border-white/10">
+      <Avatar className="h-10 w-10 border border-border shadow-neon">
         <AvatarImage src={user.photoURL || ""} alt={user.displayName || "User"} />
-        <AvatarFallback className="bg-purple-600 text-white font-medium text-lg">
+        <AvatarFallback className="bg-primary text-primary-foreground font-medium text-lg">
           {(user.displayName?.charAt(0) || user.email?.charAt(0) || "U").toUpperCase()}
         </AvatarFallback>
       </Avatar>
