@@ -32,8 +32,9 @@ function getCredential() {
     try {
       const parsed = JSON.parse(json);
       return cert(parsed);
-    } catch {
-      throw new Error("SERVICE_ACCOUNT_JSON (or FIREBASE_SERVICE_ACCOUNT_JSON) is not valid JSON.");
+    } catch (e) {
+      console.warn("Warning: SERVICE_ACCOUNT_JSON (or FIREBASE_SERVICE_ACCOUNT_JSON) provided but invalid JSON. Falling back to applicationDefault(). Error:", e);
+      // Fallback to applicationDefault() instead of throwing
     }
   }
 
