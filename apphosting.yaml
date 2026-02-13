@@ -10,6 +10,22 @@ env:
   - variable: PINECONE_NAMESPACE
     value: "cards_v3"
 
+  # Firebase Client Config (Required for Build & Runtime)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyC7lKS5kXoHrd6T7psXSG6dyAQBXXNBQuo"
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "ai-coach-c343f.firebaseapp.com"
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "ai-coach-c343f"
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "ai-coach-c343f.firebasestorage.app"
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "565409632174"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:565409632174:web:9ab7f765283c72e73c423f"
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-Q9C1NY2JVD"
+
   # secrets (Cloud Secret Manager)
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
