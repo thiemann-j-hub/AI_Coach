@@ -24,20 +24,26 @@ import { useAuth } from "@/providers/auth-provider"
 
 interface LoginModalProps {
   children?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function LoginModal({ children }: LoginModalProps) {
-  const [open, setOpen] = React.useState(false)
+export function LoginModal({ children, open: controlledOpen, onOpenChange: controlledOnOpenChange }: LoginModalProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const { toast } = useToast()
   const { user } = useAuth()
 
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = isControlled ? controlledOnOpenChange : setInternalOpen
+
   // Close modal when user is logged in
   React.useEffect(() => {
-    if (user) {
-      setOpen(false)
+    if (user && open) {
+      setOpen?.(false)
     }
-  }, [user])
+  }, [user, open, setOpen])
 
   async function onGoogleSignIn() {
     setIsLoading(true)
@@ -84,10 +90,13 @@ export function LoginModal({ children }: LoginModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || <Button variant="outline">Sign In</Button>}
-      </DialogTrigger>
+      {(!isControlled || children) && (
+        <DialogTrigger asChild>
+          {children || <Button variant="outline">Sign In</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[425px]">
+
         <DialogHeader>
           <DialogTitle>Authentication</DialogTitle>
           <DialogDescription>
