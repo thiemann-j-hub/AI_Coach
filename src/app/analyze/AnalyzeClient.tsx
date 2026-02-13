@@ -175,10 +175,10 @@ async function readErrorText(res: Response) {
 
 function Card(props: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section className="bg-[#111826] border border-[#1F2937] rounded-2xl p-5 md:p-6">
+    <section className="glass-panel">
       <div className="mb-4">
-        <div className="text-base font-semibold text-white">{props.title}</div>
-        {props.subtitle ? <div className="text-sm text-slate-400 mt-1">{props.subtitle}</div> : null}
+        <div className="text-base font-bold text-foreground">{props.title}</div>
+        {props.subtitle ? <div className="text-sm text-muted-foreground mt-1">{props.subtitle}</div> : null}
       </div>
       {props.children}
     </section>
