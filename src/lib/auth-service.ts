@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
+  updateProfile,
   User,
   AuthError
 } from "firebase/auth";
@@ -29,9 +30,12 @@ export async function signInWithEmail(email: string, pass: string) {
   }
 }
 
-export async function signUpWithEmail(email: string, pass: string) {
+export async function signUpWithEmail(email: string, pass: string, name?: string) {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, pass);
+    if (name && result.user) {
+      await updateProfile(result.user, { displayName: name });
+    }
     return { user: result.user, error: null };
   } catch (error) {
     return { user: null, error: error as AuthError };

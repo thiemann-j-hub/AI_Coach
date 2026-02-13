@@ -68,14 +68,17 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
     const formData = new FormData(event.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
+    const name = formData.get("name") as string
 
     try {
       if (mode === "login") {
         const { error } = await signInWithEmail(email, password)
         if (error) throw error
+        toast({ title: "Welcome back!", description: "Logged in successfully." })
       } else {
-        const { error } = await signUpWithEmail(email, password)
+        const { error } = await signUpWithEmail(email, password, name)
         if (error) throw error
+        toast({ title: "Welcome!", description: "Account created successfully." })
       }
     } catch (error: any) {
       toast({
@@ -132,6 +135,10 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
             <TabsContent value="register">
               <form onSubmit={(e) => onSubmit(e, "register")}>
                 <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name-register">Full Name</Label>
+                    <Input id="name-register" name="name" type="text" placeholder="John Doe" required />
+                  </div>
                   <div className="grid gap-2">
                     <Label htmlFor="email-register">Email</Label>
                     <Input id="email-register" name="email" type="email" placeholder="m@example.com" required />

@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/providers/auth-provider';
+import { LoginModal } from '@/components/auth/login-modal';
 
 type NavItem = {
   href: string;
@@ -24,6 +26,7 @@ export default function AppShell(props: {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
 
   const nav: NavItem[] = useMemo(
     () => [
@@ -115,14 +118,35 @@ export default function AppShell(props: {
           </nav>
 
           <div className="mt-auto p-4 border-t border-[#1F2937]">
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-9 h-9 rounded-full bg-sky-400/15 border border-sky-400/20 flex items-center justify-center text-sky-400 text-sm font-semibold">
-                MM
+            {user ? (
+              <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-9 h-9 rounded-full bg-sky-400/15 border border-sky-400/20 flex items-center justify-center text-sky-400 text-sm font-semibold overflow-hidden">
+                  {user.photoURL ? (
+                    <Image src={user.photoURL} alt={user.displayName || "User"} width={36} height={36} />
+                  ) : (
+                    (user.displayName?.charAt(0) || user.email?.charAt(0) || "U").toUpperCase()
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium truncate">{user.displayName || "User"}</div>
+                  <div className="text-xs text-slate-400 truncate">{user.email}</div>
+                </div>
               </div>
-              <div className="min-w-0">
-                <div className="text-sm font-medium truncate">Demo</div>
-                <div className="text-xs text-slate-400 truncate">ohne Login</div>
+            ) : (
+              <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-sm">
+                  ?
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">Gast</div>
+                  <LoginModal>
+                    <button className="text-xs text-sky-400 hover:underline text-left">
+                      Anmelden
+                    </button>
+                  </LoginModal>
+                </div>
               </div>
+            )}
               <button
                 className="ml-auto text-slate-400 hover:text-white"
                 onClick={() => router.push('/analyze')}
