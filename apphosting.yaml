@@ -16,7 +16,5 @@ env:
 
   - variable: PINECONE_API_KEY
     secret: PINECONE_API_KEY
-
-  # IMPORTANT: env var name must NOT start with FIREBASE_
   - variable: SERVICE_ACCOUNT_JSON
     secret: FIREBASE_SERVICE_ACCOUNT_JSON
