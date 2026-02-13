@@ -1,0 +1,45 @@
+query AllUsers @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  users {
+    id
+    displayName
+    email
+    bio
+    leadershipRole
+    photoUrl
+    createdAt
+  }
+}
+
+query UserLeadershipGoals($userId: UUID!) @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  leadershipGoals(where: {userId: {eq: $userId}}) {
+    id
+    name
+    description
+    status
+    targetDate
+    achievedDate
+    createdAt
+  }
+}
+
+mutation CreateDevelopmentPlan($leadershipGoalId: UUID!, $name: String!, $startDate: Date!, $status: String!) @auth(level: USER, insecureReason: "This operation creates a development plan for the current user.") {
+  developmentPlan_insert(
+    data: {
+      leadershipGoalId: $leadershipGoalId,
+      userId_expr: "auth.uid",
+      name: $name,
+      startDate: $startDate,
+      status: $status
+    }
+  )
+}
+
+mutation CreateCoachingSession($userId: UUID!, $summary: String!, $sessionDate: Timestamp!) @auth(level: USER, insecureReason: "This operation creates a coaching session linked to a specific user.") {
+  coachingSession_insert(
+    data: {
+      userId: $userId,
+      summary: $summary,
+      sessionDate: $sessionDate
+    }
+  )
+}

@@ -54,3 +54,8 @@ handover_dump_*.md
 /localStorage/
 /generate/
 /trotzdem
+
+# --- DO NOT COMMIT SERVICE ACCOUNT KEYS ---
+workspace/firebase-admin-sa.json
+workspace/firebase-admin-sa.oneline.json
+

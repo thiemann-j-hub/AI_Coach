@@ -1,0 +1,57 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  leadershipRole: String
+  bio: String
+}
+
+type LeadershipGoal @table {
+  user: User!
+  name: String!
+  targetDate: Date!
+  status: String!
+  createdAt: Timestamp!
+  description: String
+  achievedDate: Date
+}
+
+type CoachingSession @table {
+  user: User!
+  leadershipGoal: LeadershipGoal
+  sessionDate: Timestamp!
+  summary: String!
+  createdAt: Timestamp!
+  keyTakeaways: String
+  actionItems: String
+}
+
+type DevelopmentPlan @table {
+  user: User!
+  leadershipGoal: LeadershipGoal!
+  name: String!
+  startDate: Date!
+  status: String!
+  createdAt: Timestamp!
+  description: String
+  endDate: Date
+}
+
+type PlanStep @table {
+  developmentPlan: DevelopmentPlan!
+  description: String!
+  dueDate: Date!
+  status: String!
+  createdAt: Timestamp!
+  notes: String
+}
+
+type Resource @table {
+  title: String!
+  url: String!
+  resourceType: String!
+  createdAt: Timestamp!
+  description: String
+  topics: [String]
+}

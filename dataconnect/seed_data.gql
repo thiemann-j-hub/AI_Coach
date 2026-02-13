@@ -1,0 +1,113 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "This operation is for seeding data and should only be run by authenticated administrators.") {
+  user_insertMany(data: [
+    {
+      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      displayName: "Alice Smith",
+      email: "alice.smith@example.com",
+      createdAt: "2023-01-01T10:00:00Z",
+      leadershipRole: "Team Lead",
+      bio: "Experienced team lead passionate about personal growth."
+    },
+    {
+      id: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+      displayName: "Bob Johnson",
+      email: "bob.johnson@example.com",
+      createdAt: "2023-01-02T11:00:00Z",
+      leadershipRole: "Project Manager",
+      bio: "Dedicated project manager focused on successful project delivery."
+    }
+  ])
+  leadershipGoal_insertMany(data: [
+    {
+      id: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      name: "Improve Communication Skills",
+      description: "Focus on active listening and clear articulation in team meetings.",
+      targetDate: "2023-06-30",
+      status: "In Progress",
+      createdAt: "2023-01-15T09:30:00Z"
+    },
+    {
+      id: "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      name: "Develop Mentorship Program",
+      description: "Create and launch a new mentorship program for junior staff.",
+      targetDate: "2023-09-30",
+      status: "Not Started",
+      createdAt: "2023-02-01T14:00:00Z"
+    },
+    {
+      id: "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b",
+      userId: "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+      name: "Enhance Conflict Resolution",
+      description: "Learn and apply new techniques for mediating team conflicts.",
+      targetDate: "2023-07-31",
+      status: "In Progress",
+      createdAt: "2023-01-20T10:00:00Z"
+    }
+  ])
+  developmentPlan_insertMany(data: [
+    {
+      id: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      leadershipGoalId: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+      name: "Communication Mastery Plan",
+      description: "A plan to systematically improve communication effectiveness.",
+      startDate: "2023-02-01",
+      endDate: "2023-05-31",
+      status: "Active",
+      createdAt: "2023-01-25T13:00:00Z"
+    }
+  ])
+  planStep_insertMany(data: [
+    {
+      id: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      developmentPlanId: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c",
+      description: "Attend 'Effective Communication' workshop",
+      dueDate: "2023-02-28",
+      status: "Completed",
+      createdAt: "2023-01-26T09:00:00Z",
+      notes: "Workshop provided good foundational knowledge."
+    },
+    {
+      id: "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
+      developmentPlanId: "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c",
+      description: "Practice active listening in daily stand-ups",
+      dueDate: "2023-03-31",
+      status: "In Progress",
+      createdAt: "2023-02-05T10:00:00Z",
+      notes: "Need to consciously apply techniques."
+    }
+  ])
+  coachingSession_insertMany(data: [
+    {
+      id: "c3d4e5f6-a7b8-9c0d-e1f2-a3b4c5d6e7f8",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      leadershipGoalId: "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+      summary: "Reviewed progress on communication goal. Discussed active listening techniques.",
+      sessionDate: "2023-02-10T15:00:00Z",
+      createdAt: "2023-02-10T15:30:00Z",
+      actionItems: "Follow up on specific team interactions."
+    }
+  ])
+  resource_insertMany(data: [
+    {
+      id: "d4e5f6a7-b8c9-0d1e-f2a3-b4c5d6e7f8a9",
+      title: "The 7 Habits of Highly Effective People",
+      description: "Classic book on personal and professional effectiveness.",
+      url: "https://example.com/7habits",
+      resourceType: "Book",
+      topics: ["Leadership", "Productivity"],
+      createdAt: "2023-01-05T08:00:00Z"
+    },
+    {
+      id: "e5f6a7b8-c9d0-1e2f-a3b4-c5d6e7f8a9b0",
+      title: "Harvard Business Review: Communication",
+      description: "Collection of articles on various aspects of business communication.",
+      url: "https://example.com/hbr-communication",
+      resourceType: "Online Articles",
+      topics: ["Communication", "Business"],
+      createdAt: "2023-01-08T11:00:00Z"
+    }
+  ])
+}
