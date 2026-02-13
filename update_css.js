@@ -1,4 +1,6 @@
-@tailwind base;
+const fs = require('fs');
+
+const cssContent = `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -85,3 +87,7 @@
     box-shadow: 0 0 20px rgba(0, 145, 255, 0.4);
   }
 }
+`;
+
+fs.writeFileSync('src/app/globals.css', cssContent);
+console.log('globals.css updated with precise design tokens');

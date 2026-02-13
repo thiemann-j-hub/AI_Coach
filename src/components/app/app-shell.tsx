@@ -119,11 +119,12 @@ export default function AppShell(props: {
         </aside>
 
         {/* Main */}
-        <main className="flex-1 flex flex-col min-w-0 bg-background/50 relative">
-          {/* Background Gradient Effect (optional) */}
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+        <main className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
+          {/* Background Glows for Glassmorphism Context */}
+          <div className="absolute top-[-10%] left-[-5%] w-[30%] h-[30%] bg-primary/15 blur-[120px] rounded-full pointer-events-none z-0" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[30%] bg-accent/10 blur-[120px] rounded-full pointer-events-none z-0" />
 
-          <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-30">
+          <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-30">
             <div className="flex items-center gap-3 min-w-0">
               <button
                 className="md:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 transition-colors"
