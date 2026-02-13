@@ -118,45 +118,13 @@ export default function AppShell(props: {
           </nav>
 
           <div className="mt-auto p-4 border-t border-[#1F2937]">
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-              {user ? (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-sky-400/15 border border-sky-400/20 flex items-center justify-center text-sky-400 text-sm font-semibold overflow-hidden">
-                    {user.photoURL ? (
-                      <Image src={user.photoURL} alt={user.displayName || "User"} width={36} height={36} />
-                    ) : (
-                      (user.displayName?.charAt(0) || user.email?.charAt(0) || "U").toUpperCase()
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">{user.displayName || "User"}</div>
-                    <div className="text-xs text-slate-400 truncate">{user.email}</div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-sm">
-                    ?
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">Gast</div>
-                    <LoginModal>
-                      <button className="text-xs text-sky-400 hover:underline text-left">
-                        Anmelden
-                      </button>
-                    </LoginModal>
-                  </div>
-                </>
-              )}
-              <button
-                className="ml-auto text-slate-400 hover:text-white flex-shrink-0"
-                onClick={() => router.push('/analyze')}
-                aria-label="Neue Analyse"
-                title="Neue Analyse"
-              >
-                <span className="material-symbols-outlined">add</span>
-              </button>
-            </div>
+            <button
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium transition-all shadow-lg shadow-sky-900/20 active:scale-[0.98]"
+              onClick={() => router.push('/analyze')}
+            >
+              <span className="material-symbols-outlined text-[20px]">add_circle</span>
+              <span>Neue Analyse</span>
+            </button>
           </div>
         </aside>
 
@@ -188,9 +156,15 @@ export default function AppShell(props: {
                 <span className="material-symbols-outlined">notifications</span>
                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500" />
               </button>
-              <div className="w-9 h-9 rounded-full bg-sky-400/15 border border-sky-400/20 flex items-center justify-center text-sky-400 text-sm font-semibold">
-                MM
-              </div>
+              {user ? (
+                <UserNav />
+              ) : (
+                <LoginModal>
+                  <button className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-400 text-sm font-semibold hover:bg-slate-600 transition-colors">
+                    ?
+                  </button>
+                </LoginModal>
+              )}
             </div>
           </header>
 

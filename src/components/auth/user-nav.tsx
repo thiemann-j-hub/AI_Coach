@@ -5,16 +5,6 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/providers/auth-provider"
 import { signOut } from "@/lib/auth-service"
 import { useToast } from "@/hooks/use-toast"
@@ -37,29 +27,24 @@ export function UserNav() {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user.photoURL || ""} alt={user.displayName || "User"} />
-            <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onSignOut}>
-          Log out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-3">
+      <div className="text-right hidden sm:block">
+        <div className="text-sm font-bold text-white leading-none mb-1">
+          {user.displayName || "User"}
+        </div>
+        <button 
+          onClick={onSignOut} 
+          className="text-xs text-slate-400 hover:text-white transition-colors"
+        >
+          Logout
+        </button>
+      </div>
+      <Avatar className="h-10 w-10 border border-white/10">
+        <AvatarImage src={user.photoURL || ""} alt={user.displayName || "User"} />
+        <AvatarFallback className="bg-purple-600 text-white font-medium text-lg">
+          {(user.displayName?.charAt(0) || user.email?.charAt(0) || "U").toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+    </div>
   )
 }
