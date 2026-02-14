@@ -45,10 +45,17 @@ export default {
           hover: "#007ACC",
         },
         "primary-hover": "#007ACC",
+        
+        // Explicit Design Tokens from Template
+        "background-light": "#F3F4F6",
         "background-dark": "#0A192F",
+        "surface-light": "#FFFFFF",
         "surface-dark": "#112240",
+        "border-light": "#E5E7EB",
         "border-dark": "#233554",
+        "text-main-light": "#1F2937",
         "text-main-dark": "#E2E8F0",
+        "text-muted-light": "#6B7280",
         "text-muted-dark": "#8892B0",
 
         // Shadcn Mappings
@@ -84,7 +91,6 @@ export default {
         
         // Custom Aliases
         "surface-highlight": "#112240",
-        "surface-light": "#112240",
         "primary-dark": "#007ACC",
         "text-main": "#E2E8F0",
         "text-muted-custom": "#8892B0",
