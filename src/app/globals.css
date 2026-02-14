@@ -4,56 +4,50 @@
 
 @layer base {
   :root {
-    /* PulseCraft AI Theme (Based on strict Hex definition) */
+    /* Reference Design Palette (Dark Only enforced via .dark logic mostly, but mapping root too) */
     
-    /* Deep Background: #0A192F */
+    /* background-dark: #0A192F */
     --background: 216 65% 11%;
     
-    /* Main Text: #E2E8F0 */
+    /* text-main-dark: #E2E8F0 */
     --foreground: 214 32% 91%;
 
-    /* Surface Card: #112240 */
+    /* surface-dark: #112240 */
     --card: 218 58% 16%;
     --card-foreground: 214 32% 91%;
 
-    /* Surface Highlight: #1B2D4B (Used for Popovers/Secondary) */
     --popover: 218 58% 16%;
     --popover-foreground: 214 32% 91%;
 
-    /* Primary Blue: #0091FF */
+    /* primary: #0091FF */
     --primary: 206 100% 50%;
-    --primary-foreground: 0 0% 100%; /* White */
+    --primary-foreground: 0 0% 100%;
 
-    /* Surface Highlight: #1B2D4B */
-    --secondary: 217 47% 20%;
+    /* surface-dark (used as secondary/muted bg sometimes) */
+    --secondary: 218 58% 16%;
     --secondary-foreground: 214 32% 91%;
 
-    /* Muted: #64748B (Config) or #1B2D4B (Background context) */
-    --muted: 217 47% 20%; 
-    
-    /* Secondary/Muted Text: #8892B0 */
+    /* text-muted-dark: #8892B0 */
+    --muted: 218 58% 16%;
     --muted-foreground: 225 23% 61%;
 
-    /* Accent Purple: #A855F7 */
-    --accent: 271 91% 65%;
-    --accent-foreground: 0 0% 100%;
+    /* border-dark: #233554 */
+    --border: 218 41% 23%;
+    --input: 218 41% 23%;
+    --ring: 206 100% 50%;
 
-    /* Success Green: #10B981 */
-    --success: 160 84% 39%;
+    /* Standard accent logic */
+    --accent: 218 58% 16%;
+    --accent-foreground: 214 32% 91%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    /* Border Color: rgba(27, 45, 75, 0.5) -> Approx Surface Highlight #1B2D4B */
-    --border: 217 47% 20%;
-    --input: 217 47% 20%;
-    --ring: 206 100% 50%;
-
-    --radius: 1rem;
+    --radius: 1rem; /* 16px from config */
   }
 
   .dark {
-    /* Identical to root for this dark-themed app */
+    /* Identical to root */
     --background: 216 65% 11%;
     --foreground: 214 32% 91%;
     --card: 218 58% 16%;
@@ -62,16 +56,16 @@
     --popover-foreground: 214 32% 91%;
     --primary: 206 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 47% 20%;
+    --secondary: 218 58% 16%;
     --secondary-foreground: 214 32% 91%;
-    --muted: 217 47% 20%;
+    --muted: 218 58% 16%;
     --muted-foreground: 225 23% 61%;
-    --accent: 271 91% 65%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 218 58% 16%;
+    --accent-foreground: 214 32% 91%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 47% 20%;
-    --input: 217 47% 20%;
+    --border: 218 41% 23%;
+    --input: 218 41% 23%;
     --ring: 206 100% 50%;
   }
 }
@@ -81,24 +75,47 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  /* Scrollbar Styles from Reference */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #233554; /* border-dark */
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3e506e; 
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-[#112240]/80 backdrop-blur-xl border border-white/5 rounded-2xl shadow-lg p-6;
+    background: rgba(17, 34, 64, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  .btn-gradient {
+    background: linear-gradient(90deg, #0091FF 0%, #00C6FF 100%);
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    box-shadow: 0 0 15px rgba(0, 145, 255, 0.6);
+    transform: translateY(-1px);
   }
 
-  .shadow-neon {
-    box-shadow: 0 0 10px rgba(0, 145, 255, 0.4);
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#0091FF] to-[#00C6FF]; /* Based on btn-gradient since text-gradient was not in ref css but useful */
   }
   
-  .shadow-primary-glow {
-    box-shadow: 0 0 20px rgba(0, 145, 255, 0.4);
-  }
+  /* Utilities for reference colors if needed directly */
+  .bg-surface-dark { @apply bg-[#112240]; }
+  .border-border-dark { @apply border-[#233554]; }
 }

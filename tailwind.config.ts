@@ -20,33 +20,43 @@ export default {
         body: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
         headline: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
         code: ['var(--font-geist-mono)', '"Source Code Pro"', 'monospace'],
+        display: ["Inter", "sans-serif"],
         sans: ['var(--font-geist-sans)', 'Inter', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'monospace'],
       },
-      boxShadow: {
-        neon: "0 0 10px rgba(0, 145, 255, 0.4)",
-        "primary-glow": "0 0 20px rgba(0, 145, 255, 0.3)",
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+        DEFAULT: "16px",
+        'xl': '1.5rem',
       },
-      backgroundImage: {
-        'hero-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
+      boxShadow: {
+        'glow': '0 0 20px rgba(0, 145, 255, 0.4)',
+        'card-dark': '0 10px 30px -10px rgba(2, 12, 27, 0.7)',
+        'card-light': '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
+        neon: "0 0 10px rgba(0, 145, 255, 0.4)",
       },
       colors: {
-        "surface": "hsl(var(--card))",
-        "surface-dark": "hsl(var(--card))", // Legacy alias
-        "surface-highlight": "hsl(var(--secondary))",
-        "surface-light": "hsl(var(--secondary))", // Legacy alias
-        "primary-dark": "#0066b3",
-        "text-main": "hsl(var(--foreground))",
-        "text-muted-custom": "hsl(var(--muted-foreground))",
+        // Reference Design Colors
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+          hover: "#007ACC",
+        },
+        "primary-hover": "#007ACC",
+        "background-dark": "#0A192F",
+        "surface-dark": "#112240",
+        "border-dark": "#233554",
+        "text-main-dark": "#E2E8F0",
+        "text-muted-dark": "#8892B0",
+
+        // Shadcn Mappings
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -71,6 +81,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        
+        // Custom Aliases
+        "surface-highlight": "#112240",
+        "surface-light": "#112240",
+        "primary-dark": "#007ACC",
+        "text-main": "#E2E8F0",
+        "text-muted-custom": "#8892B0",
+        
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -78,11 +96,6 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {
