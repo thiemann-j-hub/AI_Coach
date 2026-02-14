@@ -4,39 +4,56 @@
 
 @layer base {
   :root {
-    /* PulseCraft AI Theme (Updated Colors) */
-    --background: 216 65% 11%;              /* #0A192F (Deep Background) */
-    --foreground: 214 32% 91%;              /* #E2E8F0 (Main Text) */
+    /* PulseCraft AI Theme (Based on strict Hex definition) */
+    
+    /* Deep Background: #0A192F */
+    --background: 216 65% 11%;
+    
+    /* Main Text: #E2E8F0 */
+    --foreground: 214 32% 91%;
 
-    --card: 218 58% 16%;                    /* #112240 (Surface Card) */
-    --card-foreground: 214 32% 91%;         /* #E2E8F0 */
+    /* Surface Card: #112240 */
+    --card: 218 58% 16%;
+    --card-foreground: 214 32% 91%;
 
+    /* Surface Highlight: #1B2D4B (Used for Popovers/Secondary) */
     --popover: 218 58% 16%;
     --popover-foreground: 214 32% 91%;
 
-    --primary: 206 100% 50%;                /* #0091FF (Primary Blue) */
-    --primary-foreground: 0 0% 100%;        /* White */
+    /* Primary Blue: #0091FF */
+    --primary: 206 100% 50%;
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 218 47% 20%;               /* #1B2D4B (Surface Highlight) */
+    /* Surface Highlight: #1B2D4B */
+    --secondary: 217 47% 20%;
     --secondary-foreground: 214 32% 91%;
 
-    --muted: 218 47% 20%;                   /* Surface Highlight */
-    --muted-foreground: 225 23% 61%;        /* #8892B0 (Secondary/Muted Text) */
+    /* Muted: #64748B (Config) or #1B2D4B (Background context) */
+    --muted: 217 47% 20%; 
+    
+    /* Secondary/Muted Text: #8892B0 */
+    --muted-foreground: 225 23% 61%;
 
-    --accent: 271 91% 65%;                  /* #A855F7 (Accent Purple) */
+    /* Accent Purple: #A855F7 */
+    --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
+
+    /* Success Green: #10B981 */
+    --success: 160 84% 39%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 218 47% 20%;                  /* #1B2D4B (or slightly lighter) */
-    --input: 218 58% 16%;                   /* Surface Card */
-    --ring: 206 100% 50%;                   /* Primary */
+    /* Border Color: rgba(27, 45, 75, 0.5) -> Approx Surface Highlight #1B2D4B */
+    --border: 217 47% 20%;
+    --input: 217 47% 20%;
+    --ring: 206 100% 50%;
 
-    --radius: 1rem;                         /* 16px (rounded-2xl) */
+    --radius: 1rem;
   }
 
   .dark {
+    /* Identical to root for this dark-themed app */
     --background: 216 65% 11%;
     --foreground: 214 32% 91%;
     --card: 218 58% 16%;
@@ -45,16 +62,16 @@
     --popover-foreground: 214 32% 91%;
     --primary: 206 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 218 47% 20%;
+    --secondary: 217 47% 20%;
     --secondary-foreground: 214 32% 91%;
-    --muted: 218 47% 20%;
+    --muted: 217 47% 20%;
     --muted-foreground: 225 23% 61%;
     --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 218 47% 20%;
-    --input: 218 58% 16%;
+    --border: 217 47% 20%;
+    --input: 217 47% 20%;
     --ring: 206 100% 50%;
   }
 }

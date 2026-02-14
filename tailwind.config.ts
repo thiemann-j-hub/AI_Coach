@@ -31,9 +31,10 @@ export default {
         'hero-gradient': 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
       },
       colors: {
-        "surface-dark": "hsl(var(--card))",
+        "surface": "hsl(var(--card))",
+        "surface-dark": "hsl(var(--card))", // Legacy alias
         "surface-highlight": "hsl(var(--secondary))",
-        "surface-light": "hsl(var(--secondary))",
+        "surface-light": "hsl(var(--secondary))", // Legacy alias
         "primary-dark": "#0066b3",
         "text-main": "hsl(var(--foreground))",
         "text-muted-custom": "hsl(var(--muted-foreground))",
