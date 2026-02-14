@@ -74,25 +74,25 @@
 }
 
 /* PulseCraft Analysis Dashboard Styles */
-@layer utilities {
-  .glass-panel {
-      background: rgba(17, 34, 64, 0.7);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  .light .glass-panel {
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-  }
+.glass-panel {
+  /* Default (Light) */
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.dark .glass-panel {
+  /* Dark Override */
+  background: rgba(17, 34, 64, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-  .btn-gradient {
-      background: linear-gradient(90deg, #0091FF 0%, #00C6FF 100%);
-      transition: all 0.3s ease;
-  }
-  .btn-gradient:hover {
-      box-shadow: 0 0 15px rgba(0, 145, 255, 0.6);
-      transform: translateY(-1px);
-  }
+.btn-gradient {
+  background: linear-gradient(90deg, #0091FF 0%, #00C6FF 100%);
+  transition: all 0.3s ease;
+}
+.btn-gradient:hover {
+  box-shadow: 0 0 15px rgba(0, 145, 255, 0.6);
+  transform: translateY(-1px);
 }
 
 ::-webkit-scrollbar {
