@@ -91,12 +91,7 @@ export default {
         
         // Custom Aliases
         "surface-highlight": "#112240",
-        "surface-light": "#112240",
-        "primary-dark": "#007ACC",
-        "text-main": "#E2E8F0",
-        "text-muted-custom": "#8892B0",
-        
-        chart: {
+        border: "hsl(var(--border))",
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
           '3': 'hsl(var(--chart-3))',
