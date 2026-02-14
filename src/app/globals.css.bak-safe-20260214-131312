@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Reference Design Palette (Dark Only enforced via .dark logic mostly, but mapping root too) */
+    
+    /* background-dark: #0A192F */
+    --background: 216 65% 11%;
+    
+    /* text-main-dark: #E2E8F0 */
+    --foreground: 214 32% 91%;
+
+    /* surface-dark: #112240 */
+    --card: 218 58% 16%;
+    --card-foreground: 214 32% 91%;
+
+    --popover: 218 58% 16%;
+    --popover-foreground: 214 32% 91%;
+
+    /* primary: #0091FF */
+    --primary: 206 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    /* surface-dark (used as secondary/muted bg sometimes) */
+    --secondary: 218 58% 16%;
+    --secondary-foreground: 214 32% 91%;
+
+    /* text-muted-dark: #8892B0 */
+    --muted: 218 58% 16%;
+    --muted-foreground: 225 23% 61%;
+
+    /* border-dark: #233554 */
+    --border: 218 41% 23%;
+    --input: 218 41% 23%;
+    --ring: 206 100% 50%;
+
+    /* Standard accent logic */
+    --accent: 218 58% 16%;
+    --accent-foreground: 214 32% 91%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --radius: 1rem; /* 16px from config */
+  }
+
+  .dark {
+    /* Identical to root */
+    --background: 216 65% 11%;
+    --foreground: 214 32% 91%;
+    --card: 218 58% 16%;
+    --card-foreground: 214 32% 91%;
+    --popover: 218 58% 16%;
+    --popover-foreground: 214 32% 91%;
+    --primary: 206 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 218 58% 16%;
+    --secondary-foreground: 214 32% 91%;
+    --muted: 218 58% 16%;
+    --muted-foreground: 225 23% 61%;
+    --accent: 218 58% 16%;
+    --accent-foreground: 214 32% 91%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 218 41% 23%;
+    --input: 218 41% 23%;
+    --ring: 206 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  /* Scrollbar Styles from Reference */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #233554; /* border-dark */
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3e506e; 
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(17, 34, 64, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .btn-gradient {
+    background: linear-gradient(90deg, #0091FF 0%, #00C6FF 100%);
+    transition: all 0.3s ease;
+  }
+  .btn-gradient:hover {
+    box-shadow: 0 0 15px rgba(0, 145, 255, 0.6);
+    transform: translateY(-1px);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#0091FF] to-[#00C6FF]; /* Based on btn-gradient since text-gradient was not in ref css but useful */
+  }
+  
+  /* Utilities for reference colors if needed directly */
+  .bg-surface-dark { @apply bg-[#112240]; }
+  .border-border-dark { @apply border-[#233554]; }
+}
