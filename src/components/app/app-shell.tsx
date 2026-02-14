@@ -67,22 +67,26 @@ export default function AppShell(props: {
             'transition-transform duration-200'
           )}
         >
-          <div className="h-20 flex items-center px-6">
-            <Link href="/analyze" className="block w-full">
-               <h1 className="font-display font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
-                 PulseCraft AI
-               </h1>
-            </Link>
+          <div className="h-16 flex items-center justify-between px-5 border-b border-border">
             <button
-              className="md:hidden ml-auto inline-flex items-center justify-center rounded-xl p-2 text-text-muted-light dark:text-text-muted-dark hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="md:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 transition-colors"
               onClick={() => setMobileOpen(false)}
               aria-label="Close"
             >
-              <span className="material-icons-round">close</span>
+              <span className="material-symbols-outlined">close</span>
             </button>
+
+            <div className="flex items-center gap-2 w-full">
+              <Link href="/analyze" className="block w-full py-4">
+                 {/* Logo Placeholder - Text Gradient style */}
+                 <div className="text-xl font-bold tracking-tight text-gradient">
+                   PulseCraft AI
+                 </div>
+              </Link>
+            </div>
           </div>
 
-          <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+          <nav className="px-3 py-4 space-y-1">
             {nav.map((item) => {
               const active = isActive(item.href);
               return (
@@ -90,18 +94,13 @@ export default function AppShell(props: {
                   key={item.href}
                   href={item.href}
                   className={cx(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all duration-200 group',
+                    'flex items-center gap-3 px-3 py-2 rounded-xl border text-sm transition-all duration-200',
                     active
-                      ? 'bg-primary/10 text-primary border-l-4 border-primary'
-                      : 'text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5'
+                      ? 'bg-primary/10 text-primary border-primary/20 shadow-neon'
+                      : 'text-muted-foreground border-transparent hover:bg-white/5 hover:text-foreground'
                   )}
                 >
-                  <span className={cx(
-                    "material-icons-round text-xl transition-transform",
-                    !active && "group-hover:scale-110"
-                  )}>
-                    {item.icon}
-                  </span>
+                  <span className="material-symbols-outlined">{item.icon}</span>
                   <span className={cx(active ? 'font-bold' : 'font-medium')}>{item.label}</span>
                 </Link>
               );

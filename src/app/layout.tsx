@@ -25,8 +25,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD@200..700,0..1,-25..200&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300">
         <ThemeProvider

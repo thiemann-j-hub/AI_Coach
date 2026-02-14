@@ -38,7 +38,7 @@ export default {
         neon: "0 0 10px rgba(0, 145, 255, 0.4)",
       },
       colors: {
-        // Reference Design Colors
+        // Reference Design Colors (PulseCraft)
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -46,7 +46,7 @@ export default {
         },
         "primary-hover": "#007ACC",
         
-        // Explicit Design Tokens from Template
+        // PulseCraft Explicit Colors
         "background-light": "#F3F4F6",
         "background-dark": "#0A192F",
         "surface-light": "#FFFFFF",
@@ -58,7 +58,7 @@ export default {
         "text-muted-light": "#6B7280",
         "text-muted-dark": "#8892B0",
 
-        // Shadcn Mappings
+        "surface-highlight": "#112240",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -91,6 +91,7 @@ export default {
         
         // Custom Aliases
         "surface-highlight": "#112240",
+        "surface-light": "#112240",
         "primary-dark": "#007ACC",
         "text-main": "#E2E8F0",
         "text-muted-custom": "#8892B0",

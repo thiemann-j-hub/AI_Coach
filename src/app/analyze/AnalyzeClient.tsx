@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
-import PdfUpload from '@/components/app/pdf-upload';
+import { parsePdfToText } from '@/lib/pdf/parsePdfToText';
+import { useTheme } from 'next-themes';
+import Link from 'next/link';
 
 type AnalyzeResult = any;
 
@@ -188,6 +190,8 @@ function Card(props: { title: string; subtitle?: string; children: React.ReactNo
 export default function AnalyzeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { theme, setTheme } = useTheme();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const [sessionId, setSessionId] = useState<string>('');
 
@@ -196,6 +200,12 @@ export default function AnalyzeClient() {
 
   const [transcriptText, setTranscriptText] = useState<string>('');
   const [undoTranscript, setUndoTranscript] = useState<string | null>(null);
+
+  // Upload State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadMode, setUploadMode] = useState<'replace' | 'append'>('replace');
+  const [cleanPdf, setCleanPdf] = useState(true);
+  const [uploadBusy, setUploadBusy] = useState(false);
 
   const detectedSpeakers = useMemo(() => {
     const raw = detectSpeakers(transcriptText);
@@ -206,16 +216,6 @@ export default function AnalyzeClient() {
   const [leaderLabel, setLeaderLabel] = useState<string>('');
   const [employeeLabel, setEmployeeLabel] = useState<string>('');
 
-  const leaderFound = useMemo(() => {
-    const l = leaderLabel.trim();
-    return !!l && transcriptText.includes(l);
-  }, [leaderLabel, transcriptText]);
-
-  const employeeFound = useMemo(() => {
-    const e = employeeLabel.trim();
-    return !!e && transcriptText.includes(e);
-  }, [employeeLabel, transcriptText]);
-
   const [privacyMode, setPrivacyMode] = useState(true);
   const [extraTerms, setExtraTerms] = useState('');
   const [autoSave, setAutoSave] = useState(true);
@@ -225,15 +225,13 @@ export default function AnalyzeClient() {
   const [step, setStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // sessionId sync (URL <-> localStorage)
+  // sessionId sync
   useEffect(() => {
     const urlSid = searchParams.get('sessionId');
     if (urlSid && urlSid.trim()) {
       const sid = urlSid.trim();
       setSessionId(sid);
-      try {
-        localStorage.setItem(STORAGE_KEY, sid);
-      } catch {}
+      try { localStorage.setItem(STORAGE_KEY, sid); } catch {}
       return;
     }
 
@@ -248,18 +246,56 @@ export default function AnalyzeClient() {
 
     const sid = newSessionId();
     setSessionId(sid);
-    try {
-      localStorage.setItem(STORAGE_KEY, sid);
-    } catch {}
+    try { localStorage.setItem(STORAGE_KEY, sid); } catch {}
     router.replace(`/analyze?sessionId=${encodeURIComponent(sid)}`);
   }, [searchParams, router]);
 
-  // prefill labels if transcript uses FK/MA
+  // Prefill labels
   useEffect(() => {
     if (!transcriptText) return;
     if (!leaderLabel && transcriptText.includes('FK:')) setLeaderLabel('FK');
     if (!employeeLabel && transcriptText.includes('MA:')) setEmployeeLabel('MA');
   }, [transcriptText, leaderLabel, employeeLabel]);
+
+  // File Upload Logic
+  async function handleFile(file: File) {
+    if (!file) return;
+    setUploadBusy(true);
+    try {
+      // 30 pages, 250k chars max (hardcoded here to match UI hint)
+      const { text } = await parsePdfToText(file, { maxPages: 30, maxChars: 250000 });
+      let out = text;
+      if (cleanPdf) {
+        out = cleanTeamsTranscript(out);
+      }
+      
+      setUndoTranscript(transcriptText);
+      if (uploadMode === 'append' && transcriptText.trim()) {
+        setTranscriptText(`${transcriptText.trim()}\n\n${out.trim()}`);
+      } else {
+        setTranscriptText(out.trim());
+      }
+    } catch (e: any) {
+      setError(e.message || 'Fehler beim PDF-Upload');
+    } finally {
+      setUploadBusy(false);
+    }
+  }
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) handleFile(f);
+    e.target.value = '';
+  }
+
+  function onDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    const f = e.dataTransfer.files?.[0];
+    if (f && f.type === 'application/pdf') {
+      handleFile(f);
+    }
+  }
 
   const privacyPreview = useMemo(() => {
     if (!privacyMode) return '';
@@ -279,59 +315,27 @@ export default function AnalyzeClient() {
     }
   }, [privacyMode, transcriptText, leaderLabel, employeeLabel, detectedSpeakers, extraTerms]);
 
-  const actions = (
-    <button
-      className="hidden sm:inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10"
-      onClick={() => {
-        const sid = sessionId.trim();
-        if (!sid) return;
-        router.push(`/runs-dashboard?sessionId=${encodeURIComponent(sid)}`);
-      }}
-    >
-      <span className="material-symbols-outlined">history</span>
-      Verlauf
-    </button>
-  );
-
+  // Analyze Logic
   async function onAnalyze() {
     setError(null);
-
     const sid = sessionId.trim();
-    if (!sid) {
-      setError('SessionId fehlt.');
-      return;
-    }
-
+    if (!sid) { setError('SessionId fehlt.'); return; }
+    
     const t = transcriptText.trim();
-    if (!t) {
-      setError('Bitte zuerst ein Transkript einfügen oder PDF hochladen.');
-      return;
-    }
+    if (!t) { setError('Bitte Transkript einfügen.'); return; }
 
     const l = leaderLabel.trim();
     let e = employeeLabel.trim();
 
-    // Auto-Ableitung: wenn genau 2 Sprecher und MA noch leer
+    // Auto-detect employee if exactly 2 speakers
     if (!e && l && detectedSpeakers.length === 2) {
       const other = detectedSpeakers.find((s) => s !== l) ?? '';
-      if (other) {
-        e = other;
-        if (employeeLabel.trim() !== other) setEmployeeLabel(other);
-      }
+      if (other) e = other;
     }
 
-    if (!l) {
-      setError('Bitte Führungskraft wählen.');
-      return;
-    }
-    if (!e) {
-      setError('Bitte Mitarbeitende wählen.');
-      return;
-    }
-    if (l === e) {
-      setError('Führungskraft und Mitarbeitende dürfen nicht identisch sein.');
-      return;
-    }
+    if (!l) { setError('Bitte Führungskraft wählen.'); return; }
+    if (!e) { setError('Bitte Mitarbeitende wählen.'); return; }
+    if (l === e) { setError('Sprecher identisch.'); return; }
 
     setLoading(true);
     setStep('Analyse läuft…');
@@ -346,8 +350,6 @@ export default function AnalyzeClient() {
           })
         : transcriptText;
 
-      // Wir bleiben (vorerst) beim Mitarbeitendengespräch, aber senden technisch weiterhin eine stabile conversationType,
-      // damit RAG nicht ins Leere läuft. Später machen wir das sauber als Auswahl.
       const payload = {
         conversationType: 'feedback',
         conversationSubType: 'mitarbeitendengespräch',
@@ -361,397 +363,446 @@ export default function AnalyzeClient() {
 
       const res = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const msg = await readErrorText(res);
-        throw new Error(msg);
-      }
-
+      if (!res.ok) throw new Error(await readErrorText(res));
       const j = await res.json();
-      if (!j?.ok) throw new Error(String(j?.error || 'Analyse fehlgeschlagen.'));
+      if (!j?.ok) throw new Error(j?.error || 'Analyse fehlgeschlagen');
+
       const result: AnalyzeResult = j.result;
 
       if (!autoSave) {
-        setStep('Analyse fertig (nicht gespeichert).');
+        setStep('Fertig (nicht gespeichert).');
         setLoading(false);
         return;
       }
 
       setStep('Speichere Run…');
-
       const savePayload = {
         sessionId: sid,
-        request: {
-          conversationType: payload.conversationType,
-          conversationSubType: payload.conversationSubType,
-          goal: payload.goal ?? null,
-          lang: payload.lang,
-          jurisdiction: payload.jurisdiction,
-          leaderLabel: payload.leaderLabel,
-          employeeLabel: payload.employeeLabel,
-          transcriptText: saveTranscript ? transcriptToSend : null,
-        },
+        request: { ...payload, transcriptText: saveTranscript ? transcriptToSend : null },
         options: { storeTranscript: saveTranscript },
         result,
       };
 
       const saveRes = await fetch('/api/runs/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(savePayload),
       });
 
-      if (!saveRes.ok) {
-        const msg = await readErrorText(saveRes);
-        throw new Error(msg);
-      }
-
+      if (!saveRes.ok) throw new Error(await readErrorText(saveRes));
       const sj = await saveRes.json();
-      if (!sj?.ok || !sj?.runId) throw new Error(String(sj?.error || 'Speichern fehlgeschlagen.'));
-      const runId = String(sj.runId);
+      if (!sj?.ok || !sj?.runId) throw new Error('Speichern fehlgeschlagen');
 
       setStep('Öffne Bericht…');
-      router.push(`/runs/${encodeURIComponent(sid)}/${encodeURIComponent(runId)}`);
-    } catch (e: any) {
-      setError(String(e?.message || e || 'Unbekannter Fehler'));
+      router.push(`/runs/${encodeURIComponent(sid)}/${encodeURIComponent(sj.runId)}`);
+
+    } catch (err: any) {
+      setError(err.message || String(err));
     } finally {
       setLoading(false);
       setStep(null);
     }
   }
 
+  // Header Actions
+  const actions = (
+    <button
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-muted-light dark:text-text-muted-dark text-sm hover:border-primary transition-colors"
+      onClick={() => sessionId && router.push(`/runs-dashboard?sessionId=${encodeURIComponent(sessionId)}`)}
+    >
+      <span className="material-icons-round text-sm">history</span>
+      <span>Verlauf</span>
+    </button>
+  );
+
   return (
-    <AppShell title="Analyse" subtitle={`Session: ${shortId(sessionId)}`} actions={actions}>
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Transcript */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card title="Transkript" subtitle="PDF hochladen oder Text einfügen">
-              <div className="space-y-4">
-                {/* PDF Upload (deine vorhandene Komponente) */}
-                <PdfUpload
-                  onApplyText={(txt, mode) => {
-                    setUndoTranscript(transcriptText);
-                    if (mode === 'append' && transcriptText.trim()) {
-                      setTranscriptText(`${transcriptText.trim()}\n\n${txt.trim()}`);
-                    } else {
-                      setTranscriptText(txt);
-                    }
-                  }}
-                  cleaner={cleanTeamsTranscript}
-                />
+    <div className="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-body antialiased selection:bg-primary selection:text-white transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark">
+        <div className="font-bold text-xl text-primary">PulseCraft AI</div>
+        <button className="text-text-main-light dark:text-text-main-dark" onClick={() => setMobileOpen(!mobileOpen)}>
+          <span className="material-icons-round">menu</span>
+        </button>
+      </div>
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
-                    onClick={() => {
-                      setUndoTranscript(transcriptText);
-                      setTranscriptText(cleanTeamsTranscript(transcriptText));
-                    }}
-                    disabled={!transcriptText.trim() || loading}
-                  >
-                    <span className="material-symbols-outlined">auto_fix_high</span>
-                    Teams bereinigen
-                  </button>
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6">
+            <h1 className="font-display font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+                PulseCraft AI
+            </h1>
+        </div>
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+            <Link href="/analyze" className="flex items-center px-4 py-3 bg-primary/10 text-primary rounded-lg border-l-4 border-primary transition-all duration-200 group">
+                <span className="material-icons-round mr-3">analytics</span>
+                <span className="font-medium">Analyse</span>
+            </Link>
+            <Link href="/runs-dashboard" className="flex items-center px-4 py-3 text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200 group">
+                <span className="material-icons-round mr-3 group-hover:scale-110 transition-transform">history</span>
+                <span className="font-medium">Verlauf</span>
+            </Link>
+            <Link href="/design-preview" className="flex items-center px-4 py-3 text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200 group">
+                <span className="material-icons-round mr-3 group-hover:scale-110 transition-transform">grid_view</span>
+                <span className="font-medium">Design-Preview</span>
+            </Link>
+        </nav>
+        <div className="p-4 mt-auto">
+            <button className="w-full btn-gradient text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-glow" onClick={() => window.location.reload()}>
+                <span className="material-icons-round text-xl">add_circle_outline</span>
+                Neue Analyse
+            </button>
+        </div>
+        <div className="px-4 pb-4">
+            <button className="flex items-center justify-center w-full py-2 text-xs text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded transition-colors" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                <span className="material-icons-round text-base mr-2">brightness_6</span> Toggle Theme
+            </button>
+        </div>
+      </aside>
 
-                  <button
-                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
-                    onClick={() => {
-                      const l = leaderLabel.trim();
-                      const e = employeeLabel.trim();
-                      if (!l || !e) return;
-                      setUndoTranscript(transcriptText);
-                      setTranscriptText(
-                        sanitizeTranscript(transcriptText, {
-                          leaderLabel: l,
-                          employeeLabel: e,
-                          detectedSpeakers,
-                          extraTerms: parseExtraTerms(extraTerms),
-                        })
-                      );
-                    }}
-                    disabled={!transcriptText.trim() || !leaderLabel.trim() || !employeeLabel.trim() || loading}
-                  >
-                    <span className="material-symbols-outlined">shield_person</span>
-                    Anonymisieren
-                  </button>
-
-                  <button
-                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
-                    onClick={() => {
-                      if (!undoTranscript) return;
-                      const cur = transcriptText;
-                      setTranscriptText(undoTranscript);
-                      setUndoTranscript(cur);
-                    }}
-                    disabled={!undoTranscript || loading}
-                  >
-                    <span className="material-symbols-outlined">undo</span>
-                    Undo
-                  </button>
-
-                  <button
-                    className="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-50"
-                    onClick={() => {
-                      setUndoTranscript(transcriptText);
-                      setTranscriptText('');
-                    }}
-                    disabled={!transcriptText.trim() || loading}
-                  >
-                    <span className="material-symbols-outlined">delete</span>
-                    Clear
-                  </button>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header className="h-16 flex items-center justify-between px-6 bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark flex-shrink-0">
+            <div className="flex flex-col">
+                <h2 className="text-lg font-bold text-text-main-light dark:text-text-main-dark leading-tight">Analyse</h2>
+                <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-mono">Session: {shortId(sessionId)}</span>
+            </div>
+            <div className="flex items-center space-x-4">
+                {actions}
+                <button className="relative p-2 text-text-muted-light dark:text-text-muted-dark hover:text-primary transition-colors">
+                    <span className="material-icons-round">notifications</span>
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background-light dark:border-background-dark"></span>
+                </button>
+                <div className="flex items-center pl-4 border-l border-border-light dark:border-border-dark">
+                    <div className="text-right mr-3 hidden sm:block">
+                        <div className="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Jürgen Thiemann</div>
+                        <div className="text-xs text-text-muted-light dark:text-text-muted-dark cursor-pointer hover:text-primary">Logout</div>
+                    </div>
+                    <div className="relative">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
+                            J
+                        </div>
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-light dark:border-background-dark rounded-full"></div>
+                    </div>
                 </div>
+            </div>
+        </header>
 
-                {/* Textarea */}
+        <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-8xl mx-auto h-full">
+        {/* Left Column */}
+        <div className="xl:col-span-2 flex flex-col gap-6">
+          <div className="bg-surface-light dark:bg-surface-dark rounded-DEFAULT shadow-card-light dark:shadow-card-dark p-6 border border-border-light dark:border-border-dark h-full flex flex-col">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold text-text-main-light dark:text-text-main-dark mb-1">Transkript</h3>
+              <p className="text-sm text-text-muted-light dark:text-text-muted-dark">PDF hochladen oder Text einfügen</p>
+            </div>
+            
+            {/* PDF Import Box */}
+            <div className="bg-background-light dark:bg-[#0d1f38] rounded-xl p-5 mb-5 border border-border-light dark:border-border-dark">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
-                  <div className="text-xs text-slate-400 mb-2">Transkript</div>
-                  <textarea
-                    className="w-full min-h-[340px] rounded-2xl bg-[#0B1221] border border-[#1F2937] p-4 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/20"
-                    placeholder="Hier steht nach dem PDF-Upload der Text… oder du fügst ihn manuell ein."
-                    value={transcriptText}
-                    onChange={(e) => setTranscriptText(e.target.value)}
-                    disabled={loading}
+                  <h4 className="font-bold text-text-main-light dark:text-text-main-dark">PDF importieren</h4>
+                  <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">max. 30 Seiten · max. 250k Zeichen</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <select 
+                      className="appearance-none bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark text-sm rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
+                      value={uploadMode}
+                      onChange={(e) => setUploadMode(e.target.value as any)}
+                      disabled={uploadBusy || loading}
+                    >
+                      <option value="replace">Ersetzen</option>
+                      <option value="append">Anhängen</option>
+                    </select>
+                    <span className="material-icons-round absolute right-2 top-2.5 text-text-muted-light dark:text-text-muted-dark text-sm pointer-events-none">expand_more</span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input 
+                      type="checkbox" 
+                      className="form-checkbox text-primary rounded border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:ring-offset-background-dark focus:ring-primary h-4 w-4" 
+                      checked={cleanPdf}
+                      onChange={(e) => setCleanPdf(e.target.checked)}
+                      disabled={uploadBusy || loading}
+                    />
+                    <span className="text-xs font-medium text-text-main-light dark:text-text-main-dark">Teams bereinigen</span>
+                  </label>
+                  <button 
+                    className="bg-transparent border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-xs font-medium py-2 px-4 rounded-lg"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadBusy || loading}
+                  >
+                    {uploadBusy ? 'Lädt...' : 'PDF hochladen'}
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="application/pdf" 
+                    onChange={onFileChange} 
                   />
                 </div>
               </div>
-            </Card>
-          </div>
+              <div 
+                className="border-2 border-dashed border-border-light dark:border-[#233554] bg-surface-light/50 dark:bg-white/5 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all hover:border-primary/50 group cursor-pointer"
+                onDrop={onDrop}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <span className="material-icons-round text-3xl text-text-muted-light dark:text-text-muted-dark mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
+                <span className="font-semibold text-text-main-light dark:text-text-main-dark">Drag & Drop</span>
+                <span className="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">Ziehe eine Teams-PDF hier rein oder nutze den Button.</span>
+              </div>
+            </div>
 
-          {/* Right: Settings */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card title="Einstellungen">
-              <div className="space-y-4">
-                <div>
-                  <div className="text-xs text-slate-400 mb-2">Sprache</div>
-                  <select
-                    className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 outline-none focus:border-sky-400/50"
+            {/* Toolbar */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <button 
+                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors"
+                onClick={() => {
+                  setUndoTranscript(transcriptText);
+                  setTranscriptText(cleanTeamsTranscript(transcriptText));
+                }}
+                disabled={!transcriptText.trim() || loading}
+              >
+                <span className="material-symbols-rounded text-lg text-primary">auto_fix_high</span>
+                Teams bereinigen
+              </button>
+              <button 
+                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors"
+                onClick={() => {
+                   const l = leaderLabel.trim();
+                   const e = employeeLabel.trim();
+                   if (!l || !e) return;
+                   setUndoTranscript(transcriptText);
+                   setTranscriptText(sanitizeTranscript(transcriptText, {
+                     leaderLabel: l, 
+                     employeeLabel: e,
+                     detectedSpeakers, 
+                     extraTerms: parseExtraTerms(extraTerms)
+                   }));
+                }}
+                disabled={!transcriptText.trim() || !leaderLabel || !employeeLabel || loading}
+              >
+                <span className="material-symbols-rounded text-lg">security</span>
+                Anonymisieren
+              </button>
+              <button 
+                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors ml-auto"
+                onClick={() => {
+                  if (!undoTranscript) return;
+                  const cur = transcriptText;
+                  setTranscriptText(undoTranscript);
+                  setUndoTranscript(cur);
+                }}
+                disabled={!undoTranscript || loading}
+              >
+                <span className="material-symbols-rounded text-lg">undo</span>
+                Undo
+              </button>
+              <button 
+                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors hover:text-red-400"
+                onClick={() => {
+                  setUndoTranscript(transcriptText);
+                  setTranscriptText('');
+                }}
+                disabled={!transcriptText || loading}
+              >
+                <span className="material-symbols-rounded text-lg">delete</span>
+                Clear
+              </button>
+            </div>
+
+            {/* Text Area */}
+            <div className="flex-1 relative">
+              <textarea 
+                className="w-full h-full bg-background-light dark:bg-[#0A192F] text-text-main-light dark:text-text-main-dark placeholder-text-muted-light dark:placeholder-text-muted-dark/50 border border-border-light dark:border-border-dark rounded-xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none min-h-[300px]" 
+                placeholder="Hier steht nach dem PDF-Upload der Text... oder du fügst ihn manuell ein."
+                value={transcriptText}
+                onChange={(e) => setTranscriptText(e.target.value)}
+                disabled={loading}
+              ></textarea>
+              <div className="absolute bottom-2 right-2 text-text-muted-light dark:text-text-muted-dark opacity-50">
+                <span className="material-icons-round text-sm transform rotate-45">open_in_full</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Settings */}
+        <div className="flex flex-col gap-6">
+          <div className="bg-surface-light dark:bg-surface-dark rounded-DEFAULT shadow-card-light dark:shadow-card-dark p-6 border border-border-light dark:border-border-dark">
+            <h3 className="text-lg font-bold text-text-main-light dark:text-text-main-dark mb-5">Einstellungen</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Sprache</label>
+                <div className="relative">
+                  <select 
+                    className="w-full appearance-none bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={lang}
                     onChange={(e) => setLang(e.target.value as any)}
                     disabled={loading}
                   >
                     <option value="de">Deutsch</option>
-                    <option value="en">Englisch</option>
+                    <option value="en">English</option>
                   </select>
-                  <div className="text-xs text-slate-500 mt-2">
-                    (Deutsch/Englisch ist vorbereitet – Logik kann später erweitert werden.)
-                  </div>
+                  <span className="material-icons-round absolute right-3 top-3.5 text-text-muted-light dark:text-text-muted-dark pointer-events-none">expand_more</span>
                 </div>
-
-                <div>
-                  <div className="text-xs text-slate-400 mb-2">Ziel (optional)</div>
-                  <input
-                    className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/20"
-                    placeholder="z.B. klar und fair, ohne Eskalation"
-                    value={goal}
-                    onChange={(e) => setGoal(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="text-xs text-slate-400 mb-1">Gesprächsart</div>
-                  <div className="text-sm font-medium text-white">Mitarbeitendengespräch</div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    (Conversation-Type ist aktuell technisch fix, damit RAG stabil bleibt.)
-                  </div>
-                </div>
+                <p className="text-[11px] text-text-muted-light dark:text-text-muted-dark mt-2 leading-tight">
+                  (Deutsch/Englisch ist vorbereitet – Logik kann später erweitert werden.)
+                </p>
               </div>
-            </Card>
+              <div>
+                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Ziel (optional)</label>
+                <input 
+                  type="text" 
+                  className="w-full bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 placeholder-text-muted-light dark:placeholder-text-muted-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" 
+                  placeholder="z.B. klar und fair, ohne Eskalation" 
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+              <div className="p-4 rounded-xl border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-[#0d1f38]/50">
+                <span className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark mb-1">Gesprächsart</span>
+                <div className="font-bold text-text-main-light dark:text-text-main-dark mb-1">Mitarbeitendengespräch</div>
+                <p className="text-xs text-text-muted-light dark:text-text-muted-dark leading-snug">
+                  (Conversation-Type ist aktuell technisch fix, damit RAG stabil bleibt.)
+                </p>
+              </div>
+            </div>
+          </div>
 
-            <Card title="Rollen im Gespräch" subtitle="Wähle die Führungskraft (Mitarbeitende wird automatisch gesetzt)">
-              <div className="space-y-4">
-                <div>
-                  <div className="text-xs text-slate-400 mb-2">Führungskraft (Ich)</div>
+          <div className="bg-surface-light dark:bg-surface-dark rounded-DEFAULT shadow-card-light dark:shadow-card-dark p-6 border border-border-light dark:border-border-dark flex-1">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-lg font-bold text-text-main-light dark:text-text-main-dark">Rollen im Gespräch</h3>
+            </div>
+            <p className="text-sm text-text-muted-light dark:text-text-muted-dark mb-5 leading-relaxed">
+              Wähle die Führungskraft (Mitarbeitende wird automatisch gesetzt)
+            </p>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Führungskraft (Ich)</label>
+                <div className="relative">
+                  <select 
+                    className="w-full appearance-none bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    value={leaderLabel}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setLeaderLabel(v);
+                      if (detectedSpeakers.length === 2) {
+                        const other = detectedSpeakers.find(s => s !== v);
+                        if (other) setEmployeeLabel(other);
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    <option value="">{detectedSpeakers.length > 0 ? 'Bitte wählen...' : 'Transkript einfügen...'}</option>
+                    {detectedSpeakers.map(sp => (
+                      <option key={sp} value={sp}>{sp} (Ich)</option>
+                    ))}
+                  </select>
+                  <span className="material-icons-round absolute right-3 top-3.5 text-text-muted-light dark:text-text-muted-dark pointer-events-none">expand_more</span>
+                </div>
+                <p className="text-[11px] text-text-muted-light dark:text-text-muted-dark mt-2">
+                  Tipp: Nach Upload/Einfügen werden Sprecher automatisch erkannt.
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Mitarbeitende</label>
+                {detectedSpeakers.length <= 2 ? (
+                   <div className="w-full bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-muted-light dark:text-text-muted-dark rounded-lg px-4 py-3 opacity-70">
+                     {employeeLabel || 'wähle zuerst die Führungskraft...'}
+                   </div>
+                ) : (
                   <div className="relative">
-                    <select
-                      className="w-full appearance-none rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 pr-10 text-sm text-slate-100 outline-none focus:border-sky-400/50"
-                      value={leaderLabel}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setLeaderLabel(v);
-
-                        // Wenn genau 2 Sprecher erkannt: Mitarbeitende automatisch setzen
-                        if (detectedSpeakers.length === 2) {
-                          const other = detectedSpeakers.find((s) => s !== v) ?? '';
-                          setEmployeeLabel(other || '');
-                        } else {
-                          // Bei >2 Sprechern: falls alte Auswahl unlogisch ist, zurücksetzen
-                          if (employeeLabel.trim() === v) setEmployeeLabel('');
-                        }
-                      }}
-                      disabled={loading || detectedSpeakers.length === 0}
+                    <select 
+                      className="w-full appearance-none bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                      value={employeeLabel}
+                      onChange={(e) => setEmployeeLabel(e.target.value)}
+                      disabled={loading || !leaderLabel.trim()}
                     >
-                      <option value="">
-                        {detectedSpeakers.length === 0 ? 'Transkript einfügen…' : 'Bitte auswählen…'}
-                      </option>
-                      {detectedSpeakers.map((sp) => (
-                        <option key={sp} value={sp}>
-                          {sp} (Ich)
-                        </option>
+                      <option value="">Bitte wählen...</option>
+                      {detectedSpeakers.filter(s => s !== leaderLabel).map(sp => (
+                        <option key={sp} value={sp}>{sp}</option>
                       ))}
                     </select>
-                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                      expand_more
-                    </span>
+                    <span className="material-icons-round absolute right-3 top-3.5 text-text-muted-light dark:text-text-muted-dark pointer-events-none">expand_more</span>
                   </div>
-
-                  <div className="text-xs text-slate-500 mt-2">
-                    Tipp: Nach Upload/Einfügen werden Sprecher automatisch erkannt.
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs text-slate-400 mb-2">Mitarbeitende</div>
-
-                  {detectedSpeakers.length <= 2 ? (
-                    <input
-                      className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none"
-                      value={
-                        employeeLabel ||
-                        (leaderLabel.trim() && detectedSpeakers.length === 2
-                          ? (detectedSpeakers.find((s) => s !== leaderLabel.trim()) ?? '')
-                          : '')
-                      }
-                      readOnly
-                      placeholder={leaderLabel.trim() ? 'wird automatisch gesetzt…' : 'wähle zuerst die Führungskraft…'}
-                    />
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <select
-                          className="w-full appearance-none rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 pr-10 text-sm text-slate-100 outline-none focus:border-sky-400/50"
-                          value={employeeLabel}
-                          onChange={(e) => setEmployeeLabel(e.target.value)}
-                          disabled={loading || !leaderLabel.trim()}
-                        >
-                          <option value="">
-                            {leaderLabel.trim() ? 'Bitte auswählen…' : 'wähle zuerst die Führungskraft…'}
-                          </option>
-                          {detectedSpeakers
-                            .filter((sp) => sp !== leaderLabel.trim())
-                            .map((sp) => (
-                              <option key={sp} value={sp}>
-                                {sp}
-                              </option>
-                            ))}
-                        </select>
-                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                          expand_more
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-slate-500">
-                        Mehr als 2 Sprecher erkannt – bitte Mitarbeitende explizit wählen.
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            </Card>
-
-            <Card title="Datenschutz">
-              <div className="space-y-4">
-                <label className="flex items-start gap-3 cursor-pointer select-none">
+            </div>
+            
+            <div className="mt-8 border-t border-border-light dark:border-border-dark pt-6">
+              <h4 className="text-sm font-bold text-text-main-light dark:text-text-main-dark mb-4">Datenschutz & Start</h4>
+              
+               <label className="flex items-start gap-3 cursor-pointer select-none mb-4">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 accent-sky-400"
+                    className="mt-1 form-checkbox text-primary rounded border-border-light dark:border-border-dark bg-background-light dark:bg-[#0d1f38]"
                     checked={privacyMode}
                     onChange={(e) => setPrivacyMode(e.target.checked)}
                     disabled={loading}
                   />
                   <div>
-                    <div className="text-sm font-medium text-white">Vor Analyse anonymisieren (empfohlen)</div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-sm font-medium text-text-main-light dark:text-text-main-dark">Vor Analyse anonymisieren (empfohlen)</div>
+                    <div className="text-xs text-text-muted-light dark:text-text-muted-dark">
                       Passiert im Browser, bevor etwas an die API geht.
                     </div>
                   </div>
                 </label>
+                
+                {privacyMode && (
+                   <div className="mb-4">
+                     <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Zusätzliche Begriffe (kommagetrennt)</label>
+                      <input 
+                        type="text" 
+                        className="w-full bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" 
+                        placeholder="z.B. Firma XY, Projekt Z" 
+                        value={extraTerms}
+                        onChange={(e) => setExtraTerms(e.target.value)}
+                        disabled={loading}
+                      />
+                   </div>
+                )}
 
-                <div>
-                  <div className="text-xs text-slate-400 mb-2">Zusätzliche Begriffe anonymisieren (kommagetrennt)</div>
-                  <input
-                    className="w-full rounded-2xl bg-[#0B1221] border border-[#1F2937] px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400/50"
-                    placeholder="z.B. Kundenportal, ACME GmbH, Kunde Schmidt"
-                    value={extraTerms}
-                    onChange={(e) => setExtraTerms(e.target.value)}
-                    disabled={!privacyMode || loading}
-                  />
-                </div>
+               {error && (
+                 <div className="p-3 mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm">
+                   {error}
+                 </div>
+               )}
 
-                {privacyMode && privacyPreview ? (
-                  <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-                    <div className="text-xs text-slate-400 mb-2">Preview (erste 400 Zeichen, anonymisiert)</div>
-                    <div className="text-xs text-slate-200 whitespace-pre-wrap">{privacyPreview}</div>
-                  </div>
-                ) : null}
-
-                <div className="text-xs text-slate-500">
-                  Hinweis: Wenn „Transkript speichern“ aktiv ist, speichern wir genau das, was an die Analyse gesendet wird
-                  (bei Datenschutz also anonymisiert).
-                </div>
-              </div>
-            </Card>
-
-            <Card title="Speichern & Ablauf">
-              <div className="space-y-3">
-                <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
-                  <span className="text-sm text-slate-200">Auto Save nach Analyse</span>
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-sky-400"
-                    checked={autoSave}
-                    onChange={(e) => setAutoSave(e.target.checked)}
-                    disabled={loading}
-                  />
-                </label>
-
-                <label className="flex items-center justify-between gap-3 cursor-pointer select-none">
-                  <span className="text-sm text-slate-200">Transkript speichern</span>
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-sky-400"
-                    checked={saveTranscript}
-                    onChange={(e) => setSaveTranscript(e.target.checked)}
-                    disabled={loading}
-                  />
-                </label>
-              </div>
-            </Card>
-
-            {error ? (
-              <div className="bg-[#111826] border border-red-500/30 rounded-2xl p-5 text-red-200">
-                <div className="font-semibold mb-1">Fehler</div>
-                <div className="text-sm whitespace-pre-wrap">{error}</div>
-              </div>
-            ) : null}
-
-            <button
-              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-400 hover:bg-sky-300 text-black px-4 py-3 text-sm font-semibold shadow-lg shadow-sky-400/20 disabled:opacity-50"
-              type="button"
-              onClick={onAnalyze}
-              disabled={
-                loading ||
-                !sessionId.trim() ||
-                !transcriptText.trim() ||
-                !leaderLabel.trim() ||
-                (!employeeLabel.trim() && !(leaderLabel.trim() && detectedSpeakers.length === 2))
-              }
-            >
-              {loading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">analytics</span>}
-              Analyse starten
-            </button>
-
-            {step ? (
-              <div className="text-xs text-slate-400 text-center">{step}</div>
-            ) : null}
+               <button 
+                 className="w-full btn-gradient text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                 onClick={onAnalyze}
+                 disabled={loading || !transcriptText || !leaderLabel || !employeeLabel}
+               >
+                 {loading ? (
+                    <span className="material-icons-round animate-spin">refresh</span>
+                 ) : (
+                    <span className="material-icons-round">analytics</span>
+                 )}
+                 {loading ? 'Analyse läuft...' : 'Analyse starten'}
+               </button>
+               
+               {step && (
+                 <div className="mt-2 text-center text-xs text-text-muted-light dark:text-text-muted-dark">{step}</div>
+               )}
+            </div>
           </div>
         </div>
-      </div>
-    </AppShell>
+          </div>
+        </div>
+      </main>
+
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)}></div>
+      )}
+    </div>
   );
 }
