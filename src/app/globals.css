@@ -1,113 +1,78 @@
-/* PULSECRAFT_THEME_V1 */
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --radius: 1rem;
-
-    /* LIGHT (PulseCraft) */
-    --background: 220 14.3% 95.9%;        /* #F3F4F6 */
-    --foreground: 215 27.9% 16.9%;        /* #1F2937 */
-
-    --card: 0 0% 100%;                  /* #FFFFFF */
-    --card-foreground: 215 27.9% 16.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 27.9% 16.9%;
-
-    --primary: 205.9 100% 50%;            /* #0091FF */
+    /* PulseCraft AI Theme */
+    --background: 216 65% 11%;
+    --foreground: 214 32% 91%;
+    --card: 218 58% 16%;
+    --card-foreground: 214 32% 91%;
+    --popover: 218 58% 16%;
+    --popover-foreground: 214 32% 91%;
+    --primary: 206 100% 50%;
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 13.0% 91.0%;         /* #E5E7EB */
-    --secondary-foreground: 215 27.9% 16.9%;
-
-    --muted: 220 13.0% 91.0%;
-    --muted-foreground: 220 8.9% 46.1%;   /* #6B7280 */
-
-    --accent: 220 13.0% 91.0%;
-    --accent-foreground: 215 27.9% 16.9%;
-
+    --secondary: 217 47% 20%;
+    --secondary-foreground: 214 32% 91%;
+    --muted: 217 47% 20%;
+    --muted-foreground: 225 23% 61%;
+    --accent: 271 91% 65%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 13.0% 91.0%;            /* #E5E7EB */
-    --input: 220 13.0% 91.0%;
-    --ring: 205.9 100% 50%;             /* #0091FF */
-
-    color-scheme: light;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 47% 20%;
+    --input: 217 47% 20%;
+    --ring: 206 100% 50%;
+    --radius: 1rem;
   }
 
   .dark {
-    /* DARK (PulseCraft) */
-    --background: 215.7 64.9% 11.2%;      /* #0A192F */
-    --foreground: 214.3 31.8% 91.4%;     /* #E2E8F0 */
-
-    --card: 218.3 58.0% 15.9%;           /* #112240 */
-    --card-foreground: 214.3 31.8% 91.4%;
-
-    --popover: 218.3 58.0% 15.9%;
-    --popover-foreground: 214.3 31.8% 91.4%;
-
-    --primary: 205.9 100% 50%;           /* #0091FF */
+    --background: 216 65% 11%;
+    --foreground: 214 32% 91%;
+    --card: 218 58% 16%;
+    --card-foreground: 214 32% 91%;
+    --popover: 218 58% 16%;
+    --popover-foreground: 214 32% 91%;
+    --primary: 206 100% 50%;
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 218.0 41.2% 23.3%;      /* #233554 */
-    --secondary-foreground: 214.3 31.8% 91.4%;
-
-    --muted: 218.0 41.2% 23.3%;
-    --muted-foreground: 225 20.2% 61.2%;  * #8892B0 */
-
-    --accent: 218.0 41.2% 23.3%;
-    --accent-foreground: 214.3 31.8% 91.4%;
-
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 218.0 41.2% 23.3%;          /* #233554 */
-    --input: 218.0 41.2% 23.3%;
-    --ring: 205.9 100% 50%;
-
-    color-scheme: dark;
+    --secondary: 217 47% 20%;
+    --secondary-foreground: 214 32% 91%;
+    --muted: 217 47% 20%;
+    --muted-foreground: 225 23% 61%;
+    --accent: 271 91% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 47% 20%;
+    --input: 217 47% 20%;
+    --ring: 206 100% 50%;
   }
-
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground font-sans antialiased; }
 }
 
-/* Scrollbar: Light default, Dark override */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-}:-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.dark ::-webkit-scrollbar-thumb { background: #233554; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-.dark ::-webkit-scrollbar-thumb:hover { background: #3e506e; }
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
 @layer utilities {
-  /* Glass Panel: Light default, Dark override */
   .glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    @apply bg-[#112240]/80 backdrop-blur-xl border border-white/5 rounded-2xl shadow-lg p-6;
   }
-  .dark .glass-panel {
-    background: rgba(17, 34, 64, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .btn-gradient {
-    background: linear-gradient(90deg, #0091FF 0%, #00C6FF 100%);
-    transition: all 0.3s ease;
-  }
-  .btn-gradient:hover {
-    box-shadow: 0 0 15px rgba(0, 145, 255, 0.6);
-    transform: translateY(-1px);
-  }
-
+  
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#0091FF] to-[#00C6FF];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  }
+
+  .shadow-neon {
+    box-shadow: 0 0 10px rgba(0, 145, 255, 0.4);
+  }
+  
+  .shadow-primary-glow {
+    box-shadow: 0 0 20px rgba(0, 145, 255, 0.4);
   }
 }
-
-/* END PULSECRAFT_THEME_V1 */
