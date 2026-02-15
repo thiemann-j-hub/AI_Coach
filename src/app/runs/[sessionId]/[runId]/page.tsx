@@ -2,9 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 
 import { getAdminDb } from "@/lib/firebase-admin";
-import Link from "next/link";
-import AppShell from "@/components/app/app-shell";
-import ReportDashboard from "@/components/app/report-dashboard";
+import RunDetailClient from "./RunDetailClient";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,23 +19,6 @@ function toIso(v: any): string | null {
   }
   if (v instanceof Date) return v.toISOString();
   return null;
-}
-
-function formatDe(iso: string | null): string | null {
-  if (!iso) return null;
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString("de-DE", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export default async function RunDetailPage({
@@ -62,7 +43,6 @@ export default async function RunDetailPage({
 
   const data: any = snap.data() ?? {};
   const createdAtIso = toIso(data?.createdAt);
-  const createdLabel = formatDe(createdAtIso);
 
   // ✅ WICHTIG: hier liegt der Report drin (nicht in run.result)
   const analysis: any = (data?.analysisJson ?? data?.result ?? data?.analysis ?? {}) as any;
@@ -111,31 +91,12 @@ export default async function RunDetailPage({
               : null,
   };
 
-  const metaChips: { label: string; value: string }[] = [];
-  if (data?.conversationType) metaChips.push({ label: "Typ", value: String(data.conversationType) });
-  if (data?.conversationSubType) metaChips.push({ label: "Sub", value: String(data.conversationSubType) });
-  if (data?.goal) metaChips.push({ label: "Ziel", value: String(data.goal) });
-
   return (
-    <AppShell
-      title="Meeting Analyse"
-      subtitle={createdLabel ? `Bericht · ${createdLabel}` : undefined}
-    >
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between gap-3">
-            <Link
-              href={`/runs-dashboard/${encodeURIComponent(sessionId)}`}
-              className="text-sm text-sky-300 hover:text-sky-200"
-            >
-              ← Zurück zum Verlauf
-            </Link>
-            <div className="text-xs text-slate-400">Session: {sessionId}</div>
-          </div>
-
-          <ReportDashboard result={resultForDashboard} metaChips={metaChips} />
-        </div>
-      </div>
-    </AppShell>
+    <RunDetailClient
+      sessionId={sessionId}
+      runId={runId}
+      resultForDashboard={resultForDashboard}
+      createdAtIso={createdAtIso}
+    />
   );
 }
