@@ -1,5 +1,6 @@
 'use client';
 
+// Force re-compile
 import React, { useMemo, useState } from 'react';
 
 type AnyObj = Record<string, any>;
@@ -507,208 +508,229 @@ export default function ReportDashboard({
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState(false);
 
+  const competencies = Array.isArray(result?.competency_ratings)
+    ? result.competency_ratings
+    : Array.isArray(result?.competencies)
+      ? result.competencies
+      : [];
+
   return (
-    <div className="space-y-6">
-      {/* HERO */}
-      <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <ScoreRing value={pct} />
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3 justify-center md:justify-start">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
-              <span
-                className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide inline-block w-fit mx-auto md:mx-0 ${badge.cls}`}
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+      {/* LEFT MAIN COLUMN */}
+      <div className="xl:col-span-8 space-y-6">
+        {/* HERO */}
+        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <ScoreRing value={pct} />
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3 justify-center md:justify-start">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide inline-block w-fit mx-auto md:mx-0 ${badge.cls}`}
+                >
+                  {badge.label}
+                </span>
+              </div>
+
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm md:text-base max-w-3xl">
+                {summary || 'Füge ein Transkript ein und starte die Analyse.'}
+              </p>
+
+              {chips.length ? (
+                <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
+                  {chips.map((c, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
+                    >
+                      <span className="font-medium">{c.label}:</span> {c.value}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        {/* 3 INSIGHTS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <InsightCard tone="success" title="Stärken" items={strengths} />
+          <InsightCard tone="warning" title="Potenzial" items={improvements} />
+
+          <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 bg-red-500 h-full" />
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+                  <span className="material-symbols-outlined text-xl leading-none">warning</span>
+                </div>
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white">Risiken</h3>
+              </div>
+
+              {riskFlags.length === 0 ? (
+                <p className="text-sm text-muted-foreground">—</p>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{riskFlags[0]}</p>
+
+                  {riskFlags.length > 1 && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                      <span className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide">
+                        Fallstricke
+                      </span>
+                      <ul className="mt-2 space-y-2">
+                        {riskFlags.slice(1, 4).map((x, i) => (
+                          <li key={i} className="text-xs text-gray-500 dark:text-gray-400">
+                            {x}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* PRACTICE + REWRITES */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-8">
+          <div className="lg:col-span-1 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl border border-blue-100 dark:border-slate-700 shadow-sm flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <div
+                className="p-2 bg-[hsl(var(--primary))] rounded-lg text-white shadow-md"
+                style={{ boxShadow: '0 10px 24px rgba(56,189,248,0.20)' }}
               >
-                {badge.label}
-              </span>
+                <span className="text-sm font-bold">7</span>
+              </div>
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white">7‑Tage‑Praxis</h3>
             </div>
 
-            <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm md:text-base max-w-3xl">
-              {summary || 'Füge ein Transkript ein und starte die Analyse.'}
-            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-6 flex-1 leading-relaxed">{practice || '—'}</p>
 
-            {chips.length ? (
-              <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                {chips.map((c, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
-                  >
-                    <span className="font-medium">{c.label}:</span> {c.value}
-                  </span>
-                ))}
+            <button
+              type="button"
+              className="w-full py-3 bg-white dark:bg-slate-800 text-[hsl(var(--primary))] text-sm font-semibold rounded-xl shadow-sm border border-blue-100 dark:border-slate-600 hover:shadow-md transition-all flex items-center justify-center gap-2"
+              onClick={() => {}}
+            >
+              <span className="text-xs">＋</span>
+              (später) Reminder
+            </button>
+          </div>
+
+          <div className="lg:col-span-2 bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30 flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white">Vorgeschlagene Umformulierungen</h3>
+                <p className="text-xs text-gray-500 mt-1">KI‑generierte Alternativen für bessere Wirkung</p>
+              </div>
+              <span className="text-gray-400 text-sm">✦</span>
+            </div>
+
+            <div className="divide-y divide-gray-100 dark:divide-gray-800 flex-1">
+              {rewrites.length === 0 ? (
+                <div className="p-5 text-sm text-muted-foreground">—</div>
+              ) : (
+                rewrites.slice(0, 6).map((r, idx) => (
+                  <div key={idx} className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition group">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative pl-3 border-l-2 border-red-500">
+                        <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide block mb-1">
+                          Original
+                        </span>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">{r.original ? `“${r.original}”` : '—'}</p>
+                      </div>
+
+                      <div className="relative pl-3 border-l-2 border-emerald-500">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide block mb-1">
+                            Besser
+                          </span>
+                          <button
+                            type="button"
+                            className="opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-[hsl(var(--primary))]"
+                            title="Kopieren"
+                            onClick={async () => {
+                              await copyText(r.better || '');
+                              setCopiedIdx(idx);
+                              setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 900);
+                            }}
+                          >
+                            <span className="text-xs">{copiedIdx === idx ? '✓' : '⧉'}</span>
+                          </button>
+                        </div>
+                        <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">{r.better || '—'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* TRANSCRIPT */}
+        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-lg text-gray-900 dark:text-white">Transkript</h3>
+              <p className="text-xs text-gray-500 mt-1">
+                {hasTranscript
+                  ? 'Gespeichert (genau die Version, die analysiert wurde – bei Datenschutz ggf. anonymisiert).'
+                  : 'Nicht gespeichert (Toggle „Transkript speichern“ war aus).'}
+              </p>
+            </div>
+
+            {hasTranscript ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
+                  onClick={() => copyText(transcript)}
+                  title="Transkript kopieren"
+                >
+                  ⧉ Kopieren
+                </button>
+
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
+                  onClick={() => setShowTranscript((v) => !v)}
+                >
+                  {showTranscript ? 'Verbergen' : 'Anzeigen'}
+                </button>
               </div>
             ) : null}
           </div>
-        </div>
-      </div>
-
-      {/* 3 INSIGHTS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <InsightCard tone="success" title="Stärken" items={strengths} />
-        <InsightCard tone="warning" title="Potenzial" items={improvements} />
-
-        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 bg-red-500 h-full" />
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-                <span className="material-symbols-outlined text-xl leading-none">warning</span>
-              </div>
-              <h3 className="font-bold text-lg text-gray-900 dark:text-white">Risiken</h3>
-            </div>
-
-            {riskFlags.length === 0 ? (
-              <p className="text-sm text-muted-foreground">—</p>
-            ) : (
-              <>
-                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{riskFlags[0]}</p>
-
-                {riskFlags.length > 1 && (
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <span className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide">
-                      Fallstricke
-                    </span>
-                    <ul className="mt-2 space-y-2">
-                      {riskFlags.slice(1, 4).map((x, i) => (
-                        <li key={i} className="text-xs text-gray-500 dark:text-gray-400">
-                          {x}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* PRACTICE + REWRITES */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-8">
-        <div className="lg:col-span-1 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-2xl border border-blue-100 dark:border-slate-700 shadow-sm flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className="p-2 bg-[hsl(var(--primary))] rounded-lg text-white shadow-md"
-              style={{ boxShadow: '0 10px 24px rgba(56,189,248,0.20)' }}
-            >
-              <span className="text-sm font-bold">7</span>
-            </div>
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white">7‑Tage‑Praxis</h3>
-          </div>
-
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-6 flex-1 leading-relaxed">{practice || '—'}</p>
-
-          <button
-            type="button"
-            className="w-full py-3 bg-white dark:bg-slate-800 text-[hsl(var(--primary))] text-sm font-semibold rounded-xl shadow-sm border border-blue-100 dark:border-slate-600 hover:shadow-md transition-all flex items-center justify-center gap-2"
-            onClick={() => {}}
-          >
-            <span className="text-xs">＋</span>
-            (später) Reminder
-          </button>
-        </div>
-
-        <div className="lg:col-span-2 bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30 flex justify-between items-center">
-            <div>
-              <h3 className="font-bold text-lg text-gray-900 dark:text-white">Vorgeschlagene Umformulierungen</h3>
-              <p className="text-xs text-gray-500 mt-1">KI‑generierte Alternativen für bessere Wirkung</p>
-            </div>
-            <span className="text-gray-400 text-sm">✦</span>
-          </div>
-
-          <div className="divide-y divide-gray-100 dark:divide-gray-800 flex-1">
-            {rewrites.length === 0 ? (
-              <div className="p-5 text-sm text-muted-foreground">—</div>
-            ) : (
-              rewrites.slice(0, 6).map((r, idx) => (
-                <div key={idx} className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition group">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="relative pl-3 border-l-2 border-red-500">
-                      <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wide block mb-1">
-                        Original
-                      </span>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 italic">{r.original ? `“${r.original}”` : '—'}</p>
-                    </div>
-
-                    <div className="relative pl-3 border-l-2 border-emerald-500">
-                      <div className="flex justify-between items-start">
-                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide block mb-1">
-                          Besser
-                        </span>
-                        <button
-                          type="button"
-                          className="opacity-0 group-hover:opacity-100 transition text-gray-400 hover:text-[hsl(var(--primary))]"
-                          title="Kopieren"
-                          onClick={async () => {
-                            await copyText(r.better || '');
-                            setCopiedIdx(idx);
-                            setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 900);
-                          }}
-                        >
-                          <span className="text-xs">{copiedIdx === idx ? '✓' : '⧉'}</span>
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">{r.better || '—'}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-      {/* TRANSCRIPT */}
-      <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30 flex items-start justify-between gap-4">
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white">Transkript</h3>
-            <p className="text-xs text-gray-500 mt-1">
-              {hasTranscript
-                ? 'Gespeichert (genau die Version, die analysiert wurde – bei Datenschutz ggf. anonymisiert).'
-                : 'Nicht gespeichert (Toggle „Transkript speichern“ war aus).'}
-            </p>
-          </div>
 
           {hasTranscript ? (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
-                onClick={() => copyText(transcript)}
-                title="Transkript kopieren"
-              >
-                ⧉ Kopieren
-              </button>
-
-              <button
-                type="button"
-                className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200"
-                onClick={() => setShowTranscript((v) => !v)}
-              >
-                {showTranscript ? 'Verbergen' : 'Anzeigen'}
-              </button>
-            </div>
-          ) : null}
-        </div>
-
-        {hasTranscript ? (
-          showTranscript ? (
-            <div className="p-5">
-              <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono bg-gray-50 dark:bg-slate-900/30 rounded-xl p-4 border border-gray-100 dark:border-gray-800 max-h-[520px] overflow-auto">
-                {transcript}
-              </pre>
-            </div>
+            showTranscript ? (
+              <div className="p-5">
+                <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-mono bg-gray-50 dark:bg-slate-900/30 rounded-xl p-4 border border-gray-100 dark:border-gray-800 max-h-[520px] overflow-auto">
+                  {transcript}
+                </pre>
+              </div>
+            ) : (
+              <div className="p-5 text-sm text-muted-foreground">Ausgeblendet.</div>
+            )
           ) : (
-            <div className="p-5 text-sm text-muted-foreground">Ausgeblendet.</div>
-          )
-        ) : (
-          <div className="p-5 text-sm text-muted-foreground">
-            Für diesen Run wurde kein Transkript gespeichert. Wenn du es später im Verlauf wiedersehen möchtest,
-            aktiviere in der Analyse „Transkript speichern“.
+            <div className="p-5 text-sm text-muted-foreground">
+              Für diesen Run wurde kein Transkript gespeichert. Wenn du es später im Verlauf wiedersehen möchtest,
+              aktiviere in der Analyse „Transkript speichern“.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN (SIDEBAR) */}
+      <div className="xl:col-span-4 w-full space-y-6 sticky top-24">
+        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+          <div className="mb-4 px-2">
+            <h3 className="font-bold text-lg text-gray-900 dark:text-white">Kompetenzen</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Erkannte Fähigkeiten in diesem Gespräch</p>
           </div>
-        )}
+          <CompetencyPanel competencies={competencies} />
+        </div>
       </div>
 
     </div>

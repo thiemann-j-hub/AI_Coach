@@ -40,11 +40,10 @@ function formatDe(iso: string | null): string | null {
   }
 }
 
-export default async function RunDetailPage({
-  params,
-}: {
-  params: { sessionId: string; runId: string };
+export default async function RunDetailPage(props: {
+  params: Promise<{ sessionId: string; runId: string }>;
 }) {
+  const params = await props.params;
   const sessionId = params?.sessionId ?? "";
   const runId = params?.runId ?? "";
 
@@ -101,7 +100,7 @@ export default async function RunDetailPage({
         : Array.isArray(analysis?.competencies)
           ? analysis.competencies
           : [],
-      transcriptText:
+    transcriptText:
         typeof data?.transcriptText === "string"
           ? data.transcriptText
           : typeof data?.request?.transcriptText === "string"
@@ -110,6 +109,9 @@ export default async function RunDetailPage({
               ? analysis.transcriptText
               : null,
   };
+
+  // Ensure serializability for Client Component (removes non-POJO like Timestamps)
+  const safeResult = JSON.parse(JSON.stringify(resultForDashboard));
 
   const metaChips: { label: string; value: string }[] = [];
   if (data?.conversationType) metaChips.push({ label: "Typ", value: String(data.conversationType) });
@@ -133,7 +135,7 @@ export default async function RunDetailPage({
             <div className="text-xs text-slate-400">Session: {sessionId}</div>
           </div>
 
-          <ReportDashboard result={resultForDashboard} metaChips={metaChips} />
+          <ReportDashboard result={safeResult} metaChips={metaChips} />
         </div>
       </div>
     </AppShell>
