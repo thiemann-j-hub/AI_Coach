@@ -1,5 +1,6 @@
 'use client';
 
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -28,12 +29,13 @@ export default function AppShell(props: {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const nav: NavItem[] = useMemo(
     () => [
       { href: '/analyze', label: 'Analyse', icon: 'analytics' },
       { href: '/runs-dashboard', label: 'Verlauf', icon: 'history' },
-      { href: '/design-preview', label: 'Design-Preview', icon: 'dashboard_customize' },
+      { href: '/design-preview', label: 'Design-Preview', icon: 'grid_view' },
     ],
     []
   );
@@ -44,6 +46,8 @@ export default function AppShell(props: {
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
+    // Treat runs details as part of Analyze flow for sidebar highlighting
+    if (href === '/analyze' && pathname.startsWith('/runs/')) return true;
     return pathname === href || pathname.startsWith(href + '/');
   };
 
@@ -62,31 +66,27 @@ export default function AppShell(props: {
         {/* Sidebar */}
         <aside
           className={cx(
-            'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-card border-r border-border md:static md:z-auto md:w-64',
-            mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-            'transition-transform duration-200'
+            'fixed inset-y-0 left-0 z-50 w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          <div className="h-16 flex items-center justify-between px-5 border-b border-border">
+          <div className="p-6 relative">
             <button
-              className="md:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 transition-colors"
+              className="md:hidden absolute top-4 right-4 inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 transition-colors"
               onClick={() => setMobileOpen(false)}
               aria-label="Close"
             >
-              <span className="material-symbols-outlined">close</span>
+              <span className="material-icons-round">close</span>
             </button>
 
-            <div className="flex items-center gap-2 w-full">
-              <Link href="/analyze" className="block w-full py-4">
-                 {/* Logo Placeholder - Text Gradient style */}
-                 <div className="text-xl font-bold tracking-tight text-gradient">
-                   PulseCraft AI
-                 </div>
-              </Link>
-            </div>
+            <Link href="/analyze" className="block">
+              <h1 className="font-display font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+                  PulseCraft AI
+              </h1>
+            </Link>
           </div>
 
-          <nav className="px-3 py-4 space-y-1">
+          <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
             {nav.map((item) => {
               const active = isActive(item.href);
               return (
@@ -94,26 +94,35 @@ export default function AppShell(props: {
                   key={item.href}
                   href={item.href}
                   className={cx(
-                    'flex items-center gap-3 px-3 py-2 rounded-xl border text-sm transition-all duration-200',
+                    'flex items-center px-4 py-3 rounded-lg transition-all duration-200 group',
                     active
-                      ? 'bg-primary/10 text-primary border-primary/20 shadow-neon'
-                      : 'text-muted-foreground border-transparent hover:bg-white/5 hover:text-foreground'
+                      ? 'bg-primary/10 text-primary border-l-4 border-primary'
+                      : 'text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 border-transparent'
                   )}
                 >
-                  <span className="material-symbols-outlined">{item.icon}</span>
-                  <span className={cx(active ? 'font-bold' : 'font-medium')}>{item.label}</span>
+                  <span className={cx('material-icons-round mr-3', !active && 'group-hover:scale-110 transition-transform')}>{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-auto p-4 border-t border-border">
+          <div className="p-4 mt-auto border-t border-border-light dark:border-border-dark">
             <button
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground font-bold transition-all shadow-neon active:scale-[0.98]"
+              className="w-full btn-gradient text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-glow active:scale-[0.98] transition-transform"
               onClick={() => router.push('/analyze')}
             >
-              <span className="material-symbols-outlined text-[20px]">add_circle</span>
+              <span className="material-icons-round text-xl">add_circle_outline</span>
               <span>Neue Analyse</span>
+            </button>
+          </div>
+
+          <div className="px-4 pb-4">
+            <button 
+              className="flex items-center justify-center w-full py-2 text-xs text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded transition-colors" 
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              <span className="material-icons-round text-base mr-2">brightness_6</span> Toggle Theme
             </button>
           </div>
         </aside>
@@ -131,7 +140,7 @@ export default function AppShell(props: {
                 onClick={() => setMobileOpen(true)}
                 aria-label="Open menu"
               >
-                <span className="material-symbols-outlined">menu</span>
+                <span className="material-icons-round">menu</span>
               </button>
               <div className="min-w-0">
                 <div className="text-lg font-bold tracking-tight truncate text-foreground">{props.title}</div>
@@ -147,7 +156,7 @@ export default function AppShell(props: {
                 className="relative inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Notifications"
               >
-                <span className="material-symbols-outlined">notifications</span>
+                <span className="material-icons-round">notifications</span>
                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent shadow-neon" />
               </button>
               
