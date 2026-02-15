@@ -2,9 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 
 import { getAdminDb } from "@/lib/firebase-admin";
-import Link from "next/link";
-import AppShell from "@/components/app/app-shell";
-import ReportDashboard from "@/components/app/report-dashboard";
+import RunDetailClient from "./RunDetailClient";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -111,31 +109,11 @@ export default async function RunDetailPage({
               : null,
   };
 
-  const metaChips: { label: string; value: string }[] = [];
-  if (data?.conversationType) metaChips.push({ label: "Typ", value: String(data.conversationType) });
-  if (data?.conversationSubType) metaChips.push({ label: "Sub", value: String(data.conversationSubType) });
-  if (data?.goal) metaChips.push({ label: "Ziel", value: String(data.goal) });
-
   return (
-    <AppShell
-      title="Meeting Analyse"
-      subtitle={createdLabel ? `Bericht · ${createdLabel}` : undefined}
-    >
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between gap-3">
-            <Link
-              href={`/runs-dashboard/${encodeURIComponent(sessionId)}`}
-              className="text-sm text-sky-300 hover:text-sky-200"
-            >
-              ← Zurück zum Verlauf
-            </Link>
-            <div className="text-xs text-slate-400">Session: {sessionId}</div>
-          </div>
-
-          <ReportDashboard result={resultForDashboard} metaChips={metaChips} />
-        </div>
-      </div>
-    </AppShell>
+    <RunDetailClient 
+      runId={runId} 
+      sessionId={sessionId} 
+      result={resultForDashboard} 
+    />
   );
 }
