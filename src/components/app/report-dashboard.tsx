@@ -340,7 +340,7 @@ function InsightCard({
   const has = items.length > 0;
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 relative overflow-hidden">
+    <div className="glass-panel rounded-2xl relative overflow-hidden">
       <div className={`absolute top-0 left-0 w-1 ${toneBar} h-full`} />
       <div className="p-6">
         <div className="flex items-center gap-3 mb-5">
@@ -415,7 +415,7 @@ export function CompetencyPanel({ competencies }: { competencies: any[] }) {
           return (
             <details
               key={`${id}-${idx}`}
-              className={`bg-card rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden ${pct === null ? 'opacity-70' : ''}`}
+              className={`glass-panel rounded-xl overflow-hidden ${pct === null ? 'opacity-70' : ''}`}
               open={idx === 0}
             >
               <summary className="cursor-pointer list-none p-3 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
@@ -519,7 +519,7 @@ export default function ReportDashboard({
       {/* LEFT MAIN COLUMN */}
       <div className="xl:col-span-8 space-y-6">
         {/* HERO */}
-        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 md:p-8">
+        <div className="glass-panel rounded-2xl p-6 md:p-8">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <ScoreRing value={pct} />
             <div className="flex-1 text-center md:text-left">
@@ -557,7 +557,7 @@ export default function ReportDashboard({
           <InsightCard tone="success" title="Stärken" items={strengths} />
           <InsightCard tone="warning" title="Potenzial" items={improvements} />
 
-          <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 relative overflow-hidden">
+        <div className="glass-panel rounded-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 bg-red-500 h-full" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-5">
@@ -618,7 +618,7 @@ export default function ReportDashboard({
             </button>
           </div>
 
-          <div className="lg:col-span-2 bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col">
+          <div className="lg:col-span-2 glass-panel rounded-2xl overflow-hidden flex flex-col">
             <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30 flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-lg text-gray-900 dark:text-white">Vorgeschlagene Umformulierungen</h3>
@@ -670,7 +670,7 @@ export default function ReportDashboard({
         </div>
 
         {/* TRANSCRIPT */}
-        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="glass-panel rounded-2xl overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/30 flex items-start justify-between gap-4">
             <div>
               <h3 className="font-bold text-lg text-gray-900 dark:text-white">Transkript</h3>
@@ -724,7 +724,7 @@ export default function ReportDashboard({
 
       {/* RIGHT COLUMN (SIDEBAR) */}
       <div className="xl:col-span-4 w-full space-y-6 sticky top-24">
-        <div className="bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-4">
+        <div className="glass-panel rounded-2xl p-4">
           <div className="mb-4 px-2">
             <h3 className="font-bold text-lg text-gray-900 dark:text-white">Kompetenzen</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Erkannte Fähigkeiten in diesem Gespräch</p>

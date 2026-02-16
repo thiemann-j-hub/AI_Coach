@@ -90,7 +90,6 @@ export default {
         },
         
         // Custom Aliases
-        "surface-highlight": "#112240",
         
         chart: {
           '1': 'hsl(var(--chart-1))',

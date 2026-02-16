@@ -173,9 +173,7 @@ export default function RunsListPage({ params }: { params: { sessionId: string }
     <AppShell
       title="Verlauf"
       subtitle={`Session: ${sessionId || '—'}`}
-      active="runs"
-      sessionId={sessionId || null}
-      headerActions={
+      actions={
         <Link
           className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition"
           href={`/analyze?sessionId=${encodeURIComponent(sessionId || '')}`}

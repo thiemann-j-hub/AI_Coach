@@ -69,9 +69,9 @@ export default function AnalyzeForm() {
 
   useEffect(() => {
     try {
-      let sid = window.localStorage.getItem(SESSION_KEY);
-      if (!sid) {
-        sid = (crypto as any)?.randomUUID?.() ?? `session_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      const stored = window.localStorage.getItem(SESSION_KEY);
+      const sid = stored || ((crypto as any)?.randomUUID?.() ?? `session_${Date.now()}_${Math.random().toString(16).slice(2)}`);
+      if (!stored) {
         window.localStorage.setItem(SESSION_KEY, sid);
       }
       setSessionId(sid);

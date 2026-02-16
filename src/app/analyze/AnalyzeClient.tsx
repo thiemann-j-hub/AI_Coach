@@ -411,7 +411,7 @@ export default function AnalyzeClient() {
   // Header Actions
   const actions = (
     <button
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-muted-light dark:text-text-muted-dark text-sm hover:border-primary transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary transition-colors"
       onClick={() => sessionId && router.push(`/runs-dashboard?sessionId=${encodeURIComponent(sessionId)}`)}
     >
       <span className="material-icons-round text-sm">history</span>
@@ -420,17 +420,17 @@ export default function AnalyzeClient() {
   );
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-body antialiased selection:bg-primary selection:text-white transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row">
+    <div className="bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-white transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row">
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark">
+      <div className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border">
         <div className="font-bold text-xl text-primary">PulseCraft AI</div>
-        <button className="text-text-main-light dark:text-text-main-dark" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
           <span className="material-icons-round">menu</span>
         </button>
       </div>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6">
             <h1 className="font-display font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
                 PulseCraft AI
@@ -441,11 +441,11 @@ export default function AnalyzeClient() {
                 <span className="material-icons-round mr-3">analytics</span>
                 <span className="font-medium">Analyse</span>
             </Link>
-            <Link href="/runs-dashboard" className="flex items-center px-4 py-3 text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200 group">
+            <Link href="/runs-dashboard" className="flex items-center px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-all duration-200 group">
                 <span className="material-icons-round mr-3 group-hover:scale-110 transition-transform">history</span>
                 <span className="font-medium">Verlauf</span>
             </Link>
-            <Link href="/design-preview" className="flex items-center px-4 py-3 text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200 group">
+            <Link href="/design-preview" className="flex items-center px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-all duration-200 group">
                 <span className="material-icons-round mr-3 group-hover:scale-110 transition-transform">grid_view</span>
                 <span className="font-medium">Design-Preview</span>
             </Link>
@@ -457,7 +457,7 @@ export default function AnalyzeClient() {
             </button>
         </div>
         <div className="px-4 pb-4">
-            <button className="flex items-center justify-center w-full py-2 text-xs text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded transition-colors" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            <button className="flex items-center justify-center w-full py-2 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded transition-colors" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 <span className="material-icons-round text-base mr-2">brightness_6</span> Toggle Theme
             </button>
         </div>
@@ -465,27 +465,27 @@ export default function AnalyzeClient() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header className="h-16 flex items-center justify-between px-6 bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark flex-shrink-0">
+        <header className="h-16 flex items-center justify-between px-6 bg-background border-b border-border flex-shrink-0">
             <div className="flex flex-col">
-                <h2 className="text-lg font-bold text-text-main-light dark:text-text-main-dark leading-tight">Analyse</h2>
-                <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-mono">Session: {shortId(sessionId)}</span>
+                <h2 className="text-lg font-bold text-foreground leading-tight">Analyse</h2>
+                <span className="text-xs text-muted-foreground font-mono">Session: {shortId(sessionId)}</span>
             </div>
             <div className="flex items-center space-x-4">
                 {actions}
-                <button className="relative p-2 text-text-muted-light dark:text-text-muted-dark hover:text-primary transition-colors">
+                <button className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
                     <span className="material-icons-round">notifications</span>
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background-light dark:border-background-dark"></span>
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background"></span>
                 </button>
-                <div className="flex items-center pl-4 border-l border-border-light dark:border-border-dark">
+                <div className="flex items-center pl-4 border-l border-border">
                     <div className="text-right mr-3 hidden sm:block">
-                        <div className="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Jürgen Thiemann</div>
-                        <div className="text-xs text-text-muted-light dark:text-text-muted-dark cursor-pointer hover:text-primary">Logout</div>
+                        <div className="text-sm font-semibold text-foreground">Jürgen Thiemann</div>
+                        <div className="text-xs text-muted-foreground cursor-pointer hover:text-primary">Logout</div>
                     </div>
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
                             J
                         </div>
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-light dark:border-background-dark rounded-full"></div>
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
                     </div>
                 </div>
             </div>
@@ -495,23 +495,23 @@ export default function AnalyzeClient() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-8xl mx-auto h-full">
         {/* Left Column */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <div className="bg-surface-light dark:bg-surface-dark rounded-DEFAULT shadow-card-light dark:shadow-card-dark p-6 border border-border-light dark:border-border-dark h-full flex flex-col">
+          <div className="bg-card rounded-2xl shadow-sm p-6 border border-border h-full flex flex-col">
             <div className="mb-4">
-              <h3 className="text-xl font-semibold text-text-main-light dark:text-text-main-dark mb-1">Transkript</h3>
-              <p className="text-sm text-text-muted-light dark:text-text-muted-dark">PDF hochladen oder Text einfügen</p>
+              <h3 className="text-xl font-semibold text-foreground mb-1">Transkript</h3>
+              <p className="text-sm text-muted-foreground">PDF hochladen oder Text einfügen</p>
             </div>
             
             {/* PDF Import Box */}
-            <div className="bg-background-light dark:bg-[#0d1f38] rounded-xl p-5 mb-5 border border-border-light dark:border-border-dark">
+            <div className="bg-muted/50 rounded-xl p-5 mb-5 border border-border">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
-                  <h4 className="font-bold text-text-main-light dark:text-text-main-dark">PDF importieren</h4>
-                  <p className="text-xs text-text-muted-light dark:text-text-muted-dark mt-1">max. 30 Seiten · max. 250k Zeichen</p>
+                  <h4 className="font-bold text-foreground">PDF importieren</h4>
+                  <p className="text-xs text-muted-foreground mt-1">max. 30 Seiten · max. 250k Zeichen</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <select 
-                      className="appearance-none bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark text-sm rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
+                      className="appearance-none bg-card border border-border text-foreground text-sm rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
                       value={uploadMode}
                       onChange={(e) => setUploadMode(e.target.value as any)}
                       disabled={uploadBusy || loading}
@@ -519,17 +519,17 @@ export default function AnalyzeClient() {
                       <option value="replace">Ersetzen</option>
                       <option value="append">Anhängen</option>
                     </select>
-                    <span className="material-icons-round absolute right-2 top-2.5 text-text-muted-light dark:text-text-muted-dark text-sm pointer-events-none">expand_more</span>
+                    <span className="material-icons-round absolute right-2 top-2.5 text-muted-foreground text-sm pointer-events-none">expand_more</span>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input 
                       type="checkbox" 
-                      className="form-checkbox text-primary rounded border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:ring-offset-background-dark focus:ring-primary h-4 w-4" 
+                      className="form-checkbox text-primary rounded border-border bg-card focus:ring-offset-background focus:ring-primary h-4 w-4" 
                       checked={cleanPdf}
                       onChange={(e) => setCleanPdf(e.target.checked)}
                       disabled={uploadBusy || loading}
                     />
-                    <span className="text-xs font-medium text-text-main-light dark:text-text-main-dark">Teams bereinigen</span>
+                    <span className="text-xs font-medium text-foreground">Teams bereinigen</span>
                   </label>
                   <button 
                     className="bg-transparent border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-xs font-medium py-2 px-4 rounded-lg"
@@ -548,21 +548,21 @@ export default function AnalyzeClient() {
                 </div>
               </div>
               <div 
-                className="border-2 border-dashed border-border-light dark:border-[#233554] bg-surface-light/50 dark:bg-white/5 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all hover:border-primary/50 group cursor-pointer"
+                className="border-2 border-dashed border-border bg-muted/20 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all hover:border-primary/50 group cursor-pointer"
                 onDrop={onDrop}
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span className="material-icons-round text-3xl text-text-muted-light dark:text-text-muted-dark mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
-                <span className="font-semibold text-text-main-light dark:text-text-main-dark">Drag & Drop</span>
-                <span className="text-sm text-text-muted-light dark:text-text-muted-dark mt-1">Ziehe eine Teams-PDF hier rein oder nutze den Button.</span>
+                <span className="material-icons-round text-3xl text-muted-foreground mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
+                <span className="font-semibold text-foreground">Drag & Drop</span>
+                <span className="text-sm text-muted-foreground mt-1">Ziehe eine Teams-PDF hier rein oder nutze den Button.</span>
               </div>
             </div>
 
             {/* Toolbar */}
             <div className="flex flex-wrap gap-2 mb-4">
               <button 
-                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-accent hover:text-accent-foreground text-muted-foreground rounded-lg text-sm transition-colors"
                 onClick={() => {
                   setUndoTranscript(transcriptText);
                   setTranscriptText(cleanTeamsTranscript(transcriptText));
@@ -573,7 +573,7 @@ export default function AnalyzeClient() {
                 Teams bereinigen
               </button>
               <button 
-                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-accent hover:text-accent-foreground text-muted-foreground rounded-lg text-sm transition-colors"
                 onClick={() => {
                    const l = leaderLabel.trim();
                    const e = employeeLabel.trim();
@@ -592,7 +592,7 @@ export default function AnalyzeClient() {
                 Anonymisieren
               </button>
               <button 
-                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors ml-auto"
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-accent hover:text-accent-foreground text-muted-foreground rounded-lg text-sm transition-colors ml-auto"
                 onClick={() => {
                   if (!undoTranscript) return;
                   const cur = transcriptText;
@@ -605,7 +605,7 @@ export default function AnalyzeClient() {
                 Undo
               </button>
               <button 
-                className="flex items-center gap-2 px-3 py-2 bg-surface-light dark:bg-[#1C2C4E] hover:bg-gray-200 dark:hover:bg-[#253961] text-text-muted-light dark:text-text-muted-dark rounded-lg text-sm transition-colors hover:text-red-400"
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-accent hover:text-accent-foreground text-muted-foreground rounded-lg text-sm transition-colors hover:text-red-400"
                 onClick={() => {
                   setUndoTranscript(transcriptText);
                   setTranscriptText('');
@@ -620,13 +620,13 @@ export default function AnalyzeClient() {
             {/* Text Area */}
             <div className="flex-1 relative">
               <textarea 
-                className="w-full h-full bg-background-light dark:bg-[#0A192F] text-text-main-light dark:text-text-main-dark placeholder-text-muted-light dark:placeholder-text-muted-dark/50 border border-border-light dark:border-border-dark rounded-xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none min-h-[300px]" 
+                className="w-full h-full bg-muted/20 text-foreground placeholder-muted-foreground/50 border border-border rounded-xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none min-h-[300px]" 
                 placeholder="Hier steht nach dem PDF-Upload der Text... oder du fügst ihn manuell ein."
                 value={transcriptText}
                 onChange={(e) => setTranscriptText(e.target.value)}
                 disabled={loading}
               ></textarea>
-              <div className="absolute bottom-2 right-2 text-text-muted-light dark:text-text-muted-dark opacity-50">
+              <div className="absolute bottom-2 right-2 text-muted-foreground opacity-50">
                 <span className="material-icons-round text-sm transform rotate-45">open_in_full</span>
               </div>
             </div>
@@ -635,14 +635,14 @@ export default function AnalyzeClient() {
 
         {/* Right Column - Settings */}
         <div className="flex flex-col gap-6">
-          <div className="bg-surface-light dark:bg-surface-dark rounded-DEFAULT shadow-card-light dark:shadow-card-dark p-6 border border-border-light dark:border-border-dark">
-            <h3 className="text-lg font-bold text-text-main-light dark:text-text-main-dark mb-5">Einstellungen</h3>
+          <div className="bg-card rounded-2xl shadow-sm p-6 border border-border">
+            <h3 className="text-lg font-bold text-foreground mb-5">Einstellungen</h3>
             <div className="space-y-6">
               <div>
-                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Sprache</label>
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Sprache</label>
                 <div className="relative">
                   <select 
-                    className="w-full appearance-none bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={lang}
                     onChange={(e) => setLang(e.target.value as any)}
                     disabled={loading}
@@ -650,46 +650,46 @@ export default function AnalyzeClient() {
                     <option value="de">Deutsch</option>
                     <option value="en">English</option>
                   </select>
-                  <span className="material-icons-round absolute right-3 top-3.5 text-text-muted-light dark:text-text-muted-dark pointer-events-none">expand_more</span>
+                  <span className="material-icons-round absolute right-3 top-3.5 text-muted-foreground pointer-events-none">expand_more</span>
                 </div>
-                <p className="text-[11px] text-text-muted-light dark:text-text-muted-dark mt-2 leading-tight">
+                <p className="text-[11px] text-muted-foreground mt-2 leading-tight">
                   (Deutsch/Englisch ist vorbereitet – Logik kann später erweitert werden.)
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Ziel (optional)</label>
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ziel (optional)</label>
                 <input 
                   type="text" 
-                  className="w-full bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 placeholder-text-muted-light dark:placeholder-text-muted-dark focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" 
+                  className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" 
                   placeholder="z.B. klar und fair, ohne Eskalation" 
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   disabled={loading}
                 />
               </div>
-              <div className="p-4 rounded-xl border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-[#0d1f38]/50">
-                <span className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark mb-1">Gesprächsart</span>
-                <div className="font-bold text-text-main-light dark:text-text-main-dark mb-1">Mitarbeitendengespräch</div>
-                <p className="text-xs text-text-muted-light dark:text-text-muted-dark leading-snug">
+              <div className="p-4 rounded-xl border border-border bg-muted/50">
+                <span className="block text-xs font-medium text-muted-foreground mb-1">Gesprächsart</span>
+                <div className="font-bold text-foreground mb-1">Mitarbeitendengespräch</div>
+                <p className="text-xs text-muted-foreground leading-snug">
                   (Conversation-Type ist aktuell technisch fix, damit RAG stabil bleibt.)
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-surface-light dark:bg-surface-dark rounded-DEFAULT shadow-card-light dark:shadow-card-dark p-6 border border-border-light dark:border-border-dark flex-1">
+          <div className="bg-card rounded-2xl shadow-sm p-6 border border-border flex-1">
             <div className="flex items-center gap-2 mb-4">
-              <h3 className="text-lg font-bold text-text-main-light dark:text-text-main-dark">Rollen im Gespräch</h3>
+              <h3 className="text-lg font-bold text-foreground">Rollen im Gespräch</h3>
             </div>
-            <p className="text-sm text-text-muted-light dark:text-text-muted-dark mb-5 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
               Wähle die Führungskraft (Mitarbeitende wird automatisch gesetzt)
             </p>
             <div className="space-y-6">
               <div>
-                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Führungskraft (Ich)</label>
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Führungskraft (Ich)</label>
                 <div className="relative">
                   <select 
-                    className="w-full appearance-none bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={leaderLabel}
                     onChange={(e) => {
                       const v = e.target.value;
@@ -706,22 +706,22 @@ export default function AnalyzeClient() {
                       <option key={sp} value={sp}>{sp} (Ich)</option>
                     ))}
                   </select>
-                  <span className="material-icons-round absolute right-3 top-3.5 text-text-muted-light dark:text-text-muted-dark pointer-events-none">expand_more</span>
+                  <span className="material-icons-round absolute right-3 top-3.5 text-muted-foreground pointer-events-none">expand_more</span>
                 </div>
-                <p className="text-[11px] text-text-muted-light dark:text-text-muted-dark mt-2">
+                <p className="text-[11px] text-muted-foreground mt-2">
                   Tipp: Nach Upload/Einfügen werden Sprecher automatisch erkannt.
                 </p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Mitarbeitende</label>
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Mitarbeitende</label>
                 {detectedSpeakers.length <= 2 ? (
-                   <div className="w-full bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-muted-light dark:text-text-muted-dark rounded-lg px-4 py-3 opacity-70">
+                   <div className="w-full bg-background border border-border text-muted-foreground rounded-lg px-4 py-3 opacity-70">
                      {employeeLabel || 'wähle zuerst die Führungskraft...'}
                    </div>
                 ) : (
                   <div className="relative">
                     <select 
-                      className="w-full appearance-none bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                      className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                       value={employeeLabel}
                       onChange={(e) => setEmployeeLabel(e.target.value)}
                       disabled={loading || !leaderLabel.trim()}
@@ -731,26 +731,26 @@ export default function AnalyzeClient() {
                         <option key={sp} value={sp}>{sp}</option>
                       ))}
                     </select>
-                    <span className="material-icons-round absolute right-3 top-3.5 text-text-muted-light dark:text-text-muted-dark pointer-events-none">expand_more</span>
+                    <span className="material-icons-round absolute right-3 top-3.5 text-muted-foreground pointer-events-none">expand_more</span>
                   </div>
                 )}
               </div>
             </div>
             
-            <div className="mt-8 border-t border-border-light dark:border-border-dark pt-6">
-              <h4 className="text-sm font-bold text-text-main-light dark:text-text-main-dark mb-4">Datenschutz & Start</h4>
+            <div className="mt-8 border-t border-border pt-6">
+              <h4 className="text-sm font-bold text-foreground mb-4">Datenschutz & Start</h4>
               
                <label className="flex items-start gap-3 cursor-pointer select-none mb-4">
                   <input
                     type="checkbox"
-                    className="mt-1 form-checkbox text-primary rounded border-border-light dark:border-border-dark bg-background-light dark:bg-[#0d1f38]"
+                    className="mt-1 form-checkbox text-primary rounded border-border bg-background"
                     checked={privacyMode}
                     onChange={(e) => setPrivacyMode(e.target.checked)}
                     disabled={loading}
                   />
                   <div>
-                    <div className="text-sm font-medium text-text-main-light dark:text-text-main-dark">Vor Analyse anonymisieren (empfohlen)</div>
-                    <div className="text-xs text-text-muted-light dark:text-text-muted-dark">
+                    <div className="text-sm font-medium text-foreground">Vor Analyse anonymisieren (empfohlen)</div>
+                    <div className="text-xs text-muted-foreground">
                       Passiert im Browser, bevor etwas an die API geht.
                     </div>
                   </div>
@@ -758,10 +758,10 @@ export default function AnalyzeClient() {
                 
                 {privacyMode && (
                    <div className="mb-4">
-                     <label className="block text-xs font-medium text-text-muted-light dark:text-text-muted-dark uppercase tracking-wide mb-2">Zusätzliche Begriffe (kommagetrennt)</label>
+                     <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Zusätzliche Begriffe (kommagetrennt)</label>
                       <input 
                         type="text" 
-                        className="w-full bg-background-light dark:bg-[#0d1f38] border border-border-light dark:border-border-dark text-text-main-light dark:text-text-main-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" 
+                        className="w-full bg-background border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" 
                         placeholder="z.B. Firma XY, Projekt Z" 
                         value={extraTerms}
                         onChange={(e) => setExtraTerms(e.target.value)}
@@ -771,7 +771,7 @@ export default function AnalyzeClient() {
                 )}
 
                {error && (
-                 <div className="p-3 mb-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm">
+                 <div className="p-3 mb-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
                    {error}
                  </div>
                )}
@@ -790,7 +790,7 @@ export default function AnalyzeClient() {
                </button>
                
                {step && (
-                 <div className="mt-2 text-center text-xs text-text-muted-light dark:text-text-muted-dark">{step}</div>
+                 <div className="mt-2 text-center text-xs text-muted-foreground">{step}</div>
                )}
             </div>
           </div>

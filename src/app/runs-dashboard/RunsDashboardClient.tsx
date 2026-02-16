@@ -196,24 +196,24 @@ export default function RunsDashboardClient() {
   }, [runs, query, sortKey]);
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-body antialiased selection:bg-primary selection:text-white transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row">
+    <div className="bg-background text-foreground font-sans antialiased selection:bg-primary selection:text-white transition-colors duration-300 h-screen overflow-hidden flex flex-col md:flex-row">
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-surface-light dark:bg-surface-dark border-b border-border-light dark:border-border-dark">
+      <div className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border">
         <div className="font-bold text-xl text-primary">PulseCraft AI</div>
-        <button className="text-text-main-light dark:text-text-main-dark" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
           <span className="material-icons-round">menu</span>
         </button>
       </div>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6">
             <h1 className="font-display font-bold text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
                 PulseCraft AI
             </h1>
         </div>
         <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
-            <Link href="/analyze" className="flex items-center px-4 py-3 text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200 group">
+            <Link href="/analyze" className="flex items-center px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-all duration-200 group">
                 <span className="material-icons-round mr-3 group-hover:scale-110 transition-transform">analytics</span>
                 <span className="font-medium">Analyse</span>
             </Link>
@@ -221,7 +221,7 @@ export default function RunsDashboardClient() {
                 <span className="material-icons-round mr-3">history</span>
                 <span className="font-medium">Verlauf</span>
             </Link>
-            <Link href="/design-preview" className="flex items-center px-4 py-3 text-text-muted-light dark:text-text-muted-dark hover:text-text-main-light dark:hover:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200 group">
+            <Link href="/design-preview" className="flex items-center px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent hover:text-accent-foreground rounded-lg transition-all duration-200 group">
                 <span className="material-icons-round mr-3 group-hover:scale-110 transition-transform">grid_view</span>
                 <span className="font-medium">Design-Preview</span>
             </Link>
@@ -240,7 +240,7 @@ export default function RunsDashboardClient() {
             </button>
         </div>
         <div className="px-4 pb-4">
-            <button className="flex items-center justify-center w-full py-2 text-xs text-text-muted-light dark:text-text-muted-dark hover:bg-gray-100 dark:hover:bg-white/5 rounded transition-colors" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            <button className="flex items-center justify-center w-full py-2 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded transition-colors" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                 <span className="material-icons-round text-base mr-2">brightness_6</span> Toggle Theme
             </button>
         </div>
@@ -248,14 +248,14 @@ export default function RunsDashboardClient() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header className="h-16 flex items-center justify-between px-6 bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark flex-shrink-0">
+        <header className="h-16 flex items-center justify-between px-6 bg-background border-b border-border flex-shrink-0">
             <div className="flex flex-col">
-                <h2 className="text-lg font-bold text-text-main-light dark:text-text-main-dark leading-tight">Sitzungsverlauf</h2>
-                <span className="text-xs text-text-muted-light dark:text-text-muted-dark font-mono">Session: {shortId(sessionId)}</span>
+                <h2 className="text-lg font-bold text-foreground leading-tight">Sitzungsverlauf</h2>
+                <span className="text-xs text-muted-light font-mono">Session: {shortId(sessionId)}</span>
             </div>
             <div className="flex items-center space-x-4">
                 <button 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark text-text-muted-light dark:text-text-muted-dark text-sm hover:border-primary transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary transition-colors"
                   onClick={() => {
                     const sid = newSessionId();
                     try { localStorage.setItem(STORAGE_KEY, sid); } catch {}
@@ -265,20 +265,20 @@ export default function RunsDashboardClient() {
                   <span className="material-icons-round text-sm">add</span>
                   <span>Neue Sitzung</span>
                 </button>
-                <button className="relative p-2 text-text-muted-light dark:text-text-muted-dark hover:text-primary transition-colors">
+                <button className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
                     <span className="material-icons-round">notifications</span>
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background-light dark:border-background-dark"></span>
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background"></span>
                 </button>
-                <div className="flex items-center pl-4 border-l border-border-light dark:border-border-dark">
+                <div className="flex items-center pl-4 border-l border-border">
                     <div className="text-right mr-3 hidden sm:block">
-                        <div className="text-sm font-semibold text-text-main-light dark:text-text-main-dark">Jürgen Thiemann</div>
-                        <div className="text-xs text-text-muted-light dark:text-text-muted-dark cursor-pointer hover:text-primary">Logout</div>
+                        <div className="text-sm font-semibold text-foreground">Jürgen Thiemann</div>
+                        <div className="text-xs text-muted-foreground cursor-pointer hover:text-primary">Logout</div>
                     </div>
                     <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
                             J
                         </div>
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-light dark:border-background-dark rounded-full"></div>
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
                     </div>
                 </div>
             </div>
@@ -290,11 +290,11 @@ export default function RunsDashboardClient() {
             {/* Search & Sort Bar */}
             <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
               <div className="relative flex-1">
-                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-text-muted-light dark:text-text-muted-dark">
+                <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                   search
                 </span>
                 <input
-                  className="w-full rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark pl-12 pr-4 py-3 text-sm text-text-main-light dark:text-text-main-dark placeholder-text-muted-light dark:placeholder-text-muted-dark outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 shadow-card-light dark:shadow-card-dark transition-all"
+                  className="w-full rounded-2xl bg-card border border-border pl-12 pr-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 shadow-sm transition-all"
                   placeholder="Suche nach Ziel, ID oder Datum…"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -304,7 +304,7 @@ export default function RunsDashboardClient() {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <select
-                    className="appearance-none rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark pl-4 pr-10 py-3 text-sm text-text-main-light dark:text-text-main-dark outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 shadow-card-light dark:shadow-card-dark cursor-pointer transition-all"
+                    className="appearance-none rounded-2xl bg-card border border-border pl-4 pr-10 py-3 text-sm text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 shadow-sm cursor-pointer transition-all"
                     value={sortKey}
                     onChange={(e) => setSortKey(e.target.value as any)}
                     aria-label="Sortieren"
@@ -314,11 +314,11 @@ export default function RunsDashboardClient() {
                     <option value="score_desc">Score (Höchster)</option>
                     <option value="score_asc">Score (Niedrigster)</option>
                   </select>
-                  <span className="material-icons-round absolute right-3 top-1/2 -translate-y-1/2 text-text-muted-light dark:text-text-muted-dark pointer-events-none text-base">expand_more</span>
+                  <span className="material-icons-round absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none text-base">expand_more</span>
                 </div>
 
                 <button
-                  className="inline-flex items-center gap-2 rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark px-4 py-3 text-sm text-text-main-light dark:text-text-main-dark hover:bg-gray-100 dark:hover:bg-white/5 shadow-card-light dark:shadow-card-dark transition-all"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-card border border-border px-4 py-3 text-sm text-foreground hover:bg-accent hover:text-accent-foreground shadow-sm transition-all"
                   onClick={() => setRefresh((x) => x + 1)}
                 >
                   <span className="material-icons-round text-base">refresh</span>
@@ -329,14 +329,14 @@ export default function RunsDashboardClient() {
 
             {/* Error State */}
             {error ? (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-2xl p-5 text-red-600 dark:text-red-300">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-5 text-destructive">
                 <div className="font-semibold mb-1 flex items-center gap-2">
                   <span className="material-icons-round">error_outline</span>
                   Fehler
                 </div>
                 <div className="text-sm opacity-90 whitespace-pre-wrap">{error}</div>
                 <button
-                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white/50 border border-red-200/50 px-4 py-2 text-sm hover:bg-white/80"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-background/50 border border-destructive/20 px-4 py-2 text-sm hover:bg-background/80"
                   onClick={() => setRefresh((x) => x + 1)}
                 >
                   <span className="material-icons-round text-sm">refresh</span>
@@ -347,7 +347,7 @@ export default function RunsDashboardClient() {
 
             {/* Loading State */}
             {loading ? (
-              <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-8 text-center text-text-muted-light dark:text-text-muted-dark shadow-card-light dark:shadow-card-dark">
+              <div className="bg-card border border-border rounded-2xl p-8 text-center text-muted-foreground shadow-sm">
                 <div className="inline-flex flex-col items-center gap-3">
                   <span className="material-icons-round animate-spin text-3xl text-primary">autorenew</span>
                   <span>Lade Verlauf…</span>
@@ -357,12 +357,12 @@ export default function RunsDashboardClient() {
 
             {/* Empty State */}
             {!loading && !error && filtered.length === 0 ? (
-              <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-10 text-center shadow-card-light dark:shadow-card-dark">
+              <div className="bg-card border border-border rounded-2xl p-10 text-center shadow-sm">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
                    <span className="material-icons-round text-3xl">history</span>
                 </div>
-                <h3 className="font-bold text-lg text-text-main-light dark:text-text-main-dark mb-2">Noch keine Analysen</h3>
-                <div className="text-sm text-text-muted-light dark:text-text-muted-dark max-w-md mx-auto mb-6">
+                <h3 className="font-bold text-lg text-foreground mb-2">Noch keine Analysen</h3>
+                <div className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
                   Es sieht so aus, als hättest du für diese Session noch keine Gespräche analysiert. Starte jetzt deine erste Analyse!
                 </div>
                 <button
@@ -391,7 +391,7 @@ export default function RunsDashboardClient() {
                 return (
                   <div
                     key={r.id}
-                    className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-0 hover:border-primary/50 transition-all shadow-card-light dark:shadow-card-dark group"
+                    className="bg-card border border-border rounded-2xl p-0 hover:border-primary/50 transition-all shadow-sm group"
                   >
                     <div className="p-6 pb-4">
                         <div className="flex items-start justify-between gap-4">
@@ -401,8 +401,8 @@ export default function RunsDashboardClient() {
                                     <span className="material-icons-round text-2xl">{icon}</span>
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-lg font-bold text-text-main-light dark:text-text-main-dark truncate leading-tight">{title}</div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted-light dark:text-text-muted-dark mt-1 font-mono">
+                                    <div className="text-lg font-bold text-foreground truncate leading-tight">{title}</div>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1 font-mono">
                                         <div className="flex items-center gap-1">
                                             <span className="material-icons-round text-[14px]">fingerprint</span>
                                             <span>{shortId(r.id, 8)}</span>
@@ -417,7 +417,7 @@ export default function RunsDashboardClient() {
                         </div>
 
                         <div className="flex flex-col items-center">
-                            <div className="text-[10px] text-text-muted-light dark:text-text-muted-dark uppercase tracking-wider font-bold mb-1">SCORE</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">SCORE</div>
                             <div className={`inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold border-2 ${scoreClass}`}>
                                 {scoreStr}
                             </div>
@@ -426,16 +426,16 @@ export default function RunsDashboardClient() {
                     </div>
 
                     <div className="px-6 pb-4">
-                        <div className="bg-background-light dark:bg-background-dark/50 rounded-xl p-4 border border-border-light dark:border-border-dark/50">
-                            <p className="text-sm text-text-main-light dark:text-text-muted-dark leading-relaxed line-clamp-2">
+                        <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                            <p className="text-sm text-foreground/80 dark:text-muted-foreground leading-relaxed line-clamp-2">
                                 {(r.summary ?? '').trim() || 'Keine Zusammenfassung verfügbar.'}
                             </p>
                         </div>
                     </div>
 
-                    <div className="px-6 py-3 border-t border-border-light dark:border-border-dark flex justify-end bg-gray-50/50 dark:bg-white/[0.02] rounded-b-2xl">
+                    <div className="px-6 py-3 border-t border-border flex justify-end bg-muted/20 rounded-b-2xl">
                         <button
-                            className="inline-flex items-center gap-1 text-primary hover:text-primary-hover font-medium text-sm transition-colors group/btn"
+                            className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-medium text-sm transition-colors group/btn"
                             onClick={() => {
                                 const sid = sessionId.trim();
                                 if (!sid) return;
