@@ -50,10 +50,14 @@ workspace/*.json
 
 # --- Firebase Studio / lokale Artefakte: NICHT deployen ---
 *.bak_*
+*.bak-*
 handover_dump_*.md
-/localStorage/
-/generate/
+localStorage
+generate
 /trotzdem
+
+# Optimierungs-Audit-Artefakte (Arbeitsdateien, kein App-Code)
+.clone-work/
 
 # --- DO NOT COMMIT SERVICE ACCOUNT KEYS ---
 workspace/firebase-admin-sa.json

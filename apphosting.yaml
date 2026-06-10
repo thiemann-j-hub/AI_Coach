@@ -4,7 +4,7 @@ runConfig:
 env:
   # non-secret config
   - variable: GEMINI_TEXT_MODEL
-    value: "gemini-1.5-flash"
+    value: "gemini-2.5-flash"
   - variable: PINECONE_INDEX_HOST
     value: "script-coach-cards-fcudb5g.svc.gcp-europe-west4-de1d.pinecone.io"
   - variable: PINECONE_NAMESPACE

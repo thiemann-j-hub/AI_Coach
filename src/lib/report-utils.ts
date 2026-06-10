@@ -64,12 +64,21 @@ export function stripWrappingQuotes(input: string): string {
   s = s.replace(/^[•\-\*\u2022]\s+/, '').trim();
   if (s.length >= 2 && /[.,;:!?]$/.test(s)) {
     const prev = s[s.length - 2];
-    if (`"'"»›`.includes(prev)) s = s.slice(0, -1).trim();
+    if ('"\'“”‘’»›'.includes(prev)) s = s.slice(0, -1).trim();
   }
   const first = s[0];
   const last = s[s.length - 1];
+  // Achtung: Keys muessen distinkte typografische Zeichen bleiben — Tooling,
+  // das sie zu ASCII normalisiert, erzeugt identische Keys (TS1117-Bug).
   const pairs: Record<string, string[]> = {
-    '"': ['"'], "'": ["'"], '"': ['"', '"'], '„': ['"', '"'], '«': ['»'], '‹': ['›'],
+    '"': ['"'],
+    "'": ["'"],
+    '“': ['”', '“'],
+    '„': ['“', '”'],
+    '‘': ['’', '‘'],
+    '‚': ['‘', '’'],
+    '«': ['»'],
+    '‹': ['›'],
   };
   const closing = pairs[first];
   if (closing && closing.includes(last) && s.length >= 2) s = s.slice(1, -1).trim();
