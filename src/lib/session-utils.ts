@@ -1,5 +1,5 @@
 /**
- * Session ID helpers shared by AnalyzeClient and AnalyzeForm.
+ * Session ID helpers (AnalyzeClient, RunsDashboard).
  */
 
 export function newSessionId(): string {
