@@ -279,6 +279,9 @@ export default function RunsDashboardClient() {
         )}
 
         {/* Runs List */}
+        {!loading && runs.length >= 50 && (
+          <p className="text-xs text-muted-foreground mb-2">{t.dashboard.showingLatest}</p>
+        )}
         <div className="space-y-4">
           {filtered.map((r) => {
             const title =

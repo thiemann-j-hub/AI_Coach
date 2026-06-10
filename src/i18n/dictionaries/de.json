@@ -16,7 +16,9 @@
     "lightMode": "Heller Modus",
     "darkMode": "Dunkler Modus",
     "show": "Anzeigen",
-    "hide": "Ausblenden"
+    "hide": "Ausblenden",
+    "session": "Session",
+    "skipToContent": "Zum Hauptinhalt springen"
   },
   "nav": {
     "analyze": "Analyse",
@@ -111,7 +113,8 @@
     "noAnalysesHint": "Es sieht so aus, als hätten Sie noch keine Gespräche für diese Sitzung analysiert. Starten Sie jetzt Ihre erste Analyse!",
     "score": "BEWERTUNG",
     "noSummary": "Keine Zusammenfassung verfügbar.",
-    "openAnalysis": "Analyse öffnen"
+    "openAnalysis": "Analyse öffnen",
+    "showingLatest": "Es werden die neuesten 50 Analysen angezeigt."
   },
   "report": {
     "competency": "Kompetenz",
@@ -125,7 +128,7 @@
     "risks": "Risiken",
     "pitfalls": "Stolperfallen",
     "weeklyPractice": "7-Tage-Praxis",
-    "reminder": "(später) Erinnerung",
+    "reminder": "Kalender-Erinnerung (7 Tage)",
     "rewritesTitle": "Formulierungsvorschläge",
     "rewritesSubtitle": "KI-generierte Alternativen für bessere Wirkung",
     "original": "Original",
@@ -142,15 +145,14 @@
     "competencyDegraded": "Kompetenz-Scoring fehlgeschlagen — es werden Platzhalter angezeigt.",
     "rateTitle": "Wie hilfreich war dieses Feedback?",
     "rateThanks": "Danke für deine Bewertung!",
-    "rateError": "Bewertung konnte nicht gespeichert werden."
-  },
-  "history": {
-    "title": "Verlauf",
-    "refresh": "Aktualisieren",
-    "session": "Sitzung: ",
-    "errorLoading": "Fehler beim Laden des Verlaufs: ",
-    "noRuns": "Keine Runs gefunden (für diese Sitzung).",
-    "tip": "Tipp: Wenn Sie zuvor Firestore direkt verwendet haben, sehen Sie hier möglicherweise \"Missing or insufficient permissions\". Diese Version verwendet"
+    "rateError": "Bewertung konnte nicht gespeichert werden.",
+    "overall": "GESAMT",
+    "title": "Meeting-Analyse",
+    "reportLabel": "Bericht",
+    "backToHistory": "← Zurück zum Verlauf",
+    "loadingRun": "Analyse wird geladen…",
+    "accessDenied": "Kein Zugriff auf diese Analyse.",
+    "runNotFound": "Analyse nicht gefunden."
   },
   "linkedin": {
     "title": "Auf LinkedIn teilen",
@@ -171,35 +173,11 @@
     "posted": "Erfolgreich gepostet!",
     "viewPost": "Post anzeigen",
     "generatePostFirst": "Bitte generieren Sie zuerst den Post-Text.",
-    "tokenExpired": "LinkedIn-Sitzung abgelaufen. Bitte erneut verbinden."
-  },
-  "home": {
-    "title": "Gespräch analysieren",
-    "subtitle": "Geben Sie unten die Details Ihres Gesprächs ein, um KI-gestütztes Feedback zu erhalten.",
-    "conversationType": "Gesprächstyp",
-    "selectType": "Typ auswählen...",
-    "interview": "Vorstellungsgespräch",
-    "presentation": "Präsentation",
-    "salesCall": "Verkaufsgespräch",
-    "customerSupport": "Kundensupport",
-    "teamMeeting": "Teammeeting",
-    "goal": "Was ist Ihr Ziel?",
-    "goalPlaceholder": "z.B. Das Projektvorhaben klar erklären",
-    "transcript": "Gesprächstranskript",
-    "transcriptPlaceholder": "Fügen Sie hier Ihr Gesprächstranskript ein...",
-    "getFeedback": "Feedback erhalten",
-    "analysisComplete": "Analyse abgeschlossen",
-    "analysisCompleteHint": "Hier ist das Feedback zu Ihrem Gespräch.",
-    "newAnalysis": "Neue Analyse",
-    "download": "Herunterladen",
-    "summary": "Zusammenfassung",
-    "feedbackBreakdown": "Feedback-Aufschlüsselung",
-    "strengths": "Stärken",
-    "improvements": "Verbesserungen",
-    "riskFlags": "Risiko-Hinweise",
-    "performanceScores": "Leistungsbewertungen",
-    "suggestedRewrites": "Formulierungsvorschläge",
-    "rewrite": "Umformulierung",
-    "helpfulQuestion": "War dieses Feedback hilfreich?"
+    "tokenExpired": "LinkedIn-Sitzung abgelaufen. Bitte erneut verbinden.",
+    "notConfigured": "LinkedIn ist für diese Umgebung nicht konfiguriert.",
+    "connectedOk": "LinkedIn verbunden.",
+    "connectFailed": "LinkedIn-Verbindung fehlgeschlagen:",
+    "confirmQuestion": "Diesen Beitrag jetzt öffentlich auf LinkedIn veröffentlichen?",
+    "confirmNow": "Ja, öffentlich posten"
   }
 }

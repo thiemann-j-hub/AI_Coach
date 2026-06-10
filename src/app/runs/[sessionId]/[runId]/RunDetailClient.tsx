@@ -6,6 +6,8 @@ import Link from "next/link";
 import AppShell from "@/components/app/app-shell";
 import ReportDashboard from "@/components/app/report-dashboard";
 import { authFetch } from "@/lib/api-client";
+import { useTranslation } from "@/i18n/useTranslation";
+import { localeBcp47, type Locale } from "@/i18n/config";
 
 type RunData = {
   id: string;
@@ -22,11 +24,11 @@ type RunData = {
   rating: number | null;
 };
 
-function formatDe(iso: string | null): string | null {
+function formatDate(iso: string | null, bcp47: string): string | null {
   if (!iso) return null;
   try {
     const d = new Date(iso);
-    return d.toLocaleString("de-DE", {
+    return d.toLocaleString(bcp47, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -97,6 +99,7 @@ export default function RunDetailClient({
   sessionId: string;
   runId: string;
 }) {
+  const { t, locale } = useTranslation();
   const [run, setRun] = useState<RunData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,10 +114,11 @@ export default function RunDetailClient({
         const res = await authFetch(url);
         const j = await res.json().catch(() => null);
         if (!res.ok || !j?.ok) {
+          // Fehler-CODES speichern, Übersetzung erst beim Rendern (Sprachwechsel-fest)
+          if (res.status === 403) throw new Error("__forbidden__");
+          if (res.status === 404) throw new Error("__notfound__");
           const code = j?.code ?? res.status;
-          if (res.status === 403) throw new Error("Kein Zugriff auf diese Analyse.");
-          if (res.status === 404) throw new Error("Analyse nicht gefunden.");
-          throw new Error(typeof j?.error === "string" ? j.error : `Fehler (${code})`);
+          throw new Error(typeof j?.error === "string" ? j.error : `Error (${code})`);
         }
         if (!cancelled) setRun(j.run as RunData);
       } catch (e: any) {
@@ -128,17 +132,23 @@ export default function RunDetailClient({
     };
   }, [sessionId, runId]);
 
-  const createdLabel = formatDe(run?.createdAt ?? null);
+  const bcp47 = localeBcp47[locale as Locale] ?? "en-US";
+  const createdLabel = formatDate(run?.createdAt ?? null, bcp47);
 
   const metaChips: { label: string; value: string }[] = [];
   if (run?.conversationType) metaChips.push({ label: "Typ", value: String(run.conversationType) });
   if (run?.conversationSubType) metaChips.push({ label: "Sub", value: String(run.conversationSubType) });
   if (run?.goal) metaChips.push({ label: "Ziel", value: String(run.goal) });
 
+  const errorText =
+    error === "__forbidden__" ? t.report.accessDenied :
+    error === "__notfound__" ? t.report.runNotFound :
+    error;
+
   return (
     <AppShell
-      title="Meeting Analyse"
-      subtitle={createdLabel ? `Bericht · ${createdLabel}` : undefined}
+      title={t.report.title}
+      subtitle={createdLabel ? `${t.report.reportLabel} · ${createdLabel}` : undefined}
     >
       <div className="p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
@@ -147,20 +157,20 @@ export default function RunDetailClient({
               href="/runs-dashboard"
               className="text-sm text-primary hover:text-primary/80 transition-colors"
             >
-              ← Zurück zum Verlauf
+              {t.report.backToHistory}
             </Link>
-            <div className="text-xs text-muted-foreground font-mono">Session: {sessionId}</div>
+            <div className="text-xs text-muted-foreground font-mono">{t.common.session}: {sessionId}</div>
           </div>
 
           {loading && (
             <div className="glass-panel rounded-2xl p-8 text-sm text-muted-foreground animate-pulse">
-              Analyse wird geladen…
+              {t.report.loadingRun}
             </div>
           )}
 
-          {!loading && error && (
+          {!loading && errorText && (
             <div className="glass-panel rounded-2xl p-8 text-sm text-red-400 border border-red-500/20">
-              {error}
+              {errorText}
             </div>
           )}
 

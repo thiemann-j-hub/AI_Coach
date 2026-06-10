@@ -16,7 +16,9 @@
     "lightMode": "Tryb jasny",
     "darkMode": "Tryb ciemny",
     "show": "Pokaż",
-    "hide": "Ukryj"
+    "hide": "Ukryj",
+    "session": "Sesja",
+    "skipToContent": "Przejdź do treści głównej"
   },
   "nav": {
     "analyze": "Analiza",
@@ -111,7 +113,8 @@
     "noAnalysesHint": "Wygląda na to, że nie przeanalizowałeś jeszcze żadnych rozmów w tej sesji. Rozpocznij swoją pierwszą analizę teraz!",
     "score": "WYNIK",
     "noSummary": "Brak podsumowania.",
-    "openAnalysis": "Otwórz analizę"
+    "openAnalysis": "Otwórz analizę",
+    "showingLatest": "Wyświetlane jest 50 najnowszych analiz."
   },
   "report": {
     "competency": "Kompetencja",
@@ -125,7 +128,7 @@
     "risks": "Ryzyka",
     "pitfalls": "Pułapki",
     "weeklyPractice": "Ćwiczenia na 7 dni",
-    "reminder": "(później) Przypomnienie",
+    "reminder": "Przypomnienie w kalendarzu (7 dni)",
     "rewritesTitle": "Sugerowane przeformułowania",
     "rewritesSubtitle": "Alternatywy wygenerowane przez AI dla lepszego efektu",
     "original": "Oryginał",
@@ -142,15 +145,14 @@
     "competencyDegraded": "Ocena kompetencji nie powiodła się — wyświetlane są wartości domyślne.",
     "rateTitle": "Jak pomocny był ten feedback?",
     "rateThanks": "Dziękujemy za ocenę!",
-    "rateError": "Nie udało się zapisać oceny."
-  },
-  "history": {
-    "title": "Historia",
-    "refresh": "Odśwież",
-    "session": "Sesja: ",
-    "errorLoading": "Błąd podczas ładowania historii: ",
-    "noRuns": "Nie znaleziono runów (dla tej sesji).",
-    "tip": "Wskazówka: Jeśli wcześniej korzystałeś z Firestore bezpośrednio, możesz zobaczyć tutaj \"Missing or insufficient permissions\". Ta wersja używa"
+    "rateError": "Nie udało się zapisać oceny.",
+    "overall": "OGÓŁEM",
+    "title": "Analiza rozmowy",
+    "reportLabel": "Raport",
+    "backToHistory": "← Powrót do historii",
+    "loadingRun": "Ładowanie analizy…",
+    "accessDenied": "Brak dostępu do tej analizy.",
+    "runNotFound": "Nie znaleziono analizy."
   },
   "linkedin": {
     "title": "Udostępnij na LinkedIn",
@@ -171,35 +173,11 @@
     "posted": "Opublikowano pomyślnie!",
     "viewPost": "Zobacz post",
     "generatePostFirst": "Najpierw wygeneruj tekst postu.",
-    "tokenExpired": "Sesja LinkedIn wygasła. Proszę połączyć ponownie."
-  },
-  "home": {
-    "title": "Analizuj rozmowę",
-    "subtitle": "Wprowadź poniżej szczegóły rozmowy, aby uzyskać feedback oparty na AI.",
-    "conversationType": "Typ rozmowy",
-    "selectType": "Wybierz typ...",
-    "interview": "Rozmowa kwalifikacyjna",
-    "presentation": "Prezentacja",
-    "salesCall": "Rozmowa handlowa",
-    "customerSupport": "Obsługa klienta",
-    "teamMeeting": "Spotkanie zespołu",
-    "goal": "Jaki jest Twój cel?",
-    "goalPlaceholder": "np. Wyraźnie wyjaśnić propozycję projektu",
-    "transcript": "Transkrypcja rozmowy",
-    "transcriptPlaceholder": "Wklej tutaj transkrypcję rozmowy...",
-    "getFeedback": "Uzyskaj feedback",
-    "analysisComplete": "Analiza zakończona",
-    "analysisCompleteHint": "Oto feedback dotyczący Twojej rozmowy.",
-    "newAnalysis": "Nowa analiza",
-    "download": "Pobierz",
-    "summary": "Podsumowanie",
-    "feedbackBreakdown": "Szczegóły feedbacku",
-    "strengths": "Mocne strony",
-    "improvements": "Do poprawy",
-    "riskFlags": "Sygnały ryzyka",
-    "performanceScores": "Wyniki wydajności",
-    "suggestedRewrites": "Sugerowane przeformułowania",
-    "rewrite": "Przeformułowanie",
-    "helpfulQuestion": "Czy ten feedback był pomocny?"
+    "tokenExpired": "Sesja LinkedIn wygasła. Proszę połączyć ponownie.",
+    "notConfigured": "LinkedIn nie jest skonfigurowany dla tego środowiska.",
+    "connectedOk": "Połączono z LinkedIn.",
+    "connectFailed": "Połączenie z LinkedIn nie powiodło się:",
+    "confirmQuestion": "Opublikować ten post publicznie na LinkedIn teraz?",
+    "confirmNow": "Tak, opublikuj publicznie"
   }
 }

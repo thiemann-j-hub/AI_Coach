@@ -16,7 +16,9 @@
     "lightMode": "Světlý režim",
     "darkMode": "Tmavý režim",
     "show": "Zobrazit",
-    "hide": "Skrýt"
+    "hide": "Skrýt",
+    "session": "Relace",
+    "skipToContent": "Přejít na hlavní obsah"
   },
   "nav": {
     "analyze": "Analýza",
@@ -111,7 +113,8 @@
     "noAnalysesHint": "Zdá se, že jste pro tuto relaci ještě neanalyzovali žádné rozhovory. Spusťte svou první analýzu nyní!",
     "score": "SKÓRE",
     "noSummary": "Žádné shrnutí k dispozici.",
-    "openAnalysis": "Otevřít analýzu"
+    "openAnalysis": "Otevřít analýzu",
+    "showingLatest": "Zobrazuje se 50 nejnovějších analýz."
   },
   "report": {
     "competency": "Kompetence",
@@ -125,7 +128,7 @@
     "risks": "Rizika",
     "pitfalls": "Úskalí",
     "weeklyPractice": "7denní praxe",
-    "reminder": "(později) Připomínka",
+    "reminder": "Připomínka v kalendáři (7 dní)",
     "rewritesTitle": "Navrhované přeformulace",
     "rewritesSubtitle": "AI generované alternativy pro lepší dopad",
     "original": "Originál",
@@ -142,15 +145,14 @@
     "competencyDegraded": "Hodnocení kompetencí selhalo — zobrazují se výchozí hodnoty.",
     "rateTitle": "Jak užitečná byla tato zpětná vazba?",
     "rateThanks": "Děkujeme za hodnocení!",
-    "rateError": "Hodnocení se nepodařilo uložit."
-  },
-  "history": {
-    "title": "Historie",
-    "refresh": "Obnovit",
-    "session": "Relace: ",
-    "errorLoading": "Chyba při načítání historie: ",
-    "noRuns": "Nebyly nalezeny žádné runy (pro tuto relaci).",
-    "tip": "Tip: Pokud jste dříve používali Firestore přímo, můžete zde vidět \"Missing or insufficient permissions\". Tato verze používá"
+    "rateError": "Hodnocení se nepodařilo uložit.",
+    "overall": "CELKEM",
+    "title": "Analýza rozhovoru",
+    "reportLabel": "Zpráva",
+    "backToHistory": "← Zpět na historii",
+    "loadingRun": "Načítání analýzy…",
+    "accessDenied": "K této analýze nemáte přístup.",
+    "runNotFound": "Analýza nenalezena."
   },
   "linkedin": {
     "title": "Sdílet na LinkedIn",
@@ -171,35 +173,11 @@
     "posted": "Úspěšně publikováno!",
     "viewPost": "Zobrazit příspěvek",
     "generatePostFirst": "Nejprve prosím vygenerujte text příspěvku.",
-    "tokenExpired": "Relace LinkedIn vypršela. Prosím připojte se znovu."
-  },
-  "home": {
-    "title": "Analyzovat rozhovor",
-    "subtitle": "Zadejte níže podrobnosti svého rozhovoru a získejte zpětnou vazbu od AI.",
-    "conversationType": "Typ rozhovoru",
-    "selectType": "Vyberte typ...",
-    "interview": "Pohovor",
-    "presentation": "Prezentace",
-    "salesCall": "Obchodní hovor",
-    "customerSupport": "Zákaznická podpora",
-    "teamMeeting": "Týmová schůzka",
-    "goal": "Jaký je váš cíl?",
-    "goalPlaceholder": "např. Jasně vysvětlit návrh projektu",
-    "transcript": "Přepis rozhovoru",
-    "transcriptPlaceholder": "Vložte sem přepis svého rozhovoru...",
-    "getFeedback": "Získat zpětnou vazbu",
-    "analysisComplete": "Analýza dokončena",
-    "analysisCompleteHint": "Zde je zpětná vazba k vašemu rozhovoru.",
-    "newAnalysis": "Nová analýza",
-    "download": "Stáhnout",
-    "summary": "Shrnutí",
-    "feedbackBreakdown": "Detail zpětné vazby",
-    "strengths": "Silné stránky",
-    "improvements": "Zlepšení",
-    "riskFlags": "Rizikové signály",
-    "performanceScores": "Výkonnostní skóre",
-    "suggestedRewrites": "Navrhované přeformulace",
-    "rewrite": "Přeformulace",
-    "helpfulQuestion": "Byla tato zpětná vazba užitečná?"
+    "tokenExpired": "Relace LinkedIn vypršela. Prosím připojte se znovu.",
+    "notConfigured": "LinkedIn není pro toto prostředí nakonfigurován.",
+    "connectedOk": "LinkedIn připojen.",
+    "connectFailed": "Připojení k LinkedIn se nezdařilo:",
+    "confirmQuestion": "Zveřejnit tento příspěvek veřejně na LinkedIn nyní?",
+    "confirmNow": "Ano, zveřejnit"
   }
 }

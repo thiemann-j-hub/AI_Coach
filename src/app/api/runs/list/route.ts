@@ -42,6 +42,9 @@ export async function GET(req: NextRequest) {
 
   const sp = req.nextUrl.searchParams;
   const sessionId = sp.get("sessionId") ?? "";
+  // limit-Parameter der Frontends respektieren (wurde bisher ignoriert), capped 1..100
+  const limitRaw = Number.parseInt(sp.get("limit") ?? "", 10);
+  const limit = Number.isFinite(limitRaw) ? Math.min(100, Math.max(1, limitRaw)) : 50;
 
   const parsed = sessionIdSchema.safeParse(sessionId);
   if (!parsed.success) {
@@ -69,7 +72,7 @@ export async function GET(req: NextRequest) {
       .doc(sessionId)
       .collection("runs")
       .orderBy("createdAt", "desc")
-      .limit(50)
+      .limit(limit)
       .get();
 
     const runs = snap.docs.map((d) => {

@@ -242,6 +242,37 @@ export default function ReportDashboard({
     URL.revokeObjectURL(url);
   }
 
+  function handleReminder() {
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    start.setHours(9, 0, 0, 0);
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    // ICS verlangt CRLF-Zeilenenden und escaped Kommas/Newlines im Text
+    const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\r?\n/g, '\\n');
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//PulseCraft AI//Coach//EN',
+      'BEGIN:VEVENT',
+      `UID:pulsecraft-${runId ?? 'practice'}@pulsecraft.ai`,
+      `DTSTAMP:${fmt(new Date())}`,
+      `DTSTART:${fmt(start)}`,
+      'DURATION:PT15M',
+      'RRULE:FREQ=DAILY;COUNT=7',
+      `SUMMARY:${esc(t.report.weeklyPractice)}`,
+      `DESCRIPTION:${esc((practice || '').slice(0, 800))}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pulsecraft-7-tage-uebung.ics';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const competencies = Array.isArray(result?.competency_ratings)
     ? result.competency_ratings
     : Array.isArray(result?.competencies) ? result.competencies : [];
@@ -271,7 +302,7 @@ export default function ReportDashboard({
         {/* HERO */}
         <div className="glass-panel rounded-2xl p-6 md:p-8">
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <ScoreRing value={pct} />
+            <ScoreRing value={pct} label={t.report.overall} />
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3 justify-center md:justify-start">
                 <h2 className="text-xl font-bold text-foreground">{title}</h2>
@@ -362,8 +393,9 @@ export default function ReportDashboard({
 
             <button
               type="button"
-              className="w-full py-3 bg-secondary text-primary text-sm font-semibold rounded-xl border border-border hover:bg-primary/10 hover:shadow-primary-glow transition-all flex items-center justify-center gap-2"
-              onClick={() => {}}
+              className="w-full py-3 bg-secondary text-primary text-sm font-semibold rounded-xl border border-border hover:bg-primary/10 hover:shadow-primary-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              onClick={handleReminder}
+              disabled={!practice}
             >
               <span className="material-icons-round text-base">alarm</span>
               {t.report.reminder}

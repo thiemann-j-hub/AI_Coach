@@ -6,7 +6,7 @@ function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
 
-export function ScoreRing({ value }: { value: number | null }) {
+export function ScoreRing({ value, label }: { value: number | null; label?: string }) {
   const pct = value === null ? 0 : clamp(value, 0, 100);
   const r = 40;
   const c = 2 * Math.PI * r;
@@ -31,7 +31,7 @@ export function ScoreRing({ value }: { value: number | null }) {
         <span className="text-3xl font-bold text-foreground tabular-nums">
           {value === null ? '—' : Math.round(pct)}
         </span>
-        <span className="text-xs font-bold text-muted-foreground tracking-wider">GESAMT</span>
+        <span className="text-xs font-bold text-muted-foreground tracking-wider">{label ?? 'GESAMT'}</span>
       </div>
     </div>
   );

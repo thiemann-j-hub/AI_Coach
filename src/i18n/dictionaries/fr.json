@@ -16,7 +16,9 @@
     "lightMode": "Mode clair",
     "darkMode": "Mode sombre",
     "show": "Afficher",
-    "hide": "Masquer"
+    "hide": "Masquer",
+    "session": "Session",
+    "skipToContent": "Aller au contenu principal"
   },
   "nav": {
     "analyze": "Analyse",
@@ -111,7 +113,8 @@
     "noAnalysesHint": "Il semble que vous n'ayez pas encore analysé de conversations pour cette session. Lancez votre première analyse maintenant !",
     "score": "SCORE",
     "noSummary": "Aucun résumé disponible.",
-    "openAnalysis": "Ouvrir l'analyse"
+    "openAnalysis": "Ouvrir l'analyse",
+    "showingLatest": "Les 50 analyses les plus récentes sont affichées."
   },
   "report": {
     "competency": "Compétence",
@@ -125,7 +128,7 @@
     "risks": "Risques",
     "pitfalls": "Pièges",
     "weeklyPractice": "Pratique sur 7 jours",
-    "reminder": "(plus tard) Rappel",
+    "reminder": "Rappel calendrier (7 jours)",
     "rewritesTitle": "Reformulations suggérées",
     "rewritesSubtitle": "Alternatives générées par l'IA pour un meilleur impact",
     "original": "Original",
@@ -142,15 +145,14 @@
     "competencyDegraded": "L'évaluation des compétences a échoué — des valeurs par défaut sont affichées.",
     "rateTitle": "Ce feedback vous a-t-il été utile ?",
     "rateThanks": "Merci pour votre évaluation !",
-    "rateError": "L'évaluation n'a pas pu être enregistrée."
-  },
-  "history": {
-    "title": "Historique",
-    "refresh": "Actualiser",
-    "session": "Session : ",
-    "errorLoading": "Erreur lors du chargement de l'historique : ",
-    "noRuns": "Aucun run trouvé (pour cette session).",
-    "tip": "Astuce : Si vous utilisiez auparavant Firestore directement, vous verrez peut-être \"Missing or insufficient permissions\" ici. Cette version utilise"
+    "rateError": "L'évaluation n'a pas pu être enregistrée.",
+    "overall": "GLOBAL",
+    "title": "Analyse de réunion",
+    "reportLabel": "Rapport",
+    "backToHistory": "← Retour à l'historique",
+    "loadingRun": "Chargement de l'analyse…",
+    "accessDenied": "Pas d'accès à cette analyse.",
+    "runNotFound": "Analyse introuvable."
   },
   "linkedin": {
     "title": "Partager sur LinkedIn",
@@ -171,35 +173,11 @@
     "posted": "Publié avec succès !",
     "viewPost": "Voir le post",
     "generatePostFirst": "Veuillez d'abord générer le texte du post.",
-    "tokenExpired": "Session LinkedIn expirée. Veuillez vous reconnecter."
-  },
-  "home": {
-    "title": "Analyser une conversation",
-    "subtitle": "Entrez les détails de votre conversation ci-dessous pour obtenir un feedback par l'IA.",
-    "conversationType": "Type de conversation",
-    "selectType": "Sélectionner un type...",
-    "interview": "Entretien",
-    "presentation": "Présentation",
-    "salesCall": "Appel commercial",
-    "customerSupport": "Support client",
-    "teamMeeting": "Réunion d'équipe",
-    "goal": "Quel est votre objectif ?",
-    "goalPlaceholder": "ex. Expliquer clairement la proposition de projet",
-    "transcript": "Transcription de la conversation",
-    "transcriptPlaceholder": "Collez votre transcription ici...",
-    "getFeedback": "Obtenir le feedback",
-    "analysisComplete": "Analyse terminée",
-    "analysisCompleteHint": "Voici le feedback sur votre conversation.",
-    "newAnalysis": "Nouvelle analyse",
-    "download": "Télécharger",
-    "summary": "Résumé",
-    "feedbackBreakdown": "Détail du feedback",
-    "strengths": "Points forts",
-    "improvements": "Améliorations",
-    "riskFlags": "Signaux de risque",
-    "performanceScores": "Scores de performance",
-    "suggestedRewrites": "Reformulations suggérées",
-    "rewrite": "Reformulation",
-    "helpfulQuestion": "Ce feedback vous a-t-il été utile ?"
+    "tokenExpired": "Session LinkedIn expirée. Veuillez vous reconnecter.",
+    "notConfigured": "LinkedIn n'est pas configuré pour cet environnement.",
+    "connectedOk": "LinkedIn connecté.",
+    "connectFailed": "Échec de la connexion LinkedIn :",
+    "confirmQuestion": "Publier ce post publiquement sur LinkedIn maintenant ?",
+    "confirmNow": "Oui, publier publiquement"
   }
 }

@@ -11,7 +11,7 @@ import { getDictionary, type Dictionary } from "./dictionaries";
  *   t.common.loading   // → "Laden…" (de) / "Loading…" (en) / …
  *   t.analyze.title     // → "Analyse" / "Analysis" / …
  */
-export function useTranslation(): { t: Dictionary } {
+export function useTranslation(): { t: Dictionary; locale: string } {
   const { locale } = useAuth();
-  return { t: getDictionary(locale) };
+  return { t: getDictionary(locale), locale };
 }

@@ -16,7 +16,9 @@
     "lightMode": "Light Mode",
     "darkMode": "Dark Mode",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "session": "Session",
+    "skipToContent": "Skip to main content"
   },
   "nav": {
     "analyze": "Analysis",
@@ -111,7 +113,8 @@
     "noAnalysesHint": "It looks like you haven't analyzed any conversations for this session yet. Start your first analysis now!",
     "score": "SCORE",
     "noSummary": "No summary available.",
-    "openAnalysis": "Open analysis"
+    "openAnalysis": "Open analysis",
+    "showingLatest": "Showing the latest 50 analyses."
   },
   "report": {
     "competency": "Competency",
@@ -125,7 +128,7 @@
     "risks": "Risks",
     "pitfalls": "Pitfalls",
     "weeklyPractice": "7-day practice",
-    "reminder": "(later) Reminder",
+    "reminder": "Add calendar reminder (7 days)",
     "rewritesTitle": "Suggested rewrites",
     "rewritesSubtitle": "AI-generated alternatives for better impact",
     "original": "Original",
@@ -142,15 +145,14 @@
     "competencyDegraded": "Competency scoring failed — default values are shown.",
     "rateTitle": "How helpful was this feedback?",
     "rateThanks": "Thanks for your rating!",
-    "rateError": "Rating could not be saved."
-  },
-  "history": {
-    "title": "History",
-    "refresh": "Refresh",
-    "session": "Session: ",
-    "errorLoading": "Error loading history: ",
-    "noRuns": "No runs found (for this session).",
-    "tip": "Tip: If you previously used Firestore directly, you may see \"Missing or insufficient permissions\" here. This version uses"
+    "rateError": "Rating could not be saved.",
+    "overall": "OVERALL",
+    "title": "Meeting Analysis",
+    "reportLabel": "Report",
+    "backToHistory": "← Back to history",
+    "loadingRun": "Loading analysis…",
+    "accessDenied": "No access to this analysis.",
+    "runNotFound": "Analysis not found."
   },
   "linkedin": {
     "title": "Share on LinkedIn",
@@ -171,35 +173,11 @@
     "posted": "Successfully posted!",
     "viewPost": "View Post",
     "generatePostFirst": "Please generate the post text first.",
-    "tokenExpired": "LinkedIn session expired. Please reconnect."
-  },
-  "home": {
-    "title": "Analyze a Conversation",
-    "subtitle": "Enter the details of your conversation below to get AI-powered feedback.",
-    "conversationType": "Conversation Type",
-    "selectType": "Select a type...",
-    "interview": "Interview",
-    "presentation": "Presentation",
-    "salesCall": "Sales Call",
-    "customerSupport": "Customer Support",
-    "teamMeeting": "Team Meeting",
-    "goal": "What is your goal?",
-    "goalPlaceholder": "e.g., To clearly explain the project proposal",
-    "transcript": "Conversation Transcript",
-    "transcriptPlaceholder": "Paste your conversation transcript here...",
-    "getFeedback": "Get Feedback",
-    "analysisComplete": "Analysis Complete",
-    "analysisCompleteHint": "Here's the feedback on your conversation.",
-    "newAnalysis": "New Analysis",
-    "download": "Download",
-    "summary": "Summary",
-    "feedbackBreakdown": "Feedback Breakdown",
-    "strengths": "Strengths",
-    "improvements": "Improvements",
-    "riskFlags": "Risk Flags",
-    "performanceScores": "Performance Scores",
-    "suggestedRewrites": "Suggested Rewrites",
-    "rewrite": "Rewrite",
-    "helpfulQuestion": "Was this feedback helpful?"
+    "tokenExpired": "LinkedIn session expired. Please reconnect.",
+    "notConfigured": "LinkedIn is not configured for this deployment.",
+    "connectedOk": "LinkedIn connected.",
+    "connectFailed": "LinkedIn connection failed:",
+    "confirmQuestion": "Publish this post publicly on LinkedIn now?",
+    "confirmNow": "Yes, post publicly"
   }
 }

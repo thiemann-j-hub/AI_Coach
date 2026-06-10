@@ -56,10 +56,33 @@ export function LinkedInPostCard({
   const [imageError, setImageError] = useState<string | null>(null);
   const [postSuccess, setPostSuccess] = useState<string | null>(null);
 
-  // Check LinkedIn connection on mount
+  const [configured, setConfigured] = useState<boolean | null>(null);
+  const [connectNotice, setConnectNotice] = useState<{ kind: 'ok' | 'error'; detail?: string } | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Check LinkedIn connection + configuration on mount
   useEffect(() => {
     const name = getCookie('linkedin_name');
     setLinkedInName(name);
+
+    fetch('/api/linkedin/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setConfigured(j ? !!j.configured : null))
+      .catch(() => setConfigured(null));
+
+    // OAuth-Callback-Ergebnis aus den Query-Params lesen und URL bereinigen
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get('linkedin_connected');
+      const err = params.get('linkedin_error');
+      if (connected || err) {
+        setConnectNotice(err ? { kind: 'error', detail: err } : { kind: 'ok' });
+        params.delete('linkedin_connected');
+        params.delete('linkedin_error');
+        const qs = params.toString();
+        window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
+      }
+    } catch {}
   }, []);
 
   const isConnected = !!linkedInName;
@@ -151,7 +174,8 @@ export function LinkedInPostCard({
 
   /* ---- Connect to LinkedIn ---- */
   const handleConnect = () => {
-    window.location.href = '/api/linkedin/auth';
+    const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/api/linkedin/auth?returnTo=${returnTo}`;
   };
 
   /* ------------------------------------------------------------------ */
@@ -279,6 +303,21 @@ export function LinkedInPostCard({
           )}
         </div>
 
+        {/* Connect result (OAuth-Callback) */}
+        {connectNotice && (
+          <div
+            className={`p-3 rounded-xl text-sm border ${
+              connectNotice.kind === 'ok'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : 'bg-red-500/10 border-red-500/20 text-red-400'
+            }`}
+          >
+            {connectNotice.kind === 'ok'
+              ? t.linkedin.connectedOk
+              : `${t.linkedin.connectFailed} ${connectNotice.detail ?? ''}`}
+          </div>
+        )}
+
         {/* Errors */}
         {(postError || imageError) && (
           <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
@@ -306,26 +345,58 @@ export function LinkedInPostCard({
         {/* Step 3: Post to LinkedIn */}
         <div className="pt-2 border-t border-border">
           {isConnected ? (
-            <button
-              type="button"
-              onClick={handlePostToLinkedIn}
-              disabled={isPosting || !postText}
-              className="w-full py-3 rounded-xl text-sm font-bold bg-[#0A66C2] text-white hover:bg-[#004182] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-              {isPosting ? (
-                <>
-                  <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
-                  {t.linkedin.posting}
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                  {t.linkedin.postToLinkedIn}
-                </>
-              )}
-            </button>
+            confirmOpen ? (
+              // Bestätigungs-Stufe: Publish ist outward-facing und sofort PUBLIC
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground text-center">
+                  {t.linkedin.confirmQuestion}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmOpen(false)}
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold border border-border bg-secondary text-foreground hover:bg-foreground/10 transition-colors"
+                  >
+                    {t.common.cancel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmOpen(false);
+                      void handlePostToLinkedIn();
+                    }}
+                    className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#0A66C2] text-white hover:bg-[#004182] transition-all"
+                  >
+                    {t.linkedin.confirmNow}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(true)}
+                disabled={isPosting || !postText}
+                className="w-full py-3 rounded-xl text-sm font-bold bg-[#0A66C2] text-white hover:bg-[#004182] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              >
+                {isPosting ? (
+                  <>
+                    <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                    {t.linkedin.posting}
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                    {t.linkedin.postToLinkedIn}
+                  </>
+                )}
+              </button>
+            )
+          ) : configured === false ? (
+            <div className="p-3 rounded-xl bg-foreground/5 border border-border text-sm text-muted-foreground text-center">
+              {t.linkedin.notConfigured}
+            </div>
           ) : (
             <button
               type="button"

@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       postId,
-      postUrl: `https://www.linkedin.com/feed/update/${postId}`,
+      postUrl: postId ? `https://www.linkedin.com/feed/update/${postId}` : null,
     });
   } catch (err: any) {
     console.error("[linkedin-post] Error:", err?.message ?? err);

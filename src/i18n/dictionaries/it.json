@@ -16,7 +16,9 @@
     "lightMode": "Modalità chiara",
     "darkMode": "Modalità scura",
     "show": "Mostra",
-    "hide": "Nascondi"
+    "hide": "Nascondi",
+    "session": "Sessione",
+    "skipToContent": "Vai al contenuto principale"
   },
   "nav": {
     "analyze": "Analisi",
@@ -111,7 +113,8 @@
     "noAnalysesHint": "Sembra che non abbiate ancora analizzato conversazioni per questa sessione. Avviate ora la vostra prima analisi!",
     "score": "PUNTEGGIO",
     "noSummary": "Nessun riepilogo disponibile.",
-    "openAnalysis": "Apri analisi"
+    "openAnalysis": "Apri analisi",
+    "showingLatest": "Vengono mostrate le 50 analisi più recenti."
   },
   "report": {
     "competency": "Competenza",
@@ -125,7 +128,7 @@
     "risks": "Rischi",
     "pitfalls": "Insidie",
     "weeklyPractice": "Pratica di 7 giorni",
-    "reminder": "(più tardi) Promemoria",
+    "reminder": "Promemoria calendario (7 giorni)",
     "rewritesTitle": "Riformulazioni suggerite",
     "rewritesSubtitle": "Alternative generate dall'IA per un impatto migliore",
     "original": "Originale",
@@ -142,15 +145,14 @@
     "competencyDegraded": "La valutazione delle competenze non è riuscita — vengono mostrati valori predefiniti.",
     "rateTitle": "Quanto è stato utile questo feedback?",
     "rateThanks": "Grazie per la tua valutazione!",
-    "rateError": "Impossibile salvare la valutazione."
-  },
-  "history": {
-    "title": "Cronologia",
-    "refresh": "Aggiorna",
-    "session": "Sessione: ",
-    "errorLoading": "Errore durante il caricamento della cronologia: ",
-    "noRuns": "Nessun run trovato (per questa sessione).",
-    "tip": "Suggerimento: Se in precedenza avete usato Firestore direttamente, potreste vedere \"Missing or insufficient permissions\" qui. Questa versione utilizza"
+    "rateError": "Impossibile salvare la valutazione.",
+    "overall": "TOTALE",
+    "title": "Analisi del colloquio",
+    "reportLabel": "Report",
+    "backToHistory": "← Torna alla cronologia",
+    "loadingRun": "Caricamento dell'analisi…",
+    "accessDenied": "Nessun accesso a questa analisi.",
+    "runNotFound": "Analisi non trovata."
   },
   "linkedin": {
     "title": "Condividi su LinkedIn",
@@ -171,35 +173,11 @@
     "posted": "Pubblicato con successo!",
     "viewPost": "Vedi post",
     "generatePostFirst": "Per favore genera prima il testo del post.",
-    "tokenExpired": "Sessione LinkedIn scaduta. Per favore riconnettiti."
-  },
-  "home": {
-    "title": "Analizza una conversazione",
-    "subtitle": "Inserisci i dettagli della tua conversazione qui sotto per ottenere un feedback basato sull'IA.",
-    "conversationType": "Tipo di conversazione",
-    "selectType": "Seleziona un tipo...",
-    "interview": "Colloquio",
-    "presentation": "Presentazione",
-    "salesCall": "Telefonata commerciale",
-    "customerSupport": "Assistenza clienti",
-    "teamMeeting": "Riunione di team",
-    "goal": "Qual è il tuo obiettivo?",
-    "goalPlaceholder": "es. Spiegare chiaramente la proposta del progetto",
-    "transcript": "Trascrizione della conversazione",
-    "transcriptPlaceholder": "Incolla qui la trascrizione della conversazione...",
-    "getFeedback": "Ottieni feedback",
-    "analysisComplete": "Analisi completata",
-    "analysisCompleteHint": "Ecco il feedback sulla tua conversazione.",
-    "newAnalysis": "Nuova analisi",
-    "download": "Scarica",
-    "summary": "Riepilogo",
-    "feedbackBreakdown": "Dettaglio del feedback",
-    "strengths": "Punti di forza",
-    "improvements": "Miglioramenti",
-    "riskFlags": "Segnali di rischio",
-    "performanceScores": "Punteggi di performance",
-    "suggestedRewrites": "Riformulazioni suggerite",
-    "rewrite": "Riformulazione",
-    "helpfulQuestion": "Questo feedback ti è stato utile?"
+    "tokenExpired": "Sessione LinkedIn scaduta. Per favore riconnettiti.",
+    "notConfigured": "LinkedIn non è configurato per questo ambiente.",
+    "connectedOk": "LinkedIn collegato.",
+    "connectFailed": "Connessione a LinkedIn non riuscita:",
+    "confirmQuestion": "Pubblicare questo post pubblicamente su LinkedIn adesso?",
+    "confirmNow": "Sì, pubblica pubblicamente"
   }
 }

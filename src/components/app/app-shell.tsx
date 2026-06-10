@@ -170,14 +170,6 @@ export default function AppShell(props: {
             <div className="flex items-center gap-3 md:gap-4">
               {props.actions}
 
-              <button
-                className="relative inline-flex items-center justify-center rounded-lg p-2 hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label={t.common.notifications}
-              >
-                <span className="material-icons-round">notifications</span>
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent shadow-accent-glow" />
-              </button>
-
               {user ? (
                 <UserNav />
               ) : (
