@@ -68,6 +68,17 @@ Web-App `pulsecraft-coach`, Cosmos-DB `coach`, Key Vault `coach-kv-*`.
 9. `output: standalone` + static/public kopieren beim ZIP-Deploy
 10. Profil pro Anfrage frisch aus Cosmos lesen (nicht dem JWT vertrauen)
 
+## Konkrete Werte (provisioniert 2026-06-10, M1 — keine Secrets)
+
+| Ressource | Wert |
+|---|---|
+| Entra-App „PulseCraft Coach" | clientId `2b24d264-1643-4b12-846b-f1a9e1554e9f`, Audience `AzureADandPersonalMicrosoftAccount`, Tenant `common` |
+| Redirect-URIs | `https://pulsecraft-coach.azurewebsites.net/api/auth/callback/microsoft-entra-id` + `http://localhost:9002/...` |
+| Web-App | `pulsecraft-coach` → https://pulsecraft-coach.azurewebsites.net (Node 22, geteilter Plan `pulsecraft-prod-plan`) |
+| Key Vault | `coach-kv-20f84` — 7 Secrets (AUTH-SECRET, ENTRA-CLIENT-SECRET, COSMOS-KEY, GEMINI-API-KEY, PINECONE-API-KEY, LINKEDIN-CLIENT-ID/-SECRET), alle App-Setting-Referenzen Status „Resolved" |
+| Cosmos | Account `pulsecraft-prod-cosmos` (West Europe), DB `coach` (Shared 400 RU), Container `users` (/id), `sessions` (/id), `runs` (/sessionId) |
+| App-Settings | 23 gesetzt, inkl. `AUTH_TRUST_HOST=true`, exakte `AUTH_URL`, `PORT=8080`, `WEBSITE_RUN_FROM_PACKAGE=1`, `GEMINI_TEXT_MODEL=gemini-2.5-flash` |
+
 ## DSGVO-Bilanz nach Migration
 
 - ✅ Auth, Nutzerdaten, Transkripte, Hosting: Azure West Europe (EU), Microsoft-AVV
