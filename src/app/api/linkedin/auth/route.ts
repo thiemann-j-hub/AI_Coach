@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthorizationUrl, getRedirectUri, isLinkedInConfigured } from "@/lib/linkedin";
-import crypto from "crypto";
+import { createSignedState } from "@/lib/server/linkedin-connection";
+import { requireAuth } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 
 /** Nur app-interne Pfade zulassen (Open-Redirect-Schutz). */
-function sanitizeReturnTo(value: string | null): string {
-  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
+function sanitizeReturnTo(value: unknown): string {
+  if (typeof value === "string" && value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
   return "/analyze";
 }
 
-export async function GET(req: NextRequest) {
+/**
+ * Startet den OAuth-Flow: POST mit Firebase-Auth (statt GET-Navigation),
+ * damit der HMAC-signierte state die uid traegt — der Callback ordnet das
+ * Token darueber dem richtigen User in Firestore zu (LI-E3).
+ * Die Card navigiert selbst zur zurueckgegebenen authUrl.
+ */
+export async function POST(req: NextRequest) {
   if (!isLinkedInConfigured()) {
     return NextResponse.json(
       { error: "LinkedIn is not configured. Set LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET." },
@@ -18,14 +27,17 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Generate a random state parameter for CSRF protection
-  const state = crypto.randomBytes(16).toString("hex");
+  const auth = await requireAuth(req);
+  if (auth instanceof NextResponse) return auth;
 
-  const returnTo = sanitizeReturnTo(req.nextUrl.searchParams.get("returnTo"));
+  const body = await req.json().catch(() => ({}));
+  const returnTo = sanitizeReturnTo(body?.returnTo);
+
+  // Signierter state: CSRF-Schutz (Cookie-Vergleich im Callback) + uid-Bindung
+  const state = createSignedState(auth.uid);
   const authUrl = getAuthorizationUrl(state, getRedirectUri(req.url));
 
-  // Set state in a cookie for verification in the callback
-  const response = NextResponse.redirect(authUrl);
+  const response = NextResponse.json({ authUrl });
   const cookieOpts = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

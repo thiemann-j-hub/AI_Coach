@@ -18,7 +18,8 @@
     "show": "Show",
     "hide": "Hide",
     "session": "Session",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "selectLanguage": "Select language"
   },
   "nav": {
     "analyze": "Analysis",
@@ -39,7 +40,11 @@
     "signInWithEmail": "Sign In with Email",
     "createAccount": "Create Account",
     "orContinueWith": "Or continue with",
-    "user": "User"
+    "user": "User",
+    "signOutFailed": "Sign out failed",
+    "loginFailed": "Login failed",
+    "registrationFailed": "Registration failed",
+    "genericError": "Something went wrong."
   },
   "analyze": {
     "title": "Analysis",
@@ -114,7 +119,8 @@
     "score": "SCORE",
     "noSummary": "No summary available.",
     "openAnalysis": "Open analysis",
-    "showingLatest": "Showing the latest 50 analyses."
+    "loadMore": "Load more",
+    "loadingMore": "Loading more…"
   },
   "report": {
     "competency": "Competency",
@@ -179,5 +185,12 @@
     "connectFailed": "LinkedIn connection failed:",
     "confirmQuestion": "Publish this post publicly on LinkedIn now?",
     "confirmNow": "Yes, post publicly"
+  },
+  "api": {
+    "unauthorized": "Authentication required",
+    "accessDenied": "Access denied",
+    "notFound": "Not found",
+    "internalError": "Internal server error",
+    "rateLimited": "Too many requests. Please try again later."
   }
 }

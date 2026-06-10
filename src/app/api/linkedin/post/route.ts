@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { uploadImageToLinkedIn, createLinkedInPost } from "@/lib/linkedin";
+import { getLinkedInConnection } from "@/lib/server/linkedin-connection";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 
@@ -22,16 +23,24 @@ export async function POST(req: NextRequest) {
   if (rlResponse) return rlResponse;
 
   try {
-    // Get LinkedIn credentials from cookies
-    const accessToken = req.cookies.get("linkedin_access_token")?.value;
-    const personUrn = req.cookies.get("linkedin_person_urn")?.value;
+    // LinkedIn-Verbindung aus Firestore (verschluesseltes Token, LI-E3)
+    const connection = await getLinkedInConnection(authResult.uid);
 
-    if (!accessToken || !personUrn) {
+    if (!connection) {
       return NextResponse.json(
         { error: "Not connected to LinkedIn. Please authorize first." },
         { status: 401 }
       );
     }
+
+    if (connection.expired) {
+      return NextResponse.json(
+        { error: "LinkedIn token expired. Please reconnect.", tokenExpired: true },
+        { status: 401 }
+      );
+    }
+
+    const { accessToken, personUrn } = connection;
 
     const body = await req.json();
     const parsed = schema.safeParse(body);

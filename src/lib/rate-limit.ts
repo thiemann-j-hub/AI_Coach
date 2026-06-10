@@ -27,11 +27,13 @@ function cleanup() {
  * @param key - Unique key (e.g. IP + endpoint)
  * @param maxRequests - Max requests per window
  * @param windowMs - Time window in milliseconds
+ * @param message - User-facing error message (pass a localized string)
  */
 export function checkRateLimit(
   key: string,
   maxRequests: number,
-  windowMs: number
+  windowMs: number,
+  message = "Too many requests. Please try again later."
 ): NextResponse | null {
   cleanup();
 
@@ -50,7 +52,7 @@ export function checkRateLimit(
     return NextResponse.json(
       {
         ok: false,
-        error: "Too many requests. Please try again later.",
+        error: message,
         code: "RATE_LIMITED",
         retryAfterSeconds: retryAfter,
       },

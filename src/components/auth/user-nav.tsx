@@ -21,7 +21,7 @@ export function UserNav() {
     const { error } = await signOut()
     if (error) {
       toast({
-        title: "Sign out failed",
+        title: t.auth.signOutFailed,
         description: error.message,
         variant: "destructive",
       })

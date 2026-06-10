@@ -32,8 +32,16 @@ export default function AppShell(props: {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  // resolvedTheme is only known on the client — guard against hydration mismatch
+  const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === 'dark';
 
   const nav: NavItem[] = useMemo(
     () => [
@@ -128,12 +136,12 @@ export default function AppShell(props: {
           <div className="px-4 pb-4 space-y-1">
             <button
               className="flex items-center justify-center w-full py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
             >
               <span className="material-icons-round text-base mr-2">
-                {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+                {isDark ? 'light_mode' : 'dark_mode'}
               </span>
-              {theme === 'dark' ? t.common.lightMode : t.common.darkMode}
+              {isDark ? t.common.lightMode : t.common.darkMode}
             </button>
             <div className="flex items-center justify-center w-full py-2">
               <LanguageSwitcher />

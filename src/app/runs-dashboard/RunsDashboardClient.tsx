@@ -78,6 +78,9 @@ export default function RunsDashboardClient() {
   const [runs, setRuns] = useState<RunsListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
@@ -109,12 +112,16 @@ export default function RunsDashboardClient() {
       setLoading(true);
       setError(null);
       try {
-        const res = await authFetch(`/api/runs/list?sessionId=${encodeURIComponent(sid)}`);
+        const res = await authFetch(`/api/runs/list?sessionId=${encodeURIComponent(sid)}&limit=50`);
         if (!res.ok) throw new Error(await readErrorText(res));
         const j = await res.json();
         if (!j?.ok) throw new Error(String(j?.error || t.dashboard.errorLoading));
         const list = Array.isArray(j?.runs) ? (j.runs as RunsListItem[]) : [];
-        if (!cancelled) setRuns(list);
+        if (!cancelled) {
+          setRuns(list);
+          setHasMore(Boolean(j?.hasMore));
+          setNextCursor(typeof j?.nextCursor === 'string' ? j.nextCursor : null);
+        }
       } catch (e: any) {
         if (!cancelled) setError(String(e?.message || e || t.dashboard.unknownError));
       } finally {
@@ -125,6 +132,31 @@ export default function RunsDashboardClient() {
     load();
     return () => { cancelled = true; };
   }, [sessionId, refresh, t]);
+
+  async function loadMore() {
+    const sid = sessionId.trim();
+    if (!sid || !nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await authFetch(
+        `/api/runs/list?sessionId=${encodeURIComponent(sid)}&limit=50&cursor=${encodeURIComponent(nextCursor)}`
+      );
+      if (!res.ok) throw new Error(await readErrorText(res));
+      const j = await res.json();
+      if (!j?.ok) throw new Error(String(j?.error || t.dashboard.errorLoading));
+      const list = Array.isArray(j?.runs) ? (j.runs as RunsListItem[]) : [];
+      setRuns((prev) => {
+        const seen = new Set(prev.map((r) => r.id));
+        return [...prev, ...list.filter((r) => !seen.has(r.id))];
+      });
+      setHasMore(Boolean(j?.hasMore));
+      setNextCursor(typeof j?.nextCursor === 'string' ? j.nextCursor : null);
+    } catch (e: any) {
+      setError(String(e?.message || e || t.dashboard.unknownError));
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
@@ -279,9 +311,6 @@ export default function RunsDashboardClient() {
         )}
 
         {/* Runs List */}
-        {!loading && runs.length >= 50 && (
-          <p className="text-xs text-muted-foreground mb-2">{t.dashboard.showingLatest}</p>
-        )}
         <div className="space-y-4">
           {filtered.map((r) => {
             const title =
@@ -355,6 +384,22 @@ export default function RunsDashboardClient() {
             );
           })}
         </div>
+
+        {/* Load More */}
+        {!loading && !error && hasMore && (
+          <div className="flex justify-center pt-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-card border border-border px-6 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all disabled:opacity-60"
+              onClick={loadMore}
+              disabled={loadingMore}
+            >
+              <span className={`material-icons-round text-base ${loadingMore ? 'animate-spin' : ''}`}>
+                {loadingMore ? 'progress_activity' : 'expand_more'}
+              </span>
+              {loadingMore ? t.dashboard.loadingMore : t.dashboard.loadMore}
+            </button>
+          </div>
+        )}
       </div>
     </AppShell>
   );

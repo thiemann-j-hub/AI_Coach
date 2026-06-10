@@ -5,6 +5,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -111,6 +112,8 @@ function pickPractice7Days(result: any): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  const apiMsg = getApiMessages(req);
+
   // Auth check
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
@@ -118,7 +121,7 @@ export async function POST(req: NextRequest) {
 
   // Rate limit: 20 saves per minute
   const rlKey = rateLimitKey(req, "runs-save");
-  const rlResponse = checkRateLimit(rlKey, 20, 60_000);
+  const rlResponse = checkRateLimit(rlKey, 20, 60_000, apiMsg.rateLimited);
   if (rlResponse) return rlResponse;
 
   try {
@@ -214,7 +217,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     logger.apiError("/api/runs/save", err);
     return NextResponse.json(
-      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
+      { ok: false, error: apiMsg.internalError, code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

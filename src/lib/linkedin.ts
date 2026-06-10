@@ -11,8 +11,10 @@
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
 
-const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID ?? "";
-const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET ?? "";
+// trim(): Whitespace-Platzhalter in Secret-Manager-Versionen zaehlen als
+// "nicht konfiguriert" (Secrets sind angelegt, Werte folgen spaeter)
+const LINKEDIN_CLIENT_ID = (process.env.LINKEDIN_CLIENT_ID ?? "").trim();
+const LINKEDIN_CLIENT_SECRET = (process.env.LINKEDIN_CLIENT_SECRET ?? "").trim();
 const LINKEDIN_API_VERSION = "202502";
 
 /**

@@ -2,6 +2,7 @@ import "server-only";
 
 import { getAuth } from "firebase-admin/auth";
 import { getAdminApp } from "./firebase-admin";
+import { getApiMessages } from "./server/get-request-locale";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -43,6 +44,6 @@ export function unauthorizedResponse(message = "Authentication required") {
  */
 export async function requireAuth(req: NextRequest | Request) {
   const decoded = await verifyAuthToken(req);
-  if (!decoded) return unauthorizedResponse();
+  if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
   return { uid: decoded.uid, email: decoded.email ?? null, decoded };
 }

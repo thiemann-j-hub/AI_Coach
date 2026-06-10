@@ -6,7 +6,7 @@ service cloud.firestore {
     // Sessions: only the owner (uid stored in session doc) can read/write
     match /sessions/{sessionId} {
       allow read: if request.auth != null
-        && (resource.data.uid == null || resource.data.uid == request.auth.uid);
+        && resource.data.uid == request.auth.uid;
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid;
       allow update: if request.auth != null
@@ -17,8 +17,7 @@ service cloud.firestore {
       // Runs within sessions: inherit ownership from parent session
       match /runs/{runId} {
         allow read: if request.auth != null
-          && (get(/databases/$(database)/documents/sessions/$(sessionId)).data.uid == null
-              || get(/databases/$(database)/documents/sessions/$(sessionId)).data.uid == request.auth.uid);
+          && get(/databases/$(database)/documents/sessions/$(sessionId)).data.uid == request.auth.uid;
         allow create: if request.auth != null
           && get(/databases/$(database)/documents/sessions/$(sessionId)).data.uid == request.auth.uid;
         allow update, delete: if request.auth != null
@@ -26,7 +25,11 @@ service cloud.firestore {
       }
     }
 
-    // User profiles: each user can only read/write their own profile
+    // User profiles: each user can only read/write their own profile.
+    // ACHTUNG: Diese Regel matcht NUR das Profil-Dokument selbst. Die
+    // Subcollection users/{uid}/integrations (z.B. verschluesseltes
+    // LinkedIn-Token) faellt bewusst unter die Default-Deny-Regel unten —
+    // sie ist ausschliesslich serverseitig per Admin-SDK lesbar.
     match /users/{userId} {
       allow read, write: if request.auth != null
         && request.auth.uid == userId;

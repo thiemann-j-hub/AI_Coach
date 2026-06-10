@@ -5,6 +5,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -21,11 +22,13 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const apiMsg = getApiMessages(req);
+
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  const rlResponse = checkRateLimit(rateLimitKey(req, "runs-rate"), 20, 60_000);
+  const rlResponse = checkRateLimit(rateLimitKey(req, "runs-rate"), 20, 60_000, apiMsg.rateLimited);
   if (rlResponse) return rlResponse;
 
   try {
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
     const sessionUid = sessionSnap.data()?.uid;
     if (sessionUid && sessionUid !== uid) {
       return NextResponse.json(
-        { ok: false, error: "Access denied", code: "FORBIDDEN" },
+        { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
       );
     }
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
     const runSnap = await runRef.get();
     if (!runSnap.exists) {
       return NextResponse.json(
-        { ok: false, error: "Run not found", code: "NOT_FOUND" },
+        { ok: false, error: apiMsg.notFound, code: "NOT_FOUND" },
         { status: 404 }
       );
     }
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     logger.apiError("/api/runs/rate", err);
     return NextResponse.json(
-      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
+      { ok: false, error: apiMsg.internalError, code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

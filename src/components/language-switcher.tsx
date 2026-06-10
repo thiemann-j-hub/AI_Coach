@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/providers/auth-provider";
+import { useTranslation } from "@/i18n/useTranslation";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { Globe } from "lucide-react";
 
@@ -12,6 +13,7 @@ import { Globe } from "lucide-react";
  */
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, updateLanguage } = useAuth();
+  const { t } = useTranslation();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value as Locale;
@@ -25,7 +27,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       <select
         value={locale}
         onChange={handleChange}
-        aria-label="Sprache / Language"
+        aria-label={t.common.selectLanguage}
         className={`
           bg-transparent text-sm text-muted-foreground
           border-0 outline-none cursor-pointer

@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/providers/auth-provider"
 import { useTranslation } from "@/i18n/useTranslation"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 interface LoginModalProps {
   children?: React.ReactNode
@@ -54,8 +55,8 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
       if (error) throw error
     } catch (error: any) {
       toast({
-        title: "Login failed",
-        description: error?.message || "Something went wrong.",
+        title: t.auth.loginFailed,
+        description: error?.message || t.auth.genericError,
         variant: "destructive",
       })
     } finally {
@@ -82,8 +83,8 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
       }
     } catch (error: any) {
       toast({
-        title: mode === "login" ? "Login failed" : "Registration failed",
-        description: error?.message || "Something went wrong.",
+        title: mode === "login" ? t.auth.loginFailed : t.auth.registrationFailed,
+        description: error?.message || t.auth.genericError,
         variant: "destructive",
       })
     } finally {
@@ -179,6 +180,10 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
             )}
             Google
           </Button>
+
+          <div className="flex justify-center">
+            <LanguageSwitcher compact />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

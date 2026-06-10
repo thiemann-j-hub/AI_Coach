@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { LoginModal } from "./login-modal";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -42,6 +43,8 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
         >
           <Button>{t.auth.signIn}</Button>
         </LoginModal>
+
+        <LanguageSwitcher compact />
       </div>
     );
   }

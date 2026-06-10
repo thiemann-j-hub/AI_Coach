@@ -1,14 +1,20 @@
-# LinkedIn Reference Images
+# LinkedIn Reference Images (optional)
 
-Place the following reference images in this directory:
+Beide Dateien sind **optional**. Fehlen sie, degradiert die Bild-Generierung
+kontrolliert (mit Server-Warnung im Log, siehe `src/lib/nanobanana.ts`):
 
-1. **person-reference.jpg** - Photo of the person to feature in LinkedIn post images
-   - Used as a reference for NanoBanana Pro to generate consistent person depictions
-   - Recommended: clear face photo, professional setting
+1. **person-reference.jpg** — Foto der Person, die auf den generierten
+   Post-Bildern erscheinen soll.
+   - Vorhanden: das Modell nutzt Gesicht/Statur als Referenz.
+   - Fehlt: neutraler Editorial-Stil ohne erkennbare Person
+     (alternativ Beschreibung per ENV `LINKEDIN_IMAGE_PERSON`).
+   - Empfehlung: klares Gesichtsfoto, professionelles Setting.
 
-2. **pulscraft-logo.png** - The Pulscraft AI logo
-   - Will be placed in the bottom-right corner of generated images
-   - Recommended: transparent PNG, at least 200x200px
+2. **pulscraft-logo.png** — Logo für die untere rechte Bildecke.
+   - Vorhanden: Logo wird als Referenz mitgegeben und im Prompt angefordert.
+   - Fehlt: die Logo-Anforderung wird komplett aus dem Prompt entfernt
+     (kein frei erfundenes Logo mehr).
+   - Empfehlung: transparentes PNG, mindestens 200x200px.
 
-These images are used by the NanoBanana Pro image generation API to create
-styled LinkedIn post images with consistent branding.
+Der Markenname in Prompts kommt aus ENV `LINKEDIN_BRAND_NAME`
+(leer = neutral, keine Erwähnung im Post-Text).

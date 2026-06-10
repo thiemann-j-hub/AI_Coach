@@ -54,6 +54,21 @@ export async function POST(req: NextRequest) {
 
     const ai = new GoogleGenAI({ apiKey });
 
+    // Brand-Erwaehnung konfigurierbar statt erzwungen (LI-E9):
+    // LINKEDIN_BRAND_NAME leer = keine Tool-Erwaehnung im Post
+    const brandName = (process.env.LINKEDIN_BRAND_NAME ?? "").trim();
+    const requirements = [
+      `Schreibe den Post auf ${LANG_LABELS[lang] ?? "Deutsch"}`,
+      "Laenge: 150-300 Woerter (ideal fuer LinkedIn Engagement)",
+      "Beginne mit einem aufmerksamkeitsstarken Hook (Frage oder provokante Aussage)",
+      "Teile 1-2 konkrete Erkenntnisse aus der Analyse (anonymisiert, keine persoenlichen Details)",
+      "Ende mit einem Call-to-Action oder einer Frage an die Community",
+      "Verwende relevante Hashtags (3-5, am Ende)",
+      "Verwende Emojis sparsam aber wirkungsvoll",
+      ...(brandName ? [`Erwaehne ${brandName} als Tool fuer KI-gestuetztes Coaching`] : []),
+      "Ton: professionell, authentisch, inspirierend",
+    ];
+
     const prompt = `Du bist ein LinkedIn-Content-Experte. Erstelle einen professionellen, engagierenden LinkedIn-Post basierend auf den folgenden Coaching-Analyse-Ergebnissen.
 
 ANALYSE-DATEN:
@@ -64,15 +79,7 @@ ANALYSE-DATEN:
 - Gespraechstyp: ${conversationType || "Coaching-Gespraech"}
 
 ANFORDERUNGEN:
-1. Schreibe den Post auf ${LANG_LABELS[lang] ?? "Deutsch"}
-2. Laenge: 150-300 Woerter (ideal fuer LinkedIn Engagement)
-3. Beginne mit einem aufmerksamkeitsstarken Hook (Frage oder provokante Aussage)
-4. Teile 1-2 konkrete Erkenntnisse aus der Analyse (anonymisiert, keine persoenlichen Details)
-5. Ende mit einem Call-to-Action oder einer Frage an die Community
-6. Verwende relevante Hashtags (3-5, am Ende)
-7. Verwende Emojis sparsam aber wirkungsvoll
-8. Erwaehne Pulscraft AI als Tool fuer KI-gestuetztes Coaching
-9. Ton: professionell, authentisch, inspirierend
+${requirements.map((r, i) => `${i + 1}. ${r}`).join("\n")}
 
 Gib NUR den Post-Text zurueck, ohne Erklaerungen oder Metadaten.
 Gib ausserdem eine kurze Headline (max 10 Woerter) fuer das Bild zurueck.

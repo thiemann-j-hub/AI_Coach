@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from '@/i18n/useTranslation';
 import { authFetch } from '@/lib/api-client';
+import { auth } from '@/lib/firebaseClient';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -15,16 +16,6 @@ interface LinkedInPostCardProps {
   scoreOverall: number | null;
   conversationType: string;
   lang: string;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
-
-function getCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -58,18 +49,33 @@ export function LinkedInPostCard({
 
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [connectNotice, setConnectNotice] = useState<{ kind: 'ok' | 'error'; detail?: string } | null>(null);
+  const [tokenExpiredHint, setTokenExpiredHint] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Check LinkedIn connection + configuration on mount
+  // Verbindungsstatus kommt aus Firestore (per /status), nicht mehr aus
+  // Cookies — erst abfragen, wenn Firebase-Auth initialisiert ist, sonst
+  // fehlt der Authorization-Header und die Card zeigt faelschlich "nicht
+  // verbunden" (z.B. direkt nach dem OAuth-Redirect).
   useEffect(() => {
-    const name = getCookie('linkedin_name');
-    setLinkedInName(name);
+    const unsubscribe = auth.onAuthStateChanged(() => {
+      authFetch('/api/linkedin/status')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => {
+          if (!j) {
+            setConfigured(null);
+            return;
+          }
+          setConfigured(!!j.configured);
+          setLinkedInName(j.connected ? (j.name || 'LinkedIn') : null);
+          setTokenExpiredHint(!!j.expired);
+        })
+        .catch(() => setConfigured(null));
+    });
+    return () => unsubscribe();
+  }, []);
 
-    fetch('/api/linkedin/status')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => setConfigured(j ? !!j.configured : null))
-      .catch(() => setConfigured(null));
-
+  useEffect(() => {
     // OAuth-Callback-Ergebnis aus den Query-Params lesen und URL bereinigen
     try {
       const params = new URLSearchParams(window.location.search);
@@ -173,10 +179,28 @@ export function LinkedInPostCard({
   }, [postText, imageBase64, imageMimeType, t]);
 
   /* ---- Connect to LinkedIn ---- */
-  const handleConnect = () => {
-    const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.href = `/api/linkedin/auth?returnTo=${returnTo}`;
-  };
+  // POST mit Firebase-Auth statt GET-Navigation: der Server bindet den
+  // OAuth-state an die uid und liefert die Auth-URL zurueck (LI-E3)
+  const handleConnect = useCallback(async () => {
+    setIsConnecting(true);
+    setConnectNotice(null);
+    try {
+      const returnTo = window.location.pathname + window.location.search;
+      const res = await authFetch('/api/linkedin/auth', {
+        method: 'POST',
+        body: JSON.stringify({ returnTo }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.authUrl) {
+        throw new Error(data?.error ?? `HTTP ${res.status}`);
+      }
+      window.location.href = data.authUrl;
+      // isConnecting bleibt true — die Seite navigiert weg
+    } catch (err: any) {
+      setConnectNotice({ kind: 'error', detail: err?.message ?? 'Unknown error' });
+      setIsConnecting(false);
+    }
+  }, []);
 
   /* ------------------------------------------------------------------ */
   /*  Render                                                             */
@@ -318,6 +342,13 @@ export function LinkedInPostCard({
           </div>
         )}
 
+        {/* Token abgelaufen -> Reconnect-Hinweis (LI-E3) */}
+        {tokenExpiredHint && !isConnected && (
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-sm text-amber-400">
+            {t.linkedin.tokenExpired}
+          </div>
+        )}
+
         {/* Errors */}
         {(postError || imageError) && (
           <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
@@ -401,11 +432,16 @@ export function LinkedInPostCard({
             <button
               type="button"
               onClick={handleConnect}
-              className="w-full py-3 rounded-xl text-sm font-bold bg-[#0A66C2] text-white hover:bg-[#004182] transition-all flex items-center justify-center gap-2"
+              disabled={isConnecting}
+              className="w-full py-3 rounded-xl text-sm font-bold bg-[#0A66C2] text-white hover:bg-[#004182] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
+              {isConnecting ? (
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+              ) : (
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+              )}
               {t.linkedin.connect}
             </button>
           )}
