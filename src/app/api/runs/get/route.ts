@@ -1,9 +1,9 @@
 // src/app/api/runs/get/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase-admin";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkSessionOwnership, getRun } from "@/lib/server/runs-store";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
@@ -17,20 +17,6 @@ const sessionIdSchema = z
   .regex(/^[A-Za-z0-9_-]+$/, "sessionId must be url-safe (a-zA-Z0-9_-).");
 
 const runIdSchema = z.string().min(1).max(256);
-
-function toIso(v: any): string | null {
-  if (!v) return null;
-  if (typeof v === "string") return v;
-  if (v?.toDate) {
-    try {
-      return v.toDate().toISOString();
-    } catch {
-      return null;
-    }
-  }
-  if (v instanceof Date) return v.toISOString();
-  return null;
-}
 
 export async function GET(req: NextRequest) {
   const apiMsg = getApiMessages(req);
@@ -66,51 +52,39 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const db = getAdminDb();
-
-    // Verify session ownership (sessions with uid field)
-    const sessionSnap = await db.collection("sessions").doc(sessionId).get();
-    const sessionUid = sessionSnap.data()?.uid;
-    if (sessionUid && sessionUid !== uid) {
+    const ownership = await checkSessionOwnership(sessionId, uid);
+    if (!ownership.allowed) {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
       );
     }
 
-    const ref = db
-      .collection("sessions")
-      .doc(sessionId)
-      .collection("runs")
-      .doc(runId);
-
-    const snap = await ref.get();
-    if (!snap.exists) {
+    const data = await getRun(sessionId, runId);
+    if (!data) {
       return NextResponse.json(
         { ok: false, error: apiMsg.notFound, code: "NOT_FOUND" },
         { status: 404 }
       );
     }
 
-    const data = snap.data() as any;
-
     return NextResponse.json(
       {
         ok: true,
         run: {
-          id: snap.id,
-          createdAt: toIso(data?.createdAt),
-          conversationType: data?.conversationType ?? null,
-          conversationSubType: data?.conversationSubType ?? null,
-          goal: data?.goal ?? null,
-          lang: data?.lang ?? null,
-          jurisdiction: data?.jurisdiction ?? null,
-          transcriptText: data?.transcriptText ?? null,
-          analysisJson: data?.analysisJson ?? null,
-          ragContext: data?.ragContext ?? null,
-          scoreOverall: data?.scoreOverall ?? data?.analysisJson?.scores?.overall ?? null,
-          summary: data?.summary ?? data?.analysisJson?.summary ?? null,
-          rating: typeof data?.rating === "number" ? data.rating : null,
+          id: data.id,
+          createdAt: data.createdAt ?? null,
+          conversationType: data.conversationType ?? null,
+          conversationSubType: data.conversationSubType ?? null,
+          goal: data.goal ?? null,
+          lang: data.lang ?? null,
+          jurisdiction: data.jurisdiction ?? null,
+          transcriptText: data.transcriptText ?? null,
+          analysisJson: data.analysisJson ?? null,
+          ragContext: data.ragContext ?? null,
+          scoreOverall: data.scoreOverall ?? data.analysisJson?.scores?.overall ?? null,
+          summary: data.summary ?? data.analysisJson?.summary ?? null,
+          rating: typeof data.rating === "number" ? data.rating : null,
         },
       },
       { status: 200 }

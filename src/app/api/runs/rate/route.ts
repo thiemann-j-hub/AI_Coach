@@ -1,9 +1,8 @@
 // src/app/api/runs/rate/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
 import { requireAuth } from "@/lib/api-auth";
+import { checkSessionOwnership, rateRun } from "@/lib/server/runs-store";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
@@ -42,33 +41,23 @@ export async function POST(req: NextRequest) {
     }
 
     const { sessionId, runId, rating } = parsed.data;
-    const db = getAdminDb();
 
     // Ownership-Check analog zu /api/runs/get
-    const sessionSnap = await db.collection("sessions").doc(sessionId).get();
-    const sessionUid = sessionSnap.data()?.uid;
-    if (sessionUid && sessionUid !== uid) {
+    const ownership = await checkSessionOwnership(sessionId, uid);
+    if (!ownership.allowed) {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
       );
     }
 
-    const runRef = db
-      .collection("sessions")
-      .doc(sessionId)
-      .collection("runs")
-      .doc(runId);
-
-    const runSnap = await runRef.get();
-    if (!runSnap.exists) {
+    const updated = await rateRun(sessionId, runId, rating);
+    if (!updated) {
       return NextResponse.json(
         { ok: false, error: apiMsg.notFound, code: "NOT_FOUND" },
         { status: 404 }
       );
     }
-
-    await runRef.update({ rating, ratedAt: FieldValue.serverTimestamp() });
 
     logger.api("/api/runs/rate", "saved", { uid, sessionId, runId, rating });
     return NextResponse.json({ ok: true, rating }, { status: 200 });

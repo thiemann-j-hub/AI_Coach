@@ -1,9 +1,12 @@
 // src/app/api/runs/save/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
 import { requireAuth } from "@/lib/api-auth";
+import {
+  checkSessionOwnership,
+  createRun,
+  upsertSession,
+} from "@/lib/server/runs-store";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
@@ -187,14 +190,20 @@ export async function POST(req: NextRequest) {
     const scoreOverall =
       typeof (analysisJson.scores as any)?.overall === "number" ? (analysisJson.scores as any).overall : null;
 
-    const db = getAdminDb();
-    const sessionRef = db.collection("sessions").doc(sessionId);
+    // Ownership VOR dem Write prüfen — verhindert Session-Übernahme durch
+    // uid-Überschreiben (war beim Firestore-merge zuvor möglich).
+    const ownership = await checkSessionOwnership(sessionId, uid);
+    if (!ownership.allowed) {
+      return NextResponse.json(
+        { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
 
-    // Store uid for ownership verification on reads
-    await sessionRef.set({ updatedAt: FieldValue.serverTimestamp(), uid }, { merge: true });
+    await upsertSession(sessionId, uid);
 
-    const runRef = await sessionRef.collection("runs").add({
-      createdAt: FieldValue.serverTimestamp(),
+    const runId = await createRun({
+      sessionId,
       uid,
 
       conversationType: request.conversationType,
@@ -212,8 +221,8 @@ export async function POST(req: NextRequest) {
       scoreOverall,
     });
 
-    logger.api("/api/runs/save", "saved", { uid, sessionId, runId: runRef.id });
-    return NextResponse.json({ ok: true, runId: runRef.id }, { status: 200 });
+    logger.api("/api/runs/save", "saved", { uid, sessionId, runId });
+    return NextResponse.json({ ok: true, runId }, { status: 200 });
   } catch (err: any) {
     logger.apiError("/api/runs/save", err);
     return NextResponse.json(

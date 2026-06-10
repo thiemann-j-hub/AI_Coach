@@ -1,18 +1,17 @@
 import "server-only";
 
 import crypto from "crypto";
-import { getAdminDb } from "@/lib/firebase-admin";
+import { readItem, upsertItem, usersContainer } from "@/lib/cosmos";
 
 /**
  * Persistenz der LinkedIn-Verbindung pro User (LI-E3).
  *
- * Das Access-Token liegt AES-256-GCM-verschluesselt in
- * users/{uid}/integrations/linkedin — die Firestore-Rules erlauben Clients
- * keinen Zugriff auf diese Subcollection (Default-Deny), nur der Admin-SDK
- * liest sie serverseitig.
+ * Das Access-Token liegt AES-256-GCM-verschluesselt als Feld `linkedin` im
+ * users-Dokument (Cosmos) — der Container ist ausschliesslich serverseitig
+ * erreichbar (Key aus Key Vault), /api/users/profile gibt das Feld nie zurueck.
  *
- * Der OAuth-state ist HMAC-signiert und traegt die Firebase-uid, damit der
- * Callback (ein Browser-Redirect ohne Authorization-Header) das Token dem
+ * Der OAuth-state ist HMAC-signiert und traegt die uid, damit der Callback
+ * (ein Browser-Redirect ohne eigene Session-Pruefung) das Token dem
  * richtigen User zuordnen kann.
  */
 
@@ -110,7 +109,7 @@ export function verifySignedState(state: string): { uid: string } | null {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Firestore-Persistenz                                               */
+/*  Cosmos-Persistenz (Feld `linkedin` im users-Dokument)              */
 /* ------------------------------------------------------------------ */
 
 export interface LinkedInConnection {
@@ -121,35 +120,52 @@ export interface LinkedInConnection {
   expiresAt: number;
 }
 
-function connectionRef(uid: string) {
-  return getAdminDb()
-    .collection("users")
-    .doc(uid)
-    .collection("integrations")
-    .doc("linkedin");
-}
+type StoredConnection = {
+  accessTokenEnc: string;
+  personUrn: string;
+  name: string;
+  expiresAt: number;
+  scope: string | null;
+  updatedAt: number;
+};
+
+type UserDocWithLinkedIn = {
+  id: string;
+  linkedin?: StoredConnection;
+  [key: string]: unknown;
+};
 
 export async function saveLinkedInConnection(
   uid: string,
   conn: LinkedInConnection & { scope?: string }
 ): Promise<void> {
-  await connectionRef(uid).set({
-    accessTokenEnc: encryptToken(conn.accessToken),
-    personUrn: conn.personUrn,
-    name: conn.name,
-    expiresAt: conn.expiresAt,
-    scope: conn.scope ?? null,
-    updatedAt: Date.now(),
+  // Read-Modify-Upsert: Cosmos hat kein Feld-merge. Das users-Dokument
+  // existiert nach dem ersten Login (Profil-Provisionierung); falls der
+  // Callback früher feuert, wird ein Skelett angelegt.
+  const existing = await readItem<UserDocWithLinkedIn>(usersContainer(), uid, uid);
+  const now = new Date().toISOString();
+  await upsertItem(usersContainer(), {
+    ...(existing ?? { id: uid, createdAt: now }),
+    id: uid,
+    updatedAt: now,
+    linkedin: {
+      accessTokenEnc: encryptToken(conn.accessToken),
+      personUrn: conn.personUrn,
+      name: conn.name,
+      expiresAt: conn.expiresAt,
+      scope: conn.scope ?? null,
+      updatedAt: Date.now(),
+    },
   });
 }
 
 export async function getLinkedInConnection(
   uid: string
 ): Promise<(LinkedInConnection & { expired: boolean }) | null> {
-  const snap = await connectionRef(uid).get();
-  if (!snap.exists) return null;
+  const doc = await readItem<UserDocWithLinkedIn>(usersContainer(), uid, uid);
+  const data = doc?.linkedin;
+  if (!data) return null;
 
-  const data = snap.data()!;
   const accessToken =
     typeof data.accessTokenEnc === "string" ? decryptToken(data.accessTokenEnc) : null;
   if (!accessToken || typeof data.personUrn !== "string") return null;
