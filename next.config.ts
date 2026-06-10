@@ -1,6 +1,8 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  // Azure App Service: ZIP-Deploy des standalone-Outputs (Playbook Gotcha 12)
+  output: 'standalone',
   images: {
     remotePatterns: [
       {

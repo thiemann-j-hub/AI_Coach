@@ -7,9 +7,8 @@ import { getDictionary, type Dictionary } from "@/i18n/dictionaries";
  *
  * Priority:
  *  1. `x-locale` header (set by the client-side API layer)
- *  2. `__session` cookie (Firebase Hosting)
- *  3. `NEXT_LOCALE` cookie (local dev)
- *  4. defaultLocale fallback
+ *  2. `NEXT_LOCALE` cookie
+ *  3. defaultLocale fallback
  */
 export function getRequestLocale(req: NextRequest | Request): Locale {
   // 1. Explicit header
@@ -18,14 +17,9 @@ export function getRequestLocale(req: NextRequest | Request): Locale {
     return header as Locale;
   }
 
-  // 2. Cookies (only available on NextRequest)
+  // 2. Cookie (only available on NextRequest)
   const cookies = (req as NextRequest).cookies;
   if (cookies && typeof cookies.get === "function") {
-    const session = cookies.get("__session")?.value;
-    if (session && locales.includes(session as Locale)) {
-      return session as Locale;
-    }
-
     const next = cookies.get("NEXT_LOCALE")?.value;
     if (next && locales.includes(next as Locale)) {
       return next as Locale;

@@ -25,13 +25,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Locale wie in der Middleware: NEXT_LOCALE, dann __session (kann auch
-  // einen Firebase-JWT enthalten — daher Whitelist-Pruefung), sonst Default.
+  // Locale wie in der Middleware: NEXT_LOCALE, sonst Default.
   const cookieStore = await cookies();
   const locale =
-    resolveLocale(cookieStore.get("NEXT_LOCALE")?.value) ??
-    resolveLocale(cookieStore.get("__session")?.value) ??
-    defaultLocale;
+    resolveLocale(cookieStore.get("NEXT_LOCALE")?.value) ?? defaultLocale;
   const t = getDictionary(locale);
 
   return (

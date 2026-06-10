@@ -1,8 +1,9 @@
 /**
  * Locale cookie helpers.
  *
- * Firebase Hosting CDN strips all cookies except `__session`,
- * so we always write two cookies to cover both local dev and production.
+ * Einziger Locale-Cookie ist NEXT_LOCALE. (Der frühere `__session`-Fallback
+ * war ein Firebase-Hosting-CDN-Workaround — auf Azure obsolet und schädlich,
+ * weil er NEXT_LOCALE überschreiben konnte.)
  */
 
 import { defaultLocale, locales, type Locale } from "./config";
@@ -14,10 +15,7 @@ export function getLocaleCookie(): Locale {
   if (typeof document === "undefined") return defaultLocale;
 
   const cookies = document.cookie.split("; ");
-  // Prefer NEXT_LOCALE, fall back to __session
-  const match =
-    cookies.find((row) => row.startsWith("NEXT_LOCALE=")) ??
-    cookies.find((row) => row.startsWith("__session="));
+  const match = cookies.find((row) => row.startsWith("NEXT_LOCALE="));
 
   const value = match?.split("=")[1];
   if (value && locales.includes(value as Locale)) {
@@ -26,8 +24,7 @@ export function getLocaleCookie(): Locale {
   return defaultLocale;
 }
 
-/** Write locale cookie (client-side). Only NEXT_LOCALE is written
- *  to avoid overwriting __session which Firebase Auth may use. */
+/** Write locale cookie (client-side). */
 export function setLocaleCookie(locale: Locale): void {
   if (typeof document === "undefined") return;
   document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=${MAX_AGE};samesite=lax`;

@@ -21,20 +21,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check each cookie individually – __session may contain a Firebase Auth JWT,
-  // so we must validate each value is actually a known locale.
   const nextLocale = request.cookies.get("NEXT_LOCALE")?.value;
   if (nextLocale && locales.includes(nextLocale as Locale)) {
     return NextResponse.next();
   }
 
-  const sessionLocale = request.cookies.get("__session")?.value;
-  if (sessionLocale && locales.includes(sessionLocale as Locale)) {
-    return NextResponse.next();
-  }
-
-  // First visit: detect locale from Accept-Language header and set NEXT_LOCALE only.
-  // We do NOT overwrite __session here because it may hold a Firebase Auth token.
+  // First visit: detect locale from Accept-Language header and set NEXT_LOCALE.
   const detected = getPreferredLocale(
     request.headers.get("accept-language")
   );
