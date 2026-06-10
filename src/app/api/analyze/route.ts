@@ -2,22 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateDynamicFeedback } from "../../../ai/flows/generate-dynamic-feedback";
 import { scoreCompetencies } from "../../../ai/flows/score-competencies";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const requestSchema = z
-  .object({
-    conversationType: z.string().min(1),
-    conversationSubType: z.string().optional().nullable(),
-    goal: z.string().optional().nullable(),
-    transcriptText: z.string().min(1),
-    lang: z.string().optional(),
-    jurisdiction: z.string().optional(),
-    leaderLabel: z.string().optional().nullable(),
-    employeeLabel: z.string().optional().nullable(),
-  })
-  .passthrough();
+const MAX_TRANSCRIPT_LENGTH = 500_000;
+
+const requestSchema = z.object({
+  conversationType: z.string().min(1).max(100),
+  conversationSubType: z.string().max(100).optional().nullable(),
+  goal: z.string().max(500).optional().nullable(),
+  transcriptText: z.string().min(1).max(MAX_TRANSCRIPT_LENGTH),
+  lang: z.enum(["de", "en"]).optional(),
+  jurisdiction: z.string().max(50).optional(),
+  leaderLabel: z.string().max(200).optional().nullable(),
+  employeeLabel: z.string().max(200).optional().nullable(),
+});
 
 const COMP_MODEL = [
   { id: "C1", name: "Integrieren und Verbinden" },
@@ -60,7 +63,14 @@ function normalizeEvidence(v: any): string[] {
 }
 
 export async function POST(req: NextRequest) {
-  const debug = req.nextUrl.searchParams.get("debug") === "1";
+  // Auth check
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+
+  // Rate limit: 10 analyze requests per minute per IP
+  const rlKey = rateLimitKey(req, "analyze");
+  const rlResponse = checkRateLimit(rlKey, 10, 60_000);
+  if (rlResponse) return rlResponse;
 
   try {
     const json = await req.json();
@@ -74,6 +84,7 @@ export async function POST(req: NextRequest) {
     }
 
     const d = parsed.data;
+    logger.api("/api/analyze", "start", { uid: authResult.uid, lang: d.lang, textLen: d.transcriptText.length });
 
     // 1) Base analysis (RAG + coaching feedback)
     const baseResult = await generateDynamicFeedback({
@@ -112,14 +123,12 @@ export async function POST(req: NextRequest) {
         let why = asStr(r?.why ?? "").trim();
         const score = normalizeScore(r?.score);
         if (!score) {
-          // Wenn score null oder invalide -> konsequent "nicht beobachtbar"
           why = "nicht ausreichend beobachtbar";
         } else if (!why) {
           why = "—";
         }
 
         let evidence = normalizeEvidence(r?.evidence);
-        // anonymize labels in evidence
         evidence = evidence.map((q) => {
           let s = asStr(q);
           if (leaderLbl) s = s.split(leaderLbl).join("Führungskraft");
@@ -140,26 +149,20 @@ export async function POST(req: NextRequest) {
       });
     } catch (e: any) {
       competency_error = e?.message ?? String(e);
-      // competency_ratings bleibt default (10x null) -> App bleibt stabil
+      logger.apiError("/api/analyze/competencies", e);
     }
 
     const result = {
       ...baseResult,
       competency_ratings,
-      ...(debug ? { competency_error } : {}),
     };
 
-    return NextResponse.json(
-      { ok: true, result, ...(debug ? { debug: { competency_error, hasCompetencies: Array.isArray(competency_ratings) } } : {}) },
-      { status: 200 }
-    );
+    logger.api("/api/analyze", "complete", { uid: authResult.uid });
+    return NextResponse.json({ ok: true, result }, { status: 200 });
   } catch (err: any) {
+    logger.apiError("/api/analyze", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message ?? String(err),
-        ...(debug ? { stack: err?.stack ?? null } : {}),
-      },
+      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

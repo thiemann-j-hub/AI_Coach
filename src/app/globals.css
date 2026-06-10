@@ -1,91 +1,156 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* ── Light Mode (default) ── */
   :root {
-    /* PulseCraft AI Theme */
-    --background: 216 65% 11%;
-    --foreground: 214 32% 91%;
-    --card: 218 58% 16%;
-    --card-foreground: 214 32% 91%;
-    --popover: 218 58% 16%;
-    --popover-foreground: 214 32% 91%;
-    --primary: 206 100% 50%;
+    --background: 210 20% 97%;
+    --foreground: 213 40% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 40% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 40% 16%;
+    --primary: 207 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 47% 20%;
-    --secondary-foreground: 214 32% 91%;
-    --muted: 217 47% 20%;
-    --muted-foreground: 225 23% 61%;
-    --accent: 271 91% 65%;
+    --secondary: 210 18% 93%;
+    --secondary-foreground: 213 40% 16%;
+    --muted: 210 18% 93%;
+    --muted-foreground: 215 14% 40%;
+    --accent: 272 70% 56%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 47% 20%;
-    --input: 217 47% 20%;
-    --ring: 206 100% 50%;
-    --radius: 1rem;
+    --destructive: 2 97% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 207 100% 50%;
+    --radius: 0.75rem;
+
+    /* Extended PulseCraft Tokens */
+    --surface-dark: 210 18% 93%;
+    --surface-light: 210 15% 96%;
+    --primary-dark: 207 100% 40%;
+    --text-main: 213 40% 16%;
+    --text-muted: 215 14% 40%;
+    --neon-glow: 0 4px 14px rgba(0, 145, 255, 0.25);
+    --neon-glow-hover: 0 4px 20px rgba(0, 145, 255, 0.35);
+    --primary-glow: 0 4px 14px rgba(0, 145, 255, 0.15);
+
+    /* Glass backgrounds */
+    --glass-panel-bg: rgba(255, 255, 255, 0.8);
+    --glass-header-bg: rgba(255, 255, 255, 0.9);
+    --glass-panel-bg-alt: rgba(0, 0, 0, 0.02);
+
+    /* Scrollbar */
+    --scrollbar-thumb: rgba(100, 116, 139, 0.3);
+    --scrollbar-thumb-hover: rgba(100, 116, 139, 0.5);
   }
 
+  /* ── Dark Mode ── */
   .dark {
-    --background: 216 65% 11%;
-    --foreground: 214 32% 91%;
-    --card: 218 58% 16%;
-    --card-foreground: 214 32% 91%;
-    --popover: 218 58% 16%;
-    --popover-foreground: 214 32% 91%;
-    --primary: 206 100% 50%;
+    --background: 213 54% 12%;
+    --foreground: 221 39% 87%;
+    --card: 215 40% 16%;
+    --card-foreground: 221 39% 87%;
+    --popover: 215 40% 16%;
+    --popover-foreground: 221 39% 87%;
+    --primary: 207 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 47% 20%;
-    --secondary-foreground: 214 32% 91%;
-    --muted: 217 47% 20%;
-    --muted-foreground: 225 23% 61%;
-    --accent: 271 91% 65%;
+    --secondary: 214 32% 22%;
+    --secondary-foreground: 221 39% 87%;
+    --muted: 215 40% 16%;
+    --muted-foreground: 220 17% 56%;
+    --accent: 272 70% 56%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 47% 20%;
-    --input: 217 47% 20%;
-    --ring: 206 100% 50%;
-  }
-}
+    --destructive: 2 97% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 25% 20%;
+    --input: 215 25% 23%;
+    --ring: 207 100% 50%;
 
-@layer base {
+    /* Extended PulseCraft Tokens */
+    --surface-dark: 215 40% 16%;
+    --surface-light: 214 32% 22%;
+    --primary-dark: 207 100% 35%;
+    --text-main: 221 39% 87%;
+    --text-muted: 220 17% 56%;
+    --neon-glow: 0 0 10px rgba(0, 145, 255, 0.5), 0 0 20px rgba(0, 145, 255, 0.3);
+    --neon-glow-hover: 0 0 15px rgba(0, 145, 255, 0.7), 0 0 30px rgba(0, 145, 255, 0.5);
+    --primary-glow: 0 0 20px rgba(0, 145, 255, 0.3);
+
+    /* Glass backgrounds */
+    --glass-panel-bg: rgba(17, 34, 64, 0.7);
+    --glass-header-bg: rgba(10, 25, 47, 0.85);
+    --glass-panel-bg-alt: rgba(255, 255, 255, 0.02);
+
+    /* Scrollbar */
+    --scrollbar-thumb: rgba(136, 146, 176, 0.3);
+    --scrollbar-thumb-hover: rgba(136, 146, 176, 0.5);
+  }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
 @layer utilities {
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  /* Glass Effects */
+  .glass-panel {
+    @apply backdrop-blur-md border;
+    background: var(--glass-panel-bg);
   }
 
+  .glass-header {
+    @apply backdrop-blur-md border-b;
+    background: var(--glass-header-bg);
+  }
+
+  /* Neon & Glow Shadows */
   .shadow-neon {
-    box-shadow: 0 0 10px rgba(0, 145, 255, 0.4);
+    box-shadow: var(--neon-glow);
   }
-  
+
+  .shadow-neon-hover {
+    box-shadow: var(--neon-glow-hover);
+  }
+
   .shadow-primary-glow {
-    box-shadow: 0 0 20px rgba(0, 145, 255, 0.4);
+    box-shadow: var(--primary-glow);
   }
+
+  .shadow-accent-glow {
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
+  }
+
+  /* Gradient Text */
+  .text-gradient {
+    background: linear-gradient(to right, #0091ff, #9d4edd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Decorative Background Blobs */
+  .bg-blob-blue {
+    background: radial-gradient(circle at 20% 50%, rgba(0, 145, 255, 0.08) 0%, transparent 50%);
+  }
+
+  .bg-blob-purple {
+    background: radial-gradient(circle at 80% 50%, rgba(157, 78, 221, 0.06) 0%, transparent 50%);
+  }
+
+  /* Scoped Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 }
 
-/* PulseCraft Analysis Dashboard Styles */
-.glass-panel {
-  /* Default (Light) */
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-.dark .glass-panel {
-  /* Dark Override */
-  background: rgba(17, 34, 64, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
+/* Gradient Button */
 .btn-gradient {
   background: linear-gradient(90deg, #0091FF 0%, #00C6FF 100%);
   transition: all 0.3s ease;
@@ -95,25 +160,27 @@
   transform: translateY(-1px);
 }
 
+/* Global Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-    background: transparent; 
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1; 
-    border-radius: 4px;
-}
-.dark ::-webkit-scrollbar-thumb {
-    background: #233554; 
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8; 
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-    background: #3e506e; 
+  background: var(--scrollbar-thumb-hover);
 }
 
-
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

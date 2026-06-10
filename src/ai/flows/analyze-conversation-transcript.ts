@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {sanitizeForPrompt} from '@/lib/prompt-guard';
 
 const AnalyzeConversationTranscriptInputSchema = z.object({
   transcript: z.string().describe('The conversation transcript to analyze.'),
@@ -78,7 +79,17 @@ const analyzeConversationTranscriptFlow = ai.defineFlow(
     outputSchema: AnalyzeConversationTranscriptOutputSchema,
   },
   async input => {
-    const {output} = await analyzeConversationTranscriptPrompt(input);
+    // Fence user-supplied transcript to reduce prompt injection risk
+    const {sanitized: fencedText, injectionDetected} = sanitizeForPrompt(
+      input.transcript,
+      {label: 'TRANSCRIPT'}
+    );
+    if (injectionDetected) {
+      console.warn(`[prompt-guard] Injection pattern detected in transcript: "${injectionDetected}"`);
+    }
+
+    const hardenedInput = {...input, transcript: fencedText};
+    const {output} = await analyzeConversationTranscriptPrompt(hardenedInput);
     return output!;
   }
 );

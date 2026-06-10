@@ -6,12 +6,14 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { useAuth } from "@/providers/auth-provider"
+import { useTranslation } from "@/i18n/useTranslation"
 import { signOut } from "@/lib/auth-service"
 import { useToast } from "@/hooks/use-toast"
 
 export function UserNav() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   if (!user) return null
 
@@ -30,18 +32,18 @@ export function UserNav() {
     <div className="flex items-center gap-3">
       <div className="text-right hidden sm:block">
         <div className="text-sm font-bold text-foreground leading-none mb-1">
-          {user.displayName || "User"}
+          {user.displayName || t.auth.user}
         </div>
-        <button 
-          onClick={onSignOut} 
+        <button
+          onClick={onSignOut}
           className="text-xs text-muted-foreground hover:text-primary transition-colors"
         >
-          Logout
+          {t.auth.signOut}
         </button>
       </div>
       <Avatar className="h-10 w-10 border border-border shadow-neon">
-        <AvatarImage src={user.photoURL || ""} alt={user.displayName || "User"} />
-        <AvatarFallback className="bg-primary text-primary-foreground font-medium text-lg">
+        <AvatarImage src={user.photoURL || ""} alt={user.displayName || t.auth.user} />
+        <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-medium text-lg">
           {(user.displayName?.charAt(0) || user.email?.charAt(0) || "U").toUpperCase()}
         </AvatarFallback>
       </Avatar>

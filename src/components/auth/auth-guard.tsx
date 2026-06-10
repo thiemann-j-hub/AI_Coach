@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/providers/auth-provider";
+import { useTranslation } from "@/i18n/useTranslation";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -14,6 +15,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children, fallback }: AuthGuardProps) {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
 
   if (loading) {
@@ -27,10 +29,10 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-        <p className="text-muted-foreground">Please sign in to access this page.</p>
-        
-        <LoginModal 
-          open={true} 
+        <p className="text-muted-foreground">{t.auth.signInRequired}</p>
+
+        <LoginModal
+          open={true}
           onOpenChange={(open) => {
             if (!open) {
               // If user closes modal without logging in, redirect to home
@@ -38,7 +40,7 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
             }
           }}
         >
-          <Button>Sign In</Button>
+          <Button>{t.auth.signIn}</Button>
         </LoginModal>
       </div>
     );
@@ -46,4 +48,3 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
 
   return <>{children}</>;
 }
-

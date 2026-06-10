@@ -3,12 +3,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import ReportDashboard, { CompetencyPanel } from '@/components/app/report-dashboard';
+import { STORAGE_KEY_THEME } from '@/lib/storage-keys';
 
 export default function DesignPreviewPage() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const t = localStorage.getItem('theme');
+    const t = localStorage.getItem(STORAGE_KEY_THEME);
     const isDark = t === 'dark';
     setDark(isDark);
     document.documentElement.classList.toggle('dark', isDark);
@@ -17,7 +18,7 @@ export default function DesignPreviewPage() {
   function toggleTheme() {
     const next = !dark;
     setDark(next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
+    localStorage.setItem(STORAGE_KEY_THEME, next ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark', next);
   }
 

@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +32,16 @@ function toIso(v: any): string | null {
 }
 
 export async function GET(req: NextRequest) {
+  // Auth check
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+  const { uid } = authResult;
+
+  // Rate limit: 30 reads per minute
+  const rlKey = rateLimitKey(req, "runs-get");
+  const rlResponse = checkRateLimit(rlKey, 30, 60_000);
+  if (rlResponse) return rlResponse;
+
   const sp = req.nextUrl.searchParams;
   const sessionId = sp.get("sessionId") ?? "";
   const runId = sp.get("runId") ?? sp.get("id") ?? "";
@@ -51,6 +64,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const db = getAdminDb();
+
+    // Verify session ownership (sessions with uid field)
+    const sessionSnap = await db.collection("sessions").doc(sessionId).get();
+    const sessionUid = sessionSnap.data()?.uid;
+    if (sessionUid && sessionUid !== uid) {
+      return NextResponse.json(
+        { ok: false, error: "Access denied", code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
+
     const ref = db
       .collection("sessions")
       .doc(sessionId)
@@ -88,13 +112,9 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (err: any) {
+    logger.apiError("/api/runs/get", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message ?? String(err),
-        code: err?.code ?? null,
-        details: err?.details ?? null,
-      },
+      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

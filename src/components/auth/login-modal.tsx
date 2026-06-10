@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/providers/auth-provider"
+import { useTranslation } from "@/i18n/useTranslation"
 
 interface LoginModalProps {
   children?: React.ReactNode
@@ -33,6 +34,7 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
   const [isLoading, setIsLoading] = React.useState(false)
   const { toast } = useToast()
   const { user } = useAuth()
+  const { t } = useTranslation()
 
   const isControlled = controlledOpen !== undefined
   const open = isControlled ? controlledOpen : internalOpen
@@ -74,11 +76,9 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
       if (mode === "login") {
         const { error } = await signInWithEmail(email, password)
         if (error) throw error
-        toast({ title: "Welcome back!", description: "Logged in successfully." })
       } else {
         const { error } = await signUpWithEmail(email, password, name)
         if (error) throw error
-        toast({ title: "Welcome!", description: "Account created successfully." })
       }
     } catch (error: any) {
       toast({
@@ -95,39 +95,39 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
     <Dialog open={open} onOpenChange={setOpen}>
       {(!isControlled || children) && (
         <DialogTrigger asChild>
-          {children || <Button variant="outline">Sign In</Button>}
+          {children || <Button variant="outline">{t.auth.signIn}</Button>}
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[425px]">
 
         <DialogHeader>
-          <DialogTitle>Authentication</DialogTitle>
+          <DialogTitle>{t.auth.authTitle}</DialogTitle>
           <DialogDescription>
-            Sign in to your account or create a new one to save your progress.
+            {t.auth.authDescription}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-6">
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
+              <TabsTrigger value="login">{t.auth.login}</TabsTrigger>
+              <TabsTrigger value="register">{t.auth.register}</TabsTrigger>
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={(e) => onSubmit(e, "login")}>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="email-login">Email</Label>
+                    <Label htmlFor="email-login">{t.auth.email}</Label>
                     <Input id="email-login" name="email" type="email" placeholder="m@example.com" required />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password-login">Password</Label>
+                    <Label htmlFor="password-login">{t.auth.password}</Label>
                     <Input id="password-login" name="password" type="password" required />
                   </div>
                   <Button type="submit" disabled={isLoading}>
                     {isLoading && (
                       <span className="mr-2 h-4 w-4 animate-spin">...</span>
                     )}
-                    Sign In with Email
+                    {t.auth.signInWithEmail}
                   </Button>
                 </div>
               </form>
@@ -136,35 +136,35 @@ export function LoginModal({ children, open: controlledOpen, onOpenChange: contr
               <form onSubmit={(e) => onSubmit(e, "register")}>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name-register">Full Name</Label>
+                    <Label htmlFor="name-register">{t.auth.fullName}</Label>
                     <Input id="name-register" name="name" type="text" placeholder="John Doe" required />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="email-register">Email</Label>
+                    <Label htmlFor="email-register">{t.auth.email}</Label>
                     <Input id="email-register" name="email" type="email" placeholder="m@example.com" required />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password-register">Password</Label>
+                    <Label htmlFor="password-register">{t.auth.password}</Label>
                     <Input id="password-register" name="password" type="password" required minLength={6} />
                   </div>
                   <Button type="submit" disabled={isLoading}>
                     {isLoading && (
                       <span className="mr-2 h-4 w-4 animate-spin">...</span>
                     )}
-                    Create Account
+                    {t.auth.createAccount}
                   </Button>
                 </div>
               </form>
             </TabsContent>
           </Tabs>
-          
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
+                {t.auth.orContinueWith}
               </span>
             </div>
           </div>

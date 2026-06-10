@@ -2,7 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminDb } from "@/lib/firebase-admin";
-import * as fs from "node:fs";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,34 +14,6 @@ const sessionIdSchema = z
   .min(8)
   .max(128)
   .regex(/^[A-Za-z0-9_-]+$/, "sessionId must be url-safe (a-zA-Z0-9_-).");
-
-function getProjectId(): string | null {
-  return (
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-    process.env.GCLOUD_PROJECT ||
-    process.env.GCP_PROJECT ||
-    null
-  );
-}
-
-function safeServiceAccountInfo() {
-  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (!credPath) return null;
-
-  try {
-    if (!fs.existsSync(credPath)) return { fileExists: false };
-    const raw = fs.readFileSync(credPath, "utf8");
-    const j = JSON.parse(raw);
-    return {
-      fileExists: true,
-      project_id: j?.project_id ?? null,
-      client_email: j?.client_email ?? null,
-    };
-  } catch (e: any) {
-    return { fileExists: null, error: e?.message ?? String(e) };
-  }
-}
 
 function toIso(v: any): string | null {
   if (!v) return null;
@@ -56,9 +30,18 @@ function toIso(v: any): string | null {
 }
 
 export async function GET(req: NextRequest) {
+  // Auth check
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+  const { uid } = authResult;
+
+  // Rate limit: 30 list requests per minute
+  const rlKey = rateLimitKey(req, "runs-list");
+  const rlResponse = checkRateLimit(rlKey, 30, 60_000);
+  if (rlResponse) return rlResponse;
+
   const sp = req.nextUrl.searchParams;
   const sessionId = sp.get("sessionId") ?? "";
-  const debug = sp.get("debug") === "1";
 
   const parsed = sessionIdSchema.safeParse(sessionId);
   if (!parsed.success) {
@@ -70,6 +53,16 @@ export async function GET(req: NextRequest) {
 
   try {
     const db = getAdminDb();
+
+    // Verify session ownership (sessions with uid field)
+    const sessionSnap = await db.collection("sessions").doc(sessionId).get();
+    const sessionUid = sessionSnap.data()?.uid;
+    if (sessionUid && sessionUid !== uid) {
+      return NextResponse.json(
+        { ok: false, error: "Access denied", code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
 
     const snap = await db
       .collection("sessions")
@@ -111,34 +104,11 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    return NextResponse.json(
-      {
-        ok: true,
-        runs,
-        debug: debug
-          ? {
-              nodeEnv: process.env.NODE_ENV ?? null,
-              projectId: getProjectId(),
-              has_FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
-              has_GOOGLE_APPLICATION_CREDENTIALS:
-                !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
-              googleCredPath: process.env.GOOGLE_APPLICATION_CREDENTIALS ?? null,
-              has_SERVICE_ACCOUNT_JSON: !!process.env.SERVICE_ACCOUNT_JSON,
-              has_FIREBASE_SERVICE_ACCOUNT_JSON: !!process.env.FIREBASE_SERVICE_ACCOUNT_JSON,
-              serviceAccountInfo: safeServiceAccountInfo(),
-            }
-          : undefined,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ ok: true, runs }, { status: 200 });
   } catch (err: any) {
+    logger.apiError("/api/runs/list", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message ?? String(err),
-        code: err?.code ?? null,
-        details: err?.details ?? null,
-      },
+      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

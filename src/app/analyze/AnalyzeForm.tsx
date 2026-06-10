@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { authFetch } from "@/lib/api-client";
+import { STORAGE_KEY_SESSION_LEGACY } from "@/lib/storage-keys";
 
 type AnalyzeRequest = {
   conversationType: string;
@@ -22,7 +24,7 @@ type RunMeta = {
   ragCount: number | null;
 };
 
-const SESSION_KEY = "script_coach_session_id";
+const SESSION_KEY = STORAGE_KEY_SESSION_LEGACY;
 
 function safeString(v: unknown): string {
   return typeof v === "string" ? v : "";
@@ -96,7 +98,7 @@ export default function AnalyzeForm() {
     if (!sessionId) return;
     setRunsLoading(true);
     try {
-      const res = await fetch(`/api/runs/list?sessionId=${encodeURIComponent(sessionId)}&limit=10`);
+      const res = await authFetch(`/api/runs/list?sessionId=${encodeURIComponent(sessionId)}&limit=10`);
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error ? JSON.stringify(json.error) : `HTTP ${res.status}`);
       setRuns(Array.isArray(json?.items) ? json.items : []);
@@ -119,9 +121,8 @@ export default function AnalyzeForm() {
     setSaveError(null);
     setSaving(true);
     try {
-      const res = await fetch("/api/runs/save", {
+      const res = await authFetch("/api/runs/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId,
           storeTranscript,
@@ -164,9 +165,8 @@ export default function AnalyzeForm() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/analyze", {
+      const res = await authFetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
@@ -199,7 +199,7 @@ export default function AnalyzeForm() {
     if (!sessionId) return;
     setError(null);
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `/api/runs/get?sessionId=${encodeURIComponent(sessionId)}&runId=${encodeURIComponent(runId)}`
       );
       const json = await res.json().catch(() => null);

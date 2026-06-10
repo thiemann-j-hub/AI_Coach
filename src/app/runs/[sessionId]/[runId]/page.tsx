@@ -128,14 +128,19 @@ export default async function RunDetailPage(props: {
           <div className="flex items-center justify-between gap-3">
             <Link
               href={`/runs-dashboard/${encodeURIComponent(sessionId)}`}
-              className="text-sm text-sky-300 hover:text-sky-200"
+              className="text-sm text-primary hover:text-primary/80 transition-colors"
             >
               ← Zurück zum Verlauf
             </Link>
-            <div className="text-xs text-slate-400">Session: {sessionId}</div>
+            <div className="text-xs text-muted-foreground font-mono">Session: {sessionId}</div>
           </div>
 
-          <ReportDashboard result={safeResult} metaChips={metaChips} />
+          <ReportDashboard
+            result={safeResult}
+            metaChips={metaChips}
+            conversationType={data?.conversationType ? String(data.conversationType) : undefined}
+            lang={data?.lang ? String(data.lang) : undefined}
+          />
         </div>
       </div>
     </AppShell>
