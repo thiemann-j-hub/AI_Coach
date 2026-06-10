@@ -32,19 +32,12 @@
     "signInRequired": "Zaloguj się, aby uzyskać dostęp do tej strony.",
     "authTitle": "Uwierzytelnianie",
     "authDescription": "Zaloguj się lub utwórz nowe konto, aby zapisać swój postęp.",
-    "login": "Logowanie",
-    "register": "Rejestracja",
-    "email": "E-mail",
-    "password": "Hasło",
-    "fullName": "Imię i nazwisko",
-    "signInWithEmail": "Zaloguj się przez e-mail",
-    "createAccount": "Utwórz konto",
-    "orContinueWith": "Lub kontynuuj z",
     "user": "Użytkownik",
     "signOutFailed": "Wylogowanie nie powiodło się",
     "loginFailed": "Logowanie nie powiodło się",
-    "registrationFailed": "Rejestracja nie powiodła się",
-    "genericError": "Coś poszło nie tak."
+    "genericError": "Coś poszło nie tak.",
+    "signInWithMicrosoft": "Zaloguj się przez Microsoft",
+    "microsoftHint": "Działa z osobistymi kontami Microsoft (np. @outlook.com) i kontami służbowymi."
   },
   "analyze": {
     "title": "Analiza",

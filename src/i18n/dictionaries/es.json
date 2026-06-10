@@ -32,19 +32,12 @@
     "signInRequired": "Inicie sesión para acceder a esta página.",
     "authTitle": "Autenticación",
     "authDescription": "Inicie sesión o cree una cuenta nueva para guardar su progreso.",
-    "login": "Iniciar sesión",
-    "register": "Registrarse",
-    "email": "Correo electrónico",
-    "password": "Contraseña",
-    "fullName": "Nombre completo",
-    "signInWithEmail": "Iniciar sesión con correo",
-    "createAccount": "Crear cuenta",
-    "orContinueWith": "O continuar con",
     "user": "Usuario",
     "signOutFailed": "Error al cerrar sesión",
     "loginFailed": "Error al iniciar sesión",
-    "registrationFailed": "Error en el registro",
-    "genericError": "Algo salió mal."
+    "genericError": "Algo salió mal.",
+    "signInWithMicrosoft": "Iniciar sesión con Microsoft",
+    "microsoftHint": "Funciona con cuentas Microsoft personales (p. ej. @outlook.es) y de trabajo."
   },
   "analyze": {
     "title": "Análisis",

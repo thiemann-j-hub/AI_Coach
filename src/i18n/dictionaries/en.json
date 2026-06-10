@@ -32,19 +32,12 @@
     "signInRequired": "Please sign in to access this page.",
     "authTitle": "Authentication",
     "authDescription": "Sign in to your account or create a new one to save your progress.",
-    "login": "Login",
-    "register": "Register",
-    "email": "Email",
-    "password": "Password",
-    "fullName": "Full Name",
-    "signInWithEmail": "Sign In with Email",
-    "createAccount": "Create Account",
-    "orContinueWith": "Or continue with",
     "user": "User",
     "signOutFailed": "Sign out failed",
     "loginFailed": "Login failed",
-    "registrationFailed": "Registration failed",
-    "genericError": "Something went wrong."
+    "genericError": "Something went wrong.",
+    "signInWithMicrosoft": "Sign in with Microsoft",
+    "microsoftHint": "Works with personal Microsoft accounts (e.g. @outlook.com) and work accounts."
   },
   "analyze": {
     "title": "Analysis",

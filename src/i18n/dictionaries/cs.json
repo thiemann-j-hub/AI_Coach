@@ -32,19 +32,12 @@
     "signInRequired": "Pro přístup na tuto stránku se prosím přihlaste.",
     "authTitle": "Ověření",
     "authDescription": "Přihlaste se nebo si vytvořte nový účet pro uložení vašeho pokroku.",
-    "login": "Přihlášení",
-    "register": "Registrace",
-    "email": "E-mail",
-    "password": "Heslo",
-    "fullName": "Celé jméno",
-    "signInWithEmail": "Přihlásit se e-mailem",
-    "createAccount": "Vytvořit účet",
-    "orContinueWith": "Nebo pokračujte s",
     "user": "Uživatel",
     "signOutFailed": "Odhlášení se nezdařilo",
     "loginFailed": "Přihlášení se nezdařilo",
-    "registrationFailed": "Registrace se nezdařila",
-    "genericError": "Něco se pokazilo."
+    "genericError": "Něco se pokazilo.",
+    "signInWithMicrosoft": "Přihlásit se přes Microsoft",
+    "microsoftHint": "Funguje s osobními účty Microsoft (např. @outlook.cz) i pracovními účty."
   },
   "analyze": {
     "title": "Analýza",

@@ -1,28 +1,20 @@
 import "server-only";
 
-import { getAuth } from "firebase-admin/auth";
-import { getAdminApp } from "./firebase-admin";
-import { getApiMessages } from "./server/get-request-locale";
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { getApiMessages } from "./server/get-request-locale";
 
 /**
- * Verifies Firebase ID token from the Authorization header.
- * Returns the decoded token (with uid) or null if invalid/missing.
+ * Auth-Helfer für API-Routen — NextAuth-Session (HTTP-only-Cookie) statt
+ * Firebase-Bearer-Token. Vertragsform bewusst identisch zum früheren
+ * Firebase-Helfer ({ uid, email } | 401-Response), damit die Routen
+ * unverändert bleiben (Playbook-Leitprinzip „Vertragstreue").
  */
-export async function verifyAuthToken(req: NextRequest | Request) {
-  const header = req.headers.get("authorization");
-  if (!header?.startsWith("Bearer ")) return null;
-
-  const idToken = header.slice(7);
-  if (!idToken) return null;
-
-  try {
-    const auth = getAuth(getAdminApp());
-    const decoded = await auth.verifyIdToken(idToken);
-    return decoded;
-  } catch {
-    return null;
-  }
+export async function verifyAuthToken(_req: NextRequest | Request) {
+  const session = await auth();
+  const uid = (session?.user as { id?: string } | undefined)?.id;
+  if (!uid) return null;
+  return { uid, email: session?.user?.email ?? null };
 }
 
 /**
@@ -36,7 +28,7 @@ export function unauthorizedResponse(message = "Authentication required") {
 }
 
 /**
- * Convenience: verify auth and return uid, or send 401.
+ * Convenience: verify session and return uid, or send 401.
  * Usage in API routes:
  *   const auth = await requireAuth(req);
  *   if (auth instanceof NextResponse) return auth;
@@ -45,5 +37,5 @@ export function unauthorizedResponse(message = "Authentication required") {
 export async function requireAuth(req: NextRequest | Request) {
   const decoded = await verifyAuthToken(req);
   if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
-  return { uid: decoded.uid, email: decoded.email ?? null, decoded };
+  return { uid: decoded.uid, email: decoded.email, decoded };
 }

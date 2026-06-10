@@ -1,39 +1,49 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebaseClient";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { SessionProvider, useSession } from "next-auth/react";
 import {
   defaultLocale,
   locales,
   type Locale,
 } from "@/i18n/config";
-import {
-  getLocaleCookie,
-  setLocaleCookie,
-  getBrowserLocale,
-} from "@/i18n/locale-cookie";
+import { getLocaleCookie, setLocaleCookie } from "@/i18n/locale-cookie";
+import { authFetch } from "@/lib/api-client";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
+/** Schlanker User-Shim — Feldnamen wie beim früheren Firebase-User, damit
+ *  die Konsumenten (user-nav, AuthGuard, Cards) unverändert bleiben. */
+export interface AuthUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
   displayName: string;
-  photoURL?: string;
-  language?: string;
+  language?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   locale: Locale;
-  /** Persist locale to cookie + Firestore and update UI instantly */
+  /** Persist locale to cookie + Cosmos-Profil and update UI instantly */
   updateLanguage: (locale: Locale) => Promise<void>;
 }
 
@@ -45,12 +55,11 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 /* ------------------------------------------------------------------ */
-/*  Provider                                                           */
+/*  Inner Provider (braucht SessionProvider-Kontext)                   */
 /* ------------------------------------------------------------------ */
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+function InnerAuthProvider({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const [locale, setLocale] = useState<Locale>(defaultLocale);
 
   // Initialise locale from cookie on mount (client-side only)
@@ -58,86 +67,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLocale(getLocaleCookie());
   }, []);
 
-  // ---- Auth state listener with Firestore profile sync ----
+  const uid = (session?.user as { id?: string } | undefined)?.id ?? null;
+
+  // User-Shim aus der NextAuth-Session ableiten
+  const user: AuthUser | null = useMemo(() => {
+    if (!uid) return null;
+    return {
+      uid,
+      email: session?.user?.email ?? null,
+      displayName: session?.user?.name ?? null,
+      photoURL: session?.user?.image ?? null,
+    };
+  }, [uid, session?.user?.email, session?.user?.name, session?.user?.image]);
+
+  // Nach Login: frisches Profil aus Cosmos holen (provisioniert beim ersten
+  // Mal) und gespeicherte Sprache in Cookie + State syncen.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
-
-      if (!firebaseUser) return;
-
+    if (!uid) return;
+    let cancelled = false;
+    (async () => {
       try {
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const snap = await getDoc(userRef);
-
-        if (snap.exists()) {
-          const profile = snap.data() as UserProfile;
-
-          if (
-            profile.language &&
-            locales.includes(profile.language as Locale)
-          ) {
-            // Sync Firestore language → cookie + state
-            setLocaleCookie(profile.language as Locale);
-            setLocale(profile.language as Locale);
-          }
-        } else {
-          // First sign-in: create profile.
-          // Prefer existing cookie (user may have just picked a language).
-          const cookieLocale = getLocaleCookie();
-          const initialLocale =
-            cookieLocale !== defaultLocale ? cookieLocale : getBrowserLocale();
-          const now = new Date().toISOString();
-          const newProfile: UserProfile = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email ?? "",
-            displayName: firebaseUser.displayName ?? "",
-            photoURL: firebaseUser.photoURL ?? undefined,
-            language: initialLocale,
-            createdAt: now,
-            updatedAt: now,
-          };
-          await setDoc(userRef, newProfile);
-          setLocaleCookie(initialLocale);
-          setLocale(initialLocale);
+        const res = await authFetch("/api/users/profile");
+        const j = await res.json().catch(() => null);
+        const lang = j?.profile?.language;
+        if (!cancelled && lang && locales.includes(lang as Locale)) {
+          setLocaleCookie(lang as Locale);
+          setLocale(lang as Locale);
         }
-      } catch (err) {
-        console.error("[auth-provider] profile sync error:", err);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // ---- updateLanguage ----
-  const updateLanguage = async (newLocale: Locale) => {
-    // 1. Update React state immediately → UI updates instantly
-    setLocale(newLocale);
-
-    // 2. Persist to cookie for next page load
-    setLocaleCookie(newLocale);
-
-    // 3. Persist to Firestore (if logged in)
-    if (user) {
-      try {
-        const userRef = doc(db, "users", user.uid);
-        await setDoc(
-          userRef,
-          { language: newLocale, updatedAt: new Date().toISOString() },
-          { merge: true }
-        );
       } catch {
-        // Firestore write failed – cookie + state are still set
+        // Cookie-Locale bleibt maßgeblich
       }
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
 
-    // No reload needed – React state drives the UI
-  };
+  // Referenzielle Stabilität (Playbook Gotcha 3): Funktionen in useCallback,
+  // Context-Value in useMemo — sonst Endlos-Refetch in den Konsumenten.
+  const updateLanguage = useCallback(
+    async (newLocale: Locale) => {
+      setLocale(newLocale);
+      setLocaleCookie(newLocale);
+      try {
+        document.documentElement.lang = newLocale;
+      } catch {}
+      if (uid) {
+        try {
+          await authFetch("/api/users/profile", {
+            method: "PATCH",
+            body: JSON.stringify({ language: newLocale }),
+          });
+        } catch {
+          // Cosmos-Write fehlgeschlagen – Cookie + State greifen trotzdem
+        }
+      }
+    },
+    [uid]
+  );
 
+  const value = useMemo(
+    () => ({
+      user,
+      loading: status === "loading",
+      locale,
+      updateLanguage,
+    }),
+    [user, status, locale, updateLanguage]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Provider                                                           */
+/* ------------------------------------------------------------------ */
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    <AuthContext.Provider value={{ user, loading, locale, updateLanguage }}>
-      {children}
-    </AuthContext.Provider>
+    <SessionProvider>
+      <InnerAuthProvider>{children}</InnerAuthProvider>
+    </SessionProvider>
   );
 }
 

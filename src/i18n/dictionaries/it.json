@@ -32,19 +32,12 @@
     "signInRequired": "Effettua l'accesso per visualizzare questa pagina.",
     "authTitle": "Autenticazione",
     "authDescription": "Accedi o crea un nuovo account per salvare i tuoi progressi.",
-    "login": "Accesso",
-    "register": "Registrati",
-    "email": "E-mail",
-    "password": "Password",
-    "fullName": "Nome completo",
-    "signInWithEmail": "Accedi con e-mail",
-    "createAccount": "Crea account",
-    "orContinueWith": "Oppure continua con",
     "user": "Utente",
     "signOutFailed": "Disconnessione non riuscita",
     "loginFailed": "Accesso non riuscito",
-    "registrationFailed": "Registrazione non riuscita",
-    "genericError": "Si è verificato un errore."
+    "genericError": "Si è verificato un errore.",
+    "signInWithMicrosoft": "Accedi con Microsoft",
+    "microsoftHint": "Funziona con account Microsoft personali (es. @outlook.it) e aziendali."
   },
   "analyze": {
     "title": "Analisi",

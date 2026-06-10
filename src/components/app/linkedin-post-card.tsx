@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from '@/i18n/useTranslation';
 import { authFetch } from '@/lib/api-client';
-import { auth } from '@/lib/firebaseClient';
+import { useAuth } from '@/providers/auth-provider';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -31,6 +31,7 @@ export function LinkedInPostCard({
   lang,
 }: LinkedInPostCardProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   // State
   const [linkedInName, setLinkedInName] = useState<string | null>(null);
@@ -53,27 +54,30 @@ export function LinkedInPostCard({
   const [isConnecting, setIsConnecting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Verbindungsstatus kommt aus Firestore (per /status), nicht mehr aus
-  // Cookies — erst abfragen, wenn Firebase-Auth initialisiert ist, sonst
-  // fehlt der Authorization-Header und die Card zeigt faelschlich "nicht
-  // verbunden" (z.B. direkt nach dem OAuth-Redirect).
+  // Verbindungsstatus kommt aus der DB (per /status). Auth läuft über das
+  // NextAuth-Session-Cookie — neu abfragen, sobald sich der User ändert
+  // (z.B. direkt nach Login oder OAuth-Redirect).
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(() => {
-      authFetch('/api/linkedin/status')
-        .then((r) => (r.ok ? r.json() : null))
-        .then((j) => {
-          if (!j) {
-            setConfigured(null);
-            return;
-          }
-          setConfigured(!!j.configured);
-          setLinkedInName(j.connected ? (j.name || 'LinkedIn') : null);
-          setTokenExpiredHint(!!j.expired);
-        })
-        .catch(() => setConfigured(null));
-    });
-    return () => unsubscribe();
-  }, []);
+    let cancelled = false;
+    authFetch('/api/linkedin/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (cancelled) return;
+        if (!j) {
+          setConfigured(null);
+          return;
+        }
+        setConfigured(!!j.configured);
+        setLinkedInName(j.connected ? (j.name || 'LinkedIn') : null);
+        setTokenExpiredHint(!!j.expired);
+      })
+      .catch(() => {
+        if (!cancelled) setConfigured(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
 
   useEffect(() => {
     // OAuth-Callback-Ergebnis aus den Query-Params lesen und URL bereinigen

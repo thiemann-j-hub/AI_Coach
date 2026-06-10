@@ -32,19 +32,12 @@
     "signInRequired": "Veuillez vous connecter pour accéder à cette page.",
     "authTitle": "Authentification",
     "authDescription": "Connectez-vous ou créez un nouveau compte pour sauvegarder votre progression.",
-    "login": "Connexion",
-    "register": "S'inscrire",
-    "email": "E-mail",
-    "password": "Mot de passe",
-    "fullName": "Nom complet",
-    "signInWithEmail": "Se connecter par e-mail",
-    "createAccount": "Créer un compte",
-    "orContinueWith": "Ou continuer avec",
     "user": "Utilisateur",
     "signOutFailed": "Échec de la déconnexion",
     "loginFailed": "Échec de la connexion",
-    "registrationFailed": "Échec de l'inscription",
-    "genericError": "Une erreur s'est produite."
+    "genericError": "Une erreur s'est produite.",
+    "signInWithMicrosoft": "Se connecter avec Microsoft",
+    "microsoftHint": "Fonctionne avec les comptes Microsoft personnels (p. ex. @outlook.fr) et professionnels."
   },
   "analyze": {
     "title": "Analyse",

@@ -1,32 +1,23 @@
 "use client";
 
-import { auth } from "./firebaseClient";
 import { getLocaleCookie } from "@/i18n/locale-cookie";
 
 /**
- * Returns headers with Firebase ID token for authenticated API calls.
- * Also includes `x-locale` so API routes know the user's language.
+ * Headers für API-Calls. Auth läuft seit der Azure-Migration über das
+ * HTTP-only-NextAuth-Session-Cookie (wird vom Browser automatisch
+ * mitgeschickt) — es gibt KEINEN Bearer-Token mehr (Playbook Gotcha 15).
+ * `x-locale` informiert die API über die UI-Sprache.
  */
 export async function authHeaders(): Promise<HeadersInit> {
   const locale = getLocaleCookie();
-  const base: Record<string, string> = {
+  return {
     "Content-Type": "application/json",
     "x-locale": locale,
   };
-
-  const user = auth.currentUser;
-  if (!user) return base;
-
-  try {
-    const token = await user.getIdToken();
-    return { ...base, Authorization: `Bearer ${token}` };
-  } catch {
-    return base;
-  }
 }
 
 /**
- * Wrapper for fetch that automatically includes auth headers.
+ * Wrapper for fetch that includes locale header + session cookie.
  */
 export async function authFetch(
   url: string,
@@ -35,6 +26,7 @@ export async function authFetch(
   const headers = await authHeaders();
   return fetch(url, {
     ...options,
+    credentials: "same-origin",
     headers: { ...headers, ...(options.headers ?? {}) },
   });
 }

@@ -32,19 +32,12 @@
     "signInRequired": "Bitte melden Sie sich an, um auf diese Seite zuzugreifen.",
     "authTitle": "Authentifizierung",
     "authDescription": "Melden Sie sich an oder erstellen Sie ein neues Konto, um Ihren Fortschritt zu speichern.",
-    "login": "Anmelden",
-    "register": "Registrieren",
-    "email": "E-Mail",
-    "password": "Passwort",
-    "fullName": "Vollständiger Name",
-    "signInWithEmail": "Mit E-Mail anmelden",
-    "createAccount": "Konto erstellen",
-    "orContinueWith": "Oder fortfahren mit",
     "user": "Benutzer",
     "signOutFailed": "Abmeldung fehlgeschlagen",
     "loginFailed": "Anmeldung fehlgeschlagen",
-    "registrationFailed": "Registrierung fehlgeschlagen",
-    "genericError": "Etwas ist schiefgelaufen."
+    "genericError": "Etwas ist schiefgelaufen.",
+    "signInWithMicrosoft": "Mit Microsoft anmelden",
+    "microsoftHint": "Funktioniert mit persönlichen Microsoft-Konten (z.B. @outlook.de) und Arbeitskonten."
   },
   "analyze": {
     "title": "Analyse",
