@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from '@/i18n/useTranslation';
+import { authFetch } from '@/lib/api-client';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -68,9 +69,8 @@ export function LinkedInPostCard({
     setIsGeneratingPost(true);
     setPostError(null);
     try {
-      const res = await fetch('/api/linkedin/generate-post', {
+      const res = await authFetch('/api/linkedin/generate-post', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           summary,
           strengths,
@@ -100,9 +100,8 @@ export function LinkedInPostCard({
     setIsGeneratingImage(true);
     setImageError(null);
     try {
-      const res = await fetch('/api/linkedin/generate-image', {
+      const res = await authFetch('/api/linkedin/generate-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           headline: headline || postText.slice(0, 100),
           topic: summary.slice(0, 300),
@@ -126,9 +125,8 @@ export function LinkedInPostCard({
     setPostError(null);
     setPostSuccess(null);
     try {
-      const res = await fetch('/api/linkedin/post', {
+      const res = await authFetch('/api/linkedin/post', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: postText,
           imageBase64: imageBase64 ?? undefined,

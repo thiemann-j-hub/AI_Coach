@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { uploadImageToLinkedIn, createLinkedInPost } from "@/lib/linkedin";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -12,6 +14,13 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+
+  // Rate limit: 5 Posts pro Minute
+  const rlResponse = checkRateLimit(rateLimitKey(req, "li-post"), 5, 60_000);
+  if (rlResponse) return rlResponse;
+
   try {
     // Get LinkedIn credentials from cookies
     const accessToken = req.cookies.get("linkedin_access_token")?.value;

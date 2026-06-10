@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -25,6 +27,13 @@ const LANG_LABELS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+
+  // Rate limit: 5 Post-Generierungen pro Minute (Gemini-Kosten)
+  const rlResponse = checkRateLimit(rateLimitKey(req, "li-generate-post"), 5, 60_000);
+  if (rlResponse) return rlResponse;
+
   try {
     const body = await req.json();
     const parsed = schema.safeParse(body);
