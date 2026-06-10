@@ -89,7 +89,11 @@
     "statusAnalyzing": "Analizowanie…",
     "statusDone": "Gotowe (niezapisane).",
     "statusSaving": "Zapisywanie runu…",
-    "statusOpening": "Otwieranie raportu…"
+    "statusOpening": "Otwieranie raportu…",
+    "saveTranscript": "Zapisz transkrypcję",
+    "saveTranscriptHint": "Zapisuje przeanalizowany (zanonimizowany) tekst, aby można było później przejrzeć go w raporcie.",
+    "retrySave": "Ponów zapisywanie",
+    "saveFailed": "Analiza powiodła się, ale zapisywanie nie. Twój wynik został zachowany — ponów zapisywanie."
   },
   "dashboard": {
     "title": "Historia sesji",
@@ -132,7 +136,13 @@
     "transcriptHidden": "Ukryte.",
     "transcriptNotSavedHint": "Dla tego runu nie zapisano transkrypcji. Aby wyświetlić ją później, włącz \"Zapisz transkrypcję\" w analizie.",
     "competencies": "Kompetencje",
-    "competenciesSubtitle": "Zidentyfikowane umiejętności w tej rozmowie"
+    "competenciesSubtitle": "Zidentyfikowane umiejętności w tej rozmowie",
+    "download": "Pobierz JSON",
+    "ragDegraded": "Analiza przebiegła bez bazy wiedzy coachingowej (RAG niedostępny).",
+    "competencyDegraded": "Ocena kompetencji nie powiodła się — wyświetlane są wartości domyślne.",
+    "rateTitle": "Jak pomocny był ten feedback?",
+    "rateThanks": "Dziękujemy za ocenę!",
+    "rateError": "Nie udało się zapisać oceny."
   },
   "history": {
     "title": "Historia",
@@ -143,25 +153,25 @@
     "tip": "Wskazówka: Jeśli wcześniej korzystałeś z Firestore bezpośrednio, możesz zobaczyć tutaj \"Missing or insufficient permissions\". Ta wersja używa"
   },
   "linkedin": {
-    "title": "Udost\u0119pnij na LinkedIn",
-    "subtitle": "Wygeneruj post AI z obrazem i opublikuj go bezpo\u015brednio",
+    "title": "Udostępnij na LinkedIn",
+    "subtitle": "Wygeneruj post AI z obrazem i opublikuj go bezpośrednio",
     "step1": "1. Wygeneruj tekst postu",
     "step2": "2. Wygeneruj obraz (NanoBanana Pro)",
     "generatePost": "Wygeneruj post",
-    "generating": "Generowanie\u2026",
+    "generating": "Generowanie…",
     "generateImage": "Wygeneruj obraz",
-    "generatingImage": "Tworzenie obrazu\u2026",
-    "imageHeadline": "Nag\u0142\u00f3wek obrazu",
-    "postPlaceholder": "Tekst Twojego postu LinkedIn pojawi si\u0119 tutaj po wygenerowaniu\u2026",
-    "noImage": "Kliknij \"Wygeneruj obraz\", aby utworzy\u0107 obraz AI do swojego postu",
+    "generatingImage": "Tworzenie obrazu…",
+    "imageHeadline": "Nagłówek obrazu",
+    "postPlaceholder": "Tekst Twojego postu LinkedIn pojawi się tutaj po wygenerowaniu…",
+    "noImage": "Kliknij \"Wygeneruj obraz\", aby utworzyć obraz AI do swojego postu",
     "regenerate": "Wygeneruj ponownie",
-    "connect": "Po\u0142\u0105cz LinkedIn",
+    "connect": "Połącz LinkedIn",
     "postToLinkedIn": "Opublikuj na LinkedIn",
-    "posting": "Publikowanie\u2026",
-    "posted": "Opublikowano pomy\u015blnie!",
+    "posting": "Publikowanie…",
+    "posted": "Opublikowano pomyślnie!",
     "viewPost": "Zobacz post",
     "generatePostFirst": "Najpierw wygeneruj tekst postu.",
-    "tokenExpired": "Sesja LinkedIn wygas\u0142a. Prosz\u0119 po\u0142\u0105czy\u0107 ponownie."
+    "tokenExpired": "Sesja LinkedIn wygasła. Proszę połączyć ponownie."
   },
   "home": {
     "title": "Analizuj rozmowę",

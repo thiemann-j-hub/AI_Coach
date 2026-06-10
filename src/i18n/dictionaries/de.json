@@ -89,7 +89,11 @@
     "statusAnalyzing": "Wird analysiert…",
     "statusDone": "Fertig (nicht gespeichert).",
     "statusSaving": "Run wird gespeichert…",
-    "statusOpening": "Bericht wird geöffnet…"
+    "statusOpening": "Bericht wird geöffnet…",
+    "saveTranscript": "Transkript mit speichern",
+    "saveTranscriptHint": "Speichert den analysierten (anonymisierten) Text, damit du ihn später im Bericht einsehen kannst.",
+    "retrySave": "Speichern wiederholen",
+    "saveFailed": "Analyse erfolgreich, aber Speichern fehlgeschlagen. Dein Ergebnis bleibt erhalten — wiederhole das Speichern."
   },
   "dashboard": {
     "title": "Sitzungsverlauf",
@@ -132,7 +136,13 @@
     "transcriptHidden": "Ausgeblendet.",
     "transcriptNotSavedHint": "Für diesen Run wurde kein Transkript gespeichert. Um es später anzusehen, aktivieren Sie \"Transkript speichern\" in der Analyse.",
     "competencies": "Kompetenzen",
-    "competenciesSubtitle": "Erkannte Fähigkeiten in diesem Gespräch"
+    "competenciesSubtitle": "Erkannte Fähigkeiten in diesem Gespräch",
+    "download": "JSON herunterladen",
+    "ragDegraded": "Analyse lief ohne Coaching-Wissensbasis (RAG nicht verfügbar).",
+    "competencyDegraded": "Kompetenz-Scoring fehlgeschlagen — es werden Platzhalter angezeigt.",
+    "rateTitle": "Wie hilfreich war dieses Feedback?",
+    "rateThanks": "Danke für deine Bewertung!",
+    "rateError": "Bewertung konnte nicht gespeichert werden."
   },
   "history": {
     "title": "Verlauf",

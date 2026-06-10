@@ -89,7 +89,11 @@
     "statusAnalyzing": "Analizando…",
     "statusDone": "Listo (no guardado).",
     "statusSaving": "Guardando run…",
-    "statusOpening": "Abriendo informe…"
+    "statusOpening": "Abriendo informe…",
+    "saveTranscript": "Guardar la transcripción",
+    "saveTranscriptHint": "Guarda el texto analizado (anonimizado) para poder consultarlo más tarde en el informe.",
+    "retrySave": "Reintentar guardado",
+    "saveFailed": "Análisis completado, pero no se pudo guardar. Tu resultado se conserva — reintenta el guardado."
   },
   "dashboard": {
     "title": "Historial de sesiones",
@@ -132,7 +136,13 @@
     "transcriptHidden": "Oculto.",
     "transcriptNotSavedHint": "No se guardó ninguna transcripción para este run. Para verla después, active \"Guardar transcripción\" en el análisis.",
     "competencies": "Competencias",
-    "competenciesSubtitle": "Competencias identificadas en esta conversación"
+    "competenciesSubtitle": "Competencias identificadas en esta conversación",
+    "download": "Descargar JSON",
+    "ragDegraded": "El análisis se realizó sin la base de conocimientos de coaching (RAG no disponible).",
+    "competencyDegraded": "La evaluación de competencias falló — se muestran valores predeterminados.",
+    "rateTitle": "¿Qué tan útil fue este feedback?",
+    "rateThanks": "¡Gracias por tu valoración!",
+    "rateError": "No se pudo guardar la valoración."
   },
   "history": {
     "title": "Historial",
@@ -144,24 +154,24 @@
   },
   "linkedin": {
     "title": "Compartir en LinkedIn",
-    "subtitle": "Genera un post con IA e imagen y publ\u00edcalo directamente",
+    "subtitle": "Genera un post con IA e imagen y publícalo directamente",
     "step1": "1. Generar texto del post",
     "step2": "2. Generar imagen (NanoBanana Pro)",
     "generatePost": "Generar post",
-    "generating": "Generando\u2026",
+    "generating": "Generando…",
     "generateImage": "Generar imagen",
-    "generatingImage": "Creando imagen\u2026",
-    "imageHeadline": "T\u00edtulo de la imagen",
-    "postPlaceholder": "El texto de tu post de LinkedIn aparecer\u00e1 aqu\u00ed despu\u00e9s de la generaci\u00f3n\u2026",
+    "generatingImage": "Creando imagen…",
+    "imageHeadline": "Título de la imagen",
+    "postPlaceholder": "El texto de tu post de LinkedIn aparecerá aquí después de la generación…",
     "noImage": "Haz clic en \"Generar imagen\" para crear una imagen IA para tu post",
     "regenerate": "Regenerar",
     "connect": "Conectar LinkedIn",
     "postToLinkedIn": "Publicar en LinkedIn",
-    "posting": "Publicando\u2026",
-    "posted": "\u00a1Publicado con \u00e9xito!",
+    "posting": "Publicando…",
+    "posted": "¡Publicado con éxito!",
     "viewPost": "Ver post",
     "generatePostFirst": "Por favor, genera primero el texto del post.",
-    "tokenExpired": "Sesi\u00f3n de LinkedIn expirada. Por favor, recon\u00e9ctate."
+    "tokenExpired": "Sesión de LinkedIn expirada. Por favor, reconéctate."
   },
   "home": {
     "title": "Analizar una conversación",

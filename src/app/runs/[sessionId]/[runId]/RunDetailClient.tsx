@@ -16,8 +16,10 @@ type RunData = {
   lang: string | null;
   transcriptText: string | null;
   analysisJson: any;
+  ragContext: any;
   scoreOverall: number | null;
   summary: string | null;
+  rating: number | null;
 };
 
 function formatDe(iso: string | null): string | null {
@@ -78,6 +80,12 @@ function buildResultForDashboard(run: RunData): any {
         ? run.transcriptText
         : typeof analysis?.transcriptText === "string"
           ? analysis.transcriptText
+          : null,
+    rag_error:
+      typeof analysis?.rag_error === "string"
+        ? analysis.rag_error
+        : typeof run.ragContext?.error === "string"
+          ? run.ragContext.error
           : null,
   };
 }
@@ -162,6 +170,9 @@ export default function RunDetailClient({
               metaChips={metaChips}
               conversationType={run.conversationType ?? undefined}
               lang={run.lang ?? undefined}
+              sessionId={sessionId}
+              runId={runId}
+              initialRating={run.rating}
             />
           )}
         </div>

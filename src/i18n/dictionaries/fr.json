@@ -89,7 +89,11 @@
     "statusAnalyzing": "Analyse en cours…",
     "statusDone": "Terminé (non enregistré).",
     "statusSaving": "Enregistrement du run…",
-    "statusOpening": "Ouverture du rapport…"
+    "statusOpening": "Ouverture du rapport…",
+    "saveTranscript": "Enregistrer la transcription",
+    "saveTranscriptHint": "Enregistre le texte analysé (anonymisé) pour pouvoir le consulter plus tard dans le rapport.",
+    "retrySave": "Réessayer l'enregistrement",
+    "saveFailed": "Analyse réussie, mais l'enregistrement a échoué. Votre résultat est conservé — réessayez l'enregistrement."
   },
   "dashboard": {
     "title": "Historique des sessions",
@@ -132,7 +136,13 @@
     "transcriptHidden": "Masqué.",
     "transcriptNotSavedHint": "Aucune transcription n'a été enregistrée pour ce run. Pour la consulter plus tard, activez \"Enregistrer la transcription\" dans l'analyse.",
     "competencies": "Compétences",
-    "competenciesSubtitle": "Compétences identifiées dans cette conversation"
+    "competenciesSubtitle": "Compétences identifiées dans cette conversation",
+    "download": "Télécharger le JSON",
+    "ragDegraded": "L'analyse a été effectuée sans la base de connaissances de coaching (RAG indisponible).",
+    "competencyDegraded": "L'évaluation des compétences a échoué — des valeurs par défaut sont affichées.",
+    "rateTitle": "Ce feedback vous a-t-il été utile ?",
+    "rateThanks": "Merci pour votre évaluation !",
+    "rateError": "L'évaluation n'a pas pu être enregistrée."
   },
   "history": {
     "title": "Historique",
@@ -144,24 +154,24 @@
   },
   "linkedin": {
     "title": "Partager sur LinkedIn",
-    "subtitle": "G\u00e9n\u00e9rer un post IA avec image et le publier directement",
-    "step1": "1. G\u00e9n\u00e9rer le texte du post",
-    "step2": "2. G\u00e9n\u00e9rer l'image (NanoBanana Pro)",
-    "generatePost": "G\u00e9n\u00e9rer le post",
-    "generating": "G\u00e9n\u00e9ration en cours\u2026",
-    "generateImage": "G\u00e9n\u00e9rer l'image",
-    "generatingImage": "Cr\u00e9ation de l'image\u2026",
+    "subtitle": "Générer un post IA avec image et le publier directement",
+    "step1": "1. Générer le texte du post",
+    "step2": "2. Générer l'image (NanoBanana Pro)",
+    "generatePost": "Générer le post",
+    "generating": "Génération en cours…",
+    "generateImage": "Générer l'image",
+    "generatingImage": "Création de l'image…",
     "imageHeadline": "Titre de l'image",
-    "postPlaceholder": "Le texte de votre post LinkedIn appara\u00eetra ici apr\u00e8s la g\u00e9n\u00e9ration\u2026",
-    "noImage": "Cliquez sur \"G\u00e9n\u00e9rer l'image\" pour cr\u00e9er une image IA pour votre post",
-    "regenerate": "Reg\u00e9n\u00e9rer",
+    "postPlaceholder": "Le texte de votre post LinkedIn apparaîtra ici après la génération…",
+    "noImage": "Cliquez sur \"Générer l'image\" pour créer une image IA pour votre post",
+    "regenerate": "Regénérer",
     "connect": "Connecter LinkedIn",
     "postToLinkedIn": "Publier sur LinkedIn",
-    "posting": "Publication en cours\u2026",
-    "posted": "Publi\u00e9 avec succ\u00e8s !",
+    "posting": "Publication en cours…",
+    "posted": "Publié avec succès !",
     "viewPost": "Voir le post",
-    "generatePostFirst": "Veuillez d'abord g\u00e9n\u00e9rer le texte du post.",
-    "tokenExpired": "Session LinkedIn expir\u00e9e. Veuillez vous reconnecter."
+    "generatePostFirst": "Veuillez d'abord générer le texte du post.",
+    "tokenExpired": "Session LinkedIn expirée. Veuillez vous reconnecter."
   },
   "home": {
     "title": "Analyser une conversation",

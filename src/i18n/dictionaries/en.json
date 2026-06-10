@@ -89,7 +89,11 @@
     "statusAnalyzing": "Analyzing…",
     "statusDone": "Done (not saved).",
     "statusSaving": "Saving run…",
-    "statusOpening": "Opening report…"
+    "statusOpening": "Opening report…",
+    "saveTranscript": "Save transcript with the run",
+    "saveTranscriptHint": "Stores the analyzed (anonymized) text so you can review it later in the report.",
+    "retrySave": "Retry saving",
+    "saveFailed": "Analysis succeeded, but saving failed. Your result is kept — retry saving."
   },
   "dashboard": {
     "title": "Session history",
@@ -132,7 +136,13 @@
     "transcriptHidden": "Hidden.",
     "transcriptNotSavedHint": "No transcript was saved for this run. To view it later, enable \"Save transcript\" in the analysis.",
     "competencies": "Competencies",
-    "competenciesSubtitle": "Identified skills in this conversation"
+    "competenciesSubtitle": "Identified skills in this conversation",
+    "download": "Download JSON",
+    "ragDegraded": "Analysis ran without the coaching knowledge base (RAG unavailable).",
+    "competencyDegraded": "Competency scoring failed — default values are shown.",
+    "rateTitle": "How helpful was this feedback?",
+    "rateThanks": "Thanks for your rating!",
+    "rateError": "Rating could not be saved."
   },
   "history": {
     "title": "History",

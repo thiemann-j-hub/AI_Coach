@@ -86,32 +86,40 @@ export async function POST(req: NextRequest) {
     const d = parsed.data;
     logger.api("/api/analyze", "start", { uid: authResult.uid, lang: d.lang, textLen: d.transcriptText.length });
 
-    // 1) Base analysis (RAG + coaching feedback)
-    const baseResult = await generateDynamicFeedback({
-      conversationType: d.conversationType,
-      conversationSubType: d.conversationSubType ?? undefined,
-      goal: d.goal ?? undefined,
-      transcriptText: d.transcriptText,
-      lang: d.lang,
-      jurisdiction: d.jurisdiction,
-      leaderLabel: d.leaderLabel ?? undefined,
-      employeeLabel: d.employeeLabel ?? undefined,
-    } as any);
+    const leaderLbl = asStr(d.leaderLabel ?? "").trim();
+    const empLbl = asStr(d.employeeLabel ?? "").trim();
 
-    // 2) Competencies (robust: always return 10 items)
-    let competency_ratings = defaultCompetencyRatings();
-    let competency_error: string | null = null;
-
-    try {
-      const leaderLbl = asStr(d.leaderLabel ?? "").trim();
-      const empLbl = asStr(d.employeeLabel ?? "").trim();
-
-      const comp = await scoreCompetencies({
+    // 1+2) Feedback (RAG) und Kompetenz-Scoring parallel — beide hängen nur
+    // vom Transkript ab; sequenziell verdoppelte das nur die Wartezeit.
+    const [baseSettled, compSettled] = await Promise.allSettled([
+      generateDynamicFeedback({
+        conversationType: d.conversationType,
+        conversationSubType: d.conversationSubType ?? undefined,
+        goal: d.goal ?? undefined,
+        transcriptText: d.transcriptText,
+        lang: d.lang,
+        jurisdiction: d.jurisdiction,
+        leaderLabel: d.leaderLabel ?? undefined,
+        employeeLabel: d.employeeLabel ?? undefined,
+      } as any),
+      scoreCompetencies({
         transcriptText: asStr(d.transcriptText ?? ""),
         lang: d.lang,
         leaderLabel: leaderLbl || undefined,
         employeeLabel: empLbl || undefined,
-      } as any);
+      } as any),
+    ]);
+
+    // Basis-Analyse ist Pflicht — Kompetenzen degradieren nur (mit sichtbarem Fehler).
+    if (baseSettled.status === "rejected") throw baseSettled.reason;
+    const baseResult = baseSettled.value;
+
+    let competency_ratings = defaultCompetencyRatings();
+    let competency_error: string | null = null;
+
+    try {
+      if (compSettled.status === "rejected") throw compSettled.reason;
+      const comp = compSettled.value;
 
       const list = Array.isArray((comp as any)?.competencies) ? (comp as any).competencies : [];
       const map = new Map<string, any>(list.map((x: any) => [asStr(x?.id).trim(), x]));
@@ -155,6 +163,9 @@ export async function POST(req: NextRequest) {
     const result = {
       ...baseResult,
       competency_ratings,
+      // Sichtbar machen statt droppen: UI zeigt degradiertes Scoring an,
+      // runs/save persistiert das Feld bereits (analysisJson.competency_error).
+      competency_error,
     };
 
     logger.api("/api/analyze", "complete", { uid: authResult.uid });

@@ -89,7 +89,11 @@
     "statusAnalyzing": "Analyzuji…",
     "statusDone": "Hotovo (neuloženo).",
     "statusSaving": "Ukládání runu…",
-    "statusOpening": "Otevírání reportu…"
+    "statusOpening": "Otevírání reportu…",
+    "saveTranscript": "Uložit přepis",
+    "saveTranscriptHint": "Uloží analyzovaný (anonymizovaný) text, abyste si jej mohli později prohlédnout v reportu.",
+    "retrySave": "Zopakovat uložení",
+    "saveFailed": "Analýza proběhla úspěšně, ale uložení selhalo. Výsledek zůstává zachován — zopakujte uložení."
   },
   "dashboard": {
     "title": "Historie relací",
@@ -132,7 +136,13 @@
     "transcriptHidden": "Skryto.",
     "transcriptNotSavedHint": "Pro tento run nebyl uložen žádný přepis. Chcete-li si jej prohlédnout později, povolte \"Uložit přepis\" v analýze.",
     "competencies": "Kompetence",
-    "competenciesSubtitle": "Identifikované dovednosti v tomto rozhovoru"
+    "competenciesSubtitle": "Identifikované dovednosti v tomto rozhovoru",
+    "download": "Stáhnout JSON",
+    "ragDegraded": "Analýza proběhla bez coachingové znalostní báze (RAG nedostupný).",
+    "competencyDegraded": "Hodnocení kompetencí selhalo — zobrazují se výchozí hodnoty.",
+    "rateTitle": "Jak užitečná byla tato zpětná vazba?",
+    "rateThanks": "Děkujeme za hodnocení!",
+    "rateError": "Hodnocení se nepodařilo uložit."
   },
   "history": {
     "title": "Historie",
@@ -143,25 +153,25 @@
     "tip": "Tip: Pokud jste dříve používali Firestore přímo, můžete zde vidět \"Missing or insufficient permissions\". Tato verze používá"
   },
   "linkedin": {
-    "title": "Sd\u00edlet na LinkedIn",
-    "subtitle": "Vygenerujte AI p\u0159\u00edsp\u011bvek s obr\u00e1zkem a publikujte p\u0159\u00edmo",
-    "step1": "1. Vygenerovat text p\u0159\u00edsp\u011bvku",
-    "step2": "2. Vygenerovat obr\u00e1zek (NanoBanana Pro)",
-    "generatePost": "Vygenerovat p\u0159\u00edsp\u011bvek",
-    "generating": "Generov\u00e1n\u00ed\u2026",
-    "generateImage": "Vygenerovat obr\u00e1zek",
-    "generatingImage": "Vytv\u00e1\u0159en\u00ed obr\u00e1zku\u2026",
-    "imageHeadline": "Nadpis obr\u00e1zku",
-    "postPlaceholder": "Text va\u0161eho LinkedIn p\u0159\u00edsp\u011bvku se zde zobraz\u00ed po vygenerov\u00e1n\u00ed\u2026",
-    "noImage": "Klikn\u011bte na \"Vygenerovat obr\u00e1zek\" pro vytvo\u0159en\u00ed AI obr\u00e1zku pro v\u00e1\u0161 p\u0159\u00edsp\u011bvek",
+    "title": "Sdílet na LinkedIn",
+    "subtitle": "Vygenerujte AI příspěvek s obrázkem a publikujte přímo",
+    "step1": "1. Vygenerovat text příspěvku",
+    "step2": "2. Vygenerovat obrázek (NanoBanana Pro)",
+    "generatePost": "Vygenerovat příspěvek",
+    "generating": "Generování…",
+    "generateImage": "Vygenerovat obrázek",
+    "generatingImage": "Vytváření obrázku…",
+    "imageHeadline": "Nadpis obrázku",
+    "postPlaceholder": "Text vašeho LinkedIn příspěvku se zde zobrazí po vygenerování…",
+    "noImage": "Klikněte na \"Vygenerovat obrázek\" pro vytvoření AI obrázku pro váš příspěvek",
     "regenerate": "Vygenerovat znovu",
-    "connect": "P\u0159ipojit LinkedIn",
+    "connect": "Připojit LinkedIn",
     "postToLinkedIn": "Publikovat na LinkedIn",
-    "posting": "Publikov\u00e1n\u00ed\u2026",
-    "posted": "\u00dasp\u011b\u0161n\u011b publikov\u00e1no!",
-    "viewPost": "Zobrazit p\u0159\u00edsp\u011bvek",
-    "generatePostFirst": "Nejprve pros\u00edm vygenerujte text p\u0159\u00edsp\u011bvku.",
-    "tokenExpired": "Relace LinkedIn vypr\u0161ela. Pros\u00edm p\u0159ipojte se znovu."
+    "posting": "Publikování…",
+    "posted": "Úspěšně publikováno!",
+    "viewPost": "Zobrazit příspěvek",
+    "generatePostFirst": "Nejprve prosím vygenerujte text příspěvku.",
+    "tokenExpired": "Relace LinkedIn vypršela. Prosím připojte se znovu."
   },
   "home": {
     "title": "Analyzovat rozhovor",

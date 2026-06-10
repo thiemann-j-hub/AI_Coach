@@ -107,6 +107,7 @@ export async function GET(req: NextRequest) {
           ragContext: data?.ragContext ?? null,
           scoreOverall: data?.scoreOverall ?? data?.analysisJson?.scores?.overall ?? null,
           summary: data?.summary ?? data?.analysisJson?.summary ?? null,
+          rating: typeof data?.rating === "number" ? data.rating : null,
         },
       },
       { status: 200 }

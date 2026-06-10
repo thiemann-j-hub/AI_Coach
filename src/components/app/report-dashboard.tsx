@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { ScoreRing } from './score-ring';
 import { InsightCard } from './insight-card';
 import { useTranslation } from '@/i18n/useTranslation';
+import { authFetch } from '@/lib/api-client';
 import {
   unwrapRunResult,
   overallToPercent,
@@ -112,6 +113,71 @@ export function CompetencyPanel({ competencies }: { competencies: any[] }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  RatingCard                                                          */
+/* ------------------------------------------------------------------ */
+
+function RatingCard({
+  sessionId,
+  runId,
+  initialRating,
+}: {
+  sessionId: string;
+  runId: string;
+  initialRating: number | null;
+}) {
+  const { t } = useTranslation();
+  const [rating, setRating] = useState<number | null>(initialRating);
+  const [hover, setHover] = useState<number | null>(null);
+  const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    initialRating ? 'saved' : 'idle'
+  );
+
+  async function rate(value: number) {
+    setRating(value);
+    setState('saving');
+    try {
+      const res = await authFetch('/api/runs/rate', {
+        method: 'POST',
+        body: JSON.stringify({ sessionId, runId, rating: value }),
+      });
+      const j = await res.json().catch(() => null);
+      if (!res.ok || !j?.ok) throw new Error();
+      setState('saved');
+    } catch {
+      setState('error');
+    }
+  }
+
+  const shown = hover ?? rating ?? 0;
+
+  return (
+    <div className="glass-panel rounded-2xl p-5">
+      <h3 className="font-bold text-sm text-foreground mb-3">{t.report.rateTitle}</h3>
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((v) => (
+          <button
+            key={v}
+            type="button"
+            disabled={state === 'saving'}
+            onMouseEnter={() => setHover(v)}
+            onMouseLeave={() => setHover(null)}
+            onClick={() => rate(v)}
+            className="leading-none transition-transform hover:scale-110 disabled:opacity-60"
+            aria-label={`${v}/5`}
+          >
+            <span className={`material-icons-round text-2xl ${shown >= v ? 'text-amber-400' : 'text-foreground/20'}`}>
+              star
+            </span>
+          </button>
+        ))}
+      </div>
+      {state === 'saved' && <p className="text-xs text-emerald-500 mt-2">{t.report.rateThanks}</p>}
+      {state === 'error' && <p className="text-xs text-red-400 mt-2">{t.report.rateError}</p>}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  ReportDashboard (main)                                             */
 /* ------------------------------------------------------------------ */
 
@@ -120,11 +186,17 @@ export default function ReportDashboard({
   metaChips,
   conversationType,
   lang,
+  sessionId,
+  runId,
+  initialRating,
 }: {
   result: AnyObj;
   metaChips?: Array<{ label: string; value: string }>;
   conversationType?: string;
   lang?: string;
+  sessionId?: string;
+  runId?: string;
+  initialRating?: number | null;
 }) {
   const { t } = useTranslation();
 
@@ -157,12 +229,43 @@ export default function ReportDashboard({
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [showTranscript, setShowTranscript] = useState(false);
 
+  const ragError = String(result?.rag_error ?? '').trim();
+  const competencyError = String(result?.competency_error ?? '').trim();
+
+  function handleDownload() {
+    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analysis-${runId ?? 'report'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const competencies = Array.isArray(result?.competency_ratings)
     ? result.competency_ratings
     : Array.isArray(result?.competencies) ? result.competencies : [];
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+      {/* DEGRADATION NOTICES */}
+      {(ragError || competencyError) && (
+        <div className="xl:col-span-12 space-y-2">
+          {ragError && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+              <span className="material-icons-round text-sm">warning_amber</span>
+              {t.report.ragDegraded}
+            </div>
+          )}
+          {competencyError && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+              <span className="material-icons-round text-sm">warning_amber</span>
+              {t.report.competencyDegraded}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* LEFT MAIN COLUMN */}
       <div className="xl:col-span-8 space-y-6">
         {/* HERO */}
@@ -193,6 +296,17 @@ export default function ReportDashboard({
                   ))}
                 </div>
               )}
+
+              <div className="mt-4 flex justify-center md:justify-start">
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors flex items-center gap-1.5"
+                  onClick={handleDownload}
+                >
+                  <span className="material-icons-round text-sm">download</span>
+                  {t.report.download}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -376,6 +490,14 @@ export default function ReportDashboard({
           </div>
           <CompetencyPanel competencies={competencies} />
         </div>
+
+        {sessionId && runId && (
+          <RatingCard
+            sessionId={sessionId}
+            runId={runId}
+            initialRating={typeof initialRating === 'number' ? initialRating : null}
+          />
+        )}
       </div>
     </div>
   );

@@ -56,12 +56,18 @@ export default function AnalyzeClient() {
 
   const [privacyMode, setPrivacyMode] = useState(true);
   const [extraTerms, setExtraTerms] = useState('');
-  const [autoSave, setAutoSave] = useState(true);
   const [saveTranscript, setSaveTranscript] = useState(false);
+
+  // Fertige Analyse, deren Save fehlschlug — erlaubt Retry ohne erneute LLM-Calls
+  const [pendingSave, setPendingSave] = useState<any | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Synchroner Re-Entrancy-Schutz: zwei Klicks vor dem Re-Render sehen beide
+  // loading=false — der Ref verhindert doppelte Gemini-Calls.
+  const busyRef = useRef(false);
 
   useEffect(() => {
     const urlSid = searchParams.get('sessionId');
@@ -154,6 +160,9 @@ export default function AnalyzeClient() {
     if (!e) { setError(t.analyze.errorEmployeeMissing); return; }
     if (l === e) { setError(t.analyze.errorSpeakersIdentical); return; }
 
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setPendingSave(null);
     setLoading(true);
     setStep(t.analyze.statusAnalyzing);
     try {
@@ -184,12 +193,6 @@ export default function AnalyzeClient() {
       if (!j?.ok) throw new Error(j?.error || 'Analysis failed');
       const result: AnalyzeResult = j.result;
 
-      if (!autoSave) {
-        setStep(t.analyze.statusDone);
-        setLoading(false);
-        return;
-      }
-
       setStep(t.analyze.statusSaving);
       const savePayload = {
         sessionId: sid,
@@ -197,19 +200,49 @@ export default function AnalyzeClient() {
         options: { storeTranscript: saveTranscript },
         result,
       };
-      const saveRes = await authFetch('/api/runs/save', {
-        method: 'POST',
-        body: JSON.stringify(savePayload),
-      });
-      if (!saveRes.ok) throw new Error(await readErrorText(saveRes));
-      const sj = await saveRes.json();
-      if (!sj?.ok || !sj?.runId) throw new Error('Save failed');
 
-      setStep(t.analyze.statusOpening);
-      router.push(`/runs/${encodeURIComponent(sid)}/${encodeURIComponent(sj.runId)}`);
+      try {
+        await doSave(savePayload);
+      } catch (saveErr: any) {
+        // Analyse war erfolgreich (und bezahlt) — Ergebnis behalten, nur Save wiederholen
+        setPendingSave(savePayload);
+        setError(`${t.analyze.saveFailed} (${saveErr?.message ?? saveErr})`);
+      }
     } catch (err: any) {
       setError(err.message || String(err));
     } finally {
+      busyRef.current = false;
+      setLoading(false);
+      setStep(null);
+    }
+  }
+
+  async function doSave(savePayload: any) {
+    const saveRes = await authFetch('/api/runs/save', {
+      method: 'POST',
+      body: JSON.stringify(savePayload),
+    });
+    if (!saveRes.ok) throw new Error(await readErrorText(saveRes));
+    const sj = await saveRes.json();
+    if (!sj?.ok || !sj?.runId) throw new Error('Save failed');
+
+    setPendingSave(null);
+    setStep(t.analyze.statusOpening);
+    router.push(`/runs/${encodeURIComponent(savePayload.sessionId)}/${encodeURIComponent(sj.runId)}`);
+  }
+
+  async function onRetrySave() {
+    if (!pendingSave || busyRef.current) return;
+    busyRef.current = true;
+    setError(null);
+    setLoading(true);
+    setStep(t.analyze.statusSaving);
+    try {
+      await doSave(pendingSave);
+    } catch (err: any) {
+      setError(`${t.analyze.saveFailed} (${err?.message ?? err})`);
+    } finally {
+      busyRef.current = false;
       setLoading(false);
       setStep(null);
     }
@@ -482,6 +515,22 @@ export default function AnalyzeClient() {
                 </div>
               </label>
 
+              <label className="flex items-start gap-3 cursor-pointer select-none mb-4">
+                <input
+                  type="checkbox"
+                  className="mt-1 form-checkbox text-primary rounded border-border bg-background"
+                  checked={saveTranscript}
+                  onChange={(e) => setSaveTranscript(e.target.checked)}
+                  disabled={loading}
+                />
+                <div>
+                  <div className="text-sm font-medium text-foreground">{t.analyze.saveTranscript}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {t.analyze.saveTranscriptHint}
+                  </div>
+                </div>
+              </label>
+
               {privacyMode && (
                 <div className="mb-4">
                   <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.extraTerms}</label>
@@ -500,6 +549,16 @@ export default function AnalyzeClient() {
                 <div className="p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
                 </div>
+              )}
+
+              {pendingSave && !loading && (
+                <button
+                  className="w-full mb-4 py-3 rounded-xl text-sm font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2"
+                  onClick={onRetrySave}
+                >
+                  <span className="material-icons-round text-base">save</span>
+                  {t.analyze.retrySave}
+                </button>
               )}
 
               <button
