@@ -201,5 +201,16 @@
     "notFound": "Introuvable",
     "internalError": "Erreur interne du serveur",
     "rateLimited": "Trop de requêtes. Veuillez réessayer plus tard."
+  },
+  "landing": {
+    "subtitle": "Coaching IA pour de meilleurs entretiens",
+    "description": "Téléchargez la transcription d'un entretien et recevez un feedback de coaching structuré : points forts, axes d'amélioration, meilleures formulations et scores de compétences. Sur demande, l'entretien est entièrement anonymisé avant l'analyse.",
+    "f1Title": "Analyse d'entretien",
+    "f1Desc": "L'IA analyse votre transcription et fournit un feedback concret avec points forts, risques et meilleures formulations.",
+    "f2Title": "Progrès visibles",
+    "f2Desc": "Les scores de compétences et les statistiques d'historique montrent l'évolution de votre conduite d'entretien.",
+    "f3Title": "Conforme au RGPD",
+    "f3Desc": "Les transcriptions sont anonymisées dans votre navigateur avant l'analyse ; l'hébergement et le stockage des données sont dans l'UE (Azure Europe de l'Ouest).",
+    "signInError": "Échec de la connexion. Veuillez réessayer."
   }
 }

@@ -201,5 +201,16 @@
     "notFound": "Nenalezeno",
     "internalError": "Interní chyba serveru",
     "rateLimited": "Příliš mnoho požadavků. Zkuste to prosím později."
+  },
+  "landing": {
+    "subtitle": "AI koučink pro lepší rozhovory se zaměstnanci",
+    "description": "Nahrajte přepis rozhovoru a získejte strukturovanou koučovací zpětnou vazbu: silné stránky, oblasti ke zlepšení, lepší formulace a skóre kompetencí. Na přání je rozhovor před analýzou plně anonymizován.",
+    "f1Title": "Analýza rozhovoru",
+    "f1Desc": "AI analyzuje váš přepis a poskytne konkrétní zpětnou vazbu se silnými stránkami, riziky a lepšími formulacemi.",
+    "f2Title": "Viditelný pokrok",
+    "f2Desc": "Skóre kompetencí a statistiky historie ukazují, jak se vaše vedení rozhovorů vyvíjí v čase.",
+    "f3Title": "V souladu s GDPR",
+    "f3Desc": "Přepisy jsou před analýzou anonymizovány v prohlížeči; hosting a ukládání dat probíhají v EU (Azure západní Evropa).",
+    "signInError": "Přihlášení se nezdařilo. Zkuste to znovu."
   }
 }

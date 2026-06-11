@@ -201,5 +201,16 @@
     "notFound": "Nicht gefunden",
     "internalError": "Interner Serverfehler",
     "rateLimited": "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
+  },
+  "landing": {
+    "subtitle": "KI-Coaching für bessere Mitarbeitergespräche",
+    "description": "Gesprächstranskript hochladen und strukturiertes Coaching-Feedback erhalten: Stärken, Verbesserungspotenziale, bessere Formulierungen und Kompetenz-Scores. Auf Wunsch wird das Gespräch vor der Analyse vollständig anonymisiert.",
+    "f1Title": "Gesprächsanalyse",
+    "f1Desc": "Die KI analysiert Ihr Transkript und liefert konkretes Feedback mit Stärken, Risiken und besseren Formulierungen.",
+    "f2Title": "Fortschritt sichtbar",
+    "f2Desc": "Kompetenz-Scores und Verlaufsstatistiken zeigen, wie sich Ihre Gesprächsführung über die Zeit entwickelt.",
+    "f3Title": "DSGVO-konform",
+    "f3Desc": "Transkripte werden vor der Analyse im Browser anonymisiert; Hosting und Datenspeicherung erfolgen in der EU (Azure West Europe).",
+    "signInError": "Anmeldung fehlgeschlagen. Bitte erneut versuchen."
   }
 }

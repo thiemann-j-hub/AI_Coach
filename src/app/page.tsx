@@ -1,8 +1,40 @@
-import { redirect } from "next/navigation";
+"use client";
 
-// Die frühere Legacy-Startseite (CommsCoach-AI-Parallel-Flow) wurde entfernt:
-// ihr Server-Action-Pfad schrieb in eine von firestore.rules gesperrte
-// Collection und konnte nie funktionieren. /analyze ist der kanonische Flow.
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+
+import { LoginLanding } from "@/components/login-landing";
+import { usePulseCraftLanding } from "@/components/app/landing-config";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useAuth } from "@/providers/auth-provider";
+
+/**
+ * Startseite = einheitliches Anmelde-Fenster (alle Apps gleicher Aufbau).
+ * Angemeldete Nutzer landen direkt im Analyse-Flow.
+ */
 export default function Home() {
-  redirect("/analyze");
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { config, signIn } = usePulseCraftLanding();
+
+  useEffect(() => {
+    if (!loading && user) router.replace("/analyze");
+  }, [loading, user, router]);
+
+  if (loading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
+  return (
+    <LoginLanding
+      config={config}
+      onSignIn={signIn}
+      navEnd={<LanguageSwitcher compact />}
+    />
+  );
 }

@@ -1,23 +1,24 @@
 "use client";
 
-import { useAuth } from "@/providers/auth-provider";
-import { useTranslation } from "@/i18n/useTranslation";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { LoginModal } from "./login-modal";
-import { Button } from "@/components/ui/button";
+
+import { useAuth } from "@/providers/auth-provider";
+import { LoginLanding } from "@/components/login-landing";
+import { usePulseCraftLanding } from "@/components/app/landing-config";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  fallback?: React.ReactNode;
 }
 
-export function AuthGuard({ children, fallback }: AuthGuardProps) {
+/**
+ * Schützt Seiten vor anonymem Zugriff. Abgemeldete Nutzer sehen das
+ * einheitliche Anmelde-Fenster (LoginLanding) — gleicher Aufbau in allen
+ * Apps — statt des früheren Login-Modals über leerer Seite.
+ */
+export function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth();
-  const { t } = useTranslation();
-  const router = useRouter();
+  const { config, signIn } = usePulseCraftLanding();
 
   if (loading) {
     return (
@@ -29,23 +30,11 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-        <p className="text-muted-foreground">{t.auth.signInRequired}</p>
-
-        <LoginModal
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) {
-              // If user closes modal without logging in, redirect to home
-              router.push("/");
-            }
-          }}
-        >
-          <Button>{t.auth.signIn}</Button>
-        </LoginModal>
-
-        <LanguageSwitcher compact />
-      </div>
+      <LoginLanding
+        config={config}
+        onSignIn={signIn}
+        navEnd={<LanguageSwitcher compact />}
+      />
     );
   }
 

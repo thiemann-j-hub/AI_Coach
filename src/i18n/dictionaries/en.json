@@ -201,5 +201,16 @@
     "notFound": "Not found",
     "internalError": "Internal server error",
     "rateLimited": "Too many requests. Please try again later."
+  },
+  "landing": {
+    "subtitle": "AI coaching for better employee conversations",
+    "description": "Upload a conversation transcript and receive structured coaching feedback: strengths, areas to improve, better phrasings and competency scores. On request, the conversation is fully anonymized before analysis.",
+    "f1Title": "Conversation analysis",
+    "f1Desc": "The AI analyzes your transcript and delivers concrete feedback with strengths, risks and better phrasings.",
+    "f2Title": "Visible progress",
+    "f2Desc": "Competency scores and history statistics show how your conversation skills develop over time.",
+    "f3Title": "GDPR-compliant",
+    "f3Desc": "Transcripts are anonymized in your browser before analysis; hosting and data storage are in the EU (Azure West Europe).",
+    "signInError": "Sign-in failed. Please try again."
   }
 }

@@ -201,5 +201,16 @@
     "notFound": "No encontrado",
     "internalError": "Error interno del servidor",
     "rateLimited": "Demasiadas solicitudes. Inténtelo de nuevo más tarde."
+  },
+  "landing": {
+    "subtitle": "Coaching con IA para mejores conversaciones",
+    "description": "Sube la transcripción de una conversación y recibe feedback de coaching estructurado: fortalezas, áreas de mejora, mejores formulaciones y puntuaciones de competencias. Si lo deseas, la conversación se anonimiza por completo antes del análisis.",
+    "f1Title": "Análisis de conversaciones",
+    "f1Desc": "La IA analiza tu transcripción y ofrece feedback concreto con fortalezas, riesgos y mejores formulaciones.",
+    "f2Title": "Progreso visible",
+    "f2Desc": "Las puntuaciones de competencias y las estadísticas del historial muestran cómo evoluciona tu forma de conversar.",
+    "f3Title": "Conforme al RGPD",
+    "f3Desc": "Las transcripciones se anonimizan en tu navegador antes del análisis; el alojamiento y el almacenamiento de datos están en la UE (Azure Europa Occidental).",
+    "signInError": "Error al iniciar sesión. Inténtalo de nuevo."
   }
 }

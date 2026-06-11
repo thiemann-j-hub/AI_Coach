@@ -201,5 +201,16 @@
     "notFound": "Non trovato",
     "internalError": "Errore interno del server",
     "rateLimited": "Troppe richieste. Riprova più tardi."
+  },
+  "landing": {
+    "subtitle": "Coaching IA per colloqui migliori",
+    "description": "Carica la trascrizione di un colloquio e ricevi un feedback di coaching strutturato: punti di forza, aree di miglioramento, formulazioni migliori e punteggi di competenza. Su richiesta, il colloquio viene completamente anonimizzato prima dell'analisi.",
+    "f1Title": "Analisi del colloquio",
+    "f1Desc": "L'IA analizza la tua trascrizione e fornisce un feedback concreto con punti di forza, rischi e formulazioni migliori.",
+    "f2Title": "Progressi visibili",
+    "f2Desc": "I punteggi di competenza e le statistiche dello storico mostrano come evolve la tua conduzione dei colloqui.",
+    "f3Title": "Conforme al GDPR",
+    "f3Desc": "Le trascrizioni vengono anonimizzate nel browser prima dell'analisi; hosting e archiviazione dei dati sono nell'UE (Azure Europa occidentale).",
+    "signInError": "Accesso non riuscito. Riprova."
   }
 }

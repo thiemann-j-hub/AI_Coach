@@ -201,5 +201,16 @@
     "notFound": "Nie znaleziono",
     "internalError": "Wewnętrzny błąd serwera",
     "rateLimited": "Zbyt wiele żądań. Spróbuj ponownie później."
+  },
+  "landing": {
+    "subtitle": "Coaching AI dla lepszych rozmów z pracownikami",
+    "description": "Prześlij transkrypcję rozmowy i otrzymaj ustrukturyzowany feedback coachingowy: mocne strony, obszary do poprawy, lepsze sformułowania i oceny kompetencji. Na życzenie rozmowa jest w pełni anonimizowana przed analizą.",
+    "f1Title": "Analiza rozmowy",
+    "f1Desc": "AI analizuje transkrypcję i dostarcza konkretny feedback z mocnymi stronami, ryzykami i lepszymi sformułowaniami.",
+    "f2Title": "Widoczny postęp",
+    "f2Desc": "Oceny kompetencji i statystyki historii pokazują, jak rozwija się Twoje prowadzenie rozmów.",
+    "f3Title": "Zgodność z RODO",
+    "f3Desc": "Transkrypcje są anonimizowane w przeglądarce przed analizą; hosting i przechowywanie danych odbywają się w UE (Azure Europa Zachodnia).",
+    "signInError": "Logowanie nie powiodło się. Spróbuj ponownie."
   }
 }
