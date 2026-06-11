@@ -1,8 +1,11 @@
 // src/app/api/runs/list/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase-admin";
-import * as fs from "node:fs";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkSessionOwnership, listRuns } from "@/lib/server/runs-store";
+import { getApiMessages } from "@/lib/server/get-request-locale";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,52 +16,28 @@ const sessionIdSchema = z
   .max(128)
   .regex(/^[A-Za-z0-9_-]+$/, "sessionId must be url-safe (a-zA-Z0-9_-).");
 
-function getProjectId(): string | null {
-  return (
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-    process.env.GCLOUD_PROJECT ||
-    process.env.GCP_PROJECT ||
-    null
-  );
-}
-
-function safeServiceAccountInfo() {
-  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (!credPath) return null;
-
-  try {
-    if (!fs.existsSync(credPath)) return { fileExists: false };
-    const raw = fs.readFileSync(credPath, "utf8");
-    const j = JSON.parse(raw);
-    return {
-      fileExists: true,
-      project_id: j?.project_id ?? null,
-      client_email: j?.client_email ?? null,
-    };
-  } catch (e: any) {
-    return { fileExists: null, error: e?.message ?? String(e) };
-  }
-}
-
-function toIso(v: any): string | null {
-  if (!v) return null;
-  if (typeof v === "string") return v;
-  if (v?.toDate) {
-    try {
-      return v.toDate().toISOString();
-    } catch {
-      return null;
-    }
-  }
-  if (v instanceof Date) return v.toISOString();
-  return null;
-}
+// Cursor = Doc-ID des letzten Runs der vorherigen Seite
+const cursorSchema = z.string().min(1).max(256);
 
 export async function GET(req: NextRequest) {
+  const apiMsg = getApiMessages(req);
+
+  // Auth check
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+  const { uid } = authResult;
+
+  // Rate limit: 30 list requests per minute
+  const rlKey = rateLimitKey(req, "runs-list");
+  const rlResponse = checkRateLimit(rlKey, 30, 60_000, apiMsg.rateLimited);
+  if (rlResponse) return rlResponse;
+
   const sp = req.nextUrl.searchParams;
   const sessionId = sp.get("sessionId") ?? "";
-  const debug = sp.get("debug") === "1";
+  // limit-Parameter der Frontends respektieren (wurde bisher ignoriert), capped 1..100
+  const limitRaw = Number.parseInt(sp.get("limit") ?? "", 10);
+  const limit = Number.isFinite(limitRaw) ? Math.min(100, Math.max(1, limitRaw)) : 50;
+  const cursorRaw = sp.get("cursor");
 
   const parsed = sessionIdSchema.safeParse(sessionId);
   if (!parsed.success) {
@@ -68,77 +47,39 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  try {
-    const db = getAdminDb();
-
-    const snap = await db
-      .collection("sessions")
-      .doc(sessionId)
-      .collection("runs")
-      .orderBy("createdAt", "desc")
-      .limit(50)
-      .get();
-
-    const runs = snap.docs.map((d) => {
-      const data = d.data() as any;
-
-      const analysisJson = data?.analysisJson ?? null;
-      const scores = analysisJson?.scores ?? data?.scores ?? null;
-
-      return {
-        id: d.id,
-        createdAt: toIso(data?.createdAt),
-        conversationType: data?.conversationType ?? null,
-        conversationSubType: data?.conversationSubType ?? null,
-        goal: data?.goal ?? null,
-        lang: data?.lang ?? null,
-        jurisdiction: data?.jurisdiction ?? null,
-        scoreOverall:
-          typeof data?.scoreOverall === "number"
-            ? data.scoreOverall
-            : typeof scores?.overall === "number"
-              ? scores.overall
-              : null,
-        summary:
-          typeof data?.summary === "string"
-            ? data.summary
-            : typeof analysisJson?.summary === "string"
-              ? analysisJson.summary
-              : null,
-        hasTranscript:
-          typeof data?.transcriptText === "string" &&
-          data.transcriptText.trim().length > 0,
-      };
-    });
-
+  if (cursorRaw !== null && !cursorSchema.safeParse(cursorRaw).success) {
     return NextResponse.json(
-      {
-        ok: true,
-        runs,
-        debug: debug
-          ? {
-              nodeEnv: process.env.NODE_ENV ?? null,
-              projectId: getProjectId(),
-              has_FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
-              has_GOOGLE_APPLICATION_CREDENTIALS:
-                !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
-              googleCredPath: process.env.GOOGLE_APPLICATION_CREDENTIALS ?? null,
-              has_SERVICE_ACCOUNT_JSON: !!process.env.SERVICE_ACCOUNT_JSON,
-              has_FIREBASE_SERVICE_ACCOUNT_JSON: !!process.env.FIREBASE_SERVICE_ACCOUNT_JSON,
-              serviceAccountInfo: safeServiceAccountInfo(),
-            }
-          : undefined,
-      },
-      { status: 200 }
+      { ok: false, error: "Invalid cursor", code: "BAD_CURSOR" },
+      { status: 400 }
     );
+  }
+
+  try {
+    const ownership = await checkSessionOwnership(sessionId, uid);
+    if (!ownership.allowed) {
+      return NextResponse.json(
+        { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
+
+    const { runs, hasMore, nextCursor, badCursor } = await listRuns(
+      sessionId,
+      limit,
+      cursorRaw
+    );
+    if (badCursor) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid cursor", code: "BAD_CURSOR" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, runs, hasMore, nextCursor }, { status: 200 });
   } catch (err: any) {
+    logger.apiError("/api/runs/list", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message ?? String(err),
-        code: err?.code ?? null,
-        details: err?.details ?? null,
-      },
+      { ok: false, error: apiMsg.internalError, code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

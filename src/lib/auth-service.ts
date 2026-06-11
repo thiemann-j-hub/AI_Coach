@@ -1,52 +1,26 @@
-import { 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  updateProfile,
-  User,
-  AuthError
-} from "firebase/auth";
-import { auth } from "./firebaseClient";
+"use client";
 
-const googleProvider = new GoogleAuthProvider();
+import { signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "next-auth/react";
 
-export async function signInWithGoogle() {
+/**
+ * Auth-Aktionen (NextAuth v5 + Microsoft Entra ID).
+ * Ersetzt die früheren Firebase-Flows (E-Mail/Passwort, Google-Popup).
+ */
+
+export async function signInWithMicrosoft() {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return { user: result.user, error: null };
+    await nextAuthSignIn("microsoft-entra-id");
+    return { error: null };
   } catch (error) {
-    return { user: null, error: error as AuthError };
-  }
-}
-
-export async function signInWithEmail(email: string, pass: string) {
-  try {
-    const result = await signInWithEmailAndPassword(auth, email, pass);
-    return { user: result.user, error: null };
-  } catch (error) {
-    return { user: null, error: error as AuthError };
-  }
-}
-
-export async function signUpWithEmail(email: string, pass: string, name?: string) {
-  try {
-    const result = await createUserWithEmailAndPassword(auth, email, pass);
-    if (name && result.user) {
-      await updateProfile(result.user, { displayName: name });
-    }
-    return { user: result.user, error: null };
-  } catch (error) {
-    return { user: null, error: error as AuthError };
+    return { error: error as Error };
   }
 }
 
 export async function signOut() {
   try {
-    await firebaseSignOut(auth);
+    await nextAuthSignOut({ redirectTo: "/analyze" });
     return { error: null };
   } catch (error) {
-    return { error: error as AuthError };
+    return { error: error as Error };
   }
 }

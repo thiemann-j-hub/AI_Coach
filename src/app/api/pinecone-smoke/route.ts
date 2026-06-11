@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pineconeSearchCards } from "@/lib/pinecone";
+import { requireAuth } from "@/lib/api-auth";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const sp = req.nextUrl.searchParams;
+  // Auth check
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
 
+  // Rate limit: 10 requests per minute
+  const rlKey = rateLimitKey(req, "pinecone-smoke");
+  const rlResponse = checkRateLimit(rlKey, 10, 60_000);
+  if (rlResponse) return rlResponse;
+
+  const sp = req.nextUrl.searchParams;
   const text = sp.get("text") ?? "";
   const lang = sp.get("lang") ?? undefined;
   const topK = sp.get("topK") ?? sp.get("top_k") ?? undefined;
-  const debug = sp.get("debug") === "1";
-
-  const envStatus = debug
-    ? {
-        PINECONE_API_KEY: Boolean(process.env.PINECONE_API_KEY),
-        PINECONE_INDEX_HOST: Boolean(process.env.PINECONE_INDEX_HOST),
-        PINECONE_NAMESPACE: Boolean(process.env.PINECONE_NAMESPACE),
-      }
-    : undefined;
 
   try {
     const out = await pineconeSearchCards({ text, lang, topK });
@@ -27,17 +28,11 @@ export async function GET(req: NextRequest) {
       query: { text, lang: lang ?? null, topK: topK ?? null },
       count: out.count,
       results: out.results,
-      raw: debug ? out.raw : undefined,
-      envStatus,
     });
   } catch (e: any) {
+    console.error("[pinecone-smoke] unexpected error:", e);
     return NextResponse.json(
-      {
-        ok: false,
-        error: e?.message ?? String(e),
-        query: { text, lang: lang ?? null, topK: topK ?? null },
-        envStatus,
-      },
+      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

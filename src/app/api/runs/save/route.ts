@@ -1,8 +1,15 @@
 // src/app/api/runs/save/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase-admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { requireAuth } from "@/lib/api-auth";
+import {
+  checkSessionOwnership,
+  createRun,
+  upsertSession,
+} from "@/lib/server/runs-store";
+import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,33 +20,27 @@ const sessionIdSchema = z
   .max(128)
   .regex(/^[A-Za-z0-9_-]+$/, "sessionId must be url-safe (a-zA-Z0-9_-).");
 
-const requestSchema = z
-  .object({
-    conversationType: z.string().min(1),
-    conversationSubType: z.string().optional().nullable(),
-    goal: z.string().optional().nullable(),
-    transcriptText: z.string().optional().nullable(),
-    lang: z.string().optional().nullable(),
-    jurisdiction: z.string().optional().nullable(),
-    leaderLabel: z.string().optional().nullable(),
-    employeeLabel: z.string().optional().nullable(),
-  })
-  .passthrough();
+const requestSchema = z.object({
+  conversationType: z.string().min(1).max(100),
+  conversationSubType: z.string().max(100).optional().nullable(),
+  goal: z.string().max(500).optional().nullable(),
+  transcriptText: z.string().max(500_000).optional().nullable(),
+  lang: z.enum(["de", "en"]).optional().nullable(),
+  jurisdiction: z.string().max(50).optional().nullable(),
+  leaderLabel: z.string().max(200).optional().nullable(),
+  employeeLabel: z.string().max(200).optional().nullable(),
+});
 
-const optionsSchema = z
-  .object({
-    storeTranscript: z.boolean().optional(),
-  })
-  .passthrough();
+const optionsSchema = z.object({
+  storeTranscript: z.boolean().optional(),
+});
 
-const bodySchema = z
-  .object({
-    sessionId: sessionIdSchema,
-    request: requestSchema.optional(),
-    result: z.any().optional(),
-    options: optionsSchema.optional(),
-  })
-  .passthrough();
+const bodySchema = z.object({
+  sessionId: sessionIdSchema,
+  request: requestSchema.optional(),
+  result: z.any().optional(),
+  options: optionsSchema.optional(),
+});
 
 function isObject(v: unknown): v is Record<string, any> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -51,10 +52,6 @@ function safeTrimString(v: any): string | null {
   return t ? t : null;
 }
 
-/**
- * Like coerceBool, but returns undefined when the value is "not provided".
- * This allows fallback chaining (storeTranscript -> saveTranscript).
- */
 function pickBool(v: any): boolean | undefined {
   if (typeof v === "boolean") return v;
   if (typeof v === "string") {
@@ -66,10 +63,8 @@ function pickBool(v: any): boolean | undefined {
 }
 
 function pickRequest(body: any) {
-  // 1) preferred: body.request
   let req: any = isObject(body?.request) ? body.request : null;
 
-  // 2) fallback: legacy top-level fields
   if (!req && isObject(body) && typeof body.conversationType === "string") {
     req = {
       conversationType: body.conversationType,
@@ -83,8 +78,6 @@ function pickRequest(body: any) {
     };
   }
 
-  // 3) IMPORTANT: If UI sends transcriptText top-level (but request exists),
-  // merge it in so "Transkript speichern" works.
   if (isObject(req)) {
     const have = safeTrimString((req as any).transcriptText);
     const top = safeTrimString(body?.transcriptText);
@@ -95,7 +88,6 @@ function pickRequest(body: any) {
 }
 
 function pickResult(body: any) {
-  // accept multiple keys to reduce UI/backend mismatch issues
   return (
     body?.result ??
     body?.analysis ??
@@ -122,7 +114,19 @@ function pickPractice7Days(result: any): string | null {
   return null;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const apiMsg = getApiMessages(req);
+
+  // Auth check
+  const authResult = await requireAuth(req);
+  if (authResult instanceof NextResponse) return authResult;
+  const { uid } = authResult;
+
+  // Rate limit: 20 saves per minute
+  const rlKey = rateLimitKey(req, "runs-save");
+  const rlResponse = checkRateLimit(rlKey, 20, 60_000, apiMsg.rateLimited);
+  if (rlResponse) return rlResponse;
+
   try {
     const json = await req.json().catch(() => null);
     if (!json || !isObject(json)) {
@@ -153,9 +157,6 @@ export async function POST(req: Request) {
       safeTrimString((request as any).transcriptText) ??
       safeTrimString((json as any).transcriptText);
 
-    // storeTranscript:
-    // - explicit flags win (options.storeTranscript / storeTranscript / saveTranscript)
-    // - otherwise: if transcriptText is provided, we store it (UI only sends it when toggle is on)
     const storeTranscriptExplicit =
       parsed.data.options?.storeTranscript ??
       pickBool((json as any).storeTranscript) ??
@@ -166,7 +167,6 @@ export async function POST(req: Request) {
 
     const transcriptText = storeTranscript && transcriptCandidate ? transcriptCandidate : null;
 
-    // Normalize analysis fields (stable for list/detail UI)
     const analysisJson = {
       summary: safeTrimString((result as any).summary),
       strengths: Array.isArray((result as any).strengths) ? (result as any).strengths : [],
@@ -190,14 +190,21 @@ export async function POST(req: Request) {
     const scoreOverall =
       typeof (analysisJson.scores as any)?.overall === "number" ? (analysisJson.scores as any).overall : null;
 
-    const db = getAdminDb();
-    const sessionRef = db.collection("sessions").doc(sessionId);
+    // Ownership VOR dem Write prüfen — verhindert Session-Übernahme durch
+    // uid-Überschreiben (war beim Firestore-merge zuvor möglich).
+    const ownership = await checkSessionOwnership(sessionId, uid);
+    if (!ownership.allowed) {
+      return NextResponse.json(
+        { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
+        { status: 403 }
+      );
+    }
 
-    // Session touch
-    await sessionRef.set({ updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    await upsertSession(sessionId, uid);
 
-    const runRef = await sessionRef.collection("runs").add({
-      createdAt: FieldValue.serverTimestamp(),
+    const runId = await createRun({
+      sessionId,
+      uid,
 
       conversationType: request.conversationType,
       conversationSubType: request.conversationSubType ?? null,
@@ -214,15 +221,12 @@ export async function POST(req: Request) {
       scoreOverall,
     });
 
-    return NextResponse.json({ ok: true, runId: runRef.id }, { status: 200 });
+    logger.api("/api/runs/save", "saved", { uid, sessionId, runId });
+    return NextResponse.json({ ok: true, runId }, { status: 200 });
   } catch (err: any) {
+    logger.apiError("/api/runs/save", err);
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message ?? String(err),
-        code: err?.code ?? null,
-        details: err?.details ?? null,
-      },
+      { ok: false, error: apiMsg.internalError, code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

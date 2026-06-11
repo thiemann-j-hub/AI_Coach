@@ -1,11 +1,16 @@
+import Link from "next/link";
+
 export default function NotFound() {
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial' }}>
-      <h1 style={{ margin: 0 }}>Seite nicht gefunden</h1>
-      <p style={{ marginTop: 12 }}>Diese Seite existiert nicht (404).</p>
-      <p style={{ marginTop: 12 }}>
-        <a href="/" style={{ textDecoration: 'underline' }}>Zur Startseite</a>
-      </p>
+    <main className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background text-foreground p-6">
+      <h1 className="text-2xl font-bold">Seite nicht gefunden</h1>
+      <p className="text-sm text-muted-foreground">Diese Seite existiert nicht (404).</p>
+      <Link
+        href="/analyze"
+        className="text-sm text-primary underline hover:text-primary/80 transition-colors"
+      >
+        Zur Analyse
+      </Link>
     </main>
   );
 }

@@ -5,6 +5,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { sanitizeForPrompt } from '@/lib/prompt-guard';
 
 export const ScoreCompetenciesInputSchema = z.object({
   transcriptText: z.string(),
@@ -70,6 +71,16 @@ Gib ausschließlich JSON gemäß Schema zurück.
 });
 
 export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesInputSchema>) {
-  const { output } = await prompt(input);
+  // Fence user-supplied transcript to reduce prompt injection risk
+  const { sanitized: fencedText, injectionDetected } = sanitizeForPrompt(
+    input.transcriptText,
+    { label: 'TRANSCRIPT' }
+  );
+  if (injectionDetected) {
+    console.warn(`[prompt-guard] Injection pattern detected in transcriptText: "${injectionDetected}"`);
+  }
+
+  const hardenedInput = { ...input, transcriptText: fencedText };
+  const { output } = await prompt(hardenedInput);
   return output!;
 }
