@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
+import { localeBcp47, type Locale } from '@/i18n/config';
 
 type RunsListItem = {
   id: string;
@@ -32,12 +33,12 @@ function shortId(id?: string, n = 18) {
   return s.slice(0, n) + '…';
 }
 
-function fmtDateTime(iso?: string) {
+function fmtDateTime(iso: string | undefined, bcp47: string) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
   try {
-    return d.toLocaleString('de-DE', {
+    return d.toLocaleString(bcp47, {
       year: 'numeric', month: 'short', day: '2-digit',
       hour: '2-digit', minute: '2-digit',
     });
@@ -72,7 +73,8 @@ function getScoreColor(score: number | null): string {
 export default function RunsDashboardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const bcp47 = localeBcp47[locale as Locale] ?? 'en-US';
 
   const [sessionId, setSessionId] = useState<string>('');
   const [runs, setRuns] = useState<RunsListItem[]>([]);
@@ -158,6 +160,28 @@ export default function RunsDashboardClient() {
     }
   }
 
+  const stats = useMemo(() => {
+    const scores = runs
+      .map((r) => (typeof r.scoreOverall === 'number' ? r.scoreOverall : null))
+      .filter((s): s is number => s !== null);
+    if (runs.length === 0) return null;
+    const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+    const best = scores.length ? Math.max(...scores) : null;
+    // Trend: Ø der letzten 5 Runs vs. Ø der 5 davor (Liste kommt neueste-zuerst)
+    const byDate = [...runs].sort((a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    });
+    const recent = byDate.slice(0, 5).map((r) => r.scoreOverall).filter((s): s is number => typeof s === 'number');
+    const prev = byDate.slice(5, 10).map((r) => r.scoreOverall).filter((s): s is number => typeof s === 'number');
+    const trend =
+      recent.length >= 2 && prev.length >= 2
+        ? recent.reduce((a, b) => a + b, 0) / recent.length - prev.reduce((a, b) => a + b, 0) / prev.length
+        : null;
+    return { count: runs.length, avg, best, trend };
+  }, [runs]);
+
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
     let list = [...runs];
@@ -240,6 +264,55 @@ export default function RunsDashboardClient() {
             </button>
           </div>
         </div>
+
+        {/* Stats */}
+        {!loading && !error && stats && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {([
+              {
+                icon: 'analytics',
+                label: t.dashboard.statsAnalyses,
+                value: `${stats.count}${hasMore ? '+' : ''}`,
+                cls: 'text-foreground',
+              },
+              {
+                icon: 'speed',
+                label: t.dashboard.statsAvgScore,
+                value: stats.avg !== null ? (Math.round(stats.avg * 10) / 10).toLocaleString(bcp47) : '—',
+                cls: 'text-foreground',
+              },
+              {
+                icon: 'emoji_events',
+                label: t.dashboard.statsBestScore,
+                value: stats.best !== null ? (Math.round(stats.best * 10) / 10).toLocaleString(bcp47) : '—',
+                cls: 'text-foreground',
+              },
+              {
+                icon: stats.trend === null ? 'trending_flat' : stats.trend > 0.05 ? 'trending_up' : stats.trend < -0.05 ? 'trending_down' : 'trending_flat',
+                label: t.dashboard.statsTrend,
+                value:
+                  stats.trend === null
+                    ? '—'
+                    : `${stats.trend > 0 ? '+' : ''}${(Math.round(stats.trend * 10) / 10).toLocaleString(bcp47)}`,
+                cls:
+                  stats.trend === null ? 'text-foreground'
+                  : stats.trend > 0.05 ? 'text-emerald-500'
+                  : stats.trend < -0.05 ? 'text-amber-500'
+                  : 'text-foreground',
+              },
+            ]).map((s, i) => (
+              <div key={i} className="glass-panel rounded-2xl p-4 flex items-center gap-3">
+                <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 text-primary flex-shrink-0">
+                  <span className="material-icons-round text-xl">{s.icon}</span>
+                </div>
+                <div className="min-w-0">
+                  <div className={`text-lg font-bold leading-tight ${s.cls}`}>{s.value}</div>
+                  <div className="text-[11px] text-muted-foreground truncate">{s.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Error */}
         {error && (
@@ -343,7 +416,7 @@ export default function RunsDashboardClient() {
                             </div>
                             <div className="flex items-center gap-1">
                               <span className="material-icons-round text-[14px]">event</span>
-                              <span>{fmtDateTime(r.createdAt)}</span>
+                              <span>{fmtDateTime(r.createdAt, bcp47)}</span>
                             </div>
                           </div>
                         </div>

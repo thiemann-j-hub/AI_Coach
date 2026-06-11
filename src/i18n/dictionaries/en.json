@@ -19,7 +19,9 @@
     "hide": "Hide",
     "session": "Session",
     "skipToContent": "Skip to main content",
-    "selectLanguage": "Select language"
+    "selectLanguage": "Select language",
+    "words": "words",
+    "chars": "characters"
   },
   "nav": {
     "analyze": "Analysis",
@@ -93,7 +95,14 @@
     "saveTranscript": "Save transcript with the run",
     "saveTranscriptHint": "Stores the analyzed (anonymized) text so you can review it later in the report.",
     "retrySave": "Retry saving",
-    "saveFailed": "Analysis succeeded, but saving failed. Your result is kept — retry saving."
+    "saveFailed": "Analysis succeeded, but saving failed. Your result is kept — retry saving.",
+    "readyChecklist": "Before you start",
+    "checkTranscript": "Transcript added",
+    "checkManager": "Manager selected",
+    "checkEmployee": "Employee selected",
+    "previewTitle": "Anonymization preview",
+    "previewHint": "First lines of the transcript as it will be sent:",
+    "durationHint": "The analysis usually takes 30–60 seconds."
   },
   "dashboard": {
     "title": "Session history",
@@ -113,7 +122,11 @@
     "noSummary": "No summary available.",
     "openAnalysis": "Open analysis",
     "loadMore": "Load more",
-    "loadingMore": "Loading more…"
+    "loadingMore": "Loading more…",
+    "statsAnalyses": "Analyses",
+    "statsAvgScore": "Avg. score",
+    "statsBestScore": "Best score",
+    "statsTrend": "Trend (last 5)"
   },
   "report": {
     "competency": "Competency",
@@ -151,7 +164,10 @@
     "backToHistory": "← Back to history",
     "loadingRun": "Loading analysis…",
     "accessDenied": "No access to this analysis.",
-    "runNotFound": "Analysis not found."
+    "runNotFound": "Analysis not found.",
+    "metaType": "Type",
+    "metaSubType": "Subtype",
+    "metaGoal": "Goal"
   },
   "linkedin": {
     "title": "Share on LinkedIn",

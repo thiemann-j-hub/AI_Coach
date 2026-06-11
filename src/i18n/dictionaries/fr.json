@@ -19,7 +19,9 @@
     "hide": "Masquer",
     "session": "Session",
     "skipToContent": "Aller au contenu principal",
-    "selectLanguage": "Choisir la langue"
+    "selectLanguage": "Choisir la langue",
+    "words": "mots",
+    "chars": "caractères"
   },
   "nav": {
     "analyze": "Analyse",
@@ -93,7 +95,14 @@
     "saveTranscript": "Enregistrer la transcription",
     "saveTranscriptHint": "Enregistre le texte analysé (anonymisé) pour pouvoir le consulter plus tard dans le rapport.",
     "retrySave": "Réessayer l'enregistrement",
-    "saveFailed": "Analyse réussie, mais l'enregistrement a échoué. Votre résultat est conservé — réessayez l'enregistrement."
+    "saveFailed": "Analyse réussie, mais l'enregistrement a échoué. Votre résultat est conservé — réessayez l'enregistrement.",
+    "readyChecklist": "Avant de commencer",
+    "checkTranscript": "Transcription ajoutée",
+    "checkManager": "Manager sélectionné",
+    "checkEmployee": "Collaborateur sélectionné",
+    "previewTitle": "Aperçu de l'anonymisation",
+    "previewHint": "Début de la transcription telle qu'elle sera envoyée :",
+    "durationHint": "L'analyse prend généralement 30 à 60 secondes."
   },
   "dashboard": {
     "title": "Historique des sessions",
@@ -113,7 +122,11 @@
     "noSummary": "Aucun résumé disponible.",
     "openAnalysis": "Ouvrir l'analyse",
     "loadMore": "Charger plus",
-    "loadingMore": "Chargement…"
+    "loadingMore": "Chargement…",
+    "statsAnalyses": "Analyses",
+    "statsAvgScore": "Score moyen",
+    "statsBestScore": "Meilleur score",
+    "statsTrend": "Tendance (5 derniers)"
   },
   "report": {
     "competency": "Compétence",
@@ -151,7 +164,10 @@
     "backToHistory": "← Retour à l'historique",
     "loadingRun": "Chargement de l'analyse…",
     "accessDenied": "Pas d'accès à cette analyse.",
-    "runNotFound": "Analyse introuvable."
+    "runNotFound": "Analyse introuvable.",
+    "metaType": "Type",
+    "metaSubType": "Sous-type",
+    "metaGoal": "Objectif"
   },
   "linkedin": {
     "title": "Partager sur LinkedIn",

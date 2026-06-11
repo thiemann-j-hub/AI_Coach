@@ -19,7 +19,9 @@
     "hide": "Nascondi",
     "session": "Sessione",
     "skipToContent": "Vai al contenuto principale",
-    "selectLanguage": "Seleziona la lingua"
+    "selectLanguage": "Seleziona la lingua",
+    "words": "parole",
+    "chars": "caratteri"
   },
   "nav": {
     "analyze": "Analisi",
@@ -93,7 +95,14 @@
     "saveTranscript": "Salva la trascrizione",
     "saveTranscriptHint": "Salva il testo analizzato (anonimizzato) per poterlo consultare in seguito nel report.",
     "retrySave": "Riprova a salvare",
-    "saveFailed": "Analisi riuscita, ma il salvataggio non è andato a buon fine. Il risultato è conservato — riprova a salvare."
+    "saveFailed": "Analisi riuscita, ma il salvataggio non è andato a buon fine. Il risultato è conservato — riprova a salvare.",
+    "readyChecklist": "Prima di iniziare",
+    "checkTranscript": "Trascrizione inserita",
+    "checkManager": "Manager selezionato",
+    "checkEmployee": "Collaboratore selezionato",
+    "previewTitle": "Anteprima anonimizzazione",
+    "previewHint": "Inizio della trascrizione così come verrà inviata:",
+    "durationHint": "L'analisi richiede di solito 30–60 secondi."
   },
   "dashboard": {
     "title": "Cronologia sessioni",
@@ -113,7 +122,11 @@
     "noSummary": "Nessun riepilogo disponibile.",
     "openAnalysis": "Apri analisi",
     "loadMore": "Carica altri",
-    "loadingMore": "Caricamento di altri…"
+    "loadingMore": "Caricamento di altri…",
+    "statsAnalyses": "Analisi",
+    "statsAvgScore": "Punteggio medio",
+    "statsBestScore": "Miglior punteggio",
+    "statsTrend": "Tendenza (ultimi 5)"
   },
   "report": {
     "competency": "Competenza",
@@ -151,7 +164,10 @@
     "backToHistory": "← Torna alla cronologia",
     "loadingRun": "Caricamento dell'analisi…",
     "accessDenied": "Nessun accesso a questa analisi.",
-    "runNotFound": "Analisi non trovata."
+    "runNotFound": "Analisi non trovata.",
+    "metaType": "Tipo",
+    "metaSubType": "Sottotipo",
+    "metaGoal": "Obiettivo"
   },
   "linkedin": {
     "title": "Condividi su LinkedIn",

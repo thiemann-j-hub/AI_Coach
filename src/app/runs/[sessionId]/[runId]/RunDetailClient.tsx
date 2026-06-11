@@ -136,9 +136,9 @@ export default function RunDetailClient({
   const createdLabel = formatDate(run?.createdAt ?? null, bcp47);
 
   const metaChips: { label: string; value: string }[] = [];
-  if (run?.conversationType) metaChips.push({ label: "Typ", value: String(run.conversationType) });
-  if (run?.conversationSubType) metaChips.push({ label: "Sub", value: String(run.conversationSubType) });
-  if (run?.goal) metaChips.push({ label: "Ziel", value: String(run.goal) });
+  if (run?.conversationType) metaChips.push({ label: t.report.metaType, value: String(run.conversationType) });
+  if (run?.conversationSubType) metaChips.push({ label: t.report.metaSubType, value: String(run.conversationSubType) });
+  if (run?.goal) metaChips.push({ label: t.report.metaGoal, value: String(run.goal) });
 
   const errorText =
     error === "__forbidden__" ? t.report.accessDenied :

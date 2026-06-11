@@ -19,7 +19,9 @@
     "hide": "Ocultar",
     "session": "Sesión",
     "skipToContent": "Saltar al contenido principal",
-    "selectLanguage": "Seleccionar idioma"
+    "selectLanguage": "Seleccionar idioma",
+    "words": "palabras",
+    "chars": "caracteres"
   },
   "nav": {
     "analyze": "Análisis",
@@ -93,7 +95,14 @@
     "saveTranscript": "Guardar la transcripción",
     "saveTranscriptHint": "Guarda el texto analizado (anonimizado) para poder consultarlo más tarde en el informe.",
     "retrySave": "Reintentar guardado",
-    "saveFailed": "Análisis completado, pero no se pudo guardar. Tu resultado se conserva — reintenta el guardado."
+    "saveFailed": "Análisis completado, pero no se pudo guardar. Tu resultado se conserva — reintenta el guardado.",
+    "readyChecklist": "Antes de empezar",
+    "checkTranscript": "Transcripción añadida",
+    "checkManager": "Gerente seleccionado",
+    "checkEmployee": "Empleado seleccionado",
+    "previewTitle": "Vista previa de anonimización",
+    "previewHint": "Así comienza la transcripción tal como se enviará:",
+    "durationHint": "El análisis suele tardar entre 30 y 60 segundos."
   },
   "dashboard": {
     "title": "Historial de sesiones",
@@ -113,7 +122,11 @@
     "noSummary": "Ningún resumen disponible.",
     "openAnalysis": "Abrir análisis",
     "loadMore": "Cargar más",
-    "loadingMore": "Cargando más…"
+    "loadingMore": "Cargando más…",
+    "statsAnalyses": "Análisis",
+    "statsAvgScore": "Puntuación media",
+    "statsBestScore": "Mejor puntuación",
+    "statsTrend": "Tendencia (últimos 5)"
   },
   "report": {
     "competency": "Competencia",
@@ -151,7 +164,10 @@
     "backToHistory": "← Volver al historial",
     "loadingRun": "Cargando el análisis…",
     "accessDenied": "Sin acceso a este análisis.",
-    "runNotFound": "Análisis no encontrado."
+    "runNotFound": "Análisis no encontrado.",
+    "metaType": "Tipo",
+    "metaSubType": "Subtipo",
+    "metaGoal": "Objetivo"
   },
   "linkedin": {
     "title": "Compartir en LinkedIn",

@@ -64,6 +64,14 @@ export default function AnalyzeClient() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!loading) { setElapsed(0); return; }
+    const started = Date.now();
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [loading]);
 
   // Synchroner Re-Entrancy-Schutz: zwei Klicks vor dem Re-Render sehen beide
   // loading=false — der Ref verhindert doppelte Gemini-Calls.
@@ -391,6 +399,11 @@ export default function AnalyzeClient() {
                 disabled={loading}
               />
             </div>
+            {transcriptText.trim() && (
+              <div className="mt-2 text-right text-xs text-muted-foreground font-mono">
+                {transcriptText.trim().split(/\s+/).length.toLocaleString()} {t.common.words} · {transcriptText.length.toLocaleString()} {t.common.chars}
+              </div>
+            )}
           </div>
         </div>
 
@@ -545,6 +558,19 @@ export default function AnalyzeClient() {
                 </div>
               )}
 
+              {privacyMode && privacyPreview && (
+                <details className="mb-4 rounded-lg border border-border bg-background/60">
+                  <summary className="cursor-pointer select-none px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                    <span className="material-icons-round text-sm">visibility</span>
+                    {t.analyze.previewTitle}
+                  </summary>
+                  <div className="px-3 pb-3">
+                    <p className="text-[11px] text-muted-foreground mb-2">{t.analyze.previewHint}</p>
+                    <pre className="whitespace-pre-wrap text-xs text-foreground font-mono bg-secondary/50 rounded-lg p-3 border border-border max-h-40 overflow-auto custom-scrollbar">{privacyPreview}…</pre>
+                  </div>
+                </details>
+              )}
+
               {error && (
                 <div className="p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
@@ -561,6 +587,24 @@ export default function AnalyzeClient() {
                 </button>
               )}
 
+              {!loading && (!transcriptText.trim() || !leaderLabel || !employeeLabel) && (
+                <div className="mb-4 rounded-lg border border-border bg-background/60 p-3">
+                  <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.readyChecklist}</div>
+                  <ul className="space-y-1.5">
+                    {([
+                      [Boolean(transcriptText.trim()), t.analyze.checkTranscript],
+                      [Boolean(leaderLabel), t.analyze.checkManager],
+                      [Boolean(employeeLabel), t.analyze.checkEmployee],
+                    ] as Array<[boolean, string]>).map(([done, label], i) => (
+                      <li key={i} className={`flex items-center gap-2 text-xs ${done ? 'text-emerald-500' : 'text-muted-foreground'}`}>
+                        <span className="material-icons-round text-sm">{done ? 'check_circle' : 'radio_button_unchecked'}</span>
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <button
                 className="w-full btn-gradient text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-neon hover:shadow-neon-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
                 onClick={onAnalyze}
@@ -574,8 +618,15 @@ export default function AnalyzeClient() {
                 {loading ? t.analyze.analyzing : t.analyze.startAnalysis}
               </button>
 
-              {step && (
-                <div className="mt-2 text-center text-xs text-muted-foreground">{step}</div>
+              {loading && (
+                <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-center" aria-live="polite">
+                  <div className="text-sm font-medium text-foreground flex items-center justify-center gap-2">
+                    <span className="material-icons-round animate-spin text-base text-primary">progress_activity</span>
+                    {step}
+                    <span className="font-mono text-xs text-muted-foreground">{elapsed}s</span>
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{t.analyze.durationHint}</div>
+                </div>
               )}
             </div>
           </div>

@@ -19,7 +19,9 @@
     "hide": "Ukryj",
     "session": "Sesja",
     "skipToContent": "Przejdź do treści głównej",
-    "selectLanguage": "Wybierz język"
+    "selectLanguage": "Wybierz język",
+    "words": "słów",
+    "chars": "znaków"
   },
   "nav": {
     "analyze": "Analiza",
@@ -93,7 +95,14 @@
     "saveTranscript": "Zapisz transkrypcję",
     "saveTranscriptHint": "Zapisuje przeanalizowany (zanonimizowany) tekst, aby można było później przejrzeć go w raporcie.",
     "retrySave": "Ponów zapisywanie",
-    "saveFailed": "Analiza powiodła się, ale zapisywanie nie. Twój wynik został zachowany — ponów zapisywanie."
+    "saveFailed": "Analiza powiodła się, ale zapisywanie nie. Twój wynik został zachowany — ponów zapisywanie.",
+    "readyChecklist": "Zanim zaczniesz",
+    "checkTranscript": "Transkrypcja dodana",
+    "checkManager": "Menedżer wybrany",
+    "checkEmployee": "Pracownik wybrany",
+    "previewTitle": "Podgląd anonimizacji",
+    "previewHint": "Tak zaczyna się transkrypcja w wysyłanej formie:",
+    "durationHint": "Analiza trwa zwykle 30–60 sekund."
   },
   "dashboard": {
     "title": "Historia sesji",
@@ -113,7 +122,11 @@
     "noSummary": "Brak podsumowania.",
     "openAnalysis": "Otwórz analizę",
     "loadMore": "Załaduj więcej",
-    "loadingMore": "Ładowanie kolejnych…"
+    "loadingMore": "Ładowanie kolejnych…",
+    "statsAnalyses": "Analizy",
+    "statsAvgScore": "Średni wynik",
+    "statsBestScore": "Najlepszy wynik",
+    "statsTrend": "Trend (ostatnie 5)"
   },
   "report": {
     "competency": "Kompetencja",
@@ -151,7 +164,10 @@
     "backToHistory": "← Powrót do historii",
     "loadingRun": "Ładowanie analizy…",
     "accessDenied": "Brak dostępu do tej analizy.",
-    "runNotFound": "Nie znaleziono analizy."
+    "runNotFound": "Nie znaleziono analizy.",
+    "metaType": "Typ",
+    "metaSubType": "Podtyp",
+    "metaGoal": "Cel"
   },
   "linkedin": {
     "title": "Udostępnij na LinkedIn",

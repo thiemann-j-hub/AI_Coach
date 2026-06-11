@@ -19,7 +19,9 @@
     "hide": "Ausblenden",
     "session": "Session",
     "skipToContent": "Zum Hauptinhalt springen",
-    "selectLanguage": "Sprache wählen"
+    "selectLanguage": "Sprache wählen",
+    "words": "Wörter",
+    "chars": "Zeichen"
   },
   "nav": {
     "analyze": "Analyse",
@@ -93,7 +95,14 @@
     "saveTranscript": "Transkript mit speichern",
     "saveTranscriptHint": "Speichert den analysierten (anonymisierten) Text, damit du ihn später im Bericht einsehen kannst.",
     "retrySave": "Speichern wiederholen",
-    "saveFailed": "Analyse erfolgreich, aber Speichern fehlgeschlagen. Dein Ergebnis bleibt erhalten — wiederhole das Speichern."
+    "saveFailed": "Analyse erfolgreich, aber Speichern fehlgeschlagen. Dein Ergebnis bleibt erhalten — wiederhole das Speichern.",
+    "readyChecklist": "Bevor es losgeht",
+    "checkTranscript": "Transkript eingefügt",
+    "checkManager": "Führungskraft ausgewählt",
+    "checkEmployee": "Mitarbeiter ausgewählt",
+    "previewTitle": "Anonymisierungs-Vorschau",
+    "previewHint": "So beginnt das Transkript, wie es gesendet wird:",
+    "durationHint": "Die Analyse dauert in der Regel 30–60 Sekunden."
   },
   "dashboard": {
     "title": "Sitzungsverlauf",
@@ -113,7 +122,11 @@
     "noSummary": "Keine Zusammenfassung verfügbar.",
     "openAnalysis": "Analyse öffnen",
     "loadMore": "Mehr laden",
-    "loadingMore": "Lade weitere…"
+    "loadingMore": "Lade weitere…",
+    "statsAnalyses": "Analysen",
+    "statsAvgScore": "Ø Score",
+    "statsBestScore": "Bester Score",
+    "statsTrend": "Trend (letzte 5)"
   },
   "report": {
     "competency": "Kompetenz",
@@ -151,7 +164,10 @@
     "backToHistory": "← Zurück zum Verlauf",
     "loadingRun": "Analyse wird geladen…",
     "accessDenied": "Kein Zugriff auf diese Analyse.",
-    "runNotFound": "Analyse nicht gefunden."
+    "runNotFound": "Analyse nicht gefunden.",
+    "metaType": "Typ",
+    "metaSubType": "Untertyp",
+    "metaGoal": "Ziel"
   },
   "linkedin": {
     "title": "Auf LinkedIn teilen",

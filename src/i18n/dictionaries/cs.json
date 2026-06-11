@@ -19,7 +19,9 @@
     "hide": "Skrýt",
     "session": "Relace",
     "skipToContent": "Přejít na hlavní obsah",
-    "selectLanguage": "Vybrat jazyk"
+    "selectLanguage": "Vybrat jazyk",
+    "words": "slov",
+    "chars": "znaků"
   },
   "nav": {
     "analyze": "Analýza",
@@ -93,7 +95,14 @@
     "saveTranscript": "Uložit přepis",
     "saveTranscriptHint": "Uloží analyzovaný (anonymizovaný) text, abyste si jej mohli později prohlédnout v reportu.",
     "retrySave": "Zopakovat uložení",
-    "saveFailed": "Analýza proběhla úspěšně, ale uložení selhalo. Výsledek zůstává zachován — zopakujte uložení."
+    "saveFailed": "Analýza proběhla úspěšně, ale uložení selhalo. Výsledek zůstává zachován — zopakujte uložení.",
+    "readyChecklist": "Než začnete",
+    "checkTranscript": "Přepis vložen",
+    "checkManager": "Manažer vybrán",
+    "checkEmployee": "Zaměstnanec vybrán",
+    "previewTitle": "Náhled anonymizace",
+    "previewHint": "Takto začíná přepis, jak bude odeslán:",
+    "durationHint": "Analýza obvykle trvá 30–60 sekund."
   },
   "dashboard": {
     "title": "Historie relací",
@@ -113,7 +122,11 @@
     "noSummary": "Žádné shrnutí k dispozici.",
     "openAnalysis": "Otevřít analýzu",
     "loadMore": "Načíst další",
-    "loadingMore": "Načítání dalších…"
+    "loadingMore": "Načítání dalších…",
+    "statsAnalyses": "Analýzy",
+    "statsAvgScore": "Průměrné skóre",
+    "statsBestScore": "Nejlepší skóre",
+    "statsTrend": "Trend (posledních 5)"
   },
   "report": {
     "competency": "Kompetence",
@@ -151,7 +164,10 @@
     "backToHistory": "← Zpět na historii",
     "loadingRun": "Načítání analýzy…",
     "accessDenied": "K této analýze nemáte přístup.",
-    "runNotFound": "Analýza nenalezena."
+    "runNotFound": "Analýza nenalezena.",
+    "metaType": "Typ",
+    "metaSubType": "Podtyp",
+    "metaGoal": "Cíl"
   },
   "linkedin": {
     "title": "Sdílet na LinkedIn",
