@@ -11,6 +11,9 @@
  *   node scripts/migrate-firestore-to-cosmos.mjs --map <firebaseUid>=<entraUid>
  *
  * Voraussetzungen: .env.local mit COSMOS_*; workspace/firebase-admin-sa.json
+ *
+ * Hinweis (M6): firebase-admin ist keine Projekt-Dependency mehr — vor einem
+ * erneuten Lauf einmalig `npm i --no-save firebase-admin` ausführen.
  */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

@@ -45,13 +45,18 @@ Web-App `pulsecraft-coach`, Cosmos-DB `coach`, Key Vault `coach-kv-*`.
   Cursor-Pagination via `ORDER BY c.createdAt DESC` + Continuation/OFFSET;
   Export-Skript Firestore→Cosmos mit **UID-Mapping** (Firebase-UID ≠ Entra-ID; Mapping-Tabelle
   alte→neue uid beim ersten Login bzw. manuell für den Bestandsnutzer).
-- **M4 — Build & Deploy**: standalone-Build (Projekt liegt bereits außerhalb OneDrive ✅),
-  `static` + `public` ins standalone-Verzeichnis kopieren (Gotcha 12), ZIP, `az webapp deploy`.
-- **M5 — Verifikation** (Playbook Phase 7, angepasst): Landing 200; signin 302 → korrekte
+- **M4 — Build & Deploy** ✅ (Code-Seite, 2026-06-11): standalone-Build verifiziert (tsc 0 Fehler,
+  21 Routen); Deploy-Skript `scripts/deploy-azure.mjs` (Build → static/public kopieren (Gotcha 12)
+  → ZIP → `az webapp deploy`). **Offen: tatsächlicher Deploy-Lauf** — `az login`, dann
+  `node scripts/deploy-azure.mjs` (lokal, az CLI nötig).
+- **M5 — Verifikation** ⏳ (nach erstem Deploy): Landing 200; signin 302 → korrekte
   authorize-URL; interaktiver MS-Login (persönliches Konto!); Analyse-Run end-to-end (Gemini-Call!);
   Runs-Liste; Rating; 401 ohne Session; KV-Auflösung; `az webapp log tail` sauber.
-- **M6 — Firebase-Rückbau**: firebase/firebase-admin-Dependencies raus, firestore.rules/firebase.json/
-  apphosting.yaml entfernen, App-Hosting-Backend stilllegen (User: GCP-Konsole), README/Doku.
+- **M6 — Firebase-Rückbau** ✅ (Code-Seite, 2026-06-11): `firebase`-Dependency entfernt,
+  firestore.rules/firebase.json/firestore.indexes.json/apphosting.yaml/.firebaserc/.idx gelöscht,
+  `src/lib/firebase-admin.ts` entfernt (Migrationsskript braucht ad hoc `npm i --no-save
+  firebase-admin`), README + .env.example auf Azure umgestellt.
+  **Offen: App-Hosting-Backend stilllegen** (User: GCP-Konsole, nach erfolgreichem M5).
 - **M7 (später, separat)** — LLM → Azure OpenAI (`gpt-41-mini-prod` existiert schon) und optional
   Pinecone → Cosmos-Vektorindex. Bewusst NICHT Teil dieser Migration.
 
