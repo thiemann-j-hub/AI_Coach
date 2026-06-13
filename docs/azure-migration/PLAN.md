@@ -50,8 +50,14 @@ Web-App `pulsecraft-coach`, Cosmos-DB `coach`, Key Vault `coach-kv-*`.
 - **M5 — Verifikation** (Playbook Phase 7, angepasst): Landing 200; signin 302 → korrekte
   authorize-URL; interaktiver MS-Login (persönliches Konto!); Analyse-Run end-to-end (Gemini-Call!);
   Runs-Liste; Rating; 401 ohne Session; KV-Auflösung; `az webapp log tail` sauber.
-- **M6 — Firebase-Rückbau**: firebase/firebase-admin-Dependencies raus, firestore.rules/firebase.json/
-  apphosting.yaml entfernen, App-Hosting-Backend stilllegen (User: GCP-Konsole), README/Doku.
+- **M6 — Firebase-Rückbau** ✅: `firebase`-Client-SDK + `src/lib/firebase-admin.ts` (toter Code,
+  0 Importer) entfernt; Config gelöscht (.firebaserc, firebase.json, firestore.rules,
+  firestore.indexes.json, apphosting.yaml); .env.example auf Azure umgestellt; irreführende
+  „Firestore"-Kommentare → Cosmos. `firebase-admin` bleibt nur transitiv über @genkit-ai/firebase
+  (ungenutzt, kann nicht weg ohne Genkit/Gemini). GCP-Konsolen-Schritte: siehe
+  [GCP-STILLLEGUNG.md](GCP-STILLLEGUNG.md). Verifiziert: tsc 0, 0 firebase-Source-Imports,
+  firebase-admin nicht im standalone-Trace, Deploy RuntimeSuccessful, alle APIs 401 ohne Session,
+  /__/firebase/init.json → 404, Log sauber.
 - **M7 (später, separat)** — LLM → Azure OpenAI (`gpt-41-mini-prod` existiert schon) und optional
   Pinecone → Cosmos-Vektorindex. Bewusst NICHT Teil dieser Migration.
 
