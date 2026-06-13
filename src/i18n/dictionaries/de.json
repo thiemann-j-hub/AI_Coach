@@ -151,7 +151,8 @@
     "backToHistory": "← Zurück zum Verlauf",
     "loadingRun": "Analyse wird geladen…",
     "accessDenied": "Kein Zugriff auf diese Analyse.",
-    "runNotFound": "Analyse nicht gefunden."
+    "runNotFound": "Analyse nicht gefunden.",
+    "groundingWarning": "Hinweis: {count} Evidenz-Zitat(e) konnten nicht wörtlich im Transkript belegt werden — diese Bewertungen mit Vorsicht lesen."
   },
   "linkedin": {
     "title": "Auf LinkedIn teilen",

@@ -151,7 +151,8 @@
     "backToHistory": "← Powrót do historii",
     "loadingRun": "Ładowanie analizy…",
     "accessDenied": "Brak dostępu do tej analizy.",
-    "runNotFound": "Nie znaleziono analizy."
+    "runNotFound": "Nie znaleziono analizy.",
+    "groundingWarning": "Uwaga: {count} cytat(ów) dowodowych nie udało się dosłownie dopasować do transkrypcji — interpretuj te oceny ostrożnie."
   },
   "linkedin": {
     "title": "Udostępnij na LinkedIn",

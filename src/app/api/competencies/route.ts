@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,14 @@ export async function POST(req: NextRequest) {
     }
 
     const d = parsed.data;
+
+    // Pro-User-Token-Budget (gleicher Cosmos-Zähler wie /api/analyze)
+    const budget = await checkAndConsumeBudget({
+      uid: authResult.uid,
+      email: authResult.email,
+      estimatedTokens: estimateTokens(d.transcriptText),
+    });
+    if (!budget.allowed && budget.response) return budget.response;
 
     // Lazy import -> falls score-competencies kaputt ist, crasht nicht die ganze App beim Laden
     const mod: any = await import("../../../ai/flows/score-competencies");

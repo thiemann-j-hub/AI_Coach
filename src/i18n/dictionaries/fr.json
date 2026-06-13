@@ -151,7 +151,8 @@
     "backToHistory": "← Retour à l'historique",
     "loadingRun": "Chargement de l'analyse…",
     "accessDenied": "Pas d'accès à cette analyse.",
-    "runNotFound": "Analyse introuvable."
+    "runNotFound": "Analyse introuvable.",
+    "groundingWarning": "Remarque : {count} citation(s) de preuve n’ont pas pu être retrouvées mot pour mot dans la transcription — interprétez ces évaluations avec prudence."
   },
   "linkedin": {
     "title": "Partager sur LinkedIn",

@@ -42,6 +42,10 @@ export function runsContainer(): Container {
   return getDb().container("runs");
 }
 
+export function usageContainer(): Container {
+  return getDb().container("usage");
+}
+
 /** Punkt-Lesen; 404 → null. */
 export async function readItem<T>(
   container: Container,
