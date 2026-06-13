@@ -141,8 +141,9 @@ export async function POST(req: NextRequest) {
 
         let why = asStr(r?.why ?? "").trim();
         const score = normalizeScore(r?.score);
+        const notObservable = d.lang === "en" ? "not sufficiently observable" : "nicht ausreichend beobachtbar";
         if (!score) {
-          why = "nicht ausreichend beobachtbar";
+          why = notObservable;
         } else if (!why) {
           why = "—";
         }

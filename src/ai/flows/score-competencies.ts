@@ -54,6 +54,11 @@ const prompt = ai.definePrompt({
   prompt: `
 Du bist ein erfahrener Leadership‑Coach.
 
+SPRACHE
+Verfasse alle "why"-Begründungen in der Sprache des Transkripts (Zielsprache: {{lang}}).
+Bei lang="en" schreibe die Begründungen auf Englisch, bei "de" auf Deutsch usw.
+Die Evidenz-Zitate bleiben immer im Originalwortlaut des Transkripts.
+
 AUFGABE
 Bewerte NUR das Verhalten der Führungskraft im Transkript entlang der Kompetenzen C1–C10.
 Nutze nur Dinge, die im Transkript wirklich erkennbar sind. Keine Spekulationen.
@@ -72,7 +77,14 @@ REIHENFOLGE DER BEWERTUNG (zwingend, pro Kompetenz):
 
 WENN NICHT ERKENNBAR:
 evidence = [], score = null, why = "nicht ausreichend beobachtbar".
-Erfinde KEINE Zitate. Ein Zitat in evidence MUSS wörtlich im Transkript stehen.
+Erfinde KEINE Zitate. Ein Zitat in evidence MUSS WÖRTLICH und ZUSAMMENHÄNGEND im Transkript stehen
+(keine Fragmente aus verschiedenen Sätzen zusammensetzen).
+
+KEIN ÜBER-SCORING:
+Reine Terminabsprachen, Logistik oder Small-Talk sind KEINE Führungsleistung.
+Wenn eine Kompetenz im Transkript nicht durch konkretes Führungsverhalten belegt ist,
+ist score = null — vergib NIEMALS einen Score auf Basis bloßer Vermutung oder weil das
+Thema „passen könnte".
 
 KOMPETENZMODELL (Kurz)
 C1 – Integrieren und Verbinden
