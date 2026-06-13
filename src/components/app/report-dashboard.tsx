@@ -231,6 +231,9 @@ export default function ReportDashboard({
 
   const ragError = String(result?.rag_error ?? '').trim();
   const competencyError = String(result?.competency_error ?? '').trim();
+  // Deterministische Qualitäts-Checks (Backend): nur warn/error anzeigen
+  const groundingWarnings = (Array.isArray(result?.quality_notes) ? result.quality_notes : [])
+    .filter((n: any) => n?.severity === 'warn' || n?.severity === 'error').length;
 
   function handleDownload() {
     const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
@@ -280,7 +283,7 @@ export default function ReportDashboard({
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
       {/* DEGRADATION NOTICES */}
-      {(ragError || competencyError) && (
+      {(ragError || competencyError || groundingWarnings > 0) && (
         <div className="xl:col-span-12 space-y-2">
           {ragError && (
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
@@ -292,6 +295,12 @@ export default function ReportDashboard({
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
               <span className="material-icons-round text-sm">warning_amber</span>
               {t.report.competencyDegraded}
+            </div>
+          )}
+          {groundingWarnings > 0 && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+              <span className="material-icons-round text-sm">warning_amber</span>
+              {t.report.groundingWarning.replace('{count}', String(groundingWarnings))}
             </div>
           )}
         </div>

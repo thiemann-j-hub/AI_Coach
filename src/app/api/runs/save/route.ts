@@ -179,6 +179,7 @@ export async function POST(req: NextRequest) {
         ? (result as any).competency_ratings
         : [],
       competency_error: typeof (result as any).competency_error === "string" ? (result as any).competency_error : null,
+      quality_notes: Array.isArray((result as any).quality_notes) ? (result as any).quality_notes : [],
     };
 
     const ragContext = {

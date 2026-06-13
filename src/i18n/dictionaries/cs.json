@@ -151,7 +151,8 @@
     "backToHistory": "← Zpět na historii",
     "loadingRun": "Načítání analýzy…",
     "accessDenied": "K této analýze nemáte přístup.",
-    "runNotFound": "Analýza nenalezena."
+    "runNotFound": "Analýza nenalezena.",
+    "groundingWarning": "Poznámka: {count} důkazní citace se nepodařilo doslovně najít v přepisu — tato hodnocení berte s rezervou."
   },
   "linkedin": {
     "title": "Sdílet na LinkedIn",

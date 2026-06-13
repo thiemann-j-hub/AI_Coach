@@ -14,13 +14,33 @@ export const ScoreCompetenciesInputSchema = z.object({
   employeeLabel: z.string().optional(),
 });
 
+// WICHTIG: Feldreihenfolge ist load-bearing (Schema-Forced Reasoning aus der
+// Schwester-App, §9). Das Modell füllt die Felder in dieser Reihenfolge — erst
+// Evidenz sammeln, dann begründen, ERST DANN den Score vergeben. Score-vor-
+// Evidenz verleitet das LLM, zuerst zu urteilen und danach zu rationalisieren.
 export const CompetencyRatingSchema = z.object({
   id: z.string(),
   name: z.string(),
-  score: z.number().min(1).max(4).nullable(),
-  confidence: z.number().min(0).max(1).nullable().optional(),
-  why: z.string(),
-  evidence: z.array(z.string()).max(3),
+  evidence: z
+    .array(z.string())
+    .max(3)
+    .describe("1–2 wörtliche, anonymisierte Zitate AUS DEM TRANSKRIPT (max ~18 Wörter). Keine Paraphrasen, keine erfundenen Zitate. Leeres Array, wenn nicht beobachtbar."),
+  why: z
+    .string()
+    .describe("Begründung der Bewertung, ausschließlich auf die Evidenz gestützt. 'nicht ausreichend beobachtbar', wenn keine Evidenz vorliegt."),
+  score: z
+    .number()
+    .min(1)
+    .max(4)
+    .nullable()
+    .describe("Ganzzahl 1–4 NUR wenn durch die Evidenz belegt; sonst null. 1=schwach … 4=vorbildlich."),
+  confidence: z
+    .number()
+    .min(0)
+    .max(1)
+    .nullable()
+    .optional()
+    .describe("0–1: Wie eindeutig belegt die Evidenz den Score?"),
 });
 
 export const ScoreCompetenciesOutputSchema = z.object({
@@ -44,12 +64,15 @@ SKALA 1–4
 3 = gut und überwiegend wirksam
 4 = sehr gut / vorbildlich in dieser Situation
 
-WENN NICHT ERKENNBAR:
-score = null und why = "nicht ausreichend beobachtbar"
+REIHENFOLGE DER BEWERTUNG (zwingend, pro Kompetenz):
+1) Sammle zuerst die EVIDENCE: 1–2 wörtliche Zitate aus dem Transkript (max. ~18 Wörter),
+   anonymisiert mit Prefix "Führungskraft:" / "Mitarbeiter:in:" (keine echten Namen, keine Paraphrasen).
+2) Begründe (why) ausschließlich auf Basis dieser Zitate.
+3) Vergib ERST DANN den score — nur wenn die Evidenz ihn belegt.
 
-EVIDENCE:
-1–2 kurze Zitate (max. ~18 Wörter), anonymisiert.
-Nutze Sprecher-Prefix immer "Führungskraft:" oder "Mitarbeiter:in:" (keine echten Namen).
+WENN NICHT ERKENNBAR:
+evidence = [], score = null, why = "nicht ausreichend beobachtbar".
+Erfinde KEINE Zitate. Ein Zitat in evidence MUSS wörtlich im Transkript stehen.
 
 KOMPETENZMODELL (Kurz)
 C1 – Integrieren und Verbinden

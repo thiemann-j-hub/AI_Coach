@@ -151,7 +151,8 @@
     "backToHistory": "← Back to history",
     "loadingRun": "Loading analysis…",
     "accessDenied": "No access to this analysis.",
-    "runNotFound": "Analysis not found."
+    "runNotFound": "Analysis not found.",
+    "groundingWarning": "Note: {count} evidence quote(s) could not be matched verbatim to the transcript — interpret those ratings with care."
   },
   "linkedin": {
     "title": "Share on LinkedIn",

@@ -4,6 +4,8 @@ import { generateDynamicFeedback } from "../../../ai/flows/generate-dynamic-feed
 import { scoreCompetencies } from "../../../ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { runQualityChecks } from "@/lib/server/quality-checks";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -86,6 +88,15 @@ export async function POST(req: NextRequest) {
     const d = parsed.data;
     logger.api("/api/analyze", "start", { uid: authResult.uid, lang: d.lang, textLen: d.transcriptText.length });
 
+    // Pro-User-Token-Budget (Cosmos, instanzübergreifend) — der eigentliche
+    // Kostenschutz, anders als das IP-Rate-Limit oben. Reserviert vor dem Call.
+    const budget = await checkAndConsumeBudget({
+      uid: authResult.uid,
+      email: authResult.email,
+      estimatedTokens: estimateTokens(d.transcriptText),
+    });
+    if (!budget.allowed && budget.response) return budget.response;
+
     const leaderLbl = asStr(d.leaderLabel ?? "").trim();
     const empLbl = asStr(d.employeeLabel ?? "").trim();
 
@@ -160,12 +171,36 @@ export async function POST(req: NextRequest) {
       logger.apiError("/api/analyze/competencies", e);
     }
 
+    // Deterministische Qualitäts-Checks (kein LLM): Evidenz-Grounding gegen
+    // das (anonymisierte) Transkript, Score⇒Evidenz, Rewrite≠Original, Floskeln.
+    let quality_notes: { code: string; severity: string; message: string; field?: string }[] = [];
+    try {
+      let groundTxt = asStr(d.transcriptText ?? "");
+      if (leaderLbl) groundTxt = groundTxt.split(leaderLbl).join("Führungskraft");
+      if (empLbl) groundTxt = groundTxt.split(empLbl).join("Mitarbeiter:in");
+      const qc = runQualityChecks(
+        {
+          summary: (baseResult as any)?.summary,
+          rewrites: (baseResult as any)?.rewrites,
+          competency_ratings,
+        },
+        groundTxt
+      );
+      quality_notes = qc.notes;
+      if (qc.notes.length) {
+        logger.api("/api/analyze", "quality-notes", { uid: authResult.uid, count: qc.notes.length });
+      }
+    } catch (e: any) {
+      logger.apiError("/api/analyze/quality", e);
+    }
+
     const result = {
       ...baseResult,
       competency_ratings,
       // Sichtbar machen statt droppen: UI zeigt degradiertes Scoring an,
       // runs/save persistiert das Feld bereits (analysisJson.competency_error).
       competency_error,
+      quality_notes,
     };
 
     logger.api("/api/analyze", "complete", { uid: authResult.uid });

@@ -151,7 +151,8 @@
     "backToHistory": "← Torna alla cronologia",
     "loadingRun": "Caricamento dell'analisi…",
     "accessDenied": "Nessun accesso a questa analisi.",
-    "runNotFound": "Analisi non trovata."
+    "runNotFound": "Analisi non trovata.",
+    "groundingWarning": "Nota: {count} citazione/i di evidenza non trovate testualmente nella trascrizione — interpretare con cautela queste valutazioni."
   },
   "linkedin": {
     "title": "Condividi su LinkedIn",
