@@ -1,6 +1,6 @@
 /**
  * Structured logger for server-side API routes.
- * Outputs JSON lines compatible with Cloud Logging / Firestore.
+ * Outputs JSON lines (App Service / Azure Monitor friendly).
  */
 
 import "server-only";

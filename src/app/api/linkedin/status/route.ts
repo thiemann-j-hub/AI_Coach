@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Status-Check für die LinkedIn-Card: ist die Integration konfiguriert und
- * besteht für den angemeldeten User eine Verbindung (Firestore, LI-E3)?
+ * besteht für den angemeldeten User eine Verbindung (Cosmos, LI-E3)?
  * Auth ist optional — ohne gültigen Token wird nur `configured` geliefert,
  * `expired: true` signalisiert der Card den Reconnect-Hinweis.
  */

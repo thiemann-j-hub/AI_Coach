@@ -14,9 +14,9 @@ function sanitizeReturnTo(value: unknown): string {
 }
 
 /**
- * Startet den OAuth-Flow: POST mit Firebase-Auth (statt GET-Navigation),
+ * Startet den OAuth-Flow: POST mit App-Session-Auth (statt GET-Navigation),
  * damit der HMAC-signierte state die uid traegt — der Callback ordnet das
- * Token darueber dem richtigen User in Firestore zu (LI-E3).
+ * Token darueber dem richtigen User in Cosmos zu (LI-E3).
  * Die Card navigiert selbst zur zurueckgegebenen authUrl.
  */
 export async function POST(req: NextRequest) {

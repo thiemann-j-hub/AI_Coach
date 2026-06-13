@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   if (rlResponse) return rlResponse;
 
   try {
-    // LinkedIn-Verbindung aus Firestore (verschluesseltes Token, LI-E3)
+    // LinkedIn-Verbindung aus Cosmos (verschluesseltes Token, LI-E3)
     const connection = await getLinkedInConnection(authResult.uid);
 
     if (!connection) {

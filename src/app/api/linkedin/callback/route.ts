@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     // Get the user's LinkedIn profile to extract the person URN
     const profile = await getLinkedInProfile(tokenData.access_token);
 
-    // Token verschluesselt pro User in Firestore ablegen —
+    // Token verschluesselt pro User in Cosmos ablegen —
     // multi-device-faehig, Server liest beim Posten (LI-E3)
     await saveLinkedInConnection(verified.uid, {
       accessToken: tokenData.access_token,
