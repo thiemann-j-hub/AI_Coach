@@ -1,9 +1,19 @@
-# GCP-Stilllegung nach Azure-Migration (User-Aktionen)
+# GCP-Stilllegung nach Azure-Migration
+
+> **Status 2026-06-13 — automatisiert erledigt (via gcloud/firebase CLI):**
+> - ✅ **App Hosting Backend `ai-coach` gelöscht** — Auto-Deploy von `main` gestoppt (verifiziert: `…hosted.app` → 404)
+> - ✅ **Firebase Hosting `ai-coach-c343f` disabled** — reversibel via Re-Deploy (verifiziert: `…web.app` → 404)
+> - ✅ **Service-Account-Key widerrufen** — `firebase-adminsdk-fbsvc@…` Key `142a4cb7…` gelöscht; lokale Dateien `workspace/firebase-admin-sa*.json` entfernt
+> - ✅ **Firestore `(default)` (europe-west10) UNANGETASTET** = 30-Tage-Backup (Daten zusätzlich in Cosmos gespiegelt)
+> - ⏸️ **Gemini-API-Key & Pinecone — bewusst NICHT angefasst**
+>
+> **Verbleibende optionale User-Schritte:** Firebase Auth-Provider deaktivieren (kosmetisch, da kein Code mehr darauf zugreift); nach Ablauf der 30-Tage-Frist Firestore + Firebase-Projektreste löschen.
+
+---
 
 Die App läuft vollständig auf Azure (https://pulsecraft-coach.azurewebsites.net). Der Code
-enthält keine Firebase-Abhängigkeit mehr. Die folgenden Schritte in der **Google-Cloud-/
-Firebase-Konsole** kann nur der Projekt-Owner ausführen — bewusst **nicht** automatisiert,
-weil sie laufende Dienste abschalten und Daten betreffen.
+enthält keine Firebase-Abhängigkeit mehr. Die folgenden Schritte sind als Referenz dokumentiert;
+der Hauptteil ist oben bereits erledigt.
 
 ## Reihenfolge (empfohlen)
 
