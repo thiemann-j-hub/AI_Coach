@@ -1,13 +1,8 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Azure App Service: ZIP-Deploy des standalone-Outputs (Playbook Gotcha 12)
+  output: 'standalone',
   images: {
     remotePatterns: [
       {

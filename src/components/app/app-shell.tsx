@@ -1,17 +1,19 @@
 'use client';
 
-import Image from 'next/image';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/providers/auth-provider';
+import { useTranslation } from '@/i18n/useTranslation';
 import { LoginModal } from '@/components/auth/login-modal';
 import { UserNav } from '@/components/auth/user-nav';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 type NavItem = {
   href: string;
-  label: string;
-  icon: string; // Material Symbols name
+  labelKey: 'analyze' | 'history';
+  icon: string;
 };
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -23,17 +25,28 @@ export default function AppShell(props: {
   subtitle?: string;
   actions?: React.ReactNode;
   children: React.ReactNode;
+  /** If true, children fill the entire main area without default padding */
+  noPadding?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
+  // resolvedTheme is only known on the client — guard against hydration mismatch
+  const [mounted, setMounted] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === 'dark';
 
   const nav: NavItem[] = useMemo(
     () => [
-      { href: '/analyze', label: 'Analyse', icon: 'analytics' },
-      { href: '/runs-dashboard', label: 'Verlauf', icon: 'history' },
-      { href: '/design-preview', label: 'Design-Preview', icon: 'dashboard_customize' },
+      { href: '/analyze', labelKey: 'analyze' as const, icon: 'analytics' },
+      { href: '/runs-dashboard', labelKey: 'history' as const, icon: 'history' },
     ],
     []
   );
@@ -44,6 +57,7 @@ export default function AppShell(props: {
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
+    if (href === '/analyze' && pathname.startsWith('/runs/')) return true;
     return pathname === href || pathname.startsWith(href + '/');
   };
 
@@ -51,42 +65,40 @@ export default function AppShell(props: {
     <div className="min-h-screen bg-background text-foreground font-sans">
       <div className="flex h-screen overflow-hidden">
         {/* Mobile backdrop */}
-        {mobileOpen ? (
+        {mobileOpen && (
           <button
-            aria-label="Close menu"
+            aria-label={t.common.closeMenu}
             className="fixed inset-0 z-40 bg-black/60 md:hidden backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-        ) : null}
+        )}
 
         {/* Sidebar */}
         <aside
           className={cx(
-            'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-card border-r border-border md:static md:z-auto md:w-64',
-            mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-            'transition-transform duration-200'
+            'fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-300 md:translate-x-0 md:static md:flex',
+            'bg-card border-r border-border',
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          <div className="h-16 flex items-center justify-between px-5 border-b border-border">
+          {/* Logo */}
+          <div className="flex h-16 items-center border-b border-border px-6">
             <button
-              className="md:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 transition-colors"
+              className="md:hidden absolute top-4 right-4 inline-flex items-center justify-center rounded-lg p-2 hover:bg-foreground/5 transition-colors text-muted-foreground"
               onClick={() => setMobileOpen(false)}
-              aria-label="Close"
+              aria-label={t.common.close}
             >
-              <span className="material-symbols-outlined">close</span>
+              <span className="material-icons-round text-xl">close</span>
             </button>
-
-            <div className="flex items-center gap-2 w-full">
-              <Link href="/analyze" className="block w-full py-4">
-                 {/* Logo Placeholder - Text Gradient style */}
-                 <div className="text-xl font-bold tracking-tight text-gradient">
-                   PulseCraft AI
-                 </div>
-              </Link>
-            </div>
+            <Link href="/analyze" className="block">
+              <h1 className="font-display font-bold text-xl tracking-tight text-gradient">
+                PulseCraft AI
+              </h1>
+            </Link>
           </div>
 
-          <nav className="px-3 py-4 space-y-1">
+          {/* Navigation */}
+          <nav className="flex-1 space-y-1 p-4 overflow-y-auto custom-scrollbar">
             {nav.map((item) => {
               const active = isActive(item.href);
               return (
@@ -94,68 +106,83 @@ export default function AppShell(props: {
                   key={item.href}
                   href={item.href}
                   className={cx(
-                    'flex items-center gap-3 px-3 py-2 rounded-xl border text-sm transition-all duration-200',
+                    'flex items-center px-4 py-3 rounded-lg transition-all duration-200 group',
                     active
-                      ? 'bg-primary/10 text-primary border-primary/20 shadow-neon'
-                      : 'text-muted-foreground border-transparent hover:bg-white/5 hover:text-foreground'
+                      ? 'bg-primary/10 text-primary font-semibold shadow-primary-glow/20'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'
                   )}
                 >
-                  <span className="material-symbols-outlined">{item.icon}</span>
-                  <span className={cx(active ? 'font-bold' : 'font-medium')}>{item.label}</span>
+                  <span className={cx('material-icons-round mr-3 text-xl', !active && 'group-hover:scale-110 transition-transform')}>
+                    {item.icon}
+                  </span>
+                  <span className="text-sm font-medium">{t.nav[item.labelKey]}</span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-auto p-4 border-t border-border">
+          {/* New Analysis Button */}
+          <div className="p-4 border-t border-border">
             <button
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary hover:bg-primary-dark text-primary-foreground font-bold transition-all shadow-neon active:scale-[0.98]"
+              className="w-full btn-gradient text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-neon active:scale-[0.98] transition-transform"
               onClick={() => router.push('/analyze')}
             >
-              <span className="material-symbols-outlined text-[20px]">add_circle</span>
-              <span>Neue Analyse</span>
+              <span className="material-icons-round text-xl">add_circle_outline</span>
+              <span>{t.nav.newAnalysis}</span>
             </button>
+          </div>
+
+          {/* Theme Toggle + Language Switcher */}
+          <div className="px-4 pb-4 space-y-1">
+            <button
+              className="flex items-center justify-center w-full py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            >
+              <span className="material-icons-round text-base mr-2">
+                {isDark ? 'light_mode' : 'dark_mode'}
+              </span>
+              {isDark ? t.common.lightMode : t.common.darkMode}
+            </button>
+            <div className="flex items-center justify-center w-full py-2">
+              <LanguageSwitcher />
+            </div>
           </div>
         </aside>
 
-        {/* Main */}
-        <main className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
-          {/* Background Glows for Glassmorphism Context */}
-          <div className="absolute top-[-10%] left-[-5%] w-[30%] h-[30%] bg-primary/15 blur-[120px] rounded-full pointer-events-none z-0" />
-          <div className="absolute bottom-[-10%] right-[-5%] w-[30%] h-[30%] bg-accent/10 blur-[120px] rounded-full pointer-events-none z-0" />
+        {/* Main Content */}
+        <main id="main-content" className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
+          {/* Decorative Background Blobs */}
+          <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+            <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />
+            <div className="absolute -right-40 top-1/3 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
+          </div>
 
-          <header className="h-16 flex items-center justify-between px-4 md:px-8 bg-card/70 backdrop-blur-md border-b border-border sticky top-0 z-30">
+          {/* Header */}
+          <header className="glass-header sticky top-0 z-30 flex h-16 items-center justify-between px-4 md:px-8">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                className="md:hidden inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 transition-colors"
+                className="md:hidden inline-flex items-center justify-center rounded-lg p-2 hover:bg-foreground/5 transition-colors text-muted-foreground"
                 onClick={() => setMobileOpen(true)}
-                aria-label="Open menu"
+                aria-label={t.common.openMenu}
               >
-                <span className="material-symbols-outlined">menu</span>
+                <span className="material-icons-round">menu</span>
               </button>
               <div className="min-w-0">
                 <div className="text-lg font-bold tracking-tight truncate text-foreground">{props.title}</div>
-                {props.subtitle ? (
-                  <div className="text-xs text-muted-foreground truncate">{props.subtitle}</div>
-                ) : null}
+                {props.subtitle && (
+                  <div className="text-xs text-muted-foreground truncate font-mono">{props.subtitle}</div>
+                )}
               </div>
             </div>
 
             <div className="flex items-center gap-3 md:gap-4">
               {props.actions}
-              <button
-                className="relative inline-flex items-center justify-center rounded-xl p-2 hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Notifications"
-              >
-                <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent shadow-neon" />
-              </button>
-              
+
               {user ? (
                 <UserNav />
               ) : (
                 <LoginModal>
-                  <button className="w-9 h-9 rounded-full bg-surface-light border border-white/5 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-white/10 transition-colors">
+                  <button className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors">
                     ?
                   </button>
                 </LoginModal>
@@ -163,7 +190,11 @@ export default function AppShell(props: {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4 md:p-8 relative z-10">
+          {/* Content Area */}
+          <div className={cx(
+            'flex-1 overflow-y-auto relative z-10 custom-scrollbar',
+            !props.noPadding && 'p-4 md:p-8'
+          )}>
             {props.children}
           </div>
         </main>

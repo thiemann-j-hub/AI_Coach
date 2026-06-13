@@ -4,6 +4,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { sanitizeForPrompt } from '@/lib/prompt-guard';
 
 export const GenerateTailoredFeedbackInputSchema = z.object({
   inputText: z.string().describe('The input text to analyze.'),
@@ -85,7 +86,17 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
     outputSchema: GenerateTailoredFeedbackOutputSchema,
   },
   async (input) => {
-    const { output } = await generateTailoredFeedbackPrompt(input);
+    // Fence user-supplied content to reduce prompt injection risk
+    const { sanitized: fencedText, injectionDetected } = sanitizeForPrompt(
+      input.inputText,
+      { label: 'TRANSCRIPT' }
+    );
+    if (injectionDetected) {
+      console.warn(`[prompt-guard] Injection pattern detected in inputText: "${injectionDetected}"`);
+    }
+
+    const hardenedInput = { ...input, inputText: fencedText };
+    const { output } = await generateTailoredFeedbackPrompt(hardenedInput);
     return output!;
   }
 );
