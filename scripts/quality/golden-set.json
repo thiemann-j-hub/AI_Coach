@@ -1,0 +1,67 @@
+[
+  {
+    "id": "01-klares-empathisches-feedback",
+    "lang": "de",
+    "leaderLabel": "FK",
+    "employeeLabel": "MA",
+    "transcript": "FK: Danke, dass du dir Zeit nimmst. Mir ist wichtig, dass wir offen sprechen.\nMA: Klar, gerne.\nFK: Mir ist aufgefallen, dass die letzten zwei Reports verspätet kamen. Wie siehst du das?\nMA: Stimmt, ich war mit dem Kundenprojekt überlastet.\nFK: Verstehe ich. Lass uns gemeinsam schauen, wie wir Prioritäten klarer setzen. Was würde dir helfen?\nMA: Eine kurze Abstimmung montags wäre gut.\nFK: Gute Idee, das machen wir ab nächster Woche fest. Ich vertraue darauf, dass du das gut hinbekommst.",
+    "expect": {
+      "observableCompetencies": ["C2", "C5"],
+      "notObservableCompetencies": ["C10"],
+      "mustNotMention": ["Umsatz", "Prozent", "Quartalszahlen"],
+      "expectedLang": "de"
+    }
+  },
+  {
+    "id": "02-harsch-ohne-empathie",
+    "lang": "de",
+    "leaderLabel": "FK",
+    "employeeLabel": "MA",
+    "transcript": "FK: Die Reports waren wieder zu spät. Das geht so nicht.\nMA: Ich war im Kundenprojekt sehr eingespannt und—\nFK: Ausreden interessieren mich nicht. Liefere einfach pünktlich.\nMA: Okay.\nFK: Sonst müssen wir über Konsequenzen reden. Ende der Diskussion.",
+    "expect": {
+      "observableCompetencies": ["C5"],
+      "notObservableCompetencies": ["C10"],
+      "mustNotMention": ["lobte", "bedankte sich herzlich"],
+      "expectedLang": "de"
+    }
+  },
+  {
+    "id": "03-zu-kurz-nicht-beobachtbar",
+    "lang": "de",
+    "leaderLabel": "FK",
+    "employeeLabel": "MA",
+    "transcript": "FK: Passt der Termin am Freitag?\nMA: Ja, passt.\nFK: Super, danke.",
+    "expect": {
+      "observableCompetencies": [],
+      "notObservableCompetencies": ["C3", "C7", "C8", "C9", "C10"],
+      "mustNotMention": ["Konflikt", "Kritik", "Entwicklungsgespräch"],
+      "expectedLang": "de"
+    }
+  },
+  {
+    "id": "04-entwicklung-und-reflexion",
+    "lang": "de",
+    "leaderLabel": "FK",
+    "employeeLabel": "MA",
+    "transcript": "FK: Du hast die Präsentation übernommen — wie ist es dir damit gegangen?\nMA: Anfangs unsicher, aber es lief besser als gedacht.\nFK: Was hat gut funktioniert, was würdest du nächstes Mal anders machen?\nMA: Die Struktur war gut, beim Zeitmanagement hakte es.\nFK: Spannende Selbsteinschätzung. Lass uns ein konkretes Ziel setzen: Beim nächsten Mal probst du die Zeit einmal vorab. Ich unterstütze dich bei der Vorbereitung.\nMA: Das hilft mir, danke.",
+    "expect": {
+      "observableCompetencies": ["C3", "C6", "C8"],
+      "notObservableCompetencies": ["C10"],
+      "mustNotMention": ["Gehalt", "Kündigung"],
+      "expectedLang": "de"
+    }
+  },
+  {
+    "id": "05-en-strategic-direction",
+    "lang": "en",
+    "leaderLabel": "Lead",
+    "employeeLabel": "Member",
+    "transcript": "Lead: Let's talk about where the team is heading next year.\nMember: I'd like to understand the priorities.\nLead: Our strategic focus is shifting toward proactive client advisory. I want you to own the discovery workshops.\nMember: That's a stretch, but I'm interested.\nLead: I'll make the decision criteria explicit so you can run with it. Let's review progress every two weeks.\nMember: Sounds clear, thank you.",
+    "expect": {
+      "observableCompetencies": ["C2", "C9"],
+      "notObservableCompetencies": ["C10"],
+      "mustNotMention": ["Umsatz", "salary figures"],
+      "expectedLang": "en"
+    }
+  }
+]
