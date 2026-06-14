@@ -1,5 +1,5 @@
 // src/app/api/webhooks/stripe/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/server/credits/stripe";
 import { packageCredits } from "@/lib/server/credits/stripe";
@@ -135,8 +135,18 @@ export async function POST(req: NextRequest) {
             currency: session.currency ?? "eur",
             lineItemDescription: `PulseCraft Coach — ${amount} Analyse-Credit(s)`,
           });
-          // EAGER-Rendering zum Ausstellungszeitpunkt (GoBD): PDF -> Blob, Pfad ans Doc.
-          await ensureInvoicePdf(invoice);
+          // PDF NACH der Webhook-Antwort rendern (after()) — verhindert Stripe-
+          // Timeout durch synchrones Rendern+Upload. Die Rechnungs-DATEN (Nummer,
+          // issuedAt) sind bereits eingefroren, das PDF materialisiert nur diesen
+          // Snapshot -> weiterhin GoBD-immutabel zum Ausstellungszeitpunkt. Bei
+          // Fehler greift der Lazy-Fallback in GET /api/invoices/[id].
+          after(async () => {
+            try {
+              await ensureInvoicePdf(invoice);
+            } catch (e) {
+              logger.apiError("/api/webhooks/stripe/pdf", e);
+            }
+          });
         } catch (e) {
           logger.apiError("/api/webhooks/stripe/invoice", e);
         }
