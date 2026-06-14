@@ -193,6 +193,8 @@ export interface InvoiceDoc {
   taxTreatment: TaxTreatment;
   /** Pflichthinweis (z. B. Reverse-Charge) — eingefroren fuer das PDF. */
   taxNote?: string;
+  /** PDF-Template-Version zum Ausstellungszeitpunkt — verhindert visuellen GoBD-Drift beim Lazy-Rerender. */
+  templateVersion?: string;
   currency: string; // "eur"
   lineItemDescription: string;
   /** Blob-Pfad des eager gerenderten PDF (GoBD-immutabel); NIE base64 im Doc. */

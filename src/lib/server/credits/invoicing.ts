@@ -10,7 +10,7 @@ import {
   TaxTreatment,
 } from "./types";
 import { checkVatId, isEuVatCountry, normalizeVatId } from "./vies";
-import { renderInvoicePdf } from "./invoice-pdf";
+import { renderInvoicePdf, INVOICE_TEMPLATE_VERSION } from "./invoice-pdf";
 import { blobConfigured, invoiceBlobPath, uploadInvoicePdf } from "./invoice-blob";
 
 /** Aussteller-Profil aus ENV (zum Ausstellungszeitpunkt eingefroren). */
@@ -200,6 +200,7 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceD
       taxRate: decision.rate,
       taxTreatment: decision.treatment,
       ...(decision.note ? { taxNote: decision.note } : {}),
+      templateVersion: INVOICE_TEMPLATE_VERSION,
       currency: input.currency,
       lineItemDescription: input.lineItemDescription,
     };

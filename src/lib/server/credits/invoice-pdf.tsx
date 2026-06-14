@@ -18,6 +18,14 @@ import { InvoiceDoc } from "./types";
  * Pflichthinweis. USt-IdNr des Kunden wird verlaesslich ausgewiesen.
  */
 
+/**
+ * Template-Version, am InvoiceDoc eingefroren. Aendert sich das Layout (Logo,
+ * Fusszeile, Geschaeftsfuehrung), wird "v2" eingefuehrt; Altrechnungen rendern
+ * weiterhin ihre eingefrorene Version -> kein visueller GoBD-Drift beim
+ * (seltenen) Lazy-Fallback Monate spaeter.
+ */
+export const INVOICE_TEMPLATE_VERSION = "v1";
+
 function eur(cents: number, currency = "EUR"): string {
   return new Intl.NumberFormat("de-DE", { style: "currency", currency: currency.toUpperCase() }).format(
     (cents ?? 0) / 100
