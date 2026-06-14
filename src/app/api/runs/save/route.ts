@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/api-auth";
 import {
   checkSessionOwnership,
   createRun,
+  getRun,
   upsertSession,
 } from "@/lib/server/runs-store";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
@@ -35,8 +36,16 @@ const optionsSchema = z.object({
   storeTranscript: z.boolean().optional(),
 });
 
+const runIdSchema = z
+  .string()
+  .min(8)
+  .max(128)
+  .regex(/^[A-Za-z0-9_-]+$/, "runId must be url-safe (a-zA-Z0-9_-).");
+
 const bodySchema = z.object({
   sessionId: sessionIdSchema,
+  /** Vom /api/analyze-Response uebernommene runId (Credit-Hold-Bindung). Optional. */
+  runId: runIdSchema.optional(),
   request: requestSchema.optional(),
   result: z.any().optional(),
   options: optionsSchema.optional(),
@@ -201,26 +210,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Injection-Schutz: eine vom Client uebergebene runId nur uebernehmen, wenn
+    // sie - falls bereits existent - demselben Owner gehoert (sonst koennte ein
+    // Angreifer fremde Run-Daten via gespoofter runId ueberschreiben).
+    if (parsed.data.runId) {
+      const existing = await getRun(sessionId, parsed.data.runId);
+      if (existing && existing.uid !== uid) {
+        return NextResponse.json(
+          { ok: false, error: apiMsg.accessDenied, code: "RUN_ID_CONFLICT" },
+          { status: 409 }
+        );
+      }
+    }
+
     await upsertSession(sessionId, uid);
 
-    const runId = await createRun({
-      sessionId,
-      uid,
+    const runId = await createRun(
+      {
+        sessionId,
+        uid,
+        // Solo-Default: Workspace === uid. Bei Team-Accounts spaeter aufloesen.
+        workspaceId: uid,
 
-      conversationType: request.conversationType,
-      conversationSubType: request.conversationSubType ?? null,
-      goal: request.goal ?? null,
-      lang: request.lang ?? null,
-      jurisdiction: request.jurisdiction ?? null,
+        conversationType: request.conversationType,
+        conversationSubType: request.conversationSubType ?? null,
+        goal: request.goal ?? null,
+        lang: request.lang ?? null,
+        jurisdiction: request.jurisdiction ?? null,
 
-      transcriptText,
+        transcriptText,
 
-      analysisJson,
-      ragContext,
+        analysisJson,
+        ragContext,
 
-      summary: analysisJson.summary,
-      scoreOverall,
-    });
+        summary: analysisJson.summary,
+        scoreOverall,
+      },
+      // runId aus /api/analyze uebernehmen, damit hold:{runId} / refund:{runId} matchen.
+      parsed.data.runId
+    );
 
     logger.api("/api/runs/save", "saved", { uid, sessionId, runId });
     return NextResponse.json({ ok: true, runId }, { status: 200 });

@@ -43,6 +43,13 @@ export interface RunDoc {
   scoreOverall: number | null;
   rating?: number;
   ratedAt?: string;
+  /** Soft-Delete (Credit-Refund-Pfad): markiert statt hart geloescht, bis der Refund verbucht ist. */
+  deleted?: boolean;
+  deletedAt?: string;
+  /** true, solange der Credit-Refund fuer diesen geloeschten Run noch aussteht (v1-Sweep-Backstop). */
+  refundPending?: boolean;
+  /** Workspace, dem dieser Run zugeordnet ist (fuer den Refund). */
+  workspaceId?: string;
 }
 
 /**
@@ -67,9 +74,11 @@ export async function upsertSession(sessionId: string, uid: string): Promise<voi
 }
 
 export async function createRun(
-  run: Omit<RunDoc, "id" | "createdAt">
+  run: Omit<RunDoc, "id" | "createdAt">,
+  /** Optionale, serverseitig vorab erzeugte runId (Credit-Hold-Bindung: hold/refund:{runId}). */
+  providedId?: string
 ): Promise<string> {
-  const id = crypto.randomUUID();
+  const id = providedId && /^[A-Za-z0-9_-]{8,128}$/.test(providedId) ? providedId : crypto.randomUUID();
   await upsertItem(runsContainer(), {
     id,
     createdAt: new Date().toISOString(),
@@ -83,6 +92,56 @@ export async function getRun(
   runId: string
 ): Promise<RunDoc | null> {
   return readItem<RunDoc>(runsContainer(), runId, sessionId);
+}
+
+/**
+ * Schatten-Persistenz bei Credit-Verbrauch: legt den Run-Record OHNE Transkript
+ * (DSGVO-Datenminimierung) unter der vorab erzeugten runId an, sofern er noch
+ * nicht existiert. Garantiert die Invariante "Credit verbraucht => Run
+ * existiert" und damit den universellen Delete/Refund-Pfad. Spaeteres
+ * /api/runs/save reichert denselben Run idempotent an (Transkript bei Opt-in).
+ *
+ * Bindet zugleich runId an sessionId+uid: existiert die runId bereits unter
+ * EINER ANDEREN Session/uid, wird sie verworfen (Injection-Schutz).
+ */
+export async function persistShadowRun(args: {
+  sessionId: string;
+  runId: string;
+  uid: string;
+  workspaceId: string;
+  conversationType: string;
+  conversationSubType?: string | null;
+  goal?: string | null;
+  lang?: string | null;
+  jurisdiction?: string | null;
+  analysisJson: any;
+  summary?: string | null;
+  scoreOverall?: number | null;
+}): Promise<{ ok: boolean; reason?: "id_conflict" }> {
+  const existing = await getRun(args.sessionId, args.runId);
+  if (existing) {
+    // Bereits vorhanden: nur fortfahren, wenn es derselbe Owner ist.
+    if (existing.uid !== args.uid) return { ok: false, reason: "id_conflict" };
+    return { ok: true };
+  }
+  await upsertItem(runsContainer(), {
+    id: args.runId,
+    sessionId: args.sessionId,
+    uid: args.uid,
+    workspaceId: args.workspaceId,
+    createdAt: new Date().toISOString(),
+    conversationType: args.conversationType,
+    conversationSubType: args.conversationSubType ?? null,
+    goal: args.goal ?? null,
+    lang: args.lang ?? null,
+    jurisdiction: args.jurisdiction ?? null,
+    transcriptText: null, // Schatten: kein Transkript
+    analysisJson: args.analysisJson,
+    ragContext: null,
+    summary: args.summary ?? null,
+    scoreOverall: args.scoreOverall ?? null,
+  });
+  return { ok: true };
 }
 
 /**
@@ -152,6 +211,35 @@ export async function listRuns(
 
   const nextCursor = hasMore && page.length > 0 ? page[page.length - 1].id : null;
   return { runs, hasMore, nextCursor };
+}
+
+/**
+ * Soft-Delete eines Runs (Credit-Refund-Pfad). Markiert statt hart zu loeschen,
+ * damit der refundPending-Sweep (v1-Backstop) einen nicht inline verbuchten
+ * Refund nachholen kann. Gibt den (vorherigen) Run zurueck, oder null.
+ */
+export async function markRunDeleted(
+  sessionId: string,
+  runId: string,
+  refundPending: boolean
+): Promise<RunDoc | null> {
+  const run = await getRun(sessionId, runId);
+  if (!run) return null;
+  await upsertItem(runsContainer(), {
+    ...run,
+    deleted: true,
+    deletedAt: new Date().toISOString(),
+    refundPending,
+  });
+  return run;
+}
+
+/** Markiert den Refund eines geloeschten Runs als verbucht (refundPending=false). */
+export async function clearRunRefundPending(sessionId: string, runId: string): Promise<void> {
+  const run = await getRun(sessionId, runId);
+  if (!run) return;
+  if (run.refundPending !== true) return;
+  await upsertItem(runsContainer(), { ...run, refundPending: false });
 }
 
 /** Rating per Read-Modify-Upsert (Cosmos hat kein Feld-merge wie Firestore). */

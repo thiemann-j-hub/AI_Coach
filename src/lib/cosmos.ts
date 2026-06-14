@@ -4,9 +4,12 @@ import { Container, CosmosClient, SqlParameter } from "@azure/cosmos";
 
 /**
  * Cosmos-DB-Zugriff (ersetzt Firestore). Flache Container:
- *   users    (pk /id)        — Profil inkl. language + linkedin-Integration
- *   sessions (pk /id)        — Session-Metadaten (uid, updatedAt)
- *   runs     (pk /sessionId) — Analyse-Runs
+ *   users      (pk /id)          — Profil inkl. language + linkedin-Integration
+ *   sessions   (pk /id)          — Session-Metadaten (uid, updatedAt)
+ *   runs       (pk /sessionId)   — Analyse-Runs
+ *   usage      (pk /id)          — Tages-Token-Budget (cost-cap)
+ *   workspaces (pk /workspaceId) — Credit-System (workspace/creditBatch/ledger/stripeEvent/invoice)
+ *   domains    (pk /domain)      — Free-Run-Gate pro verifizierter B2B-Domain
  *
  * Zugriff ausschließlich serverseitig (Key aus Key Vault) — die früheren
  * firestore.rules entfallen ersatzlos.
@@ -44,6 +47,29 @@ export function runsContainer(): Container {
 
 export function usageContainer(): Container {
   return getDb().container("usage");
+}
+
+/**
+ * Credit-/Workspace-Container (pk /workspaceId) im Single-Container-Design:
+ * Doc-Typen workspace | creditBatch | ledger | stripeEvent | invoice teilen
+ * dieselbe Partition und werden via TransactionalBatch atomar mutiert.
+ */
+export function workspacesContainer(): Container {
+  return getDb().container("workspaces");
+}
+
+/** Free-Run-Gate pro verifizierter B2B-Domain (pk /domain). */
+export function domainsContainer(): Container {
+  return getDb().container("domains");
+}
+
+/**
+ * Rechnungen + globaler Nummernzaehler (pk /year). Counter-Doc und Invoice-Docs
+ * teilen die Jahres-Partition -> Nummern-Allokation und Invoice-Write laufen in
+ * EINEM TransactionalBatch => atomar und GAPLOS (kein Cross-Container-Risiko).
+ */
+export function invoicesContainer(): Container {
+  return getDb().container("invoices");
 }
 
 /** Punkt-Lesen; 404 → null. */

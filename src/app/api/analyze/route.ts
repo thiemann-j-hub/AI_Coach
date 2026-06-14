@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateDynamicFeedback } from "../../../ai/flows/generate-dynamic-feedback";
@@ -5,6 +6,18 @@ import { scoreCompetencies } from "../../../ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import {
+  checkSessionOwnership,
+  persistShadowRun,
+  upsertSession,
+} from "@/lib/server/runs-store";
+import {
+  paymentsEnabled,
+  reserveEntitlement,
+  settleEntitlement,
+  compensateEntitlement,
+  type EntitlementGrant,
+} from "@/lib/server/credits/entitlement";
 import { runQualityChecks } from "@/lib/server/quality-checks";
 import { logger } from "@/lib/logger";
 
@@ -22,6 +35,14 @@ const requestSchema = z.object({
   jurisdiction: z.string().max(50).optional(),
   leaderLabel: z.string().max(200).optional().nullable(),
   employeeLabel: z.string().max(200).optional().nullable(),
+  // Optional: ermoeglicht die Schatten-Persistenz des Runs bei Credit-Verbrauch
+  // (Credit verbraucht => Run existiert => Delete/Refund universell ausloesbar).
+  sessionId: z
+    .string()
+    .min(8)
+    .max(128)
+    .regex(/^[A-Za-z0-9_-]+$/)
+    .optional(),
 });
 
 const COMP_MODEL = [
@@ -74,6 +95,12 @@ export async function POST(req: NextRequest) {
   const rlResponse = checkRateLimit(rlKey, 10, 60_000);
   if (rlResponse) return rlResponse;
 
+  // Run-/Hold-Identifier serverseitig erzeugen: bindet die Credit-Reservierung
+  // an den spaeteren Run (Save uebernimmt diese id), damit der Delete-Refund
+  // refund:{runId} greift.
+  const runId = crypto.randomUUID();
+  let grant: EntitlementGrant | null = null;
+
   try {
     const json = await req.json();
     const parsed = requestSchema.safeParse(json);
@@ -96,6 +123,18 @@ export async function POST(req: NextRequest) {
       estimatedTokens: estimateTokens(d.transcriptText),
     });
     if (!budget.allowed && budget.response) return budget.response;
+
+    // Business-Gate (Credits) — Point-of-Sale, VOR dem teuren Gemini-Call.
+    // Flag-gated: bei PAYMENTS_ENABLED=off unveraendertes Verhalten.
+    if (paymentsEnabled()) {
+      const ent = await reserveEntitlement({
+        uid: authResult.uid,
+        email: authResult.email,
+        runId,
+      });
+      if (!ent.ok) return ent.response;
+      grant = ent.grant;
+    }
 
     const leaderLbl = asStr(d.leaderLabel ?? "").trim();
     const empLbl = asStr(d.employeeLabel ?? "").trim();
@@ -204,9 +243,57 @@ export async function POST(req: NextRequest) {
       quality_notes,
     };
 
+    // Schatten-Persistenz: Credit verbraucht => Run existiert. Vor dem Settle,
+    // damit der Run-Record garantiert vorliegt, bevor der Hold final wird.
+    if (grant && d.sessionId) {
+      try {
+        const own = await checkSessionOwnership(d.sessionId, authResult.uid);
+        if (own.allowed) {
+          await upsertSession(d.sessionId, authResult.uid);
+          await persistShadowRun({
+            sessionId: d.sessionId,
+            runId,
+            uid: authResult.uid,
+            workspaceId: grant.workspaceId,
+            conversationType: d.conversationType,
+            conversationSubType: d.conversationSubType ?? null,
+            goal: d.goal ?? null,
+            lang: d.lang ?? null,
+            jurisdiction: d.jurisdiction ?? null,
+            analysisJson: {
+              summary: (result as any).summary ?? null,
+              strengths: (result as any).strengths ?? [],
+              improvements: (result as any).improvements ?? [],
+              rewrites: (result as any).rewrites ?? [],
+              riskFlags: (result as any).riskFlags ?? [],
+              scores: (result as any).scores ?? {},
+              competency_ratings,
+              competency_error,
+              quality_notes,
+            },
+            summary: (result as any).summary ?? null,
+            scoreOverall:
+              typeof (result as any)?.scores?.overall === "number"
+                ? (result as any).scores.overall
+                : null,
+          });
+        }
+      } catch (e) {
+        // Schatten-Persistenz darf den erfolgreichen Response nicht killen.
+        logger.apiError("/api/analyze/shadow", e);
+      }
+    }
+
+    // Analyse erfolgreich -> Hold final verbuchen.
+    if (grant) await settleEntitlement(grant);
+
     logger.api("/api/analyze", "complete", { uid: authResult.uid });
-    return NextResponse.json({ ok: true, result }, { status: 200 });
+    // runId mitgeben: der Save MUSS diese id uebernehmen (Hold/Refund-Bindung).
+    return NextResponse.json({ ok: true, result, runId }, { status: 200 });
   } catch (err: any) {
+    // Technischer Abbruch nach Reservierung -> Credit synchron zuruckbuchen
+    // (Schnellpfad; Lazy Reconciliation ist der Backstop fuer uncatchable Tod).
+    if (grant) await compensateEntitlement(grant);
     logger.apiError("/api/analyze", err);
     return NextResponse.json(
       { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
