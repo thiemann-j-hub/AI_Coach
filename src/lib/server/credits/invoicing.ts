@@ -16,7 +16,7 @@ import { blobConfigured, invoiceBlobPath, uploadInvoicePdf } from "./invoice-blo
 /** Aussteller-Profil aus ENV (zum Ausstellungszeitpunkt eingefroren). */
 export function supplierFromEnv(): SupplierProfile {
   return {
-    companyName: process.env.INVOICE_SUPPLIER_NAME ?? "PulseCraft",
+    companyName: process.env.INVOICE_SUPPLIER_NAME ?? "Pulscraft AI",
     addressLine1: process.env.INVOICE_SUPPLIER_ADDRESS ?? "",
     postalCode: process.env.INVOICE_SUPPLIER_ZIP ?? "",
     city: process.env.INVOICE_SUPPLIER_CITY ?? "",
@@ -72,7 +72,7 @@ export function determineTax(opts: {
     return {
       treatment: "reverse_charge",
       rate: 0,
-      note: "Steuerschuldnerschaft des Leistungsempfaengers (Reverse-Charge, Art. 196 MwStSystRL).",
+      note: "Steuerschuldnerschaft des Leistungsempfängers (Reverse-Charge, Art. 196 MwStSystRL).",
     };
   }
   // EU-B2C ohne valide ID / Non-EU -> konservativ Inlands-USt (v1).
@@ -109,7 +109,7 @@ export function deriveTreatmentFromStripe(opts: {
     return {
       treatment: "reverse_charge",
       rate: 0,
-      note: "Steuerschuldnerschaft des Leistungsempfaengers (Reverse-Charge, Art. 196 MwStSystRL).",
+      note: "Steuerschuldnerschaft des Leistungsempfängers (Reverse-Charge, Art. 196 MwStSystRL).",
     };
   }
   return { treatment: "exempt", rate: 0, note: "Nicht im Inland steuerbare Leistung." };

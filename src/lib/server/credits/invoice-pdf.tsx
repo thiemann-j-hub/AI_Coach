@@ -168,7 +168,7 @@ function InvoiceDocument({ inv }: { inv: InvoiceDoc }): React.ReactElement {
             {sup.vatId ? ` · USt-IdNr ${sup.vatId}` : ""}
             {sup.iban ? ` · IBAN ${sup.iban}` : ""}
           </Text>
-          <Text>Rechnung gemaess §14 UStG. Erstellt am {dateDe(inv.issuedAt)}.</Text>
+          <Text>Rechnung gemäß §14 UStG. Erstellt am {dateDe(inv.issuedAt)}.</Text>
         </View>
       </Page>
     </Document>

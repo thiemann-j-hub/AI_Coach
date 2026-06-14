@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
             stripeNetCents: session.amount_subtotal ?? undefined,
             stripeTaxCents: session.total_details?.amount_tax ?? undefined,
             currency: session.currency ?? "eur",
-            lineItemDescription: `PulseCraft Coach — ${amount} Analyse-Credit(s)`,
+            lineItemDescription: `Pulscraft AI Coach — ${amount} Analyse-Credit(s)`,
           });
           // PDF NACH der Webhook-Antwort rendern (after()) — verhindert Stripe-
           // Timeout durch synchrones Rendern+Upload. Die Rechnungs-DATEN (Nummer,
