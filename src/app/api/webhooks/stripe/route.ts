@@ -129,6 +129,9 @@ export async function POST(req: NextRequest) {
             issuedAtIso: new Date().toISOString(),
             billing,
             chargedCents: session.amount_total ?? 0,
+            // Netto-Anzeige: Stripes Aufschluesselung ist massgeblich.
+            stripeNetCents: session.amount_subtotal ?? undefined,
+            stripeTaxCents: session.total_details?.amount_tax ?? undefined,
             currency: session.currency ?? "eur",
             lineItemDescription: `PulseCraft Coach — ${amount} Analyse-Credit(s)`,
           });

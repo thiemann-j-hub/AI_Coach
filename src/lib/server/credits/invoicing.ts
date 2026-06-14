@@ -101,7 +101,15 @@ export interface CreateInvoiceInput {
   workspaceId: string;
   issuedAtIso: string; // bestimmt das Jahr/die Partition
   billing: BillingProfile;
+  /** Gesamtbetrag (Stripe amount_total) in Cents. */
   chargedCents: number;
+  /**
+   * Owner-Entscheidung: reine Netto-Anzeige ("exkl. MwSt.") -> Stripe liefert die
+   * massgebliche Aufschluesselung. Wenn gesetzt, hat sie Vorrang vor der eigenen
+   * Brutto-Herausrechnung (splitAmounts).
+   */
+  stripeNetCents?: number; // amount_subtotal
+  stripeTaxCents?: number; // total_details.amount_tax
   currency: string;
   lineItemDescription: string;
 }
@@ -139,7 +147,17 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceD
     vatValidated,
     hasVatId,
   });
-  const { netCents, taxCents, grossCents } = splitAmounts(input.chargedCents, decision);
+  // Netto-Anzeige (Owner-Entscheidung): Stripes Aufschluesselung ist massgeblich,
+  // wenn vorhanden. Sonst Brutto-Herausrechnung als Fallback.
+  const useStripeBreakdown =
+    typeof input.stripeNetCents === "number" && typeof input.stripeTaxCents === "number";
+  const { netCents, taxCents, grossCents } = useStripeBreakdown
+    ? {
+        netCents: input.stripeNetCents!,
+        taxCents: decision.rate <= 0 ? 0 : input.stripeTaxCents!,
+        grossCents: input.stripeNetCents! + (decision.rate <= 0 ? 0 : input.stripeTaxCents!),
+      }
+    : splitAmounts(input.chargedCents, decision);
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const counter = await readItem<InvoiceCounterDoc>(invoicesContainer(), "counter", year);
