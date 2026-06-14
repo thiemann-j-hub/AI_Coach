@@ -63,3 +63,9 @@ generate
 workspace/firebase-admin-sa.json
 workspace/firebase-admin-sa.oneline.json
 
+
+# Deploy-Artefakte
+deploy.zip
+*.zip
+boot-out.log
+boot-err.log
