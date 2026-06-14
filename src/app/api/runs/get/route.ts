@@ -61,7 +61,8 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await getRun(sessionId, runId);
-    if (!data) {
+    // Soft-geloeschte Runs sind fuer den Detail-View nicht mehr abrufbar.
+    if (!data || data.deleted === true) {
       return NextResponse.json(
         { ok: false, error: apiMsg.notFound, code: "NOT_FOUND" },
         { status: 404 }

@@ -69,3 +69,6 @@ deploy.zip
 *.zip
 boot-out.log
 boot-err.log
+
+# lokale Tools (Stripe CLI)
+.tools/

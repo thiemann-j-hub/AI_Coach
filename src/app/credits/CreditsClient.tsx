@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
+import { Download, FileText } from 'lucide-react';
 
 type Pkg = { id: string; credits: number };
 type CreditsState = {
@@ -12,6 +13,16 @@ type CreditsState = {
   balance: number;
   workspaceId: string;
   packages: Pkg[];
+};
+type Invoice = {
+  invoiceNumber: string;
+  issuedAt: string;
+  netCents: number;
+  taxCents: number;
+  grossCents: number;
+  taxRate: number;
+  taxTreatment: string;
+  currency: string;
 };
 
 const PACKAGE_LABEL: Record<string, { de: string; en: string }> = {
@@ -26,6 +37,7 @@ export default function CreditsClient() {
   const status = searchParams.get('status'); // success | cancelled
 
   const [state, setState] = useState<CreditsState | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +46,17 @@ export default function CreditsClient() {
     let active = true;
     (async () => {
       try {
-        const res = await authFetch('/api/credits', { method: 'GET' });
-        const j = await res.json();
-        if (active && j?.ok) {
-          setState({ enabled: j.enabled, balance: j.balance, workspaceId: j.workspaceId, packages: j.packages });
+        const [credRes, invRes] = await Promise.all([
+          authFetch('/api/credits', { method: 'GET' }),
+          authFetch('/api/invoices', { method: 'GET' }),
+        ]);
+        const cj = await credRes.json();
+        if (active && cj?.ok) {
+          setState({ enabled: cj.enabled, balance: cj.balance, workspaceId: cj.workspaceId, packages: cj.packages });
+        }
+        const ij = await invRes.json().catch(() => null);
+        if (active && ij?.ok && Array.isArray(ij.invoices)) {
+          setInvoices(ij.invoices);
         }
       } catch {
         if (active) setError(de ? 'Konnte Guthaben nicht laden.' : 'Could not load balance.');
@@ -49,6 +68,22 @@ export default function CreditsClient() {
       active = false;
     };
   }, [de]);
+
+  function eur(cents: number, currency: string) {
+    return new Intl.NumberFormat(de ? 'de-DE' : 'en-US', {
+      style: 'currency',
+      currency: (currency || 'eur').toUpperCase(),
+    }).format((cents ?? 0) / 100);
+  }
+  function dateFmt(iso: string) {
+    try {
+      return new Date(iso).toLocaleDateString(de ? 'de-DE' : 'en-US', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+      });
+    } catch {
+      return iso;
+    }
+  }
 
   async function buy(packageId: string) {
     if (!state) return;
@@ -138,6 +173,58 @@ export default function CreditsClient() {
               );
             })}
           </div>
+        </div>
+
+        {/* Rechnungen */}
+        <div>
+          <h2 className="text-lg font-semibold mb-1">{de ? 'Rechnungen' : 'Invoices'}</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            {de ? 'Deine §14-Rechnungen als PDF.' : 'Your §14 invoices as PDF.'}
+          </p>
+          {invoices.length === 0 ? (
+            <div className="glass-panel rounded-xl p-6 text-sm text-muted-foreground">
+              {de ? 'Noch keine Rechnungen.' : 'No invoices yet.'}
+            </div>
+          ) : (
+            <div className="glass-panel rounded-xl divide-y divide-white/5">
+              {invoices.map((inv) => {
+                const reverseCharge = inv.taxTreatment === 'reverse_charge';
+                return (
+                  <div key={inv.invoiceNumber} className="flex items-center gap-4 p-4">
+                    <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium">{inv.invoiceNumber}</div>
+                      <div className="text-xs text-muted-foreground">{dateFmt(inv.issuedAt)}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold">{eur(inv.grossCents, inv.currency)}</div>
+                      <span
+                        className={
+                          reverseCharge
+                            ? 'inline-block rounded-full bg-accent/10 px-2 py-0.5 text-[11px] text-accent'
+                            : 'inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary'
+                        }
+                      >
+                        {reverseCharge
+                          ? de ? '0 % · Reverse-Charge' : '0% · reverse charge'
+                          : `${Math.round(inv.taxRate * 100)} % ${de ? 'USt' : 'VAT'}`}
+                      </span>
+                    </div>
+                    <a
+                      href={`/api/invoices/${encodeURIComponent(inv.invoiceNumber)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={de ? 'PDF herunterladen' : 'Download PDF'}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground hover:border-primary/30"
+                    >
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </AppShell>

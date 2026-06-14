@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import AppShell from "@/components/app/app-shell";
 import ReportDashboard from "@/components/app/report-dashboard";
+import { DeleteRunButton } from "@/components/app/delete-run-button";
 import { authFetch } from "@/lib/api-client";
 import { useTranslation } from "@/i18n/useTranslation";
 import { localeBcp47, type Locale } from "@/i18n/config";
@@ -159,7 +160,14 @@ export default function RunDetailClient({
             >
               {t.report.backToHistory}
             </Link>
-            <div className="text-xs text-muted-foreground font-mono">{t.common.session}: {sessionId}</div>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:block text-xs text-muted-foreground font-mono">
+                {t.common.session}: {sessionId}
+              </div>
+              {run && (
+                <DeleteRunButton sessionId={sessionId} runId={runId} createdAt={run.createdAt} />
+              )}
+            </div>
           </div>
 
           {loading && (

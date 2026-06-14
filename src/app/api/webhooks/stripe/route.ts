@@ -101,15 +101,27 @@ export async function POST(req: NextRequest) {
           ? session.payment_intent
           : session.payment_intent?.id;
 
-      const res = await grantCredits({
-        workspaceId,
-        amount,
-        source: "purchase",
-        expiresInMonths: 12,
-        stripeEventId: event.id,
-        stripeEventType: event.type,
-        stripePaymentIntentId: paymentIntentId,
-      });
+      let res;
+      try {
+        res = await grantCredits({
+          workspaceId,
+          amount,
+          source: "purchase",
+          expiresInMonths: 12,
+          stripeEventId: event.id,
+          stripeEventType: event.type,
+          stripePaymentIntentId: paymentIntentId,
+        });
+      } catch (e) {
+        // Gutschrift fehlgeschlagen -> 500 -> Stripe-Retry; kritisch sichtbar machen.
+        logger.apiError("/api/webhooks/stripe/grant", e, {
+          workspaceId,
+          amount,
+          eventId: event.id,
+          paymentIntentId,
+        });
+        throw e;
+      }
 
       logger.api("/api/webhooks/stripe", "credited", {
         workspaceId,
@@ -144,11 +156,24 @@ export async function POST(req: NextRequest) {
             try {
               await ensureInvoicePdf(invoice);
             } catch (e) {
-              logger.apiError("/api/webhooks/stripe/pdf", e);
+              // PDF-Render/Upload fehlgeschlagen -> Lazy-Fallback in GET
+              // /api/invoices/[id] greift; hart loggen fuer App Insights.
+              logger.apiError("/api/webhooks/stripe/pdf", e, {
+                workspaceId,
+                eventId: event.id,
+                invoiceNumber: invoice.invoiceNumber,
+                blobPath: invoice.pdfBlobPath,
+              });
             }
           });
         } catch (e) {
-          logger.apiError("/api/webhooks/stripe/invoice", e);
+          // Rechnung konnte nicht erstellt werden — Gutschrift bleibt bestehen.
+          // GoBD: falls hier eine Nummer involviert war, sichtbar machen.
+          logger.apiError("/api/webhooks/stripe/invoice", e, {
+            workspaceId,
+            paymentIntentId,
+            eventId: event.id,
+          });
         }
       }
     }
@@ -156,7 +181,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, received: true }, { status: 200 });
   } catch (err: any) {
     // DB-/Verarbeitungsfehler -> 500 -> Stripe-Retry.
-    logger.apiError("/api/webhooks/stripe", err);
+    logger.apiError("/api/webhooks/stripe", err, { eventId: event.id, eventType: event.type });
     return NextResponse.json({ ok: false, error: "processing error" }, { status: 500 });
   }
 }

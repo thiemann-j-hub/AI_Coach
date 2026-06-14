@@ -157,6 +157,12 @@ export async function tryGrantFreeRun(opts: {
   return { granted: true };
 }
 
+/** Read-only: workspaceId des Users (Solo-Default = uid), ohne Anlage/Grant-Seiteneffekt. */
+export async function getWorkspaceIdForUser(uid: string): Promise<string> {
+  const userDoc = await readItem<UserDocLite>(usersContainer(), uid, uid);
+  return userDoc?.workspaceId || uid;
+}
+
 /** Fuegt ein Mitglied hinzu (max 3 inkl. Owner). Read-Modify-Upsert genuegt: nur Owner mutiert. */
 export async function addWorkspaceMember(opts: {
   workspaceId: string;

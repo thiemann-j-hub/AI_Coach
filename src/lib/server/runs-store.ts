@@ -161,9 +161,12 @@ export async function listRuns(
     cursorCreatedAt = cursorRun.createdAt;
   }
 
+  // Soft-geloeschte Runs (deleted=true) NICHT listen. Aeltere Runs ohne das
+  // Feld bleiben sichtbar (IS_DEFINED-Guard).
+  const notDeleted = "(NOT IS_DEFINED(c.deleted) OR c.deleted = false)";
   const where = cursorCreatedAt
-    ? "c.sessionId = @sid AND c.createdAt < @cursor"
-    : "c.sessionId = @sid";
+    ? `c.sessionId = @sid AND c.createdAt < @cursor AND ${notDeleted}`
+    : `c.sessionId = @sid AND ${notDeleted}`;
   const params = cursorCreatedAt
     ? [
         { name: "@sid", value: sessionId },
