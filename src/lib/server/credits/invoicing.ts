@@ -6,9 +6,27 @@ import {
   BillingProfile,
   InvoiceCounterDoc,
   InvoiceDoc,
+  SupplierProfile,
   TaxTreatment,
 } from "./types";
 import { checkVatId, isEuVatCountry, normalizeVatId } from "./vies";
+import { renderInvoicePdf } from "./invoice-pdf";
+import { blobConfigured, invoiceBlobPath, uploadInvoicePdf } from "./invoice-blob";
+
+/** Aussteller-Profil aus ENV (zum Ausstellungszeitpunkt eingefroren). */
+export function supplierFromEnv(): SupplierProfile {
+  return {
+    companyName: process.env.INVOICE_SUPPLIER_NAME ?? "PulseCraft",
+    addressLine1: process.env.INVOICE_SUPPLIER_ADDRESS ?? "",
+    postalCode: process.env.INVOICE_SUPPLIER_ZIP ?? "",
+    city: process.env.INVOICE_SUPPLIER_CITY ?? "",
+    country: (process.env.INVOICE_SUPPLIER_COUNTRY ?? process.env.SUPPLIER_COUNTRY ?? "DE").toUpperCase(),
+    vatId: process.env.INVOICE_SUPPLIER_VATID || undefined,
+    taxNumber: process.env.INVOICE_SUPPLIER_TAXNUMBER || undefined,
+    email: process.env.INVOICE_SUPPLIER_EMAIL || undefined,
+    iban: process.env.INVOICE_SUPPLIER_IBAN || undefined,
+  };
+}
 
 /**
  * Native §14-UStG-Rechnung.
@@ -175,11 +193,13 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceD
       stripePaymentIntentId: input.paymentIntentId,
       issuedAt: input.issuedAtIso,
       billing,
+      supplier: supplierFromEnv(),
       netCents,
       taxCents,
       grossCents,
       taxRate: decision.rate,
       taxTreatment: decision.treatment,
+      ...(decision.note ? { taxNote: decision.note } : {}),
       currency: input.currency,
       lineItemDescription: input.lineItemDescription,
     };
@@ -215,4 +235,32 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceD
     throw new Error(`createInvoice failed (status ${outcome.status}) for ${id}`);
   }
   throw new Error(`createInvoice: konnte nach ${MAX_RETRIES} Versuchen keine Nummer vergeben (${id})`);
+}
+
+/**
+ * EAGER-Rendering zum Ausstellungszeitpunkt (GoBD-Unveraenderbarkeit): rendert
+ * das Invoice-PDF, laedt es in den Blob Storage und persistiert den Pfad am
+ * Doc. Idempotent (pdfBlobPath gesetzt -> no-op). Ohne Blob-Config (z. B. lokal)
+ * wird sauber uebersprungen.
+ */
+export async function ensureInvoicePdf(inv: InvoiceDoc): Promise<InvoiceDoc> {
+  if (inv.pdfBlobPath) return inv;
+  if (!blobConfigured()) return inv;
+
+  const path = invoiceBlobPath(inv.year, inv.invoiceNumber);
+  const pdf = await renderInvoicePdf(inv);
+  await uploadInvoicePdf(path, pdf);
+
+  const ts = new Date().toISOString();
+  try {
+    await invoicesContainer()
+      .item(inv.id, inv.year)
+      .patch([
+        { op: "set", path: "/pdfBlobPath", value: path },
+        { op: "set", path: "/pdfRenderedAt", value: ts },
+      ] as any);
+  } catch {
+    // Best-effort: der Pfad ist deterministisch aus (year, invoiceNumber) rekonstruierbar.
+  }
+  return { ...inv, pdfBlobPath: path, pdfRenderedAt: ts };
 }

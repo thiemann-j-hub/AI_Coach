@@ -4,7 +4,7 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/server/credits/stripe";
 import { packageCredits } from "@/lib/server/credits/stripe";
 import { grantCredits } from "@/lib/server/credits/ledger";
-import { createInvoice } from "@/lib/server/credits/invoicing";
+import { createInvoice, ensureInvoicePdf } from "@/lib/server/credits/invoicing";
 import { BillingProfile, StripeSessionMetadataSchema } from "@/lib/server/credits/types";
 import { logger } from "@/lib/logger";
 
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       if (paymentIntentId) {
         try {
           const billing = billingFromSession(session);
-          await createInvoice({
+          const invoice = await createInvoice({
             paymentIntentId,
             workspaceId,
             issuedAtIso: new Date().toISOString(),
@@ -135,6 +135,8 @@ export async function POST(req: NextRequest) {
             currency: session.currency ?? "eur",
             lineItemDescription: `PulseCraft Coach — ${amount} Analyse-Credit(s)`,
           });
+          // EAGER-Rendering zum Ausstellungszeitpunkt (GoBD): PDF -> Blob, Pfad ans Doc.
+          await ensureInvoicePdf(invoice);
         } catch (e) {
           logger.apiError("/api/webhooks/stripe/invoice", e);
         }

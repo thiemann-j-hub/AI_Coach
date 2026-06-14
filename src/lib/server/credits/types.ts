@@ -157,6 +157,19 @@ export type TaxTreatment =
  * Jahres-Partition (CounterDoc) -> atomare, gaplose Vergabe per TransactionalBatch.
  * id ist deterministisch (inv:{paymentIntentId}) => Stripe-Retry = 409 = idempotent.
  */
+/** Aussteller (Leistungserbringer) — aus ENV, zum Ausstellungszeitpunkt eingefroren. */
+export interface SupplierProfile {
+  companyName: string;
+  addressLine1: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  vatId?: string; // eigene USt-IdNr
+  taxNumber?: string; // Steuernummer
+  email?: string;
+  iban?: string;
+}
+
 export interface InvoiceDoc {
   id: string; // "inv:{paymentIntentId}"
   /** Partition Key: Kalenderjahr der Ausstellung, z. B. "2026". */
@@ -171,13 +184,20 @@ export interface InvoiceDoc {
   issuedAt: string;
   /** Snapshot des Rechnungsprofils zum Ausstellungszeitpunkt (NICHT die mutable workspace.billing-Referenz). */
   billing: BillingProfile;
+  /** Aussteller-Snapshot (GoBD-Unveraenderbarkeit). */
+  supplier: SupplierProfile;
   netCents: number;
   taxCents: number;
   grossCents: number;
   taxRate: number; // 0.19 | 0
   taxTreatment: TaxTreatment;
+  /** Pflichthinweis (z. B. Reverse-Charge) — eingefroren fuer das PDF. */
+  taxNote?: string;
   currency: string; // "eur"
   lineItemDescription: string;
+  /** Blob-Pfad des eager gerenderten PDF (GoBD-immutabel); NIE base64 im Doc. */
+  pdfBlobPath?: string;
+  pdfRenderedAt?: string;
   _etag?: string;
 }
 

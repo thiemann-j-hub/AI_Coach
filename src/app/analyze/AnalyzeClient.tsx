@@ -64,6 +64,8 @@ export default function AnalyzeClient() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Paywall: 402 INSUFFICIENT_CREDITS -> CTA zur Credits-Seite (nur bei PAYMENTS_ENABLED aktiv)
+  const [paywall, setPaywall] = useState<{ workspaceId?: string } | null>(null);
 
   // Synchroner Re-Entrancy-Schutz: zwei Klicks vor dem Re-Render sehen beide
   // loading=false — der Ref verhindert doppelte Gemini-Calls.
@@ -163,6 +165,7 @@ export default function AnalyzeClient() {
     if (busyRef.current) return;
     busyRef.current = true;
     setPendingSave(null);
+    setPaywall(null);
     setLoading(true);
     setStep(t.analyze.statusAnalyzing);
     try {
@@ -186,16 +189,26 @@ export default function AnalyzeClient() {
 
       const res = await authFetch('/api/analyze', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        // sessionId mitsenden: ermoeglicht die Schatten-Persistenz (Credit verbraucht => Run existiert)
+        body: JSON.stringify({ ...payload, sessionId: sid }),
       });
+      // Paywall: kein Guthaben -> CTA zur Credits-Seite statt generischem Fehler
+      if (res.status === 402) {
+        const pj = await res.json().catch(() => ({} as any));
+        setPaywall({ workspaceId: pj?.workspaceId });
+        return;
+      }
       if (!res.ok) throw new Error(await readErrorText(res));
       const j = await res.json();
       if (!j?.ok) throw new Error(j?.error || 'Analysis failed');
       const result: AnalyzeResult = j.result;
+      // runId der Analyse uebernehmen: bindet hold:{runId}/refund:{runId} an den Save.
+      const analyzeRunId: string | undefined = typeof j.runId === 'string' ? j.runId : undefined;
 
       setStep(t.analyze.statusSaving);
       const savePayload = {
         sessionId: sid,
+        runId: analyzeRunId,
         request: { ...payload, transcriptText: saveTranscript ? transcriptToSend : null },
         options: { storeTranscript: saveTranscript },
         result,
@@ -548,6 +561,26 @@ export default function AnalyzeClient() {
               {error && (
                 <div className="p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
+                </div>
+              )}
+
+              {paywall && (
+                <div className="p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <span className="material-icons-round text-base">lock</span>
+                    {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
+                  </div>
+                  <p className="text-amber-200/80">
+                    {lang === 'de'
+                      ? 'Dein kostenloses Kontingent ist aufgebraucht. Kaufe Credits, um weitere Analysen zu starten.'
+                      : 'Your free quota is used up. Buy credits to start more analyses.'}
+                  </p>
+                  <Link
+                    href="/credits"
+                    className="self-start px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"
+                  >
+                    {lang === 'de' ? 'Credits kaufen' : 'Buy credits'}
+                  </Link>
                 </div>
               )}
 
