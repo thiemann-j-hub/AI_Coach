@@ -2,6 +2,25 @@
 
 import React, { useEffect, useMemo, useState, useDeferredValue } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  Plus,
+  Search,
+  ChevronDown,
+  RefreshCw,
+  AlertCircle,
+  History,
+  PlusCircle,
+  Fingerprint,
+  CalendarDays,
+  ArrowRight,
+  Banknote,
+  Rocket,
+  Mic,
+  UserSearch,
+  MessagesSquare,
+  MessageSquare,
+  type LucideIcon,
+} from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
@@ -60,6 +79,14 @@ function getIconForTitle(title: string): string {
   if (t.includes('interview') || t.includes('bewerbung')) return 'person_search';
   return 'forum';
 }
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  payments: Banknote,
+  rocket_launch: Rocket,
+  mic: Mic,
+  person_search: UserSearch,
+  forum: MessagesSquare,
+};
 
 function getScoreColor(score: number | null): string {
   if (score === null || score === undefined) return 'bg-foreground/5 text-muted-foreground border-border';
@@ -191,7 +218,7 @@ export default function RunsDashboardClient() {
         router.push(`/analyze?sessionId=${encodeURIComponent(sid)}`);
       }}
     >
-      <span className="material-icons-round text-sm">add</span>
+      <Plus className="h-4 w-4" />
       <span>{t.dashboard.newSession}</span>
     </button>
   );
@@ -206,7 +233,7 @@ export default function RunsDashboardClient() {
         {/* Search & Sort */}
         <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
           <div className="relative flex-1">
-            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">search</span>
+            <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               className="w-full rounded-xl bg-card border border-border pl-12 pr-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
               placeholder={t.dashboard.searchPlaceholder}
@@ -228,14 +255,14 @@ export default function RunsDashboardClient() {
                 <option value="score_desc">{t.dashboard.sortHighest}</option>
                 <option value="score_asc">{t.dashboard.sortLowest}</option>
               </select>
-              <span className="material-icons-round absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none text-base">expand_more</span>
+              <ChevronDown className="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
 
             <button
               className="inline-flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all"
               onClick={() => setRefresh((x) => x + 1)}
             >
-              <span className="material-icons-round text-base">refresh</span>
+              <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">{t.common.reload}</span>
             </button>
           </div>
@@ -245,7 +272,7 @@ export default function RunsDashboardClient() {
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-red-400">
             <div className="font-semibold mb-1 flex items-center gap-2">
-              <span className="material-icons-round">error_outline</span>
+              <AlertCircle className="h-5 w-5" />
               {t.common.error}
             </div>
             <div className="text-sm opacity-90 whitespace-pre-wrap">{error}</div>
@@ -253,7 +280,7 @@ export default function RunsDashboardClient() {
               className="mt-4 inline-flex items-center gap-2 rounded-xl bg-foreground/5 border border-red-500/20 px-4 py-2 text-sm hover:bg-white/10 transition-colors"
               onClick={() => setRefresh((x) => x + 1)}
             >
-              <span className="material-icons-round text-sm">refresh</span>
+              <RefreshCw className="h-4 w-4" />
               {t.common.reload}
             </button>
           </div>
@@ -294,7 +321,7 @@ export default function RunsDashboardClient() {
         {!loading && !error && filtered.length === 0 && (
           <div className="glass-panel rounded-2xl p-10 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
-              <span className="material-icons-round text-3xl">history</span>
+              <History className="h-7 w-7" />
             </div>
             <h3 className="font-bold text-lg text-foreground mb-2">{t.dashboard.noAnalyses}</h3>
             <div className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
@@ -304,7 +331,7 @@ export default function RunsDashboardClient() {
               className="btn-gradient text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-neon inline-flex items-center gap-2 hover:shadow-neon-hover transition-all"
               onClick={() => router.push(`/analyze?sessionId=${encodeURIComponent(sessionId || newSessionId())}`)}
             >
-              <span className="material-icons-round">add_circle_outline</span>
+              <PlusCircle className="h-5 w-5" />
               {t.nav.newAnalysis}
             </button>
           </div>
@@ -321,6 +348,7 @@ export default function RunsDashboardClient() {
             const scoreStr = scoreVal !== null ? String(scoreVal) : '—';
             const scoreClass = getScoreColor(scoreVal);
             const icon = getIconForTitle(title);
+            const IconComp = ICON_MAP[icon] ?? MessageSquare;
 
             return (
               <div
@@ -332,17 +360,17 @@ export default function RunsDashboardClient() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-4 mb-2">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary border border-primary/10 flex-shrink-0 group-hover:scale-105 transition-transform">
-                          <span className="material-icons-round text-2xl">{icon}</span>
+                          <IconComp className="h-6 w-6" />
                         </div>
                         <div className="min-w-0">
                           <div className="text-lg font-bold text-foreground truncate leading-tight">{title}</div>
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1 font-mono">
                             <div className="flex items-center gap-1">
-                              <span className="material-icons-round text-[14px]">fingerprint</span>
+                              <Fingerprint className="h-3.5 w-3.5" />
                               <span>{shortId(r.id, 8)}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="material-icons-round text-[14px]">event</span>
+                              <CalendarDays className="h-3.5 w-3.5" />
                               <span>{fmtDateTime(r.createdAt)}</span>
                             </div>
                           </div>
@@ -377,7 +405,7 @@ export default function RunsDashboardClient() {
                     }}
                   >
                     <span>{t.dashboard.openAnalysis}</span>
-                    <span className="material-icons-round text-lg group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                    <ArrowRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -393,9 +421,7 @@ export default function RunsDashboardClient() {
               onClick={loadMore}
               disabled={loadingMore}
             >
-              <span className={`material-icons-round text-base ${loadingMore ? 'animate-spin' : ''}`}>
-                {loadingMore ? 'progress_activity' : 'expand_more'}
-              </span>
+              <RefreshCw className={`h-4 w-4 ${loadingMore ? 'animate-spin' : ''}`} />
               {loadingMore ? t.dashboard.loadingMore : t.dashboard.loadMore}
             </button>
           </div>

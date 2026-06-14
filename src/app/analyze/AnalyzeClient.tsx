@@ -15,6 +15,19 @@ import {
 } from '@/lib/transcript-utils';
 import { useTranslation } from '@/i18n/useTranslation';
 import Link from 'next/link';
+import {
+  History,
+  ChevronDown,
+  CloudUpload,
+  Wand2,
+  ShieldCheck,
+  Undo2,
+  Trash2,
+  Lock,
+  Save,
+  RefreshCw,
+  BarChart3,
+} from 'lucide-react';
 
 type AnalyzeResult = any;
 
@@ -266,7 +279,7 @@ export default function AnalyzeClient() {
       className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition-colors"
       onClick={() => sessionId && router.push(`/runs-dashboard?sessionId=${encodeURIComponent(sessionId)}`)}
     >
-      <span className="material-icons-round text-sm">history</span>
+      <History className="h-4 w-4" />
       <span>{t.nav.history}</span>
     </button>
   );
@@ -304,7 +317,7 @@ export default function AnalyzeClient() {
                       <option value="replace">{t.analyze.pdfReplace}</option>
                       <option value="append">{t.analyze.pdfAppend}</option>
                     </select>
-                    <span className="material-icons-round absolute right-2 top-2.5 text-muted-foreground text-sm pointer-events-none">expand_more</span>
+                    <ChevronDown className="absolute right-2 top-2.5 text-muted-foreground h-4 w-4 pointer-events-none" />
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -332,7 +345,7 @@ export default function AnalyzeClient() {
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span className="material-icons-round text-3xl text-muted-foreground mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
+                <CloudUpload className="h-7 w-7 text-muted-foreground mb-2 group-hover:text-primary transition-colors" />
                 <span className="font-semibold text-foreground">{t.analyze.dragDrop}</span>
                 <span className="text-sm text-muted-foreground mt-1">{t.analyze.dragDropHint}</span>
               </div>
@@ -348,7 +361,7 @@ export default function AnalyzeClient() {
                 }}
                 disabled={!transcriptText.trim() || loading}
               >
-                <span className="material-symbols-rounded text-lg text-primary">auto_fix_high</span>
+                <Wand2 className="h-5 w-5 text-primary" />
                 {t.analyze.cleanTeams}
               </button>
               <button
@@ -365,7 +378,7 @@ export default function AnalyzeClient() {
                 }}
                 disabled={!transcriptText.trim() || !leaderLabel || !employeeLabel || loading}
               >
-                <span className="material-symbols-rounded text-lg">security</span>
+                <ShieldCheck className="h-5 w-5" />
                 {t.analyze.anonymize}
               </button>
               <button
@@ -378,7 +391,7 @@ export default function AnalyzeClient() {
                 }}
                 disabled={!undoTranscript || loading}
               >
-                <span className="material-symbols-rounded text-lg">undo</span>
+                <Undo2 className="h-5 w-5" />
                 {t.common.undo}
               </button>
               <button
@@ -389,7 +402,7 @@ export default function AnalyzeClient() {
                 }}
                 disabled={!transcriptText || loading}
               >
-                <span className="material-symbols-rounded text-lg">delete</span>
+                <Trash2 className="h-5 w-5" />
                 {t.common.clear}
               </button>
             </div>
@@ -425,7 +438,7 @@ export default function AnalyzeClient() {
                     <option value="de">{t.analyze.german}</option>
                     <option value="en">{t.analyze.english}</option>
                   </select>
-                  <span className="material-icons-round absolute right-3 top-3.5 text-muted-foreground pointer-events-none">expand_more</span>
+                  <ChevronDown className="absolute right-3 top-3.5 text-muted-foreground h-5 w-5 pointer-events-none" />
                 </div>
               </div>
               <div>
@@ -477,7 +490,7 @@ export default function AnalyzeClient() {
                       <option key={sp} value={sp}>{sp} {t.analyze.me}</option>
                     ))}
                   </select>
-                  <span className="material-icons-round absolute right-3 top-3.5 text-muted-foreground pointer-events-none">expand_more</span>
+                  <ChevronDown className="absolute right-3 top-3.5 text-muted-foreground h-5 w-5 pointer-events-none" />
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-2">
                   {t.analyze.speakerTip}
@@ -502,7 +515,7 @@ export default function AnalyzeClient() {
                         <option key={sp} value={sp}>{sp}</option>
                       ))}
                     </select>
-                    <span className="material-icons-round absolute right-3 top-3.5 text-muted-foreground pointer-events-none">expand_more</span>
+                    <ChevronDown className="absolute right-3 top-3.5 text-muted-foreground h-5 w-5 pointer-events-none" />
                   </div>
                 )}
               </div>
@@ -567,7 +580,7 @@ export default function AnalyzeClient() {
               {paywall && (
                 <div className="p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
-                    <span className="material-icons-round text-base">lock</span>
+                    <Lock className="h-4 w-4" />
                     {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
                   </div>
                   <p className="text-amber-200/80">
@@ -589,7 +602,7 @@ export default function AnalyzeClient() {
                   className="w-full mb-4 py-3 rounded-xl text-sm font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2"
                   onClick={onRetrySave}
                 >
-                  <span className="material-icons-round text-base">save</span>
+                  <Save className="h-4 w-4" />
                   {t.analyze.retrySave}
                 </button>
               )}
@@ -600,9 +613,9 @@ export default function AnalyzeClient() {
                 disabled={loading || !transcriptText || !leaderLabel || !employeeLabel}
               >
                 {loading ? (
-                  <span className="material-icons-round animate-spin">refresh</span>
+                  <RefreshCw className="h-5 w-5 animate-spin" />
                 ) : (
-                  <span className="material-icons-round">analytics</span>
+                  <BarChart3 className="h-5 w-5" />
                 )}
                 {loading ? t.analyze.analyzing : t.analyze.startAnalysis}
               </button>

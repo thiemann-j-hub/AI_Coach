@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { Sparkles, Image as ImageIcon } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 import { authFetch } from '@/lib/api-client';
 import { useAuth } from '@/providers/auth-provider';
@@ -251,7 +252,7 @@ export function LinkedInPostCard({
                 </>
               ) : (
                 <>
-                  <span className="material-icons-round text-sm">auto_awesome</span>
+                  <Sparkles className="h-4 w-4" />
                   {t.linkedin.generatePost}
                 </>
               )}
@@ -300,7 +301,7 @@ export function LinkedInPostCard({
                 </>
               ) : (
                 <>
-                  <span className="material-icons-round text-sm">image</span>
+                  <ImageIcon className="h-4 w-4" />
                   {t.linkedin.generateImage}
                 </>
               )}
@@ -325,7 +326,7 @@ export function LinkedInPostCard({
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border bg-foreground/[0.02] p-8 text-center">
-              <span className="material-icons-round text-3xl text-muted-foreground/30">image</span>
+              <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
               <p className="text-xs text-muted-foreground mt-2">{t.linkedin.noImage}</p>
             </div>
           )}

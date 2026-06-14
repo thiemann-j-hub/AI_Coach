@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { Star, AlertTriangle, Download, AlarmClock, Check, Copy } from 'lucide-react';
 import { ScoreRing } from './score-ring';
 import { InsightCard } from './insight-card';
 import { useTranslation } from '@/i18n/useTranslation';
@@ -165,9 +166,7 @@ function RatingCard({
             className="leading-none transition-transform hover:scale-110 disabled:opacity-60"
             aria-label={`${v}/5`}
           >
-            <span className={`material-icons-round text-2xl ${shown >= v ? 'text-amber-400' : 'text-foreground/20'}`}>
-              star
-            </span>
+            <Star className={`h-6 w-6 ${shown >= v ? 'fill-amber-400 text-amber-400' : 'text-foreground/20'}`} />
           </button>
         ))}
       </div>
@@ -287,19 +286,19 @@ export default function ReportDashboard({
         <div className="xl:col-span-12 space-y-2">
           {ragError && (
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
-              <span className="material-icons-round text-sm">warning_amber</span>
+              <AlertTriangle className="h-4 w-4" />
               {t.report.ragDegraded}
             </div>
           )}
           {competencyError && (
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
-              <span className="material-icons-round text-sm">warning_amber</span>
+              <AlertTriangle className="h-4 w-4" />
               {t.report.competencyDegraded}
             </div>
           )}
           {groundingWarnings > 0 && (
             <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
-              <span className="material-icons-round text-sm">warning_amber</span>
+              <AlertTriangle className="h-4 w-4" />
               {t.report.groundingWarning.replace('{count}', String(groundingWarnings))}
             </div>
           )}
@@ -343,7 +342,7 @@ export default function ReportDashboard({
                   className="px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors flex items-center gap-1.5"
                   onClick={handleDownload}
                 >
-                  <span className="material-icons-round text-sm">download</span>
+                  <Download className="h-4 w-4" />
                   {t.report.download}
                 </button>
               </div>
@@ -361,7 +360,7 @@ export default function ReportDashboard({
             <div className="p-6">
               <div className="flex items-center gap-3 mb-5">
                 <div className="p-2 rounded-lg bg-red-500/10 text-red-400">
-                  <span className="material-symbols-rounded text-xl leading-none">warning</span>
+                  <AlertTriangle className="h-5 w-5 leading-none" />
                 </div>
                 <h3 className="font-bold text-lg text-foreground">{t.report.risks}</h3>
               </div>
@@ -406,7 +405,7 @@ export default function ReportDashboard({
               onClick={handleReminder}
               disabled={!practice}
             >
-              <span className="material-icons-round text-base">alarm</span>
+              <AlarmClock className="h-4 w-4" />
               {t.report.reminder}
             </button>
           </div>
@@ -446,7 +445,7 @@ export default function ReportDashboard({
                               setTimeout(() => setCopiedIdx((v) => (v === idx ? null : v)), 900);
                             }}
                           >
-                            <span className="material-icons-round text-sm">{copiedIdx === idx ? 'check' : 'content_copy'}</span>
+                            {copiedIdx === idx ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                         <p className="text-sm text-foreground font-medium">{r.better || '—'}</p>
@@ -489,7 +488,7 @@ export default function ReportDashboard({
                   onClick={() => copyText(transcript)}
                   title={t.common.copy}
                 >
-                  <span className="material-icons-round text-sm mr-1 align-middle">content_copy</span>
+                  <Copy className="h-4 w-4 mr-1 align-middle" />
                   {t.common.copy}
                 </button>
 

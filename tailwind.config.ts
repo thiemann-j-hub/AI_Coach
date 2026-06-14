@@ -45,7 +45,8 @@ export default {
           hover: "#007ACC",
         },
         "primary-hover": "#007ACC",
-        
+        "primary-dark": "hsl(var(--primary-dark))",
+
         // PulseCraft Explicit Colors
         "background-light": "#F3F4F6",
         "background-dark": "#0A192F",

@@ -12,7 +12,7 @@ const sans = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: "PulseCraft AI",
+  title: "Pulscraft AI · Coach",
   description: "AI-powered communication coaching.",
 };
 
@@ -37,16 +37,6 @@ export default async function RootLayout({
       className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
-      <head>
-        <link
-          href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300">
         <a
           href="#main-content"
@@ -56,8 +46,8 @@ export default async function RootLayout({
         </a>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           storageKey="theme"
           disableTransitionOnChange
         >
