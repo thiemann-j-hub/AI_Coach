@@ -68,10 +68,14 @@ export async function POST(req: NextRequest) {
       payment_intent_data: { metadata: metadata as unknown as Record<string, string> },
       client_reference_id: workspaceId,
       customer_email: email ?? undefined,
-      // Native Rechnung: Adresse + USt-IdNr von Stripe Checkout erheben lassen
-      // (Datenerfassung), Steuerermittlung/Rechnung passieren nativ im Webhook.
+      // Adresse + USt-IdNr erheben; Stripe Tax berechnet die USt rechtssicher am
+      // Point-of-Sale (Location-Triangulierung + VIES, inkl. Reverse-Charge).
+      // Die NETTO-Preise (tax_behavior=exclusive) bleiben; die §14-Rechnung wird
+      // weiterhin nativ erzeugt und leitet ihr taxTreatment aus Stripes
+      // Aufschluesselung ab (Single Source of Truth).
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
+      automatic_tax: { enabled: true },
       success_url: `${base}/credits?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/credits?status=cancelled`,
       allow_promotion_codes: true,

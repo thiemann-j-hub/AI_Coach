@@ -79,6 +79,42 @@ export function determineTax(opts: {
   return { treatment: "domestic_19", rate: STD_VAT_RATE };
 }
 
+/**
+ * Single Source of Truth (Option A, mit Gemini gelockt): das taxTreatment der
+ * Rechnung wird aus Stripes TATSAECHLICHER Aufschluesselung abgeleitet — NICHT
+ * aus einem unabhaengigen VIES-Check, der dem von Stripe Tax berechneten Charge
+ * widersprechen koennte. Der Steuersatz kommt ebenfalls aus Stripe (tax/net).
+ */
+export function deriveTreatmentFromStripe(opts: {
+  customerCountry: string;
+  hasVatId: boolean;
+  netCents: number;
+  taxCents: number;
+}): TaxDecision {
+  const country = (opts.customerCountry || "").toUpperCase();
+  const rate =
+    opts.taxCents > 0 && opts.netCents > 0
+      ? Math.round((opts.taxCents / opts.netCents) * 100) / 100
+      : 0;
+
+  if (opts.taxCents > 0) {
+    // USt wurde erhoben: Inland (DE) oder EU-B2C (OSS, Kundenland-Satz).
+    if (country === SUPPLIER_COUNTRY) {
+      return { treatment: opts.hasVatId ? "domestic_19" : "domestic_b2c", rate };
+    }
+    return { treatment: "eu_oss", rate };
+  }
+  // Keine USt: EU-B2B Reverse-Charge (valide USt-IdNr) oder nicht steuerbar (Non-EU).
+  if (isEuVatCountry(country) && country !== SUPPLIER_COUNTRY && opts.hasVatId) {
+    return {
+      treatment: "reverse_charge",
+      rate: 0,
+      note: "Steuerschuldnerschaft des Leistungsempfaengers (Reverse-Charge, Art. 196 MwStSystRL).",
+    };
+  }
+  return { treatment: "exempt", rate: 0, note: "Nicht im Inland steuerbare Leistung." };
+}
+
 /** Stripe-Betrag interpretieren: Reverse-Charge = reiner Netto; sonst Brutto inkl. USt. */
 export function splitAmounts(chargedCents: number, decision: TaxDecision): {
   netCents: number;
@@ -144,36 +180,44 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceD
   const existing = await readItem<InvoiceDoc>(invoicesContainer(), id, year);
   if (existing) return existing;
 
-  // Steuer ermitteln (VIES nur, wenn USt-IdNr vorliegt).
   const hasVatId = !!input.billing.vatId;
-  let vatValidated = input.billing.vatIdValidated === true;
-  let billing = input.billing;
-  if (hasVatId && !vatValidated) {
-    const { country } = normalizeVatId(input.billing.vatId!);
-    const check = await checkVatId(input.billing.vatId!);
-    vatValidated = check.valid;
-    billing = {
-      ...billing,
-      vatIdValidated: check.valid,
-      vatIdValidatedAt: check.checkedAt,
-      country: billing.country || country || "",
-    };
-  }
-
-  const decision = determineTax({
-    customerCountry: billing.country,
-    vatValidated,
-    hasVatId,
-  });
-  // Netto-Anzeige (Owner-Entscheidung): Stripes Aufschluesselung ist massgeblich,
-  // wenn vorhanden. Sonst Brutto-Herausrechnung als Fallback.
+  // Stripes Aufschluesselung ist die Single Source of Truth (Stripe Tax hat USt
+  // + VIES bereits am Point-of-Sale berechnet). Fallback ohne Breakdown: eigener
+  // VIES-Check + determineTax (z. B. lokal ohne Stripe Tax).
   const useStripeBreakdown =
     typeof input.stripeNetCents === "number" && typeof input.stripeTaxCents === "number";
+
+  let billing = input.billing;
+  let decision: TaxDecision;
+
+  if (useStripeBreakdown) {
+    decision = deriveTreatmentFromStripe({
+      customerCountry: billing.country,
+      hasVatId,
+      netCents: input.stripeNetCents!,
+      taxCents: input.stripeTaxCents!,
+    });
+  } else {
+    let vatValidated = input.billing.vatIdValidated === true;
+    if (hasVatId && !vatValidated) {
+      const { country } = normalizeVatId(input.billing.vatId!);
+      const check = await checkVatId(input.billing.vatId!);
+      vatValidated = check.valid;
+      billing = {
+        ...billing,
+        vatIdValidated: check.valid,
+        vatIdValidatedAt: check.checkedAt,
+        country: billing.country || country || "",
+      };
+    }
+    decision = determineTax({ customerCountry: billing.country, vatValidated, hasVatId });
+  }
+
   const { netCents, taxCents, grossCents } = useStripeBreakdown
     ? {
         netCents: input.stripeNetCents!,
-        taxCents: decision.rate <= 0 ? 0 : input.stripeTaxCents!,
-        grossCents: input.stripeNetCents! + (decision.rate <= 0 ? 0 : input.stripeTaxCents!),
+        taxCents: input.stripeTaxCents!,
+        grossCents: input.stripeNetCents! + input.stripeTaxCents!,
       }
     : splitAmounts(input.chargedCents, decision);
 

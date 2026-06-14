@@ -150,7 +150,9 @@ export interface BillingProfile {
 export type TaxTreatment =
   | "domestic_19" // DE-Kunde: 19 % USt
   | "reverse_charge" // EU-Geschaeftskunde mit valider USt-IdNr: 0 %, Steuerschuldnerschaft des Leistungsempfaengers
-  | "domestic_b2c"; // DE ohne USt-IdNr (Privat): 19 %
+  | "domestic_b2c" // DE ohne USt-IdNr (Privat): 19 %
+  | "eu_oss" // EU-B2C: USt des Kundenlandes (One-Stop-Shop) — von Stripe Tax berechnet
+  | "exempt"; // nicht im Inland steuerbar / steuerfrei (z. B. Non-EU)
 
 /**
  * Rechnung im `invoices`-Container (pk /year). Nummernzaehler liegt in derselben
