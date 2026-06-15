@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkSessionOwnership, getRun } from "@/lib/server/runs-store";
+import { paymentsEnabled } from "@/lib/server/credits/entitlement";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
@@ -87,6 +88,9 @@ export async function GET(req: NextRequest) {
           summary: data.summary ?? data.analysisJson?.summary ?? null,
           rating: typeof data.rating === "number" ? data.rating : null,
         },
+        // Steuert die Refund-Affordanz des Delete-Buttons: nur wenn Payments aktiv
+        // sind, kann der 10-Min-Refund tatsaechlich greifen (sonst neutrales Löschen).
+        paymentsEnabled: paymentsEnabled(),
       },
       { status: 200 }
     );

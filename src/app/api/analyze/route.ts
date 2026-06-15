@@ -245,6 +245,9 @@ export async function POST(req: NextRequest) {
 
     // Schatten-Persistenz: Credit verbraucht => Run existiert. Vor dem Settle,
     // damit der Run-Record garantiert vorliegt, bevor der Hold final wird.
+    // shadowPersisted bleibt nur true, wenn der Run wirklich geschrieben wurde —
+    // davon haengt ab, ob der Hold gesettlet (Credit verbraucht) werden DARF.
+    let shadowPersisted = false;
     if (grant && d.sessionId) {
       try {
         const own = await checkSessionOwnership(d.sessionId, authResult.uid);
@@ -277,6 +280,7 @@ export async function POST(req: NextRequest) {
                 ? (result as any).scores.overall
                 : null,
           });
+          shadowPersisted = true;
         }
       } catch (e) {
         // Schatten-Persistenz darf den erfolgreichen Response nicht killen.
@@ -284,8 +288,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Analyse erfolgreich -> Hold final verbuchen.
-    if (grant) await settleEntitlement(grant);
+    // Hold NUR final verbuchen, wenn der Run-Record garantiert persistiert wurde
+    // (Invariante: kein verbrauchter Credit ohne zugehoerigen Run, sonst koennte
+    // der User bei totem Tab fuer nichts bezahlen und haette keinen Delete-Button).
+    // Schlug die Schatten-Persistenz fehl ODER fehlte die sessionId, wird der
+    // Credit zurueckgebucht statt verbucht; Lazy Reconciliation ist der Backstop,
+    // falls dieser synchrone Refund selbst scheitert.
+    if (grant) {
+      if (shadowPersisted) await settleEntitlement(grant);
+      else await compensateEntitlement(grant);
+    }
 
     logger.api("/api/analyze", "complete", { uid: authResult.uid });
     // runId mitgeben: der Save MUSS diese id uebernehmen (Hold/Refund-Bindung).

@@ -102,6 +102,7 @@ export default function RunDetailClient({
 }) {
   const { t, locale } = useTranslation();
   const [run, setRun] = useState<RunData | null>(null);
+  const [paymentsEnabled, setPaymentsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,7 +122,10 @@ export default function RunDetailClient({
           const code = j?.code ?? res.status;
           throw new Error(typeof j?.error === "string" ? j.error : `Error (${code})`);
         }
-        if (!cancelled) setRun(j.run as RunData);
+        if (!cancelled) {
+          setRun(j.run as RunData);
+          setPaymentsEnabled(j.paymentsEnabled === true);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? "Unbekannter Fehler");
       } finally {
@@ -165,7 +169,12 @@ export default function RunDetailClient({
                 {t.common.session}: {sessionId}
               </div>
               {run && (
-                <DeleteRunButton sessionId={sessionId} runId={runId} createdAt={run.createdAt} />
+                <DeleteRunButton
+                  sessionId={sessionId}
+                  runId={runId}
+                  createdAt={run.createdAt}
+                  paymentsEnabled={paymentsEnabled}
+                />
               )}
             </div>
           </div>

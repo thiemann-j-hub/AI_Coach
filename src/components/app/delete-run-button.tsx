@@ -20,10 +20,13 @@ export function DeleteRunButton({
   sessionId,
   runId,
   createdAt,
+  paymentsEnabled = false,
 }: {
   sessionId: string;
   runId: string;
   createdAt: string | null;
+  /** Nur wenn das Bezahlsystem aktiv ist, kann der 10-Min-Refund greifen. */
+  paymentsEnabled?: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -33,7 +36,11 @@ export function DeleteRunButton({
   const [busy, setBusy] = useState(false);
 
   const ageMs = createdAt ? Date.now() - new Date(createdAt).getTime() : Infinity;
-  const refundable = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+  // Refund-Affordanz NUR zeigen, wenn das Bezahlsystem aktiv ist UND der Run im
+  // 10-Min-Fenster liegt — sonst verspräche der Button bei Payments-off eine
+  // Erstattung, die der Server nie ausführt.
+  const refundable =
+    paymentsEnabled && Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
   const refundUntil =
     refundable && createdAt
       ? new Date(new Date(createdAt).getTime() + REFUND_WINDOW_MS).toLocaleTimeString(
@@ -53,15 +60,20 @@ export function DeleteRunButton({
       if (!res.ok || !j?.ok) {
         throw new Error(j?.error ? String(j.error) : `HTTP ${res.status}`);
       }
+      // Toast spiegelt die Server-Wahrheit. "Fenster abgelaufen" NUR zeigen,
+      // wenn Payments aktiv sind (sonst gab es nie eine Refund-Erwartung).
+      const description = j?.refunded
+        ? de
+          ? "1 Credit wurde erstattet."
+          : "1 credit was refunded."
+        : paymentsEnabled
+          ? de
+            ? "Kein Credit erstattet (Fenster abgelaufen)."
+            : "No credit refunded (window expired)."
+          : undefined;
       toast({
         title: de ? "Analyse gelöscht" : "Analysis deleted",
-        description: j?.refunded
-          ? de
-            ? "1 Credit wurde erstattet."
-            : "1 credit was refunded."
-          : de
-            ? "Kein Credit erstattet (Fenster abgelaufen)."
-            : "No credit refunded (window expired).",
+        ...(description ? { description } : {}),
       });
       router.push("/runs-dashboard");
     } catch (e: any) {
