@@ -300,8 +300,16 @@ export async function POST(req: NextRequest) {
     }
 
     logger.api("/api/analyze", "complete", { uid: authResult.uid });
-    // runId mitgeben: der Save MUSS diese id uebernehmen (Hold/Refund-Bindung).
-    return NextResponse.json({ ok: true, result, runId }, { status: 200 });
+    // runId NUR ausliefern, wenn der Run garantiert persistiert wurde
+    // (shadowPersisted) bzw. ohne aktives Bezahlsystem (dann ist runId nur ein
+    // optionaler Hint, kein Hold-Anker). Bei Payments-on + Persist-Fehler wird
+    // die runId zurueckgehalten, damit der Client keinen abrechenbaren Save mit
+    // erstattetem/fehlendem Hold anstoesst (Defense-in-Depth zur Save-Grenze).
+    const exposeRunId = shadowPersisted || !grant;
+    return NextResponse.json(
+      { ok: true, result, ...(exposeRunId ? { runId } : {}) },
+      { status: 200 }
+    );
   } catch (err: any) {
     // Technischer Abbruch nach Reservierung -> Credit synchron zuruckbuchen
     // (Schnellpfad; Lazy Reconciliation ist der Backstop fuer uncatchable Tod).

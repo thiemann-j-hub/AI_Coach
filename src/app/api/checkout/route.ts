@@ -59,6 +59,30 @@ export async function POST(req: NextRequest) {
       packageId,
     };
 
+    // Zero-Tax-Falle-Guard: Bei konfiguriertem Stripe darf ein Checkout NUR
+    // entstehen, wenn Stripe Tax 'active' ist. Sonst wuerde automatic_tax 0 %
+    // berechnen und 0-%-Rechnungen an Inlandskunden erzeugen (Compliance-Verstoss
+    // + rueckwirkende Haftung) — lieber verweigern als falsch ausliefern. Schuetzt
+    // gegen menschliches Versagen beim Live-Flip (vergessene Steuerregistrierung).
+    try {
+      const tax = await getStripe().tax.settings.retrieve();
+      if ((tax as any)?.status !== "active") {
+        logger.apiError("/api/checkout", new Error("Stripe Tax not active"), {
+          taxStatus: (tax as any)?.status ?? "unknown",
+        });
+        return NextResponse.json(
+          { ok: false, error: "Tax configuration not active", code: "TAX_NOT_ACTIVE" },
+          { status: 503 }
+        );
+      }
+    } catch (e: any) {
+      logger.apiError("/api/checkout/tax-settings", e);
+      return NextResponse.json(
+        { ok: false, error: "Tax configuration check failed", code: "TAX_CHECK_FAILED" },
+        { status: 503 }
+      );
+    }
+
     const base = baseUrl(req);
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",

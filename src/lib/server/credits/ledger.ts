@@ -101,6 +101,15 @@ async function getLedger(workspaceId: string, id: string): Promise<LedgerDoc | n
   return readItem<LedgerDoc>(workspacesContainer(), id, workspaceId);
 }
 
+/**
+ * Liest den Hold (hold:{runId}) eines Runs — fuer die Billing-Integritaet an der
+ * Save-Grenze: ein abrechenbarer Run darf nur entstehen, wenn ein zugehoeriger,
+ * NICHT erstatteter Hold existiert.
+ */
+export async function getHold(workspaceId: string, runId: string): Promise<LedgerDoc | null> {
+  return getLedger(workspaceId, `hold:${runId}`);
+}
+
 // ---------------------------------------------------------------------------
 // (i) RESERVE — Hold vor dem teuren Gemini-Call
 // ---------------------------------------------------------------------------

@@ -9,6 +9,9 @@ import {
   upsertSession,
 } from "@/lib/server/runs-store";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { paymentsEnabled } from "@/lib/server/credits/entitlement";
+import { getHold } from "@/lib/server/credits/ledger";
+import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
@@ -218,6 +221,30 @@ export async function POST(req: NextRequest) {
       if (existing && existing.uid !== uid) {
         return NextResponse.json(
           { ok: false, error: apiMsg.accessDenied, code: "RUN_ID_CONFLICT" },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Billing-Integritaet (nur bei aktivem Bezahlsystem): ein abrechenbarer Run
+    // darf NUR entstehen, wenn ein bezahlter Hold dahinter steht. Schliesst die
+    // Luecke "Analyse geliefert, aber Credit erstattet (z.B. nach Shadow-Persist-
+    // Fehler) -> Gratis-Run". (a) Ohne runId kein abrechenbarer Run; (b) ist der
+    // Hold zu dieser runId bereits 'refunded', wird abgelehnt. Der Hold ist die
+    // Server-Wahrheit — ein gefaelschter Client kann ihn nicht setzen. Bei
+    // PAYMENTS_ENABLED=off ist dies inert (kein Hold-Modell aktiv).
+    if (paymentsEnabled()) {
+      if (!parsed.data.runId) {
+        return NextResponse.json(
+          { ok: false, error: "Billable run requires a paid runId", code: "MISSING_PAID_RUN" },
+          { status: 409 }
+        );
+      }
+      const workspaceId = await getWorkspaceIdForUser(uid);
+      const hold = await getHold(workspaceId, parsed.data.runId);
+      if (hold && hold.status === "refunded") {
+        return NextResponse.json(
+          { ok: false, error: "Credit for this run was refunded; run not persisted", code: "RUN_REFUNDED" },
           { status: 409 }
         );
       }
