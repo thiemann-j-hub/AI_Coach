@@ -3,7 +3,7 @@
 import { useAuth } from "@/providers/auth-provider";
 import { useTranslation } from "@/i18n/useTranslation";
 import { useState } from "react";
-import { Loader2, MessagesSquare, ArrowRight } from "lucide-react";
+import { Loader2, MessagesSquare, ArrowRight, BarChart3, ShieldCheck } from "lucide-react";
 import { signInWithMicrosoft } from "@/lib/auth-service";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -34,9 +34,34 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
 
 /** Pulscraft-Login-Pattern: dark Hero, Glas-Top-Bar, Wortmarke, Neon-MS-Button. */
 function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const de = locale.startsWith("de");
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
+
+  const features = [
+    {
+      Icon: MessagesSquare,
+      title: de ? "Gesprächsanalyse" : "Conversation analysis",
+      desc: de
+        ? "KI-gestützte Analyse von Mitarbeitergesprächen mit konkretem, umsetzbarem Feedback."
+        : "AI-powered analysis of employee conversations with concrete, actionable feedback.",
+    },
+    {
+      Icon: BarChart3,
+      title: de ? "Kompetenz-Scoring" : "Competency scoring",
+      desc: de
+        ? "Strukturierte Bewertung der Führungskompetenzen — mit Evidenz aus dem Transkript."
+        : "Structured assessment of leadership competencies — grounded in the transcript.",
+    },
+    {
+      Icon: ShieldCheck,
+      title: de ? "DSGVO-konform" : "GDPR-compliant",
+      desc: de
+        ? "Anonymisierung im Browser vor der Analyse; Verarbeitung in der EU (Azure)."
+        : "In-browser anonymization before analysis; processing in the EU (Azure).",
+    },
+  ];
 
   async function onSignIn() {
     setBusy(true);
@@ -70,7 +95,7 @@ function LoginScreen() {
 
       {/* Hero */}
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-surface-dark shadow-neon">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card shadow-neon">
           <MessagesSquare className="h-7 w-7 text-primary" />
         </div>
         <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -92,9 +117,25 @@ function LoginScreen() {
         </button>
 
         <p className="mt-4 max-w-md text-xs text-muted-foreground">{t.auth.microsoftHint}</p>
+
+        {/* Feature-Cards (Angleich an die Pulscraft-Vorlage) */}
+        <div className="mt-12 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
+          {features.map((f) => (
+            <div
+              key={f.title}
+              className="rounded-2xl border border-border bg-card p-5 text-center shadow-card-light dark:shadow-card-dark"
+            >
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <f.Icon className="h-5 w-5" />
+              </div>
+              <div className="font-semibold text-foreground">{f.title}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{f.desc}</p>
+            </div>
+          ))}
+        </div>
       </main>
 
-      <footer className="border-t border-white/5 py-6 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} Pulscraft AI · Coach
       </footer>
     </div>

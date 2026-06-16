@@ -115,14 +115,14 @@ export default function AppShell(props: {
         <aside
           className={cx(
             'fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 md:translate-x-0 md:static md:flex',
-            'bg-surface-dark border-r border-white/5',
+            'bg-card border-r border-border',
             collapsed ? 'md:w-[72px]' : 'md:w-64',
             'w-64',
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
           {/* Logo / Wordmark */}
-          <div className="flex h-16 items-center border-b border-white/5 px-4">
+          <div className="flex h-16 items-center border-b border-border px-4">
             <button
               className="md:hidden absolute top-4 right-4 inline-flex items-center justify-center rounded-lg p-2 hover:bg-foreground/5 transition-colors text-muted-foreground"
               onClick={() => setMobileOpen(false)}
@@ -157,7 +157,7 @@ export default function AppShell(props: {
                         collapsed && 'justify-center',
                         active
                           ? 'border border-primary/20 bg-primary/10 text-primary font-semibold'
-                          : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                       )}
                     >
                       <Icon className={cx('h-5 w-5 shrink-0', !active && 'group-hover:scale-110 transition-transform')} />
@@ -170,7 +170,7 @@ export default function AppShell(props: {
           </nav>
 
           {/* New Analysis Button */}
-          <div className="p-3 border-t border-white/5">
+          <div className="p-3 border-t border-border">
             <button
               className={cx(
                 'w-full btn-gradient text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-neon active:scale-[0.98] transition-transform',
@@ -185,10 +185,10 @@ export default function AppShell(props: {
           </div>
 
           {/* Footer: Theme toggle + Collapse toggle */}
-          <div className="px-3 pb-3 space-y-1 border-t border-white/5 pt-3">
+          <div className="px-3 pb-3 space-y-1 border-t border-border pt-3">
             <button
               className={cx(
-                'flex items-center w-full py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-colors',
+                'flex items-center w-full py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors',
                 collapsed ? 'justify-center' : 'justify-center'
               )}
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
@@ -201,7 +201,7 @@ export default function AppShell(props: {
             <button
               onClick={toggleCollapsed}
               aria-label={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
-              className="hidden md:flex w-full items-center justify-center rounded-lg border border-white/5 bg-surface-light py-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="hidden md:flex w-full items-center justify-center rounded-lg border border-border bg-muted py-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>

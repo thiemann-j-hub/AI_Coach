@@ -11,7 +11,7 @@ export function PulscraftMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-surface-dark text-primary shadow-neon",
+        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-primary shadow-neon",
         className
       )}
       aria-hidden
@@ -42,15 +42,11 @@ export function PulscraftWordmark({
     <span className={cn("flex items-center gap-2.5", className)}>
       <PulscraftMark />
       {!iconOnly && (
-        <span className="flex flex-col leading-none">
-          <span className="text-base font-bold tracking-tight">
-            <span className="text-foreground">Pulscraft</span>{" "}
-            <span className="text-primary">AI</span>
-          </span>
+        <span className="text-base font-bold tracking-tight">
+          <span className="text-foreground">Pulscraft</span>{" "}
+          <span className="text-primary">AI</span>
           {product && (
-            <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
-              {product}
-            </span>
+            <span className="font-medium text-muted-foreground"> · {product}</span>
           )}
         </span>
       )}
