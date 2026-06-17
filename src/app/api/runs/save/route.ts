@@ -216,14 +216,12 @@ export async function POST(req: NextRequest) {
     // Injection-Schutz: eine vom Client uebergebene runId nur uebernehmen, wenn
     // sie - falls bereits existent - demselben Owner gehoert (sonst koennte ein
     // Angreifer fremde Run-Daten via gespoofter runId ueberschreiben).
-    if (parsed.data.runId) {
-      const existing = await getRun(sessionId, parsed.data.runId);
-      if (existing && existing.uid !== uid) {
-        return NextResponse.json(
-          { ok: false, error: apiMsg.accessDenied, code: "RUN_ID_CONFLICT" },
-          { status: 409 }
-        );
-      }
+    const existingRun = parsed.data.runId ? await getRun(sessionId, parsed.data.runId) : null;
+    if (existingRun && existingRun.uid !== uid) {
+      return NextResponse.json(
+        { ok: false, error: apiMsg.accessDenied, code: "RUN_ID_CONFLICT" },
+        { status: 409 }
+      );
     }
 
     // Billing-Integritaet (nur bei aktivem Bezahlsystem): ein abrechenbarer Run
@@ -233,6 +231,15 @@ export async function POST(req: NextRequest) {
     // Hold zu dieser runId bereits 'refunded', wird abgelehnt. Der Hold ist die
     // Server-Wahrheit — ein gefaelschter Client kann ihn nicht setzen. Bei
     // PAYMENTS_ENABLED=off ist dies inert (kein Hold-Modell aktiv).
+    //
+    // Partition-Pin: existiert bereits ein (Schatten-)Run, MUSS seine gespeicherte
+    // workspaceId uebernommen werden — sie ist die Partition, gegen die der Hold
+    // gebucht wurde. Nur neu abgeleitet (getWorkspaceIdForUser), wenn es noch
+    // keinen Run gibt. Verhindert, dass ein Mitgliedschaftswechsel mitten im Flow
+    // Hold und Run in verschiedene Partitionen spaltet (Refund/Delete liefe sonst
+    // ins Leere). Delete liest dieselbe gespeicherte workspaceId.
+    const runWorkspaceId = existingRun?.workspaceId ?? (await getWorkspaceIdForUser(uid));
+
     if (paymentsEnabled()) {
       if (!parsed.data.runId) {
         return NextResponse.json(
@@ -240,8 +247,7 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         );
       }
-      const workspaceId = await getWorkspaceIdForUser(uid);
-      const hold = await getHold(workspaceId, parsed.data.runId);
+      const hold = await getHold(runWorkspaceId, parsed.data.runId);
       if (hold && hold.status === "refunded") {
         return NextResponse.json(
           { ok: false, error: "Credit for this run was refunded; run not persisted", code: "RUN_REFUNDED" },
@@ -256,8 +262,7 @@ export async function POST(req: NextRequest) {
       {
         sessionId,
         uid,
-        // Solo-Default: Workspace === uid. Bei Team-Accounts spaeter aufloesen.
-        workspaceId: uid,
+        workspaceId: runWorkspaceId,
 
         conversationType: request.conversationType,
         conversationSubType: request.conversationSubType ?? null,

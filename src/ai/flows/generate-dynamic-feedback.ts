@@ -7,8 +7,13 @@
  */
 
 import { pineconeSearchCards } from '@/lib/pinecone';
+import { withTimeout, timeoutMs } from '@/lib/with-timeout';
 import { z } from 'zod';
 import * as tailoredMod from './generate-tailored-feedback';
+
+/** Hartes Timeout fuer den Pinecone-Retrieval (Default 6s). Bei Ueberschreitung
+ *  degradiert retrieveCards sauber auf leeres RAG (try/catch), statt zu haengen. */
+const PINECONE_TIMEOUT_MS = timeoutMs('PINECONE_TIMEOUT_MS', 6_000);
 
 export const GenerateDynamicFeedbackInputSchema = z.object({
   conversationType: z.string(),
@@ -71,17 +76,20 @@ async function retrieveCards(
     const baseFilter = buildBaseFilter(input);
     const filter = Object.keys(baseFilter).length ? baseFilter : undefined;
 
-    const first = await pineconeSearchCards({
-      text: query,
-      topK: 8,
-      lang: input.lang,
-      filter,
-    });
+    const first = await withTimeout(
+      pineconeSearchCards({ text: query, topK: 8, lang: input.lang, filter }),
+      PINECONE_TIMEOUT_MS,
+      'pinecone-search'
+    );
 
     // If lang is set but we got nothing: try again without lang
     const effective =
       isNonEmptyString(input.lang) && first.count === 0
-        ? await pineconeSearchCards({ text: query, topK: 8, filter })
+        ? await withTimeout(
+            pineconeSearchCards({ text: query, topK: 8, filter }),
+            PINECONE_TIMEOUT_MS,
+            'pinecone-search-fallback'
+          )
         : first;
 
     const cards = (effective.results ?? []) as RagCard[];

@@ -19,10 +19,17 @@ import {
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
 import { runQualityChecks } from "@/lib/server/quality-checks";
+import { withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Obergrenze fuer die Route (Serverless-Knob; auf App Service No-Op, dokumentiert
+// aber die Intention). Der echte Schutz ist der withTimeout-Race unten.
+export const maxDuration = 60;
+
+/** Hartes Timeout je LLM-Call (Default 45s) — verhindert ~230s-Haenger. */
+const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
 
 const MAX_TRANSCRIPT_LENGTH = 500_000;
 
@@ -142,22 +149,30 @@ export async function POST(req: NextRequest) {
     // 1+2) Feedback (RAG) und Kompetenz-Scoring parallel — beide hängen nur
     // vom Transkript ab; sequenziell verdoppelte das nur die Wartezeit.
     const [baseSettled, compSettled] = await Promise.allSettled([
-      generateDynamicFeedback({
-        conversationType: d.conversationType,
-        conversationSubType: d.conversationSubType ?? undefined,
-        goal: d.goal ?? undefined,
-        transcriptText: d.transcriptText,
-        lang: d.lang,
-        jurisdiction: d.jurisdiction,
-        leaderLabel: d.leaderLabel ?? undefined,
-        employeeLabel: d.employeeLabel ?? undefined,
-      } as any),
-      scoreCompetencies({
-        transcriptText: asStr(d.transcriptText ?? ""),
-        lang: d.lang,
-        leaderLabel: leaderLbl || undefined,
-        employeeLabel: empLbl || undefined,
-      } as any),
+      withTimeout(
+        generateDynamicFeedback({
+          conversationType: d.conversationType,
+          conversationSubType: d.conversationSubType ?? undefined,
+          goal: d.goal ?? undefined,
+          transcriptText: d.transcriptText,
+          lang: d.lang,
+          jurisdiction: d.jurisdiction,
+          leaderLabel: d.leaderLabel ?? undefined,
+          employeeLabel: d.employeeLabel ?? undefined,
+        } as any),
+        LLM_TIMEOUT_MS,
+        "gemini-feedback"
+      ),
+      withTimeout(
+        scoreCompetencies({
+          transcriptText: asStr(d.transcriptText ?? ""),
+          lang: d.lang,
+          leaderLabel: leaderLbl || undefined,
+          employeeLabel: empLbl || undefined,
+        } as any),
+        LLM_TIMEOUT_MS,
+        "gemini-competencies"
+      ),
     ]);
 
     // Basis-Analyse ist Pflicht — Kompetenzen degradieren nur (mit sichtbarem Fehler).
@@ -253,7 +268,7 @@ export async function POST(req: NextRequest) {
         const own = await checkSessionOwnership(d.sessionId, authResult.uid);
         if (own.allowed) {
           await upsertSession(d.sessionId, authResult.uid);
-          await persistShadowRun({
+          const shadow = await persistShadowRun({
             sessionId: d.sessionId,
             runId,
             uid: authResult.uid,
@@ -280,7 +295,14 @@ export async function POST(req: NextRequest) {
                 ? (result as any).scores.overall
                 : null,
           });
-          shadowPersisted = true;
+          // Nur als persistiert werten, wenn der Run wirklich geschrieben wurde.
+          // persistShadowRun gibt {ok:false} (statt zu werfen) zurueck, wenn die
+          // runId bereits einem ANDEREN Owner gehoert (id_conflict) — dann darf
+          // der Hold NICHT gesettlet werden (kein verbrauchter Credit ohne Run).
+          shadowPersisted = shadow.ok === true;
+          if (!shadow.ok) {
+            logger.apiError("/api/analyze/shadow", new Error("persistShadowRun not ok: " + (shadow.reason ?? "unknown")));
+          }
         }
       } catch (e) {
         // Schatten-Persistenz darf den erfolgreichen Response nicht killen.

@@ -24,7 +24,8 @@
   "nav": {
     "analyze": "Analiza",
     "history": "Historia",
-    "newAnalysis": "Nowa analiza"
+    "newAnalysis": "Nowa analiza",
+    "workspace": "Zespół"
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -116,6 +117,9 @@
     "loadingMore": "Ładowanie kolejnych…"
   },
   "report": {
+    "type": "Typ",
+    "subType": "Podtyp",
+    "goal": "Cel",
     "competency": "Kompetencja",
     "noCompetencyData": "Brak danych o kompetencjach.",
     "quotes": "Cytaty",

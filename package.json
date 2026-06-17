@@ -10,6 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "quality:regression": "node --conditions=react-server --import tsx scripts/quality/run-regression.ts"
   },
   "dependencies": {
@@ -67,7 +69,8 @@
     "postcss": "^8",
     "server-only": "^0.0.1",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   },
   "engines": {
     "node": "22.x"

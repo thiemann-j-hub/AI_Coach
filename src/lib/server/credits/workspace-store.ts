@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   domainsContainer,
+  queryItems,
   readItem,
   upsertItem,
   usersContainer,
@@ -14,6 +15,22 @@ import {
   WorkspaceDoc,
   WorkspaceMember,
 } from "./types";
+
+/** Max. OCC-Wiederholungen fuer Read-Modify-Write am Workspace-Doc (If-Match). */
+const MAX_OCC_RETRIES = 5;
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+/**
+ * Team-Auto-Claim ist Teil des Bezahlsystems und nur bei PAYMENTS_ENABLED=on
+ * aktiv. Inline (kein Import aus entitlement.ts), um einen Modul-Zyklus
+ * workspace-store <-> entitlement zu vermeiden.
+ */
+function teamClaimsEnabled(): boolean {
+  return (process.env.PAYMENTS_ENABLED ?? "off").toLowerCase() === "on";
+}
 
 /**
  * Workspace-Aufloesung + Free-Run-Gate.
@@ -71,20 +88,41 @@ export async function resolveWorkspace(opts: {
 }): Promise<WorkspaceDoc> {
   const { uid, email } = opts;
 
-  // 1) Existiert der User bereits mit zugewiesenem Workspace? (Team-Faelle)
   const userDoc = await readItem<UserDocLite>(usersContainer(), uid, uid);
-  const workspaceId = userDoc?.workspaceId || uid; // Solo-Default
+  const cachedWsId = userDoc?.workspaceId;
 
-  let ws = await getWorkspaceDoc(workspaceId);
+  // (A) Fast-Path: bestaetigtes Team-Mitglied (Cache zeigt auf fremde Partition).
+  //     Die Mitgliedschaft im Doc ist die Wahrheit — ein veralteter Cache (z. B.
+  //     nach Entfernen) wird hier erkannt und auf Solo zurueckgeheilt. Damit kann
+  //     ein entfernter User NICHT weiter auf den Team-Pool zugreifen.
+  if (cachedWsId && cachedWsId !== uid) {
+    const teamWs = await getWorkspaceDoc(cachedWsId);
+    if (teamWs && teamWs.members.some((m) => m.uid === uid)) {
+      await reconcileExpiredHolds(teamWs.workspaceId);
+      return teamWs;
+    }
+    await setUserWorkspaceId(uid, email, uid); // Stale Cache -> Solo
+  }
 
+  // (B) Auto-Claim: offene E-Mail-Einladung beanspruchen (oder Mitgliedschaft
+  //     ohne Cache heilen). Nur bei aktivem Bezahlsystem; Nicht-Team-Login.
+  if (teamClaimsEnabled() && email) {
+    const claimed = await tryClaimInvite({ uid, email });
+    if (claimed) {
+      await reconcileExpiredHolds(claimed.workspaceId);
+      return claimed;
+    }
+  }
+
+  // (C) Solo-Default: eigener Workspace (id === uid).
+  let ws = await getWorkspaceDoc(uid);
   if (!ws) {
     ws = await createSoloWorkspace({ uid, email });
-    // Free-Run-Grant nur fuer den frisch angelegten Solo-Workspace
+    // Free-Run-Grant NUR fuer den frisch angelegten Solo-Workspace.
+    // Beitritt zu einem Team loest bewusst KEINEN neuen Free-Run aus.
     await tryGrantFreeRun({ workspaceId: ws.workspaceId, uid, email });
-    // Saldo nach Grant neu lesen
     ws = (await getWorkspaceDoc(ws.workspaceId)) ?? ws;
   } else {
-    // Lazy Reconciliation: abgelaufene Holds dieser Partition zuruckbuchen
     await reconcileExpiredHolds(ws.workspaceId);
   }
 
@@ -152,7 +190,9 @@ export async function tryGrantFreeRun(opts: {
     if (err?.code === 409) return { granted: false }; // Free-Run bereits verbraucht
     throw err;
   }
-  // Claim gewonnen -> Gratis-Credit gutschreiben
+  // Claim gewonnen -> Gratis-Credit gutschreiben. KEIN CreditService-Schatten:
+  // Grants (frei wie Kauf) laufen zentral bzw. werden per Migration geseedet —
+  // Coachs Schatten-Seite beschraenkt sich bewusst auf spend + refund.
   await grantCredits({ workspaceId, amount: 1, source: "free", expiresInMonths: 12 });
   return { granted: true };
 }
@@ -163,18 +203,263 @@ export async function getWorkspaceIdForUser(uid: string): Promise<string> {
   return userDoc?.workspaceId || uid;
 }
 
-/** Fuegt ein Mitglied hinzu (max 3 inkl. Owner). Read-Modify-Upsert genuegt: nur Owner mutiert. */
-export async function addWorkspaceMember(opts: {
+// ---------------------------------------------------------------------------
+// OCC-Mutationen am Workspace-Doc (Read-Modify-Write mit If-Match)
+//
+// members[]/pendingInvites[] sind winzig (<= MAX) -> Read-Modify-Write mit
+// ETag/If-Match ist hier korrekt und einfacher als Array-Patch-Indizes. Bei
+// 412 (paralleler Owner-Write) wird neu gelesen und erneut versucht.
+// ---------------------------------------------------------------------------
+
+type ReplaceResult = "ok" | "conflict";
+
+/** Ersetzt das Workspace-Doc bedingt (If-Match). 412 -> "conflict" (Retry), sonst throw. */
+async function replaceWorkspaceIfMatch(doc: WorkspaceDoc, etag?: string): Promise<ReplaceResult> {
+  const { _etag, ...body } = doc; // System-ETag nie in den Body schreiben
+  void _etag;
+  try {
+    await workspacesContainer()
+      .item(doc.id, doc.workspaceId)
+      .replace(body, etag ? { accessCondition: { type: "IfMatch", condition: etag } } : undefined);
+    return "ok";
+  } catch (err: any) {
+    if (err?.code === 412) return "conflict";
+    throw err;
+  }
+}
+
+/**
+ * Setzt das workspaceId-Cache-Feld am User-Doc (Patch -> erhaelt alle anderen
+ * Felder wie language/linkedin). Existiert das User-Doc noch nicht, wird ein
+ * minimales angelegt. "Solo zuruecksetzen" = workspaceId auf die eigene uid.
+ */
+async function setUserWorkspaceId(
+  uid: string,
+  email: string | null | undefined,
+  workspaceId: string
+): Promise<void> {
+  try {
+    await usersContainer()
+      .item(uid, uid)
+      .patch({ operations: [{ op: "set", path: "/workspaceId", value: workspaceId }] });
+  } catch (err: any) {
+    if (err?.code === 404) {
+      await upsertItem(usersContainer(), {
+        id: uid,
+        ...(email ? { email } : {}),
+        workspaceId,
+      } as any);
+      return;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Auto-Claim: findet (cross-partition) den Team-Workspace, in dem dieser User
+ * bereits Mitglied ist ODER fuer den eine offene Einladung an seine E-Mail
+ * vorliegt, und gliedert ihn ein. Selten aufgerufen (nur Nicht-Team-Login,
+ * B2B — kein Hot-Path). Gibt den Team-Workspace zurueck oder null (kein Treffer
+ * / voll / Race).
+ */
+async function tryClaimInvite(opts: { uid: string; email: string }): Promise<WorkspaceDoc | null> {
+  const email = opts.email.trim().toLowerCase();
+  if (!email) return null;
+
+  const hits = await queryItems<WorkspaceDoc>(
+    workspacesContainer(),
+    `SELECT * FROM c WHERE c.type = 'workspace'
+       AND (ARRAY_CONTAINS(c.members, { "uid": @uid }, true)
+            OR ARRAY_CONTAINS(c.pendingInvites, { "email": @email }, true))`,
+    [
+      { name: "@uid", value: opts.uid },
+      { name: "@email", value: email },
+    ]
+  );
+  if (hits.length === 0) return null;
+  // Der eigene Workspace (id === uid) ist hier ggf. dabei (uid steht in members).
+  const ownWs = hits.find((w) => w.workspaceId === opts.uid);
+  const team = hits.find((w) => w.workspaceId !== opts.uid);
+  if (!team) return null; // nur der eigene Solo-/Team-WS -> nichts zu beanspruchen
+
+  // Bereits Mitglied des fremden Teams (Cache war kalt) -> nur heilen.
+  if (team.members.some((m) => m.uid === opts.uid)) {
+    await setUserWorkspaceId(opts.uid, opts.email, team.workspaceId);
+    return team;
+  }
+
+  // Guard: Wer selbst ein AKTIVES Team fuehrt (Owner mit weiteren Mitgliedern
+  // oder offenen Einladungen), wird NICHT automatisch in ein fremdes Team
+  // gezogen — sonst verwaiste sein eigenes Team. Ein reiner Solo-Owner darf
+  // beitreten (sein Solo-Guthaben bleibt geparkt erhalten).
+  if (
+    ownWs &&
+    ownWs.ownerUid === opts.uid &&
+    (ownWs.members.length > 1 || (ownWs.pendingInvites?.length ?? 0) > 0)
+  ) {
+    return null;
+  }
+
+  // Sonst: Sitzplatz beanspruchen (Member rein, Invite raus) per OCC.
+  const joined = await claimSeat({ workspaceId: team.workspaceId, uid: opts.uid, email });
+  if (!joined) return null; // voll oder Race -> Solo-Fallback
+  await setUserWorkspaceId(opts.uid, opts.email, team.workspaceId);
+  return (await getWorkspaceDoc(team.workspaceId)) ?? null;
+}
+
+/** Beansprucht atomar einen freien Sitz und entfernt die zugehoerige Einladung. */
+async function claimSeat(opts: {
   workspaceId: string;
-  member: { uid: string; email: string };
-}): Promise<{ ok: boolean; reason?: "full" | "exists" | "not_found" }> {
-  const { workspaceId, member } = opts;
-  const ws = await getWorkspaceDoc(workspaceId);
-  if (!ws) return { ok: false, reason: "not_found" };
-  if (ws.members.some((m) => m.uid === member.uid)) return { ok: false, reason: "exists" };
-  if (ws.members.length >= MAX_WORKSPACE_MEMBERS) return { ok: false, reason: "full" };
-  ws.members.push({ uid: member.uid, email: member.email, role: "member", addedAt: new Date().toISOString() });
-  ws.updatedAt = new Date().toISOString();
-  await upsertItem(workspacesContainer(), ws);
-  return { ok: true };
+  uid: string;
+  email: string;
+}): Promise<boolean> {
+  for (let attempt = 0; attempt < MAX_OCC_RETRIES; attempt++) {
+    const ws = await getWorkspaceDoc(opts.workspaceId);
+    if (!ws) return false;
+    if (ws.members.some((m) => m.uid === opts.uid)) return true; // schon Mitglied
+    if (ws.members.length >= MAX_WORKSPACE_MEMBERS) return false; // voll
+    const ts = nowIso();
+    const member: WorkspaceMember = {
+      uid: opts.uid,
+      email: opts.email,
+      role: "member",
+      addedAt: ts,
+    };
+    const next: WorkspaceDoc = {
+      ...ws,
+      members: [...ws.members, member],
+      pendingInvites: (ws.pendingInvites ?? []).filter((p) => p.email !== opts.email),
+      updatedAt: ts,
+    };
+    const r = await replaceWorkspaceIfMatch(next, ws._etag);
+    if (r === "ok") return true;
+    // conflict -> neu lesen & erneut versuchen
+  }
+  return false;
+}
+
+export type InviteResult =
+  | { ok: true }
+  | { ok: false; reason: "not_found" | "not_owner" | "full" | "exists" | "conflict" };
+
+/**
+ * Owner legt eine offene E-Mail-Einladung an (Auto-Claim beim ersten Login des
+ * Eingeladenen). Sitzplatz-Budget = Mitglieder + offene Einladungen < MAX.
+ */
+export async function addPendingInvite(opts: {
+  workspaceId: string;
+  ownerUid: string;
+  email: string;
+}): Promise<InviteResult> {
+  const email = opts.email.trim().toLowerCase();
+  if (!email) return { ok: false, reason: "exists" };
+  for (let attempt = 0; attempt < MAX_OCC_RETRIES; attempt++) {
+    const ws = await getWorkspaceDoc(opts.workspaceId);
+    if (!ws) return { ok: false, reason: "not_found" };
+    if (ws.ownerUid !== opts.ownerUid) return { ok: false, reason: "not_owner" };
+    if (ws.members.some((m) => m.email.trim().toLowerCase() === email)) {
+      return { ok: false, reason: "exists" };
+    }
+    const pending = ws.pendingInvites ?? [];
+    if (pending.some((p) => p.email === email)) return { ok: false, reason: "exists" };
+    if (ws.members.length + pending.length >= MAX_WORKSPACE_MEMBERS) {
+      return { ok: false, reason: "full" };
+    }
+    const ts = nowIso();
+    const next: WorkspaceDoc = {
+      ...ws,
+      pendingInvites: [...pending, { email, invitedByUid: opts.ownerUid, invitedAt: ts }],
+      updatedAt: ts,
+    };
+    const r = await replaceWorkspaceIfMatch(next, ws._etag);
+    if (r === "ok") return { ok: true };
+  }
+  return { ok: false, reason: "conflict" };
+}
+
+/** Owner widerruft eine offene Einladung (idempotent: unbekannte E-Mail -> ok). */
+export async function removePendingInvite(opts: {
+  workspaceId: string;
+  ownerUid: string;
+  email: string;
+}): Promise<InviteResult> {
+  const email = opts.email.trim().toLowerCase();
+  for (let attempt = 0; attempt < MAX_OCC_RETRIES; attempt++) {
+    const ws = await getWorkspaceDoc(opts.workspaceId);
+    if (!ws) return { ok: false, reason: "not_found" };
+    if (ws.ownerUid !== opts.ownerUid) return { ok: false, reason: "not_owner" };
+    const pending = ws.pendingInvites ?? [];
+    if (!pending.some((p) => p.email === email)) return { ok: true }; // idempotent
+    const next: WorkspaceDoc = {
+      ...ws,
+      pendingInvites: pending.filter((p) => p.email !== email),
+      updatedAt: nowIso(),
+    };
+    const r = await replaceWorkspaceIfMatch(next, ws._etag);
+    if (r === "ok") return { ok: true };
+  }
+  return { ok: false, reason: "conflict" };
+}
+
+export type RemoveMemberResult =
+  | { ok: true }
+  | { ok: false; reason: "not_found" | "not_owner" | "is_owner" | "not_member" | "conflict" };
+
+/**
+ * Owner entfernt ein Mitglied. Der Owner kann sich selbst NICHT entfernen.
+ * Setzt den Cache des Entfernten auf Solo zurueck (best effort — die
+ * Mitgliedschaftspruefung in resolveWorkspace ist der eigentliche Schutz).
+ */
+export async function removeWorkspaceMember(opts: {
+  workspaceId: string;
+  ownerUid: string;
+  memberUid: string;
+}): Promise<RemoveMemberResult> {
+  for (let attempt = 0; attempt < MAX_OCC_RETRIES; attempt++) {
+    const ws = await getWorkspaceDoc(opts.workspaceId);
+    if (!ws) return { ok: false, reason: "not_found" };
+    if (ws.ownerUid !== opts.ownerUid) return { ok: false, reason: "not_owner" };
+    if (opts.memberUid === ws.ownerUid) return { ok: false, reason: "is_owner" };
+    if (!ws.members.some((m) => m.uid === opts.memberUid)) return { ok: false, reason: "not_member" };
+    const next: WorkspaceDoc = {
+      ...ws,
+      members: ws.members.filter((m) => m.uid !== opts.memberUid),
+      updatedAt: nowIso(),
+    };
+    const r = await replaceWorkspaceIfMatch(next, ws._etag);
+    if (r === "ok") {
+      await setUserWorkspaceId(opts.memberUid, null, opts.memberUid); // Solo zuruecksetzen
+      return { ok: true };
+    }
+  }
+  return { ok: false, reason: "conflict" };
+}
+
+export type LeaveResult =
+  | { ok: true }
+  | { ok: false; reason: "not_in_team" | "owner_cannot_leave" | "conflict" };
+
+/** Mitglied verlaesst freiwillig sein Team. Der Owner kann nicht "leaven". */
+export async function leaveWorkspace(opts: { uid: string }): Promise<LeaveResult> {
+  const wsId = await getWorkspaceIdForUser(opts.uid);
+  if (wsId === opts.uid) return { ok: false, reason: "not_in_team" };
+  for (let attempt = 0; attempt < MAX_OCC_RETRIES; attempt++) {
+    const ws = await getWorkspaceDoc(wsId);
+    if (!ws || !ws.members.some((m) => m.uid === opts.uid)) {
+      await setUserWorkspaceId(opts.uid, null, opts.uid);
+      return { ok: true };
+    }
+    if (ws.ownerUid === opts.uid) return { ok: false, reason: "owner_cannot_leave" };
+    const next: WorkspaceDoc = {
+      ...ws,
+      members: ws.members.filter((m) => m.uid !== opts.uid),
+      updatedAt: nowIso(),
+    };
+    const r = await replaceWorkspaceIfMatch(next, ws._etag);
+    if (r === "ok") {
+      await setUserWorkspaceId(opts.uid, null, opts.uid);
+      return { ok: true };
+    }
+  }
+  return { ok: false, reason: "conflict" };
 }

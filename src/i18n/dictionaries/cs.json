@@ -24,7 +24,8 @@
   "nav": {
     "analyze": "Analýza",
     "history": "Historie",
-    "newAnalysis": "Nová analýza"
+    "newAnalysis": "Nová analýza",
+    "workspace": "Tým"
   },
   "auth": {
     "signIn": "Přihlásit se",
@@ -116,6 +117,9 @@
     "loadingMore": "Načítání dalších…"
   },
   "report": {
+    "type": "Typ",
+    "subType": "Podtyp",
+    "goal": "Cíl",
     "competency": "Kompetence",
     "noCompetencyData": "Žádná data o kompetencích.",
     "quotes": "Citace",

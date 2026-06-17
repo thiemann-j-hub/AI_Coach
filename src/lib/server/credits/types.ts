@@ -54,6 +54,20 @@ export interface WorkspaceMember {
 }
 
 /**
+ * Offene E-Mail-Einladung (Auto-Claim-Modell): der Owner legt sie an, das
+ * eingeladene Konto beansprucht sie beim ersten Login automatisch (Match ueber
+ * die normalisierte E-Mail). email ist immer lowercase + getrimmt gespeichert.
+ */
+export interface PendingInvite {
+  /** Normalisierte (lowercase, getrimmte) E-Mail des Eingeladenen. */
+  email: string;
+  invitedByUid: string;
+  invitedAt: string;
+  /** Optionales Ablaufdatum (ISO); ungesetzt = laeuft nicht ab. */
+  expiresAt?: string;
+}
+
+/**
  * Stamm-Dokument: Saldo + Mitglieder. id === workspaceId.
  * `balance` ist der denormalisierte Schnell-Saldo (gueltige Batches minus
  * offene Holds); Quelle der Wahrheit bleiben die einzelnen creditBatch-Docs.
@@ -62,6 +76,8 @@ export interface WorkspaceDoc extends WorkspaceScopedDoc {
   type: "workspace";
   ownerUid: string;
   members: WorkspaceMember[]; // inkl. owner, max MAX_WORKSPACE_MEMBERS
+  /** Offene E-Mail-Einladungen (Auto-Claim). Zaehlen NICHT als Sitze, bis beansprucht. */
+  pendingInvites?: PendingInvite[];
   balance: number;
   billing?: BillingProfile;
   createdAt: string;
