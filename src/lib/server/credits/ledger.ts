@@ -303,8 +303,18 @@ export async function refundCredit(opts: {
 
 /**
  * Lazy Reconciliation (Gemini-Optimierung): beim Workspace-Laden offene,
- * abgelaufene Holds derselben Partition zuruckbuchen. 0 Hintergrund-Infra,
+ * abgelaufene Holds derselben Partition zuruckbuecken. 0 Hintergrund-Infra,
  * keine Cross-Partition-Query — laeuft nur innerhalb DIESES Workspaces.
+ *
+ * CREDITS_CENTRAL / Phase-1-Dual-Write — BEWUSSTE LUECKE: Hier wird KEIN
+ * shadowRefund gefeuert. Dieser Sweep buecht abgelaufene Holds der GANZEN
+ * Partition zurueck (ggf. von FREMDEN Nutzern), waehrend die in-scope Session
+ * dem Workspace-Lader gehoert — nicht zwingend dem Hold-Owner. Ein Schatten mit
+ * dem falschen Token wuerde den falschen zentralen Workspace treffen. Da der
+ * reserve-Schatten zentral bereits -1 gebucht hat, bleibt der CreditService bei
+ * abgelaufenen, nie gesettelt/kompensierten Holds um -1 im Rueckstand
+ * (-1-Drift je Hold). Das ist ein DOKUMENTIERTER Phase-2-Reconcile-Posten
+ * (genau dafuer ist der Abgleich da) — NICHT still gelassen.
  */
 export async function reconcileExpiredHolds(workspaceId: string): Promise<number> {
   const now = nowIso();
@@ -326,6 +336,8 @@ export async function reconcileExpiredHolds(workspaceId: string): Promise<number
       runId: hold.runId,
       reason: "refund_hold_expired",
     });
+    // KEIN shadowRefund — s. Doc-Kommentar oben (falscher Token-Kontext;
+    // Phase-2-Abgleich gleicht den -1-Drift ab).
     if (r.refunded) refunded++;
   }
   return refunded;

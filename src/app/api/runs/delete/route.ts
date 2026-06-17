@@ -9,7 +9,8 @@ import {
   markRunDeleted,
 } from "@/lib/server/runs-store";
 import { paymentsEnabled } from "@/lib/server/credits/entitlement";
-import { refundCredit } from "@/lib/server/credits/ledger";
+import { getWorkspaceDoc, refundCredit } from "@/lib/server/credits/ledger";
+import { shadowRefund } from "@/lib/server/credits/credit-service";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -57,14 +58,33 @@ export async function POST(req: NextRequest) {
 
     if (paymentsEnabled()) {
       const ageMs = Date.now() - new Date(run.createdAt).getTime();
-      willRefund = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+      const withinWindow = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+      const workspaceId = run.workspaceId ?? run.uid;
+
+      // Mitgliedschafts-Revalidierung: nur erstatten, wenn der Loeschende AKTUELL
+      // noch Mitglied der Run-Partition ist. Ein zwischenzeitlich aus dem Team
+      // entferntes Mitglied darf den (Team-)Ledger nicht mehr bewegen — der
+      // Soft-Delete oben bleibt davon unberuehrt. Solo-Partition (ws===uid) ist
+      // implizit Mitgliedschaft.
+      let stillMember = workspaceId === uid;
+      if (!stillMember) {
+        const ws = await getWorkspaceDoc(workspaceId);
+        stillMember = ws ? ws.members.some((m) => m.uid === uid) : false;
+      }
+
+      willRefund = withinWindow && stillMember;
+      if (withinWindow && !stillMember) {
+        logger.api("/api/runs/delete", "refund-skipped-not-member", { uid, sessionId, runId, workspaceId });
+      }
       if (willRefund) {
-        const workspaceId = run.workspaceId ?? run.uid;
         // refundPending markieren (Backstop), dann idempotent inline erstatten.
         await markRunDeleted(sessionId, runId, true);
         try {
           await refundCredit({ workspaceId, runId, reason: "refund_user_delete" });
           await clearRunRefundPending(sessionId, runId);
+          // Phase-1-Dual-Write: derselbe Refund als Schatten an den zentralen
+          // CreditService-Refund-Endpunkt (inert bei CREDITS_CENTRAL=off; fail-soft).
+          await shadowRefund({ amount: 1, idempotencyKey: `refund:${runId}`, note: "coach:refund_user_delete" });
         } catch (e) {
           // Inline fehlgeschlagen -> refundPending bleibt true -> v1-Sweep holt nach.
           logger.apiError("/api/runs/delete/refund", e);

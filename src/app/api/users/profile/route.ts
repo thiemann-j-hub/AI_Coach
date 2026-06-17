@@ -12,10 +12,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export type UserProfileDoc = {
-  id: string; // = uid (Partition Key)
+  id: string; // = uid (= OIDC sub, Partition Key)
   email: string;
   displayName: string;
   language?: string;
+  /** App-uebergreifend stabile Entra Object-ID (sub != oid). Quelle fuer das
+   *  sub->oid-Mapping der CreditService-Migration; beim Login erfasst/nachgetragen. */
+  entraOid?: string;
   createdAt: string;
   updatedAt: string;
   // linkedin?: { ... } — von linkedin-connection.ts verwaltet, hier nie zurückgegeben
@@ -40,7 +43,7 @@ function publicProfile(doc: UserProfileDoc) {
 export async function GET(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
-  const { uid, email } = authResult;
+  const { uid, email, oid } = authResult;
 
   const rl = checkRateLimit(rateLimitKey(req, "profile-get"), 30, 60_000);
   if (rl) return rl;
@@ -55,11 +58,17 @@ export async function GET(req: NextRequest) {
         email: email ?? "",
         displayName: email?.split("@")[0] ?? "",
         language: getRequestLocale(req),
+        ...(oid ? { entraOid: oid } : {}),
         createdAt: now,
         updatedAt: now,
       };
       await upsertItem(usersContainer(), doc);
       logger.api("/api/users/profile", "provisioned", { uid });
+    } else if (oid && doc.entraOid !== oid) {
+      // Backfill: vorhandenes Profil bekommt die Entra-oid nachgetragen, damit
+      // die CreditService-Migration spaeter sub->oid aufloesen kann.
+      doc = { ...doc, entraOid: oid, updatedAt: new Date().toISOString() };
+      await upsertItem(usersContainer(), doc);
     }
 
     return NextResponse.json({ ok: true, profile: publicProfile(doc) });

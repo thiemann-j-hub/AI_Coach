@@ -14,7 +14,15 @@ export async function verifyAuthToken(_req: NextRequest | Request) {
   const session = await auth();
   const uid = (session?.user as { id?: string } | undefined)?.id;
   if (!uid) return null;
-  return { uid, email: session?.user?.email ?? null };
+  return {
+    uid,
+    email: session?.user?.email ?? null,
+    // App-uebergreifend stabile Entra Object-ID + Access-Token fuer den
+    // zentralen CreditService (Dual-Write). Optional — alte Sessions ohne
+    // diese Felder bleiben gueltig (Vertragstreue).
+    oid: (session?.user as { oid?: string } | undefined)?.oid ?? null,
+    accessToken: (session as { accessToken?: string } | undefined)?.accessToken ?? null,
+  };
 }
 
 /**
@@ -37,5 +45,11 @@ export function unauthorizedResponse(message = "Authentication required") {
 export async function requireAuth(req: NextRequest | Request) {
   const decoded = await verifyAuthToken(req);
   if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
-  return { uid: decoded.uid, email: decoded.email, decoded };
+  return {
+    uid: decoded.uid,
+    email: decoded.email,
+    oid: decoded.oid,
+    accessToken: decoded.accessToken,
+    decoded,
+  };
 }

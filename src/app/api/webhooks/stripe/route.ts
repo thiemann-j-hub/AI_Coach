@@ -129,6 +129,8 @@ export async function POST(req: NextRequest) {
         eventId: event.id,
         granted: res.granted,
       });
+      // KEIN CreditService-Schatten fuer den Kauf: Kaeufe/Gutschriften laufen
+      // zentral. Coachs Schatten-Seite ist bewusst auf spend + refund begrenzt.
 
       // Native §14-UStG-Rechnung (best-effort: Fehler blockiert die Gutschrift
       // nicht; die gaplose Nummernvergabe macht einen Retry unkritisch).

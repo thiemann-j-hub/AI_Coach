@@ -3,6 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { reserveCredit, settleHold, refundCredit } from "./ledger";
 import { resolveWorkspace } from "./workspace-store";
+import { shadowSpend, shadowRefund } from "./credit-service";
 
 /**
  * Entitlement-Gate fuer den Analyse-Lauf (Point-of-Sale).
@@ -78,14 +79,17 @@ export async function reserveEntitlement(opts: {
     };
   }
 
-  return {
-    ok: true,
-    grant: {
-      runId,
-      workspaceId: ws.workspaceId,
-      held: reserve.held === true || (reserve as any).alreadyHeld === true,
-    },
-  };
+  const held = reserve.held === true || (reserve as any).alreadyHeld === true;
+  // Phase-1-Dual-Write: erst ALT reserviert (= Credit lokal gezogen), danach
+  // derselbe Verbrauch als Schatten an den zentralen CreditService. Bewusst an
+  // RESERVE (nicht settle): so spiegelt der Schatten die lokale Saldo-Mechanik
+  // (reserve -1 / refund +1; settle saldoneutral) und der Refund-Schatten am
+  // Fehlerpfad geht bilanziell auf. Inert bei CREDITS_CENTRAL=off; fail-soft.
+  if (held) {
+    await shadowSpend({ amount: 1, idempotencyKey: `spend:${runId}`, note: `coach:consume:${runId}` });
+  }
+
+  return { ok: true, grant: { runId, workspaceId: ws.workspaceId, held } };
 }
 
 /** Bei erfolgreicher Analyse: Hold final verbuchen. */
@@ -98,20 +102,34 @@ export async function settleEntitlement(grant: EntitlementGrant): Promise<void> 
     // zurueckgebucht — wir wollen den erfolgreichen Response nicht killen.
     console.warn("[entitlement] settle failed (hold will lazily reconcile):", err);
   }
+  // Settle ist saldoneutral -> KEIN Schatten hier. Der Verbrauchs-Schatten
+  // haengt an reserveEntitlement (dort zieht das lokale Ledger den Credit).
 }
 
 /** Bei technischem Abbruch: Credit synchron zurueckbuchen (Schnellpfad). */
 export async function compensateEntitlement(grant: EntitlementGrant): Promise<void> {
   if (!grant.held) return;
+  let refunded = false;
   try {
-    await refundCredit({
+    const r = await refundCredit({
       workspaceId: grant.workspaceId,
       runId: grant.runId,
       reason: "refund_technical_failure",
     });
+    refunded = r.refunded === true;
   } catch (err) {
     // Schlaegt der synchrone Refund fehl, faengt die Lazy Reconciliation den
     // abgelaufenen Hold beim naechsten Workspace-Load ab (Backstop).
     console.warn("[entitlement] compensate failed (lazy reconcile is backstop):", err);
+  }
+  // Phase-1-Dual-Write: NUR wenn lokal wirklich erstattet wurde, denselben
+  // Refund als Schatten an den zentralen CreditService (eigener Key, getrennt
+  // vom spend-Key). Inert bei CREDITS_CENTRAL=off; fail-soft.
+  if (refunded) {
+    await shadowRefund({
+      amount: 1,
+      idempotencyKey: `refund:tech:${grant.runId}`,
+      note: "coach:refund_technical_failure",
+    });
   }
 }
