@@ -17,9 +17,13 @@
  * sub -> oid: Coach speichert als uid den OIDC `sub` (pairwise). Der CreditService
  * schluesselt auf die stabile Entra-`oid`. Die oid wird seit der Auth-Aenderung
  * beim Login als users.entraOid persistiert; dieses Skript liest sie von dort.
- * Mitglieder OHNE entraOid werden NICHT geschrieben, sondern als "unresolved"
- * gemeldet (User loggt sich einmal ein -> Backfill -> Re-Run; ODER zentraler
- * E-Mail-Pending-Auto-Claim macht die oid vorab entbehrlich).
+ *
+ * UNAUFGELOESTE Mitglieder (kein entraOid) — die oid wird NICHT mehr vorab
+ * gebraucht: fuer TEAM-Mitglieder ohne bekannte oid schreibt das Skript ein
+ * E-Mail-PENDING-Doc; der CreditService claimt es beim ersten Login selbst auf
+ * die oid (legt oid->team-id an, entwertet das Pending). SOLO-Nutzer brauchen
+ * kein Pending (sie bekommen beim Login ohnehin workspaceId=oid) -> nur melden.
+ * Mitglieder ohne oid UND ohne E-Mail sind echt unresolved -> nur melden.
  *
  * ====================================================================
  * VERBINDLICHE CreditService-Cosmos-Shapes (vom Owner bestaetigt, 2026-06-17):
@@ -33,8 +37,11 @@
  *       -> beide je Partition in EINEM TransactionalBatch (spiegelt addCredits);
  *          deterministische ids => Create-409 = bereits migriert = idempotenter Re-Run.
  *   - workspace-map (PK /userId):
- *       { id:"<oid>", userId:"<oid>", workspaceId, tid:"<tid|null>", createdAt }
- *       (Solo: workspaceId=oid; Team: ein Doc je Mitglied, workspaceId=team-id)
+ *       Mapping: { id:"<oid>", userId:"<oid>", workspaceId, tid:"<tid|null>", createdAt }
+ *                (Solo: workspaceId=oid; Team: ein Doc je Mitglied, workspaceId=team-id)
+ *       Pending: { id:"pending:<emailLower>", userId:"pending:<emailLower>",
+ *                  type:"pending", email:"<emailLower>", workspaceId:"<teamId>", createdAt }
+ *                (Team-Mitglied ohne bekannte oid -> Auto-Claim beim ersten Login)
  * ====================================================================
  */
 
@@ -158,6 +165,24 @@ async function writeWorkspaceMap(oid, workspaceId, tid = null) {
   return "written";
 }
 
+/**
+ * Pending-Auto-Claim-Doc fuer ein TEAM-Mitglied ohne bekannte oid (Container
+ * workspace-map, PK /userId). Der CreditService claimt es beim ersten Login auf
+ * die oid (legt oid->team-id an, entwertet das Pending). E-Mail lowercase.
+ */
+async function writePendingInvite(emailLower, teamId) {
+  if (!APPLY || !cs) return "dry";
+  await cs.container(CS_MAP).items.upsert({
+    id: `pending:${emailLower}`,
+    userId: `pending:${emailLower}`,
+    type: "pending",
+    email: emailLower,
+    workspaceId: teamId,
+    createdAt: nowIso,
+  });
+  return "written";
+}
+
 async function main() {
   console.log(`\n=== Coach -> CreditService Reconcile (${APPLY ? "APPLY" : "DRY-RUN"}) ===`);
   console.log(`Coach-DB: ${COACH_DB} | CreditService-DB: ${CS_DB} (ledger=${CS_LEDGER} pk /workspaceId, map=${CS_MAP} pk /userId)\n`);
@@ -173,6 +198,7 @@ async function main() {
   let ledgerWrites = 0;
   let ledgerExists = 0;
   let mapWrites = 0;
+  let pendingWrites = 0;
 
   for (const ws of workspaces) {
     const members = Array.isArray(ws.members) ? ws.members : [];
@@ -188,14 +214,21 @@ async function main() {
       else if (r === "exists") ledgerExists++;
       for (const m of members) {
         const oid = await resolveOid(m.uid);
-        if (!oid) {
-          unresolved.push({ workspaceId: teamId, uid: m.uid, email: m.email });
-          console.log(`   - member ${m.uid} (${m.email ?? "?"}) -> OID UNRESOLVED (skip map)`);
+        if (oid) {
+          console.log(`   - member ${m.uid} -> oid ${oid}  => map {id:${oid}, userId:${oid}, workspaceId:${teamId}}`);
+          const mr = await writeWorkspaceMap(oid, teamId);
+          if (mr === "written") mapWrites++;
           continue;
         }
-        console.log(`   - member ${m.uid} -> oid ${oid}  => map {id:${oid}, userId:${oid}, workspaceId:${teamId}}`);
-        const mr = await writeWorkspaceMap(oid, teamId);
-        if (mr === "written") mapWrites++;
+        const email = (m.email ?? "").trim().toLowerCase();
+        if (email) {
+          console.log(`   - member ${m.uid} (${email}) -> keine oid => pending {id:pending:${email}, workspaceId:${teamId}}`);
+          const pr = await writePendingInvite(email, teamId);
+          if (pr === "written") pendingWrites++;
+          continue;
+        }
+        unresolved.push({ workspaceId: teamId, uid: m.uid, email: m.email });
+        console.log(`   - member ${m.uid} -> WEDER oid NOCH E-Mail (echt unresolved, skip)`);
       }
     } else {
       solos++;
@@ -221,8 +254,8 @@ async function main() {
 
   console.log(`\n--- Zusammenfassung ---`);
   console.log(`Workspaces: ${workspaces.length} (Teams: ${teams}, Solo: ${solos})`);
-  console.log(`Ledger: ${ledgerWrites} geschrieben, ${ledgerExists} bereits vorhanden (idempotent) | Map: ${mapWrites} geschrieben`);
-  console.log(`Unaufgeloeste Mitglieder (kein entraOid, NICHT geschrieben): ${unresolved.length}`);
+  console.log(`Ledger: ${ledgerWrites} geschrieben, ${ledgerExists} bereits vorhanden (idempotent) | Map: ${mapWrites} | Pending: ${pendingWrites}`);
+  console.log(`Echt unaufgeloest (Team-Mitglied ohne oid UND ohne E-Mail, NICHT geschrieben): ${unresolved.length}`);
   for (const u of unresolved) console.log(`   ! ${u.uid} (${u.email ?? "?"}) in ws ${u.workspaceId}`);
 
   if (!APPLY) {
