@@ -31,11 +31,14 @@
  *   - credit-ledger (PK /workspaceId):
  *       balance-Doc:     { id: "balance-<wsId>", workspaceId, type:"balance", credits:int }
  *                        (id MUSS "balance-"+wsId sein; Feld heisst "credits")
- *       seed-tx-Doc:     { id: "tx-migrate-<wsId>", workspaceId, type:"transaction",
- *                          direction:"credit", amount:int, balanceBefore:0,
+ *       migrate-tx-Doc:  { id: "tx-migrate-<wsId>", workspaceId, type:"transaction",
+ *                          direction:"credit", amount:int, balanceBefore:int,
  *                          balanceAfter:int, createdAt, ttl:-1, kind:"migration", source:"coach" }
- *       -> beide je Partition in EINEM TransactionalBatch (spiegelt addCredits);
- *          deterministische ids => Create-409 = bereits migriert = idempotenter Re-Run.
+ *       -> ADDITIV (read-add-write wie addCredits): vorhandenen Saldo lesen, lokalen
+ *          addieren, Patch(incr)+ifMatch ODER Create-if-missing + migrate-tx in EINEM
+ *          TransactionalBatch. KEIN 0-Seed (sonst 409-skip gegen den Start-Grant ->
+ *          lokaler Saldo verloren). Idempotent ueber tx-migrate-<wsId> (Create-409 =
+ *          bereits migriert -> Batch rollt zurueck, kein Doppel-Add).
  *   - workspace-map (PK /userId):
  *       Mapping: { id:"<oid>", userId:"<oid>", workspaceId, tid:"<tid|null>", createdAt }
  *                (Solo: workspaceId=oid; Team: ein Doc je Mitglied, workspaceId=team-id)
@@ -111,45 +114,86 @@ async function resolveOid(uid) {
 }
 
 /**
- * Saldo-Doc + Seed-Transaktion je Workspace als EIN TransactionalBatch (PK = workspaceId).
- * Deterministische ids -> Create-409 = bereits migriert (idempotenter Re-Run).
- * Gibt "written" | "exists" | "dry" zurueck.
+ * ADDITIVER Reconcile (read-add-write wie addCredits) — KEIN 0-Seed!
+ *
+ * Grund: Der zentrale START_CREDITS-Grant legt das balance-<ws>-Doc beim ersten
+ * /resolve-workspace bereits an (z. B. 3). Ein Create-Seed mit balanceBefore:0
+ * wuerde 409-skippen und den lokalen Saldo VERLIEREN. Also: vorhandenen Saldo
+ * lesen, lokalen addieren, per Patch(incr)+ifMatch schreiben und eine
+ * Migrations-Tx anlegen. Idempotent ueber die deterministische tx-id
+ * `tx-migrate-<ws>` (Create-409 => bereits migriert -> ganzer Batch rollt zurueck,
+ * kein Doppel-Add). Fehlt das balance-Doc noch (kein Start-Grant), wird es mit
+ * dem lokalen Saldo angelegt. Gibt "written" | "exists" | "dry" | "zero".
  */
-async function writeLedgerBalance(workspaceId, credits) {
+async function migrateBalanceAdditive(workspaceId, localCredits) {
   if (!APPLY || !cs) return "dry";
-  const balanceDoc = {
-    id: `balance-${workspaceId}`,
-    workspaceId,
-    type: "balance",
-    credits,
-  };
-  const seedTx = {
-    id: `tx-migrate-${workspaceId}`,
-    workspaceId,
-    type: "transaction",
-    direction: "credit",
-    amount: credits,
-    balanceBefore: 0,
-    balanceAfter: credits,
-    createdAt: nowIso,
-    ttl: -1,
-    kind: "migration",
-    source: "coach",
-  };
+  if (!(localCredits > 0)) return "zero";
+
+  const ledger = cs.container(CS_LEDGER);
+  const migTxId = `tx-migrate-${workspaceId}`;
+
+  // Schneller Idempotenz-Check: Migrations-Tx schon da? -> nichts tun.
   try {
-    await cs.container(CS_LEDGER).items.batch(
-      [
-        { operationType: "Create", resourceBody: balanceDoc },
-        { operationType: "Create", resourceBody: seedTx },
-      ],
-      workspaceId
-    );
-    return "written";
+    await ledger.item(migTxId, workspaceId).read();
+    return "exists";
   } catch (e) {
-    // 409 (eines der Create-Docs existiert) -> bereits migriert, idempotent.
-    if (e?.code === 409 || e?.statusCode === 409) return "exists";
-    throw e;
+    if (!(e?.code === 404 || e?.statusCode === 404)) throw e;
   }
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    // Aktuellen Saldo (+ etag) lesen.
+    let before = 0;
+    let etag = null;
+    let exists = false;
+    try {
+      const { resource } = await ledger.item(`balance-${workspaceId}`, workspaceId).read();
+      if (resource) {
+        before = typeof resource.credits === "number" ? resource.credits : 0;
+        etag = resource._etag;
+        exists = true;
+      }
+    } catch (e) {
+      if (!(e?.code === 404 || e?.statusCode === 404)) throw e;
+    }
+
+    const after = before + localCredits;
+    const migTx = {
+      id: migTxId,
+      workspaceId,
+      type: "transaction",
+      direction: "credit",
+      amount: localCredits,
+      balanceBefore: before,
+      balanceAfter: after,
+      createdAt: nowIso,
+      ttl: -1,
+      kind: "migration",
+      source: "coach",
+    };
+
+    const balanceOp = exists
+      ? {
+          operationType: "Patch",
+          id: `balance-${workspaceId}`,
+          ifMatch: etag,
+          resourceBody: { operations: [{ op: "incr", path: "/credits", value: localCredits }] },
+        }
+      : {
+          operationType: "Create",
+          resourceBody: { id: `balance-${workspaceId}`, workspaceId, type: "balance", credits: after },
+        };
+
+    try {
+      await ledger.items.batch([balanceOp, { operationType: "Create", resourceBody: migTx }], workspaceId);
+      return "written";
+    } catch (e) {
+      const code = e?.code ?? e?.statusCode;
+      if (code === 412) continue; // balance-etag stale -> neu lesen & erneut
+      if (code === 409) return "exists"; // Migrations-Tx (oder balance) existiert -> bereits migriert
+      throw e;
+    }
+  }
+  throw new Error(`migrateBalanceAdditive: OCC nicht aufgeloest fuer ${workspaceId}`);
 }
 
 /** workspace-map-Doc je Mitglied (PK /userId). Idempotent via upsert (deterministische id=oid). */
@@ -208,8 +252,8 @@ async function main() {
     if (isTeam) {
       teams++;
       const teamId = ws.workspaceId; // team-id = lokale workspaceId (Spec)
-      console.log(`TEAM  ${teamId}  credits=${credits}  members=${members.length}`);
-      const r = await writeLedgerBalance(teamId, credits);
+      console.log(`TEAM  ${teamId}  credits=${credits}  members=${members.length}  => +${credits} ADDITIV auf balance-${teamId}`);
+      const r = await migrateBalanceAdditive(teamId, credits);
       if (r === "written") ledgerWrites++;
       else if (r === "exists") ledgerExists++;
       for (const m of members) {
@@ -243,19 +287,19 @@ async function main() {
         console.log(`SOLO  ${ws.workspaceId}  credits=${credits}  owner ${owner.uid} -> OID UNRESOLVED (skip)`);
         continue;
       }
-      console.log(`SOLO  ${ws.workspaceId}  credits=${credits}  owner -> oid ${oid}  => ledger+map unter ${oid}`);
-      const r = await writeLedgerBalance(oid, credits); // Solo-Saldo unter der OID (Spec)
+      console.log(`SOLO  ${ws.workspaceId}  credits=${credits}  owner -> oid ${oid}  => +${credits} ADDITIV auf balance-${oid}`);
+      // NUR additive Saldo-Migration: das Solo-Mapping oid->oid legt/besitzt der
+      // CreditService selbst beim /resolve-workspace (inkl. Start-Grant) — nicht ueberschreiben.
+      const r = await migrateBalanceAdditive(oid, credits);
       if (r === "written") ledgerWrites++;
       else if (r === "exists") ledgerExists++;
-      const mr = await writeWorkspaceMap(oid, oid);
-      if (mr === "written") mapWrites++;
     }
   }
 
   console.log(`\n--- Zusammenfassung ---`);
   console.log(`Workspaces: ${workspaces.length} (Teams: ${teams}, Solo: ${solos})`);
-  console.log(`Ledger: ${ledgerWrites} geschrieben, ${ledgerExists} bereits vorhanden (idempotent) | Map: ${mapWrites} | Pending: ${pendingWrites}`);
-  console.log(`Echt unaufgeloest (Team-Mitglied ohne oid UND ohne E-Mail, NICHT geschrieben): ${unresolved.length}`);
+  console.log(`Ledger (additiv): ${ledgerWrites} migriert, ${ledgerExists} bereits migriert (idempotent) | Map: ${mapWrites} | Pending: ${pendingWrites}`);
+  console.log(`Unaufgeloest (kein entraOid -> NICHT geschrieben; Solo: Re-Run nach Login | Team ohne E-Mail): ${unresolved.length}`);
   for (const u of unresolved) console.log(`   ! ${u.uid} (${u.email ?? "?"}) in ws ${u.workspaceId}`);
 
   if (!APPLY) {
