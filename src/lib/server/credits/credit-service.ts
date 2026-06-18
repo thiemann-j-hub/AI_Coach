@@ -1,23 +1,20 @@
 import "server-only";
 
-import { after } from "next/server";
 import { auth } from "@/auth";
 import { withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 
 /**
- * Client + Phase-1-Dual-Write-Schatten fuer den zentralen, app-uebergreifenden
- * CreditService (Strangler-Fig).
+ * Client + Cutover-Helfer fuer den zentralen, app-uebergreifenden CreditService.
  *
- * PHASE 1 (Dual-Write): Das ALTE Coach-Ledger bleibt die Quelle der Wahrheit.
- * Nach jeder erfolgreichen credit-veraendernden Operation wird DIESELBE Operation
- * zusaetzlich als Schatten an den CreditService geschickt — mit der via
- * GET /resolve-workspace ermittelten ZENTRALEN workspaceId (NICHT lokal aus
- * getWorkspaceIdForUser ableiten). Ein Fehler hier darf den User-Flow NIE
- * abbrechen: alles ist try/catch-gekapselt und wird nur geloggt. Lesen (Balance)
- * laeuft in Phase 1 weiter AUSSCHLIESSLICH gegen das alte System.
+ * CREDITS_CENTRAL=on (Read-/Write-Cutover): der zentrale Wallet ist die Quelle
+ * der Wahrheit. Coach LIEST den Saldo zentral (getBalance -> credits), VERBRAUCHT
+ * zentral (spend, transactionId wird je runId gespeichert) und ERSTATTET zentral
+ * (refund MIT spendTransactionId). Die workspaceId kommt IMMER aus
+ * GET /resolve-workspace (Membership greift dann serverseitig automatisch).
  *
- * Komplett inert, solange CREDITS_CENTRAL != "on".
+ * CREDITS_CENTRAL=off: komplett inert — Coach laeuft unveraendert auf dem lokalen
+ * Ledger (kein zentraler Call). Diese Helfer werden dann nirgends aufgerufen.
  */
 
 export function creditsCentralEnabled(): boolean {
@@ -110,81 +107,116 @@ export async function spend(
  * Erstattet Credits (Gegenstueck zu spend). FIXIERTER zentraler Contract:
  *   POST /workspaces/{id}/credits/refund
  *     Header: Authorization: Bearer <User-Token> ; Idempotency-Key (Pflicht)
- *     Body:   { amount: positive GANZE Zahl, description? }
- *     200 ->  { balance, transactionId, idempotent? }   (idempotent via Idempotency-Key)
+ *     Body:   { amount: positive GANZE Zahl, description, spendTransactionId }
+ *             spendTransactionId = transactionId aus der spend-Antwort (PFLICHT!).
+ *     200 ->  { balance, transactionId, idempotent? }
+ *     422 no_matching_charge / refund_exceeds_charge ; 400 missing_spend_reference ; 403
  */
 export async function refund(
   token: string,
   workspaceId: string,
-  opts: { amount: number; idempotencyKey: string; description?: string }
+  opts: { amount: number; idempotencyKey: string; description: string; spendTransactionId: string }
 ): Promise<{ balance?: number; transactionId?: string; idempotent?: boolean }> {
   return request(token, "POST", `/workspaces/${encodeURIComponent(workspaceId)}/credits/refund`, {
-    body: { amount: opts.amount, description: opts.description },
+    body: { amount: opts.amount, description: opts.description, spendTransactionId: opts.spendTransactionId },
     idempotencyKey: opts.idempotencyKey,
   });
 }
 
 // ---------------------------------------------------------------------------
-// Phase-1-Schatten-Schreiber (fire-and-forget, brechen NIE den User-Flow ab)
+// Cutover-Helfer (CREDITS_CENTRAL=on): direkt, awaited, gating. Token aus der
+// aktuellen Session (auth()); workspaceId IMMER aus /resolve-workspace.
 // ---------------------------------------------------------------------------
 
-export interface ShadowOp {
-  amount: number;
-  idempotencyKey: string;
-  /** Klartext-Vermerk: bei spend als `reason`, bei refund als `description` gesendet. */
-  note?: string;
+async function accessToken(): Promise<string | null> {
+  try {
+    return (await auth())?.accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type CentralReserveResult =
+  | { ok: true; workspaceId: string; transactionId?: string; balance?: number }
+  | { ok: false; reason: "insufficient"; workspaceId: string }
+  | { ok: false; reason: "no_token" | "error"; status?: number };
+
+/**
+ * ON-Pfad-Reservierung: resolve-workspace + zentral spend(1). Direkt (kein
+ * Schatten) und blockierend — der Verbrauch ist der Gate. Gibt bei 402 die
+ * Paywall-Info (insufficient) zurueck, bei fehlendem Token/Fehler einen
+ * fail-closed-Marker (kein Gratis-Run bei Stoerung des zentralen Dienstes).
+ * Die zurueckgegebene transactionId MUSS je runId gespeichert werden (Refund-Bindung).
+ */
+export async function centralReserve(opts: { runId: string }): Promise<CentralReserveResult> {
+  const token = await accessToken();
+  if (!token) return { ok: false, reason: "no_token" };
+
+  let workspaceId: string;
+  try {
+    ({ workspaceId } = await resolveWorkspace(token));
+  } catch (e) {
+    logger.apiError("credit-service/centralReserve/resolve", e, { runId: opts.runId });
+    return { ok: false, reason: "error", status: e instanceof CreditServiceError ? e.status : undefined };
+  }
+
+  try {
+    const r = await spend(token, workspaceId, {
+      amount: 1,
+      idempotencyKey: `spend:${opts.runId}`,
+      description: `coach:consume:${opts.runId}`,
+    });
+    return { ok: true, workspaceId, transactionId: r.transactionId, balance: r.balance };
+  } catch (e) {
+    if (e instanceof CreditServiceError && e.status === 402) {
+      return { ok: false, reason: "insufficient", workspaceId };
+    }
+    logger.apiError("credit-service/centralReserve/spend", e, { runId: opts.runId });
+    return { ok: false, reason: "error", status: e instanceof CreditServiceError ? e.status : undefined };
+  }
 }
 
 /**
- * Erfasst das Access-Token JETZT (im Request-Scope, garantiert verfuegbar) und
- * fuehrt resolve + spend/refund NACH der Antwort aus (after()), damit der Schatten
- * keine Latenz auf den User-Pfad legt. Faellt after() mangels Request-Scope aus,
- * laeuft es als detached Promise (Coach = persistenter App-Service-Node-Prozess).
+ * ON-Pfad-Erstattung: resolve-workspace + zentral refund MIT spendTransactionId
+ * (Pflicht). Fail-soft fuer den HTTP-Flow (gibt ok:false zurueck statt zu werfen),
+ * der Aufrufer entscheidet ueber refundPending/Retry.
  */
-async function scheduleShadow(kind: "spend" | "refund", op: ShadowOp): Promise<void> {
-  if (!creditsCentralEnabled()) return;
-
-  let token: string | null = null;
-  try {
-    token = (await auth())?.accessToken ?? null;
-  } catch {
-    token = null;
+export async function centralRefund(opts: {
+  amount: number;
+  description: string;
+  spendTransactionId: string;
+  idempotencyKey: string;
+}): Promise<{ ok: boolean }> {
+  const token = await accessToken();
+  if (!token) {
+    logger.apiError("credit-service/centralRefund", new Error("no session token"), { key: opts.idempotencyKey });
+    return { ok: false };
   }
-
-  const run = async () => {
-    if (!token) {
-      // Kein User-Token (sollte an den Coach-Refund/Spend-Stellen nie passieren,
-      // da dort immer eine Session vorliegt) -> Schatten uebersprungen, geloggt.
-      logger.api("credit-service", "shadow-skip", { reason: "no_token", kind, key: op.idempotencyKey });
-      return;
-    }
-    try {
-      const { workspaceId } = await resolveWorkspace(token);
-      if (kind === "spend") {
-        await spend(token, workspaceId, { amount: op.amount, idempotencyKey: op.idempotencyKey, description: op.note });
-      } else {
-        await refund(token, workspaceId, { amount: op.amount, idempotencyKey: op.idempotencyKey, description: op.note });
-      }
-      logger.api("credit-service", `shadow-${kind}-ok`, { workspaceId, key: op.idempotencyKey, amount: op.amount });
-    } catch (e) {
-      // 402/401/5xx/Timeout: NUR loggen — das alte System ist die Wahrheit.
-      logger.apiError(`credit-service/shadow-${kind}`, e, { key: op.idempotencyKey, amount: op.amount });
-    }
-  };
-
   try {
-    after(run);
-  } catch {
-    void run().catch(() => {});
+    const { workspaceId } = await resolveWorkspace(token);
+    await refund(token, workspaceId, {
+      amount: opts.amount,
+      description: opts.description,
+      spendTransactionId: opts.spendTransactionId,
+      idempotencyKey: opts.idempotencyKey,
+    });
+    return { ok: true };
+  } catch (e) {
+    logger.apiError("credit-service/centralRefund", e, { key: opts.idempotencyKey });
+    return { ok: false };
   }
 }
 
-/** Schatten: Credit-Verbrauch (an reserve gehaengt — dort zieht das lokale Ledger). */
-export async function shadowSpend(op: ShadowOp): Promise<void> {
-  await scheduleShadow("spend", op);
-}
-
-/** Schatten: Credit-Erstattung (an jeder lokalen refundCredit-Stelle). */
-export async function shadowRefund(op: ShadowOp): Promise<void> {
-  await scheduleShadow("refund", op);
+/** ON-Pfad-Saldo: resolve-workspace + getBalance -> { workspaceId, credits }. null bei Stoerung. */
+export async function centralBalance(): Promise<{ workspaceId: string; credits: number } | null> {
+  const token = await accessToken();
+  if (!token) return null;
+  try {
+    const { workspaceId } = await resolveWorkspace(token);
+    const { credits } = await getBalance(token, workspaceId);
+    return { workspaceId, credits };
+  } catch (e) {
+    logger.apiError("credit-service/centralBalance", e);
+    return null;
+  }
 }

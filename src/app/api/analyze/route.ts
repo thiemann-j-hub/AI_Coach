@@ -12,7 +12,7 @@ import {
   upsertSession,
 } from "@/lib/server/runs-store";
 import {
-  paymentsEnabled,
+  creditGateEnabled,
   reserveEntitlement,
   settleEntitlement,
   compensateEntitlement,
@@ -132,8 +132,9 @@ export async function POST(req: NextRequest) {
     if (!budget.allowed && budget.response) return budget.response;
 
     // Business-Gate (Credits) — Point-of-Sale, VOR dem teuren Gemini-Call.
-    // Flag-gated: bei PAYMENTS_ENABLED=off unveraendertes Verhalten.
-    if (paymentsEnabled()) {
+    // Greift bei CREDITS_CENTRAL=on (zentral verbrauchen) ODER PAYMENTS_ENABLED=on
+    // (lokales Ledger). Bei beiden off unveraendertes Verhalten (Free-Run).
+    if (creditGateEnabled()) {
       const ent = await reserveEntitlement({
         uid: authResult.uid,
         email: authResult.email,
@@ -273,6 +274,8 @@ export async function POST(req: NextRequest) {
             runId,
             uid: authResult.uid,
             workspaceId: grant.workspaceId,
+            // Zentraler Spend-Anker fuer den spaeteren Refund (CREDITS_CENTRAL-Pfad).
+            centralSpendTxId: grant.centralTxId ?? null,
             conversationType: d.conversationType,
             conversationSubType: d.conversationSubType ?? null,
             goal: d.goal ?? null,

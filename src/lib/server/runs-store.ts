@@ -50,6 +50,9 @@ export interface RunDoc {
   refundPending?: boolean;
   /** Workspace, dem dieser Run zugeordnet ist (fuer den Refund). */
   workspaceId?: string;
+  /** transactionId der zentralen spend-Buchung (CREDITS_CENTRAL): Pflicht-Anker
+   *  fuer den zentralen Refund beim Loeschen. Nur gesetzt, wenn zentral verbraucht. */
+  centralSpendTxId?: string | null;
 }
 
 /**
@@ -109,6 +112,7 @@ export async function persistShadowRun(args: {
   runId: string;
   uid: string;
   workspaceId: string;
+  centralSpendTxId?: string | null;
   conversationType: string;
   conversationSubType?: string | null;
   goal?: string | null;
@@ -129,6 +133,7 @@ export async function persistShadowRun(args: {
     sessionId: args.sessionId,
     uid: args.uid,
     workspaceId: args.workspaceId,
+    centralSpendTxId: args.centralSpendTxId ?? null,
     createdAt: new Date().toISOString(),
     conversationType: args.conversationType,
     conversationSubType: args.conversationSubType ?? null,

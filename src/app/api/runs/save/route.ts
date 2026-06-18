@@ -263,6 +263,9 @@ export async function POST(req: NextRequest) {
         sessionId,
         uid,
         workspaceId: runWorkspaceId,
+        // Zentralen Spend-Anker des (Schatten-)Runs bewahren -> Delete-Refund
+        // kann zentral mit der spendTransactionId erstatten.
+        centralSpendTxId: existingRun?.centralSpendTxId ?? null,
 
         conversationType: request.conversationType,
         conversationSubType: request.conversationSubType ?? null,

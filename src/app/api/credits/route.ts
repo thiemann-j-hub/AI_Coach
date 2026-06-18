@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { paymentsEnabled } from "@/lib/server/credits/entitlement";
+import { creditsCentralEnabled, centralBalance } from "@/lib/server/credits/credit-service";
 import { resolveWorkspace } from "@/lib/server/credits/workspace-store";
 import { getAvailableCredits } from "@/lib/server/credits/ledger";
 import { CREDIT_PACKAGES } from "@/lib/server/credits/types";
@@ -21,8 +22,27 @@ export async function GET(req: NextRequest) {
   const rlResponse = checkRateLimit(rlKey, 30, 60_000);
   if (rlResponse) return rlResponse;
 
-  const enabled = paymentsEnabled();
   const packages = Object.entries(CREDIT_PACKAGES).map(([id, p]) => ({ id, credits: p.credits }));
+  const topUpUrl = process.env.CREDIT_TOPUP_URL || undefined;
+
+  // CREDITS_CENTRAL=on: Saldo zentral lesen (getBalance -> credits). Kauf laeuft
+  // zentral (Website) -> der Client schickt "Buy" an topUpUrl statt /api/checkout.
+  if (creditsCentralEnabled()) {
+    const c = await centralBalance();
+    if (!c) {
+      // Zentraler Dienst gestoert -> 0 + degraded-Flag (Client kann erneut laden).
+      return NextResponse.json(
+        { ok: true, enabled: true, central: true, degraded: true, balance: 0, workspaceId: uid, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { status: 200 }
+      );
+    }
+    return NextResponse.json(
+      { ok: true, enabled: true, central: true, balance: c.credits, workspaceId: c.workspaceId, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+      { status: 200 }
+    );
+  }
+
+  const enabled = paymentsEnabled();
 
   if (!enabled) {
     return NextResponse.json({ ok: true, enabled: false, balance: 0, workspaceId: uid, packages }, { status: 200 });

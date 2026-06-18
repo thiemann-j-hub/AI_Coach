@@ -10,7 +10,7 @@ import {
 } from "@/lib/server/runs-store";
 import { paymentsEnabled } from "@/lib/server/credits/entitlement";
 import { getWorkspaceDoc, refundCredit } from "@/lib/server/credits/ledger";
-import { shadowRefund } from "@/lib/server/credits/credit-service";
+import { creditsCentralEnabled, centralRefund } from "@/lib/server/credits/credit-service";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -56,9 +56,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Run not found", code: "NOT_FOUND" }, { status: 404 });
     }
 
-    if (paymentsEnabled()) {
-      const ageMs = Date.now() - new Date(run.createdAt).getTime();
-      const withinWindow = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+    const ageMs = Date.now() - new Date(run.createdAt).getTime();
+    const withinWindow = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+
+    if (creditsCentralEnabled()) {
+      // ZENTRALER Pfad: Refund gegen den zentralen Wallet MIT der gespeicherten
+      // spendTransactionId (Pflicht). workspaceId/Membership loest der CreditService
+      // selbst auf (resolve-workspace + 403). Ohne txId kein zentraler Refund.
+      if (withinWindow && run.centralSpendTxId) {
+        await markRunDeleted(sessionId, runId, true);
+        const r = await centralRefund({
+          amount: 1,
+          description: "coach:refund_user_delete",
+          spendTransactionId: run.centralSpendTxId,
+          idempotencyKey: `refund:${runId}`,
+        });
+        if (r.ok) {
+          await clearRunRefundPending(sessionId, runId);
+          willRefund = true;
+        } else {
+          // refundPending bleibt true (Backstop/Retry); der Soft-Delete + 200 bleiben.
+          logger.apiError("/api/runs/delete/central-refund", new Error("central refund failed"), { uid, sessionId, runId });
+        }
+      } else if (withinWindow && !run.centralSpendTxId) {
+        logger.api("/api/runs/delete", "central-refund-skipped-no-txid", { uid, sessionId, runId });
+      }
+    } else if (paymentsEnabled()) {
       const workspaceId = run.workspaceId ?? run.uid;
 
       // Mitgliedschafts-Revalidierung: nur erstatten, wenn der Loeschende AKTUELL
@@ -82,9 +105,6 @@ export async function POST(req: NextRequest) {
         try {
           await refundCredit({ workspaceId, runId, reason: "refund_user_delete" });
           await clearRunRefundPending(sessionId, runId);
-          // Phase-1-Dual-Write: derselbe Refund als Schatten an den zentralen
-          // CreditService-Refund-Endpunkt (inert bei CREDITS_CENTRAL=off; fail-soft).
-          await shadowRefund({ amount: 1, idempotencyKey: `refund:${runId}`, note: "coach:refund_user_delete" });
         } catch (e) {
           // Inline fehlgeschlagen -> refundPending bleibt true -> v1-Sweep holt nach.
           logger.apiError("/api/runs/delete/refund", e);

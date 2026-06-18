@@ -13,6 +13,9 @@ type CreditsState = {
   balance: number;
   workspaceId: string;
   packages: Pkg[];
+  /** CREDITS_CENTRAL: Saldo kommt zentral, Kauf laeuft ueber die Website (topUpUrl). */
+  central?: boolean;
+  topUpUrl?: string | null;
 };
 type Invoice = {
   invoiceNumber: string;
@@ -52,7 +55,14 @@ export default function CreditsClient() {
         ]);
         const cj = await credRes.json();
         if (active && cj?.ok) {
-          setState({ enabled: cj.enabled, balance: cj.balance, workspaceId: cj.workspaceId, packages: cj.packages });
+          setState({
+            enabled: cj.enabled,
+            balance: cj.balance,
+            workspaceId: cj.workspaceId,
+            packages: cj.packages,
+            central: cj.central === true,
+            topUpUrl: cj.topUpUrl ?? null,
+          });
         }
         const ij = await invRes.json().catch(() => null);
         if (active && ij?.ok && Array.isArray(ij.invoices)) {
@@ -87,6 +97,15 @@ export default function CreditsClient() {
 
   async function buy(packageId: string) {
     if (!state) return;
+    // CREDITS_CENTRAL: Kauf laeuft zentral ueber die Website -> dorthin leiten.
+    if (state.central) {
+      if (state.topUpUrl) {
+        window.location.href = state.topUpUrl;
+      } else {
+        setError(de ? 'Kauf erfolgt auf der Website.' : 'Purchase happens on the website.');
+      }
+      return;
+    }
     setBuying(packageId);
     setError(null);
     try {
