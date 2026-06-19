@@ -38,7 +38,7 @@
     "loginFailed": "Anmeldung fehlgeschlagen",
     "genericError": "Etwas ist schiefgelaufen.",
     "signInWithMicrosoft": "Mit Microsoft anmelden",
-    "microsoftHint": "Funktioniert mit persönlichen Microsoft-Konten (z.B. @outlook.de) und Arbeitskonten."
+    "microsoftHint": "Funktioniert mit privaten Microsoft-Konten (z.B. @outlook.de) und Arbeitskonten."
   },
   "analyze": {
     "title": "Analyse",

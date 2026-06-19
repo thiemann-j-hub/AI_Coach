@@ -34,7 +34,12 @@ export default async function RootLayout({
   return (
     <html
       lang={localeBcp47[locale]}
-      className={`${sans.variable} ${mono.variable}`}
+      // dark-first: die .dark-Klasse serverseitig setzen, damit KEINE helle
+      // Erstdarstellung (FOUC) entsteht, bevor next-themes clientseitig greift —
+      // betraf v.a. den ausgeloggten Login als ersten Kalt-Load. next-themes
+      // (defaultTheme=dark) haelt dunkel bzw. wechselt auf eine gespeicherte
+      // Light-Praeferenz; suppressHydrationWarning deckt den Klassen-Abgleich.
+      className={`${sans.variable} ${mono.variable} dark`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300">

@@ -39,6 +39,23 @@ function LoginScreen() {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
 
+  // App-Texte (Du-Form, Website-konform). DE/EN inline wie die Feature-Cards;
+  // andere Locales fallen auf EN zurueck (konsistent mit dem bestehenden Muster).
+  const tagline = de
+    ? "KI-Analyse für bessere Mitarbeitergespräche"
+    : "AI analysis for better employee conversations";
+  const description = de
+    ? "Lade ein Gesprächs-Transkript hoch und erhalte in Minuten eine strukturierte Analyse mit Kompetenz-Scoring und konkretem, umsetzbarem Feedback."
+    : "Upload a conversation transcript and get a structured analysis with competency scoring and concrete, actionable feedback in minutes.";
+
+  // Legal-Links → zentrale Website (neuer Tab, App bleibt offen).
+  const legalLinks: Array<[string, string]> = [
+    [de ? "Datenschutz" : "Privacy", "datenschutz"],
+    [de ? "AGB" : "Terms", "agb"],
+    ["AVV", "avv"],
+    [de ? "Impressum" : "Imprint", "impressum"],
+  ];
+
   const features = [
     {
       Icon: MessagesSquare,
@@ -102,8 +119,9 @@ function LoginScreen() {
           <span className="text-foreground">Pulscraft</span>{" "}
           <span className="text-primary">AI</span>
         </h1>
-        <p className="mt-2 text-lg font-medium text-gradient">Gesprächs-Coach</p>
-        <p className="mt-4 max-w-xl text-muted-foreground">{t.auth.authDescription}</p>
+        <p className="mt-2 text-sm font-medium text-muted-foreground">Gesprächs-Coach</p>
+        <p className="mt-3 text-lg font-medium text-gradient">{tagline}</p>
+        <p className="mt-4 max-w-xl text-muted-foreground">{description}</p>
 
         <button
           type="button"
@@ -135,8 +153,26 @@ function LoginScreen() {
         </div>
       </main>
 
-      <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Pulscraft AI · Coach
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+        <p>
+          {de
+            ? "100 % EU-Hosting · DSGVO-konform · Kein Training mit deinen Daten."
+            : "100% EU hosting · GDPR-compliant · No training on your data."}
+        </p>
+        <nav className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          {legalLinks.map(([label, slug]) => (
+            <a
+              key={slug}
+              href={`https://pulscraft-ai.azurewebsites.net/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <p className="mt-3">© {new Date().getFullYear()} Pulscraft AI · Coach</p>
       </footer>
     </div>
   );
