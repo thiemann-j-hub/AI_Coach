@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { withTimeout, timeoutMs, TimeoutError } from "./with-timeout";
+import { withTimeout, withRetry, timeoutMs, TimeoutError } from "./with-timeout";
 
 describe("withTimeout", () => {
   it("resolves with the value when the promise wins the race", async () => {
@@ -40,5 +40,35 @@ describe("timeoutMs", () => {
     process.env.__TEST_TO = "nope";
     expect(timeoutMs("__TEST_TO", 999)).toBe(999);
     delete process.env.__TEST_TO;
+  });
+});
+
+describe("withRetry", () => {
+  it("returns immediately on first success (factory called once)", async () => {
+    let calls = 0;
+    const r = await withRetry(() => { calls++; return Promise.resolve("ok"); }, { ms: 1000, label: "x", retries: 1 });
+    expect(r).toBe("ok");
+    expect(calls).toBe(1);
+  });
+
+  it("retries a transient failure then succeeds", async () => {
+    let calls = 0;
+    const r = await withRetry(
+      () => {
+        calls++;
+        return calls === 1 ? Promise.reject(new Error("cold")) : Promise.resolve("warm");
+      },
+      { ms: 1000, label: "x", retries: 1 }
+    );
+    expect(r).toBe("warm");
+    expect(calls).toBe(2);
+  });
+
+  it("throws the last error after exhausting retries", async () => {
+    let calls = 0;
+    await expect(
+      withRetry(() => { calls++; return Promise.reject(new Error("always")); }, { ms: 1000, label: "x", retries: 1 })
+    ).rejects.toThrow("always");
+    expect(calls).toBe(2); // initial + 1 retry
   });
 });

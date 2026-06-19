@@ -19,7 +19,7 @@ import {
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
 import { runQualityChecks } from "@/lib/server/quality-checks";
-import { withTimeout, timeoutMs } from "@/lib/with-timeout";
+import { withTimeout, withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -150,19 +150,21 @@ export async function POST(req: NextRequest) {
     // 1+2) Feedback (RAG) und Kompetenz-Scoring parallel — beide hängen nur
     // vom Transkript ab; sequenziell verdoppelte das nur die Wartezeit.
     const [baseSettled, compSettled] = await Promise.allSettled([
-      withTimeout(
-        generateDynamicFeedback({
-          conversationType: d.conversationType,
-          conversationSubType: d.conversationSubType ?? undefined,
-          goal: d.goal ?? undefined,
-          transcriptText: d.transcriptText,
-          lang: d.lang,
-          jurisdiction: d.jurisdiction,
-          leaderLabel: d.leaderLabel ?? undefined,
-          employeeLabel: d.employeeLabel ?? undefined,
-        } as any),
-        LLM_TIMEOUT_MS,
-        "gemini-feedback"
+      // Pflicht-Pfad: 1 Retry heilt transiente Kaltstart-Fehler/Timeouts des
+      // Basis-LLM (sonst 500 beim 1. Request, ok beim 2.). RAG degradiert intern.
+      withRetry(
+        () =>
+          generateDynamicFeedback({
+            conversationType: d.conversationType,
+            conversationSubType: d.conversationSubType ?? undefined,
+            goal: d.goal ?? undefined,
+            transcriptText: d.transcriptText,
+            lang: d.lang,
+            jurisdiction: d.jurisdiction,
+            leaderLabel: d.leaderLabel ?? undefined,
+            employeeLabel: d.employeeLabel ?? undefined,
+          } as any),
+        { ms: LLM_TIMEOUT_MS, label: "gemini-feedback", retries: 1 }
       ),
       withTimeout(
         scoreCompetencies({

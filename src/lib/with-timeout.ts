@@ -37,3 +37,25 @@ export function withTimeout<T>(promise: Promise<T>, ms: number, label: string): 
     );
   });
 }
+
+/**
+ * withTimeout + begrenzter Retry. `factory` erzeugt je Versuch einen FRISCHEN
+ * Call (wichtig: ein bereits rejectetes Promise lässt sich nicht erneut awaiten).
+ * Heilt transiente Fehler (z. B. Kaltstart-Timeout des LLM beim 1. Request) —
+ * der teure Call wird nur bei tatsaechlichem Fehlschlag wiederholt.
+ */
+export async function withRetry<T>(
+  factory: () => Promise<T>,
+  opts: { ms: number; label: string; retries?: number }
+): Promise<T> {
+  const retries = opts.retries ?? 1;
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await withTimeout(factory(), opts.ms, opts.label);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}

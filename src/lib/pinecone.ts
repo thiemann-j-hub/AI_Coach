@@ -10,8 +10,14 @@ function mustEnv(key: string): string {
   return v;
 }
 
+/** Entfernt umschliessende Anfuehrungszeichen — schuetzt vor verquoteten ENV-Werten
+ *  (z. B. PINECONE_NAMESPACE='"cards_v3"'), die sonst Host/URL/Key zerstoeren. */
+function stripQuotes(s: string): string {
+  return s.trim().replace(/^["']+|["']+$/g, "").trim();
+}
+
 function cleanHost(host: string): string {
-  return host.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  return stripQuotes(host).replace(/^https?:\/\//i, "").replace(/\/+$/, "");
 }
 
 function isObject(v: unknown): v is Record<string, any> {
@@ -30,10 +36,10 @@ function coerceTopK(v: unknown, fallback = 5): number {
  * damit Route-try/catch sauber JSON-Errors liefern kann.
  */
 function getPineconeConfig() {
-  const apiKey = mustEnv("PINECONE_API_KEY");
+  const apiKey = stripQuotes(mustEnv("PINECONE_API_KEY"));
   const indexHost = cleanHost(mustEnv("PINECONE_INDEX_HOST"));
   const namespace =
-    (process.env.PINECONE_NAMESPACE ?? "__default__").trim() || "__default__";
+    stripQuotes(process.env.PINECONE_NAMESPACE ?? "__default__") || "__default__";
   return { apiKey, indexHost, namespace };
 }
 
