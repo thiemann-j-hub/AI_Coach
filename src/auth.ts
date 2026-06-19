@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
+import { OAUTH_SCOPE } from "@/lib/credit-scope";
 
 /**
  * NextAuth v5 — Microsoft Entra ID (OIDC).
@@ -11,59 +12,20 @@ import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
  * Firebase-Helfer).
  */
 /**
- * Scope fuer den zentralen, app-uebergreifenden CreditService (Bearer-Calls).
- * Aus ENV ueberschreibbar; Default = die gemeinsame Entra-App.
+ * Scope (Login = Refresh) kommt aus @/lib/credit-scope — DIESELBE Quelle, die
+ * der Token-Store fuer den Refresh nutzt. Sonst koennte der Refresh ein Token
+ * mit falscher Audience holen (Blueprint §2/§4).
  */
-const CREDIT_SERVICE_SCOPE =
-  process.env.CREDIT_SERVICE_SCOPE ??
-  "api://7ecf46aa-f47d-4491-a8ce-fe92c368e6f2/access_as_user";
-
-const OAUTH_SCOPE = `openid profile email offline_access ${CREDIT_SERVICE_SCOPE}`;
-const ENTRA_TENANT = process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID ?? "common";
 
 /**
- * Holt mit dem refresh_token ein frisches access_token (Entra v2). Bei Erfolg
- * werden access_token + Ablauf (und ggf. das rotierte refresh_token) im JWT
- * aktualisiert; bei Fehler markiert token.error="RefreshFailed" -> Re-Login.
- * Das Access-Token lebt ~1h, die Auth.js-Session 30 Tage — ohne diese Rotation
- * reicht der Server ein abgelaufenes Token an den CreditService weiter (401).
+ * Token-Rotation laeuft NICHT mehr im JWT/Cookie (das war auf next-auth
+ * 5.0.0-beta.31 latent kaputt: der no-args `auth()`-Pfad verwirft das Set-Cookie
+ * mit dem rotierten Token → RT0 rotiert nie → Entra-Reuse-Detection widerruft die
+ * Familie → Wallet faellt ~1 h nach dem ersten Refresh still aus). Stattdessen
+ * seedet der Login einen SERVER-seitigen Token-Store (entra-token-store.ts), aus
+ * dem der Wallet-/Spend-Pfad das (bei Bedarf refreshte) Token per getValid(oid)
+ * zieht. Siehe Blueprint CREDIT-TOKEN-STORE §0/§2.
  */
-async function refreshAccessToken(token: any): Promise<any> {
-  try {
-    if (!token?.refreshToken) throw new Error("no refresh_token in session");
-    const res = await fetch(
-      `https://login.microsoftonline.com/${ENTRA_TENANT}/oauth2/v2.0/token`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          grant_type: "refresh_token",
-          refresh_token: String(token.refreshToken),
-          client_id: process.env.AUTH_MICROSOFT_ENTRA_ID_ID ?? "",
-          client_secret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET ?? "",
-          scope: OAUTH_SCOPE,
-        }),
-        cache: "no-store",
-      }
-    );
-    const data: any = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(`refresh ${res.status}: ${JSON.stringify(data).slice(0, 200)}`);
-    }
-    return {
-      ...token,
-      accessToken: data.access_token,
-      accessTokenExpires: Date.now() + Number(data.expires_in ?? 3600) * 1000,
-      // Entra rotiert das refresh_token — das neue uebernehmen, sonst altes behalten.
-      refreshToken: data.refresh_token ?? token.refreshToken,
-      error: undefined,
-    };
-  } catch (e) {
-    console.error("[auth] token refresh failed:", e);
-    return { ...token, error: "RefreshFailed" };
-  }
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
@@ -74,58 +36,54 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       issuer: `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID ?? "common"}/v2.0`,
       // openid/profile/email = OIDC-Basis; offline_access = Refresh-Token;
       // access_as_user = delegierter Zugriff auf den zentralen CreditService.
+      // OAUTH_SCOPE = geteilte Quelle (identisch zum Refresh im Token-Store).
       authorization: {
         params: {
-          scope: `openid profile email offline_access ${CREDIT_SERVICE_SCOPE}`,
+          scope: OAUTH_SCOPE,
         },
       },
     }),
   ],
   callbacks: {
     async jwt({ token, profile, account }) {
-      // (1) Erstanmeldung: account + profile vorhanden -> alles erfassen.
+      // Nur bei der Erstanmeldung (OAuth-Callback) ist `account` gesetzt. Reihenfolge
+      // wichtig: oid ZUERST festhalten, dann den Token-Store seeden (Blueprint §2).
       if (account) {
         // Stabile lokale User-ID: OIDC sub (ersetzt Firebase-uid; bleibt die
         // lokale Identitaet, das alte Coach-Datenmodell schluesselt darauf).
         if (profile?.sub) token.uid = profile.sub;
-        // Entra Object-ID: app-uebergreifend stabil -> CreditService-Mapping.
+        // Entra Object-ID: app-uebergreifend stabil -> CreditService-Store-Key.
         const oid = (profile as { oid?: string } | undefined)?.oid;
         if (oid) token.oid = oid;
-        // Access-/Refresh-Token + Ablauf fuer die CreditService-Bearer-Calls.
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.accessTokenExpires = account.expires_at
-          ? Number(account.expires_at) * 1000
-          : Date.now() + Number(account.expires_in ?? 3600) * 1000;
-        token.error = undefined;
-        return token;
-      }
 
-      // (2) Folge-Requests: noch gueltig (mit 60s-Puffer)? -> unveraendert.
-      if (
-        typeof token.accessTokenExpires === "number" &&
-        Date.now() < token.accessTokenExpires - 60_000
-      ) {
-        return token;
+        // SERVER-Store seeden (kein Token mehr im JWT/Cookie). Best-effort:
+        // ein Store-Fehler darf den Login NICHT brechen. Dynamic import haelt
+        // Cosmos aus dem Modulgraph, bis tatsaechlich ein Login passiert.
+        if (account.access_token && token.oid) {
+          try {
+            const { put } = await import("@/lib/server/credits/entra-token-store");
+            await put(String(token.oid), {
+              accessToken: account.access_token,
+              refreshToken: account.refresh_token ?? "",
+              accessTokenExpires: account.expires_at
+                ? Number(account.expires_at) * 1000
+                : Date.now() + 3600_000,
+            });
+          } catch (e) {
+            console.error("[credits] initial token write failed:", e);
+          }
+        }
       }
-
-      // (3) Abgelaufen (oder ohne Ablaufmarke) -> per refresh_token erneuern.
-      return await refreshAccessToken(token);
+      return token;
     },
     session({ session, token }) {
+      // NUR Identitaet in die Session — NIEMALS access/refresh_token. Den Token
+      // zieht der Server-Pfad ausschliesslich per getValid(oid) aus dem Store.
       if (session.user && token.uid) {
         (session.user as { id?: string }).id = String(token.uid);
       }
       if (session.user && token.oid) {
         (session.user as { oid?: string }).oid = String(token.oid);
-      }
-      if (token.accessToken) {
-        (session as { accessToken?: string }).accessToken = String(token.accessToken);
-      }
-      // Refresh-Fehler an den Client/Server-Pfad durchreichen -> Re-Login statt
-      // stiller „0 Credits".
-      if (token.error) {
-        (session as { error?: string }).error = String(token.error);
       }
       return session;
     },

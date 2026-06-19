@@ -17,14 +17,9 @@ export async function verifyAuthToken(_req: NextRequest | Request) {
   return {
     uid,
     email: session?.user?.email ?? null,
-    // App-uebergreifend stabile Entra Object-ID + Access-Token fuer den
-    // zentralen CreditService (Dual-Write). Optional — alte Sessions ohne
-    // diese Felder bleiben gueltig (Vertragstreue).
+    // App-uebergreifend stabile Entra Object-ID = Schluessel in den Server-Token-Store
+    // (entra-token-store). Das Access-Token liegt NICHT mehr in der Session.
     oid: (session?.user as { oid?: string } | undefined)?.oid ?? null,
-    accessToken: (session as { accessToken?: string } | undefined)?.accessToken ?? null,
-    // "RefreshFailed", wenn der jwt-Callback das Token nicht erneuern konnte ->
-    // der Aufrufer zeigt „Sitzung abgelaufen" statt still „0 Credits".
-    sessionError: (session as { error?: string } | undefined)?.error ?? null,
   };
 }
 
@@ -52,8 +47,6 @@ export async function requireAuth(req: NextRequest | Request) {
     uid: decoded.uid,
     email: decoded.email,
     oid: decoded.oid,
-    accessToken: decoded.accessToken,
-    sessionError: decoded.sessionError,
     decoded,
   };
 }

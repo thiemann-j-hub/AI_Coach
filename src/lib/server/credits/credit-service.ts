@@ -3,6 +3,7 @@ import "server-only";
 import { auth } from "@/auth";
 import { withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
+import { getValid, type CreditTokenResult } from "./entra-token-store";
 
 /**
  * Client + Cutover-Helfer fuer den zentralen, app-uebergreifenden CreditService.
@@ -124,21 +125,25 @@ export async function refund(
 }
 
 // ---------------------------------------------------------------------------
-// Cutover-Helfer (CREDITS_CENTRAL=on): direkt, awaited, gating. Token aus der
-// aktuellen Session (auth()); workspaceId IMMER aus /resolve-workspace.
+// Cutover-Helfer (CREDITS_CENTRAL=on): direkt, awaited, gating. Token kommt
+// AUSSCHLIESSLICH aus dem Server-Store (getValid(oid), refresht bei Bedarf) —
+// nie aus der Session; workspaceId IMMER aus /resolve-workspace.
 // ---------------------------------------------------------------------------
 
-async function accessToken(): Promise<string | null> {
+/**
+ * Holt das (ggf. refreshte) CreditService-Token aus dem Server-Store. Die oid
+ * stammt IMMER aus der verifizierten Session (kein Client-Input → kein IDOR).
+ * Kein oid → no-token (inert); refresh-failed → Re-Login (expired). Siehe §5.
+ */
+async function getCreditToken(): Promise<CreditTokenResult> {
+  let oid: string | undefined;
   try {
-    // auth() triggert den jwt-Callback -> ein abgelaufenes Token wird hier per
-    // refresh_token erneuert. Schlaegt der Refresh fehl (error="RefreshFailed"),
-    // KEIN toter Bearer mehr weiterreichen -> fail-closed (Re-Login statt 401).
-    const s = await auth();
-    if (!s || s.error === "RefreshFailed") return null;
-    return s.accessToken ?? null;
+    oid = (await auth())?.user?.oid;
   } catch {
-    return null;
+    return { ok: false, reason: "no-token" };
   }
+  if (!oid) return { ok: false, reason: "no-token" };
+  return getValid(oid);
 }
 
 export type CentralReserveResult =
@@ -154,8 +159,11 @@ export type CentralReserveResult =
  * Die zurueckgegebene transactionId MUSS je runId gespeichert werden (Refund-Bindung).
  */
 export async function centralReserve(opts: { runId: string }): Promise<CentralReserveResult> {
-  const token = await accessToken();
-  if (!token) return { ok: false, reason: "no_token" };
+  const tok = await getCreditToken();
+  // no-token (nie mit Scope eingeloggt) UND refresh-failed (Token tot) → beide
+  // bedeuten am Gate: Re-Auth noetig, kein Gratis-Run (fail-closed).
+  if (!tok.ok) return { ok: false, reason: "no_token" };
+  const token = tok.accessToken;
 
   let workspaceId: string;
   try {
@@ -192,11 +200,12 @@ export async function centralRefund(opts: {
   spendTransactionId: string;
   idempotencyKey: string;
 }): Promise<{ ok: boolean }> {
-  const token = await accessToken();
-  if (!token) {
-    logger.apiError("credit-service/centralRefund", new Error("no session token"), { key: opts.idempotencyKey });
+  const tok = await getCreditToken();
+  if (!tok.ok) {
+    logger.apiError("credit-service/centralRefund", new Error(`no usable token (${tok.reason})`), { key: opts.idempotencyKey });
     return { ok: false };
   }
+  const token = tok.accessToken;
   try {
     const { workspaceId } = await resolveWorkspace(token);
     await refund(token, workspaceId, {
@@ -212,16 +221,32 @@ export async function centralRefund(opts: {
   }
 }
 
-/** ON-Pfad-Saldo: resolve-workspace + getBalance -> { workspaceId, credits }. null bei Stoerung. */
-export async function centralBalance(): Promise<{ workspaceId: string; credits: number } | null> {
-  const token = await accessToken();
-  if (!token) return null;
+/**
+ * ON-Pfad-Wallet-Status fuer die UI (Blueprint §5): diskriminiert statt nur
+ * „Saldo oder null", damit „Sitzung abgelaufen" nicht still als 0 erscheint.
+ *  - inert   = keine oid / no-token (z. B. Bestandssession vor dem Re-Login) ODER
+ *              transienter resolve/getBalance-Hiccup → UI rendert nichts (fail-open).
+ *  - expired = Token tot (refresh-failed) ODER CreditService-401 → Re-Login-CTA.
+ *  - active  = { workspaceId, credits }.
+ */
+export type CentralWalletStatus =
+  | { state: "inert" }
+  | { state: "expired" }
+  | { state: "active"; workspaceId: string; credits: number };
+
+export async function centralWalletStatus(): Promise<CentralWalletStatus> {
+  const tok = await getCreditToken();
+  if (!tok.ok) return tok.reason === "refresh-failed" ? { state: "expired" } : { state: "inert" };
+  const token = tok.accessToken;
   try {
     const { workspaceId } = await resolveWorkspace(token);
     const { credits } = await getBalance(token, workspaceId);
-    return { workspaceId, credits };
+    return { state: "active", workspaceId, credits };
   } catch (e) {
-    logger.apiError("credit-service/centralBalance", e);
-    return null;
+    // CreditService-401 → Token zentral abgelehnt → expired (Re-Login). Sonst
+    // transienter Hiccup → inert (fail-open, kein 500, kein still-0).
+    if (e instanceof CreditServiceError && e.status === 401) return { state: "expired" };
+    logger.apiError("credit-service/centralWalletStatus", e);
+    return { state: "inert" };
   }
 }

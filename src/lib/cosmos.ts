@@ -64,6 +64,16 @@ export function domainsContainer(): Container {
 }
 
 /**
+ * Server-seitiger Entra-Token-Store fuer den zentralen CreditService (pk /oid,
+ * Doc-ID = Entra-oid). Haelt das delegierte Access-/Refresh-Token je Nutzer
+ * dauerhaft gueltig (Rotation). SENSIBEL → ausschliesslich serverseitig; kein
+ * Client-RU-Key. Siehe entra-token-store.ts / Blueprint CREDIT-TOKEN-STORE.
+ */
+export function creditTokensContainer(): Container {
+  return getDb().container("credit_tokens");
+}
+
+/**
  * Rechnungen + globaler Nummernzaehler (pk /year). Counter-Doc und Invoice-Docs
  * teilen die Jahres-Partition -> Nummern-Allokation und Invoice-Write laufen in
  * EINEM TransactionalBatch => atomar und GAPLOS (kein Cross-Container-Risiko).

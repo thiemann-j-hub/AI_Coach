@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { paymentsEnabled } from "@/lib/server/credits/entitlement";
-import { creditsCentralEnabled, centralBalance } from "@/lib/server/credits/credit-service";
+import { creditsCentralEnabled, centralWalletStatus } from "@/lib/server/credits/credit-service";
 import { resolveWorkspace } from "@/lib/server/credits/workspace-store";
 import { getAvailableCredits } from "@/lib/server/credits/ledger";
 import { CREDIT_PACKAGES } from "@/lib/server/credits/types";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
-  const { uid, email, accessToken, sessionError } = authResult;
+  const { uid, email } = authResult;
 
   const rlKey = rateLimitKey(req, "credits");
   const rlResponse = checkRateLimit(rlKey, 30, 60_000);
@@ -25,29 +25,29 @@ export async function GET(req: NextRequest) {
   const packages = Object.entries(CREDIT_PACKAGES).map(([id, p]) => ({ id, credits: p.credits }));
   const topUpUrl = process.env.CREDIT_TOPUP_URL || undefined;
 
-  // CREDITS_CENTRAL=on: Saldo zentral lesen (getBalance -> credits). Kauf laeuft
-  // zentral (Website) -> der Client schickt "Buy" an topUpUrl statt /api/checkout.
+  // CREDITS_CENTRAL=on: Saldo zentral lesen — Token kommt aus dem Server-Store
+  // (getValid(oid), refresht bei Bedarf). Kauf laeuft zentral (Website) -> der
+  // Client schickt "Buy" an topUpUrl statt /api/checkout.
   if (creditsCentralEnabled()) {
-    // Sitzung abgelaufen (Refresh fehlgeschlagen oder gar kein Token) -> NICHT
-    // still als „0 Credits" maskieren, sondern Re-Login signalisieren. Der
-    // Saldo bleibt unbekannt (null), kein 0-Default.
-    if (sessionError === "RefreshFailed" || !accessToken) {
-      // workspaceId echt unbekannt (kein resolve moeglich) -> null statt lokalem uid-Platzhalter.
+    const w = await centralWalletStatus();
+    // expired (Token tot / CreditService-401) -> Re-Login signalisieren, NICHT
+    // still als „0" maskieren. Saldo + Workspace echt unbekannt (null).
+    if (w.state === "expired") {
       return NextResponse.json(
         { ok: true, enabled: true, central: true, sessionExpired: true, balance: null, workspaceId: null, packages, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }
-    const c = await centralBalance();
-    if (!c) {
-      // Zentraler Dienst gestoert -> degraded-Flag, Saldo + Workspace unbekannt (Client kann erneut laden).
+    // inert (Bestandssession ohne Store-Doc / transienter Hiccup) -> degraded:
+    // Chip versteckt, /credits zeigt „—" (kein 0-Default). Re-Login seedet den Store.
+    if (w.state === "inert") {
       return NextResponse.json(
         { ok: true, enabled: true, central: true, degraded: true, balance: null, workspaceId: null, packages, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }
     return NextResponse.json(
-      { ok: true, enabled: true, central: true, balance: c.credits, workspaceId: c.workspaceId, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+      { ok: true, enabled: true, central: true, balance: w.credits, workspaceId: w.workspaceId, packages, ...(topUpUrl ? { topUpUrl } : {}) },
       { status: 200 }
     );
   }
