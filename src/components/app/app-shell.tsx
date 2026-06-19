@@ -24,6 +24,7 @@ import { LoginModal } from '@/components/auth/login-modal';
 import { UserNav } from '@/components/auth/user-nav';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { PulscraftWordmark } from '@/components/pulscraft-wordmark';
+import { CreditBalance } from '@/components/app/credit-balance';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
 type NavGroup = { label: string; items: NavItem[] };
@@ -238,6 +239,7 @@ export default function AppShell(props: {
 
             <div className="flex items-center gap-2 md:gap-3">
               {props.actions}
+              <CreditBalance />
               <LanguageSwitcher compact />
               {user ? (
                 <UserNav />
