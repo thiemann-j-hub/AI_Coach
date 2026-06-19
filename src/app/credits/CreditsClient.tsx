@@ -13,7 +13,8 @@ type CreditsState = {
   enabled: boolean;
   /** null = Saldo unbekannt (Dienst gestoert / Sitzung abgelaufen), nicht 0. */
   balance: number | null;
-  workspaceId: string;
+  /** null im zentralen Modus, wenn der Workspace nicht aufgeloest werden konnte. */
+  workspaceId: string | null;
   packages: Pkg[];
   /** CREDITS_CENTRAL: Saldo kommt zentral, Kauf laeuft ueber die Website (topUpUrl). */
   central?: boolean;

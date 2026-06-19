@@ -32,16 +32,17 @@ export async function GET(req: NextRequest) {
     // still als „0 Credits" maskieren, sondern Re-Login signalisieren. Der
     // Saldo bleibt unbekannt (null), kein 0-Default.
     if (sessionError === "RefreshFailed" || !accessToken) {
+      // workspaceId echt unbekannt (kein resolve moeglich) -> null statt lokalem uid-Platzhalter.
       return NextResponse.json(
-        { ok: true, enabled: true, central: true, sessionExpired: true, balance: null, workspaceId: uid, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { ok: true, enabled: true, central: true, sessionExpired: true, balance: null, workspaceId: null, packages, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }
     const c = await centralBalance();
     if (!c) {
-      // Zentraler Dienst gestoert -> degraded-Flag, Saldo unbekannt (Client kann erneut laden).
+      // Zentraler Dienst gestoert -> degraded-Flag, Saldo + Workspace unbekannt (Client kann erneut laden).
       return NextResponse.json(
-        { ok: true, enabled: true, central: true, degraded: true, balance: null, workspaceId: uid, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { ok: true, enabled: true, central: true, degraded: true, balance: null, workspaceId: null, packages, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { BadgeCheck, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export function InsightCard({
   tone, title, items,
@@ -12,7 +13,10 @@ export function InsightCard({
   const toneBar = tone === 'success' ? 'bg-emerald-500' : tone === 'warning' ? 'bg-amber-500' : 'bg-red-500';
   const toneText = tone === 'success' ? 'text-emerald-400' : tone === 'warning' ? 'text-amber-400' : 'text-red-400';
   const toneBg = tone === 'success' ? 'bg-emerald-500/10' : tone === 'warning' ? 'bg-amber-500/10' : 'bg-red-500/10';
-  const toneIcon = tone === 'success' ? 'verified' : tone === 'warning' ? 'auto_graph' : 'warning';
+  // lucide statt Material-Symbols-Ligatur (Font nicht geladen -> rendert sonst
+  // Rohtext „verified"/„auto_graph"). verified->BadgeCheck (Stärken),
+  // auto_graph->TrendingUp (Potenzial), warning->AlertTriangle.
+  const ToneIcon = tone === 'success' ? BadgeCheck : tone === 'warning' ? TrendingUp : AlertTriangle;
 
   return (
     <div className="glass-panel rounded-2xl relative overflow-hidden">
@@ -20,7 +24,7 @@ export function InsightCard({
       <div className="p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className={`p-2 rounded-lg ${toneBg} ${toneText}`}>
-            <span className="material-symbols-rounded text-xl leading-none">{toneIcon}</span>
+            <ToneIcon className="h-5 w-5" />
           </div>
           <h3 className="font-bold text-lg text-foreground">{title}</h3>
         </div>
