@@ -49,9 +49,14 @@ export function CreditBalance() {
   if (!state) return null;
 
   const href = state.topUpUrl || "/credits";
+  // Externe Top-up-Seite (pulscraft-ai…/preise) in NEUEM Tab oeffnen, damit Coach
+  // offen bleibt (Angleich an Jobmap). Der interne /credits-Fallback bleibt im
+  // selben Tab (kein target).
+  const external = /^https?:\/\//i.test(href);
   return (
     <a
       href={href}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       title="Credits"
       className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:text-primary"
     >
