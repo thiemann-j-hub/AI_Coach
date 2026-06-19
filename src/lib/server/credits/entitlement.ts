@@ -86,8 +86,9 @@ export async function reserveEntitlement(opts: {
         return { ok: false, response: paywall(c.workspaceId) };
       }
       if (c.reason === "no_token") {
-        // Session ohne CreditService-Token (z. B. alte Session vor dem Scope) ->
-        // Re-Login noetig. Fail-closed (kein Gratis-Run).
+        // Kein nutzbares CreditService-Token: Refresh fehlgeschlagen
+        // (error="RefreshFailed") oder alte Session vor dem Scope -> Re-Login
+        // noetig. Fail-closed (kein Gratis-Run); der Client zeigt CENTRAL_REAUTH.
         return {
           ok: false,
           response: NextResponse.json(

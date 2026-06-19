@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
-  const { uid, email } = authResult;
+  const { uid, email, accessToken, sessionError } = authResult;
 
   const rlKey = rateLimitKey(req, "credits");
   const rlResponse = checkRateLimit(rlKey, 30, 60_000);
@@ -28,11 +28,20 @@ export async function GET(req: NextRequest) {
   // CREDITS_CENTRAL=on: Saldo zentral lesen (getBalance -> credits). Kauf laeuft
   // zentral (Website) -> der Client schickt "Buy" an topUpUrl statt /api/checkout.
   if (creditsCentralEnabled()) {
+    // Sitzung abgelaufen (Refresh fehlgeschlagen oder gar kein Token) -> NICHT
+    // still als „0 Credits" maskieren, sondern Re-Login signalisieren. Der
+    // Saldo bleibt unbekannt (null), kein 0-Default.
+    if (sessionError === "RefreshFailed" || !accessToken) {
+      return NextResponse.json(
+        { ok: true, enabled: true, central: true, sessionExpired: true, balance: null, workspaceId: uid, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { status: 200 }
+      );
+    }
     const c = await centralBalance();
     if (!c) {
-      // Zentraler Dienst gestoert -> 0 + degraded-Flag (Client kann erneut laden).
+      // Zentraler Dienst gestoert -> degraded-Flag, Saldo unbekannt (Client kann erneut laden).
       return NextResponse.json(
-        { ok: true, enabled: true, central: true, degraded: true, balance: 0, workspaceId: uid, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { ok: true, enabled: true, central: true, degraded: true, balance: null, workspaceId: uid, packages, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }

@@ -22,6 +22,9 @@ export async function verifyAuthToken(_req: NextRequest | Request) {
     // diese Felder bleiben gueltig (Vertragstreue).
     oid: (session?.user as { oid?: string } | undefined)?.oid ?? null,
     accessToken: (session as { accessToken?: string } | undefined)?.accessToken ?? null,
+    // "RefreshFailed", wenn der jwt-Callback das Token nicht erneuern konnte ->
+    // der Aufrufer zeigt „Sitzung abgelaufen" statt still „0 Credits".
+    sessionError: (session as { error?: string } | undefined)?.error ?? null,
   };
 }
 
@@ -50,6 +53,7 @@ export async function requireAuth(req: NextRequest | Request) {
     email: decoded.email,
     oid: decoded.oid,
     accessToken: decoded.accessToken,
+    sessionError: decoded.sessionError,
     decoded,
   };
 }

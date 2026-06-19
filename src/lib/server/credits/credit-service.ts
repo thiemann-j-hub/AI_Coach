@@ -130,7 +130,12 @@ export async function refund(
 
 async function accessToken(): Promise<string | null> {
   try {
-    return (await auth())?.accessToken ?? null;
+    // auth() triggert den jwt-Callback -> ein abgelaufenes Token wird hier per
+    // refresh_token erneuert. Schlaegt der Refresh fehl (error="RefreshFailed"),
+    // KEIN toter Bearer mehr weiterreichen -> fail-closed (Re-Login statt 401).
+    const s = await auth();
+    if (!s || s.error === "RefreshFailed") return null;
+    return s.accessToken ?? null;
   } catch {
     return null;
   }

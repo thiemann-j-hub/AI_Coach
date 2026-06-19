@@ -4,18 +4,22 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
+import { signInWithMicrosoft } from '@/lib/auth-service';
 import { useTranslation } from '@/i18n/useTranslation';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, LogIn } from 'lucide-react';
 
 type Pkg = { id: string; credits: number };
 type CreditsState = {
   enabled: boolean;
-  balance: number;
+  /** null = Saldo unbekannt (Dienst gestoert / Sitzung abgelaufen), nicht 0. */
+  balance: number | null;
   workspaceId: string;
   packages: Pkg[];
   /** CREDITS_CENTRAL: Saldo kommt zentral, Kauf laeuft ueber die Website (topUpUrl). */
   central?: boolean;
   topUpUrl?: string | null;
+  /** Refresh fehlgeschlagen -> Re-Login statt stiller „0". */
+  sessionExpired?: boolean;
 };
 type Invoice = {
   invoiceNumber: string;
@@ -57,11 +61,12 @@ export default function CreditsClient() {
         if (active && cj?.ok) {
           setState({
             enabled: cj.enabled,
-            balance: cj.balance,
+            balance: typeof cj.balance === 'number' ? cj.balance : null,
             workspaceId: cj.workspaceId,
             packages: cj.packages,
             central: cj.central === true,
             topUpUrl: cj.topUpUrl ?? null,
+            sessionExpired: cj.sessionExpired === true,
           });
         }
         const ij = await invRes.json().catch(() => null);
@@ -92,6 +97,14 @@ export default function CreditsClient() {
       });
     } catch {
       return iso;
+    }
+  }
+
+  async function relogin() {
+    try {
+      await signInWithMicrosoft();
+    } catch {
+      setError(de ? 'Anmeldung fehlgeschlagen.' : 'Sign-in failed.');
     }
   }
 
@@ -145,22 +158,50 @@ export default function CreditsClient() {
           <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
         )}
 
+        {/* Sitzung abgelaufen -> Re-Login statt stiller „0". */}
+        {state?.sessionExpired && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-wrap items-center justify-between gap-3">
+            <span>
+              {de
+                ? 'Sitzung abgelaufen — bitte melde dich neu an, um dein Guthaben zu sehen.'
+                : 'Session expired — please sign in again to see your balance.'}
+            </span>
+            <button
+              onClick={relogin}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400/40 px-3 py-1.5 text-sm font-medium text-amber-200 transition-colors hover:bg-amber-400/10"
+            >
+              <LogIn className="h-4 w-4" />
+              {de ? 'Neu anmelden' : 'Sign in again'}
+            </button>
+          </div>
+        )}
+
         {/* Saldo */}
         <div className="p-6 rounded-2xl bg-card border border-border">
           <div className="text-sm text-muted-foreground">{de ? 'Aktuelles Guthaben' : 'Current balance'}</div>
           <div className="mt-1 text-4xl font-bold">
-            {loading ? '…' : (state?.balance ?? 0)}
+            {loading
+              ? '…'
+              : state?.balance === null || state?.balance === undefined
+                ? '—'
+                : state.balance}
             <span className="ml-2 text-base font-normal text-muted-foreground">
               {de ? 'Credits' : 'credits'}
             </span>
           </div>
-          {state && !state.enabled && (
+          {state?.sessionExpired ? (
+            <div className="mt-3 text-xs text-amber-400">
+              {de
+                ? 'Guthaben unbekannt — Sitzung abgelaufen.'
+                : 'Balance unknown — session expired.'}
+            </div>
+          ) : state && !state.central && !state.enabled ? (
             <div className="mt-3 text-xs text-amber-400">
               {de
                 ? 'Hinweis: Das Bezahlsystem ist noch nicht aktiviert.'
                 : 'Note: the payment system is not active yet.'}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Pakete */}

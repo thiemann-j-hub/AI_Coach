@@ -21,10 +21,19 @@ export function CreditBalance() {
       try {
         const res = await authFetch("/api/credits", { method: "GET" });
         const j = await res.json().catch(() => null);
-        // Nur im Zentral-Modus MIT echtem Saldo (Token vorhanden) anzeigen.
-        if (active && j?.ok && j.central === true && j.degraded !== true) {
+        // Nur im Zentral-Modus MIT echtem numerischem Saldo anzeigen. Bei
+        // degraded (Dienst gestoert) oder sessionExpired (Re-Login noetig) ist
+        // der Saldo unbekannt (null) -> Chip ausblenden statt „0/null" zeigen.
+        if (
+          active &&
+          j?.ok &&
+          j.central === true &&
+          j.degraded !== true &&
+          j.sessionExpired !== true &&
+          typeof j.balance === "number"
+        ) {
           setState({
-            balance: typeof j.balance === "number" ? j.balance : 0,
+            balance: j.balance,
             topUpUrl: j.topUpUrl ?? null,
           });
         }

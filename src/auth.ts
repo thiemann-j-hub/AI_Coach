@@ -18,6 +18,52 @@ const CREDIT_SERVICE_SCOPE =
   process.env.CREDIT_SERVICE_SCOPE ??
   "api://7ecf46aa-f47d-4491-a8ce-fe92c368e6f2/access_as_user";
 
+const OAUTH_SCOPE = `openid profile email offline_access ${CREDIT_SERVICE_SCOPE}`;
+const ENTRA_TENANT = process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID ?? "common";
+
+/**
+ * Holt mit dem refresh_token ein frisches access_token (Entra v2). Bei Erfolg
+ * werden access_token + Ablauf (und ggf. das rotierte refresh_token) im JWT
+ * aktualisiert; bei Fehler markiert token.error="RefreshFailed" -> Re-Login.
+ * Das Access-Token lebt ~1h, die Auth.js-Session 30 Tage — ohne diese Rotation
+ * reicht der Server ein abgelaufenes Token an den CreditService weiter (401).
+ */
+async function refreshAccessToken(token: any): Promise<any> {
+  try {
+    if (!token?.refreshToken) throw new Error("no refresh_token in session");
+    const res = await fetch(
+      `https://login.microsoftonline.com/${ENTRA_TENANT}/oauth2/v2.0/token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: String(token.refreshToken),
+          client_id: process.env.AUTH_MICROSOFT_ENTRA_ID_ID ?? "",
+          client_secret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET ?? "",
+          scope: OAUTH_SCOPE,
+        }),
+        cache: "no-store",
+      }
+    );
+    const data: any = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(`refresh ${res.status}: ${JSON.stringify(data).slice(0, 200)}`);
+    }
+    return {
+      ...token,
+      accessToken: data.access_token,
+      accessTokenExpires: Date.now() + Number(data.expires_in ?? 3600) * 1000,
+      // Entra rotiert das refresh_token — das neue uebernehmen, sonst altes behalten.
+      refreshToken: data.refresh_token ?? token.refreshToken,
+      error: undefined,
+    };
+  } catch (e) {
+    console.error("[auth] token refresh failed:", e);
+    return { ...token, error: "RefreshFailed" };
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
@@ -36,22 +82,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, profile, account }) {
-      // Stabile User-ID: OIDC sub des Microsoft-Kontos (ersetzt Firebase-uid).
-      // BLEIBT die lokale Identitaet — das alte Coach-Datenmodell ist in Phase 1
-      // weiter die Quelle der Wahrheit; nichts daran wird umgeschluesselt.
-      if (profile?.sub) token.uid = profile.sub;
-      // Entra Object-ID: app-uebergreifend STABIL (anders als das pairwise sub).
-      // Der zentrale CreditService schluesselt darauf -> fuer den Dual-Write +
-      // das Reconcile-Mapping (sub -> oid) noetig.
-      const oid = (profile as { oid?: string } | undefined)?.oid;
-      if (oid) token.oid = oid;
-      // Access-Token fuer Bearer-Calls an den CreditService — nur beim Sign-in
-      // im `account` vorhanden. Phase-1-Dual-Write nutzt es best-effort: laeuft
-      // es mid-session ab, scheitert NUR der Schatten-Write (geloggt), nie der
-      // User-Flow. (Refresh-Token-Rotation = spaetere Haertung.)
-      if (account?.access_token) token.accessToken = account.access_token;
-      return token;
+    async jwt({ token, profile, account }) {
+      // (1) Erstanmeldung: account + profile vorhanden -> alles erfassen.
+      if (account) {
+        // Stabile lokale User-ID: OIDC sub (ersetzt Firebase-uid; bleibt die
+        // lokale Identitaet, das alte Coach-Datenmodell schluesselt darauf).
+        if (profile?.sub) token.uid = profile.sub;
+        // Entra Object-ID: app-uebergreifend stabil -> CreditService-Mapping.
+        const oid = (profile as { oid?: string } | undefined)?.oid;
+        if (oid) token.oid = oid;
+        // Access-/Refresh-Token + Ablauf fuer die CreditService-Bearer-Calls.
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+        token.accessTokenExpires = account.expires_at
+          ? Number(account.expires_at) * 1000
+          : Date.now() + Number(account.expires_in ?? 3600) * 1000;
+        token.error = undefined;
+        return token;
+      }
+
+      // (2) Folge-Requests: noch gueltig (mit 60s-Puffer)? -> unveraendert.
+      if (
+        typeof token.accessTokenExpires === "number" &&
+        Date.now() < token.accessTokenExpires - 60_000
+      ) {
+        return token;
+      }
+
+      // (3) Abgelaufen (oder ohne Ablaufmarke) -> per refresh_token erneuern.
+      return await refreshAccessToken(token);
     },
     session({ session, token }) {
       if (session.user && token.uid) {
@@ -62,6 +121,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       if (token.accessToken) {
         (session as { accessToken?: string }).accessToken = String(token.accessToken);
+      }
+      // Refresh-Fehler an den Client/Server-Pfad durchreichen -> Re-Login statt
+      // stiller „0 Credits".
+      if (token.error) {
+        (session as { error?: string }).error = String(token.error);
       }
       return session;
     },

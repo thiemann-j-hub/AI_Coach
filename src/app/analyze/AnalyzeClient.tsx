@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { parsePdfToText } from '@/lib/pdf/parsePdfToText';
 import { authFetch } from '@/lib/api-client';
+import { signInWithMicrosoft } from '@/lib/auth-service';
 import { STORAGE_KEY_SESSION } from '@/lib/storage-keys';
 import { newSessionId, shortId } from '@/lib/session-utils';
 import {
@@ -27,6 +28,7 @@ import {
   Save,
   RefreshCw,
   BarChart3,
+  LogIn,
 } from 'lucide-react';
 
 type AnalyzeResult = any;
@@ -79,6 +81,8 @@ export default function AnalyzeClient() {
   const [error, setError] = useState<string | null>(null);
   // Paywall: 402 INSUFFICIENT_CREDITS -> CTA zur Credits-Seite (nur bei PAYMENTS_ENABLED aktiv)
   const [paywall, setPaywall] = useState<{ workspaceId?: string; topUpUrl?: string } | null>(null);
+  // 401 CENTRAL_REAUTH: Token-Refresh fehlgeschlagen -> Re-Login statt generischem Fehler
+  const [reauth, setReauth] = useState(false);
 
   // Synchroner Re-Entrancy-Schutz: zwei Klicks vor dem Re-Render sehen beide
   // loading=false — der Ref verhindert doppelte Gemini-Calls.
@@ -179,6 +183,7 @@ export default function AnalyzeClient() {
     busyRef.current = true;
     setPendingSave(null);
     setPaywall(null);
+    setReauth(false);
     setLoading(true);
     setStep(t.analyze.statusAnalyzing);
     try {
@@ -210,6 +215,15 @@ export default function AnalyzeClient() {
         const pj = await res.json().catch(() => ({} as any));
         setPaywall({ workspaceId: pj?.workspaceId, topUpUrl: pj?.topUpUrl });
         return;
+      }
+      // Sitzung abgelaufen (Token-Refresh fehlgeschlagen) -> Re-Login statt
+      // generischem Fehler. Kein Credit wurde verbraucht (fail-closed vor spend).
+      if (res.status === 401) {
+        const ej = await res.json().catch(() => ({} as any));
+        if (ej?.code === 'CENTRAL_REAUTH') {
+          setReauth(true);
+          return;
+        }
       }
       if (!res.ok) throw new Error(await readErrorText(res));
       const j = await res.json();
@@ -574,6 +588,27 @@ export default function AnalyzeClient() {
               {error && (
                 <div className="p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
+                </div>
+              )}
+
+              {reauth && (
+                <div className="p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <LogIn className="h-4 w-4" />
+                    {lang === 'de' ? 'Sitzung abgelaufen' : 'Session expired'}
+                  </div>
+                  <p className="text-amber-200/80">
+                    {lang === 'de'
+                      ? 'Deine Anmeldung ist abgelaufen. Bitte melde dich neu an — es wurde kein Credit verbraucht.'
+                      : 'Your session has expired. Please sign in again — no credit was used.'}
+                  </p>
+                  <button
+                    onClick={() => { void signInWithMicrosoft(); }}
+                    className="self-start inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    {lang === 'de' ? 'Neu anmelden' : 'Sign in again'}
+                  </button>
                 </div>
               )}
 
