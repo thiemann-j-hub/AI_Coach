@@ -112,6 +112,8 @@ export async function persistShadowRun(args: {
   runId: string;
   uid: string;
   workspaceId: string;
+  /** EIN createdAt-Wert vom Aufrufer (= Radar-ts). Fallback: jetzt. */
+  createdAt?: string;
   centralSpendTxId?: string | null;
   conversationType: string;
   conversationSubType?: string | null;
@@ -121,20 +123,22 @@ export async function persistShadowRun(args: {
   analysisJson: any;
   summary?: string | null;
   scoreOverall?: number | null;
-}): Promise<{ ok: boolean; reason?: "id_conflict" }> {
+}): Promise<{ ok: boolean; reason?: "id_conflict"; createdAt?: string }> {
   const existing = await getRun(args.sessionId, args.runId);
   if (existing) {
     // Bereits vorhanden: nur fortfahren, wenn es derselbe Owner ist.
     if (existing.uid !== args.uid) return { ok: false, reason: "id_conflict" };
-    return { ok: true };
+    // Retry: das ORIGINAL-createdAt zurueckgeben (Radar-ts darf nicht springen).
+    return { ok: true, createdAt: existing.createdAt };
   }
+  const createdAt = args.createdAt ?? new Date().toISOString();
   await upsertItem(runsContainer(), {
     id: args.runId,
     sessionId: args.sessionId,
     uid: args.uid,
     workspaceId: args.workspaceId,
     centralSpendTxId: args.centralSpendTxId ?? null,
-    createdAt: new Date().toISOString(),
+    createdAt,
     conversationType: args.conversationType,
     conversationSubType: args.conversationSubType ?? null,
     goal: args.goal ?? null,
@@ -146,7 +150,7 @@ export async function persistShadowRun(args: {
     summary: args.summary ?? null,
     scoreOverall: args.scoreOverall ?? null,
   });
-  return { ok: true };
+  return { ok: true, createdAt };
 }
 
 /**

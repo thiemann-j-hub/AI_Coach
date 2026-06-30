@@ -19,6 +19,7 @@ import {
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
 import { runQualityChecks } from "@/lib/server/quality-checks";
+import { emitCoachMeasurement } from "@/lib/server/radar-emit";
 import { withTimeout, withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 
@@ -271,11 +272,18 @@ export async function POST(req: NextRequest) {
         const own = await checkSessionOwnership(d.sessionId, authResult.uid);
         if (own.allowed) {
           await upsertSession(d.sessionId, authResult.uid);
+          // EIN createdAt-Wert fuer Run UND Radar-ts (Regel 1: Radar-ts == Run-createdAt).
+          const runCreatedAt = new Date().toISOString();
+          const scoreOverall =
+            typeof (result as any)?.scores?.overall === "number"
+              ? (result as any).scores.overall
+              : null;
           const shadow = await persistShadowRun({
             sessionId: d.sessionId,
             runId,
             uid: authResult.uid,
             workspaceId: grant.workspaceId,
+            createdAt: runCreatedAt,
             // Zentraler Spend-Anker fuer den spaeteren Refund (CREDITS_CENTRAL-Pfad).
             centralSpendTxId: grant.centralTxId ?? null,
             conversationType: d.conversationType,
@@ -295,10 +303,7 @@ export async function POST(req: NextRequest) {
               quality_notes,
             },
             summary: (result as any).summary ?? null,
-            scoreOverall:
-              typeof (result as any)?.scores?.overall === "number"
-                ? (result as any).scores.overall
-                : null,
+            scoreOverall,
           });
           // Nur als persistiert werten, wenn der Run wirklich geschrieben wurde.
           // persistShadowRun gibt {ok:false} (statt zu werfen) zurueck, wenn die
@@ -307,6 +312,20 @@ export async function POST(req: NextRequest) {
           shadowPersisted = shadow.ok === true;
           if (!shadow.ok) {
             logger.apiError("/api/analyze/shadow", new Error("persistShadowRun not ok: " + (shadow.reason ?? "unknown")));
+          } else if (authResult.oid) {
+            // RADAR-Measurement-Emit (flag-gated, fail-soft, fire-and-forget): EIN
+            // Signal je Analyse. ts = das TATSAECHLICH persistierte Run-createdAt
+            // (Regel 1, nie Date.now). subjectId = Entra-oid (NICHT uid).
+            void emitCoachMeasurement({
+              workspaceId: grant.workspaceId,
+              subjectId: authResult.oid,
+              runId,
+              createdAt: shadow.createdAt ?? runCreatedAt,
+              competency_ratings,
+              scoreOverall,
+            });
+          } else {
+            logger.api("/api/analyze", "radar-skip-no-oid", { uid: authResult.uid, runId });
           }
         }
       } catch (e) {

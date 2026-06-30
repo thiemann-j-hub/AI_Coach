@@ -33,6 +33,14 @@ function getDb() {
   return getClient().database(process.env.COSMOS_DATABASE ?? "coach");
 }
 
+/**
+ * Radar-Längsschnitt-Store liegt in der ZENTRALEN DB `pulsecraft` (NICHT `coach`),
+ * geteilt mit dem Hub — selbes Cosmos-Konto, daher keine neuen Credentials.
+ */
+function getRadarDb() {
+  return getClient().database(process.env.RADAR_DATABASE ?? "pulsecraft");
+}
+
 export function usersContainer(): Container {
   return getDb().container("users");
 }
@@ -71,6 +79,15 @@ export function domainsContainer(): Container {
  */
 export function creditTokensContainer(): Container {
   return getDb().container("credit_tokens");
+}
+
+/**
+ * Append-Only-Längsschnitt-Signal-Ledger (Radar) in der ZENTRALEN DB `pulsecraft`
+ * (pk /workspaceId), geteilt mit dem Hub. Coach schreibt nach jeder Analyse ein
+ * `type:"measurement"`-Signal (doc-id `coach:<runId>` = idempotent). Siehe radar-emit.ts.
+ */
+export function radarEventsContainer(): Container {
+  return getRadarDb().container("radar-events");
 }
 
 /**
