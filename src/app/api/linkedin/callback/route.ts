@@ -7,10 +7,12 @@ export const runtime = "nodejs";
 // Cookies der alten Cookie-only-Token-Speicherung (vor LI-E3)
 const LEGACY_COOKIES = ["linkedin_access_token", "linkedin_person_urn", "linkedin_name"];
 
-/** Nur app-interne Pfade zulassen (Open-Redirect-Schutz). */
+/** Nur app-interne Pfade zulassen (Open-Redirect-Schutz). Der echte returnTo
+ *  kommt aus window.location.pathname (enthaelt den basePath bereits); nur der
+ *  Fallback muss den basePath selbst voranstellen (Front Door: /coach/analyze). */
 function sanitizeReturnTo(value: string | undefined): string {
   if (value && value.startsWith("/") && !value.startsWith("//")) return value;
-  return "/analyze";
+  return (process.env.NEXT_PUBLIC_BASE_PATH ?? "") + "/analyze";
 }
 
 export async function GET(req: NextRequest) {

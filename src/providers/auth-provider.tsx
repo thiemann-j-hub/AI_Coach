@@ -16,6 +16,7 @@ import {
 } from "@/i18n/config";
 import { getLocaleCookie, setLocaleCookie } from "@/i18n/locale-cookie";
 import { authFetch } from "@/lib/api-client";
+import { BASE_PATH } from "@/lib/base-path";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -144,8 +145,12 @@ function InnerAuthProvider({ children }: { children: React.ReactNode }) {
 /* ------------------------------------------------------------------ */
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // basePath der Auth.js-API: unter dem Front Door liegt sie unter
+  // `/coach/api/auth` — ohne diesen Prop wuerde next-auth/react `/api/auth/session`
+  // (404) abfragen → Session laedt nie → SSO bricht. Setzt zugleich den basePath
+  // fuer signIn/signOut (modulglobaler __NEXTAUTH-Context).
   return (
-    <SessionProvider>
+    <SessionProvider basePath={`${BASE_PATH}/api/auth`}>
       <InnerAuthProvider>{children}</InnerAuthProvider>
     </SessionProvider>
   );

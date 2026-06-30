@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
+import { withBasePath } from '@/lib/base-path';
 import { signInWithMicrosoft } from '@/lib/auth-service';
 import { useTranslation } from '@/i18n/useTranslation';
 import { Download, FileText, LogIn } from 'lucide-react';
@@ -272,7 +273,7 @@ export default function CreditsClient() {
                       </span>
                     </div>
                     <a
-                      href={`/api/invoices/${encodeURIComponent(inv.invoiceNumber)}`}
+                      href={withBasePath(`/api/invoices/${encodeURIComponent(inv.invoiceNumber)}`)}
                       target="_blank"
                       rel="noopener noreferrer"
                       title={de ? 'PDF herunterladen' : 'Download PDF'}

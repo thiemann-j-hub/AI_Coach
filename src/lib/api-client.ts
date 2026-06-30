@@ -1,6 +1,7 @@
 "use client";
 
 import { getLocaleCookie } from "@/i18n/locale-cookie";
+import { withBasePath } from "@/lib/base-path";
 
 /**
  * Headers für API-Calls. Auth läuft seit der Azure-Migration über das
@@ -24,7 +25,10 @@ export async function authFetch(
   options: RequestInit = {}
 ): Promise<Response> {
   const headers = await authHeaders();
-  return fetch(url, {
+  // basePath voranstellen: unter dem Front Door muss `/api/...` zu `/coach/api/...`
+  // werden (Browser-fetch wird von Next NICHT automatisch umgeschrieben). Externe
+  // URLs + bereits praefixte Pfade laesst withBasePath unangetastet.
+  return fetch(withBasePath(url), {
     ...options,
     credentials: "same-origin",
     headers: { ...headers, ...(options.headers ?? {}) },

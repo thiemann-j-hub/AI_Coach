@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Coins } from "lucide-react";
 import { authFetch } from "@/lib/api-client";
+import { withBasePath } from "@/lib/base-path";
 
 /**
  * Header-Live-Zähler des zentralen Guthabens (analog E-Learning CreditBalance).
@@ -48,7 +49,7 @@ export function CreditBalance() {
 
   if (!state) return null;
 
-  const href = state.topUpUrl || "/credits";
+  const href = state.topUpUrl || withBasePath("/credits");
   // Externe Top-up-Seite (pulscraft-ai…/preise) in NEUEM Tab oeffnen, damit Coach
   // offen bleibt (Angleich an Jobmap). Der interne /credits-Fallback bleibt im
   // selben Tab (kein target).

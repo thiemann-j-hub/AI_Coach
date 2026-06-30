@@ -26,9 +26,34 @@ import { OAUTH_SCOPE } from "@/lib/credit-scope";
  * dem der Wallet-/Spend-Pfad das (bei Bedarf refreshte) Token per getValid(oid)
  * zieht. Siehe Blueprint CREDIT-TOKEN-STORE §0/§2.
  */
+
+/**
+ * GETEILTES Session-Cookie fuer den Pulscraft-Hub-Front-Door (same origin,
+ * `/` = Hub, `/coach/*` = Coach): exakt DIESELBE Cookie-Konfig wie der Hub —
+ * gleicher Name + `path:"/"` + gleiches AUTH_SECRET. Dann liest Coach das vom
+ * Hub gesetzte Cookie (Auth.js leitet den JWE-Schluessel via HKDF mit dem
+ * Cookie-Namen als Salt ab → Name MUSS identisch sein) → SSO ohne Hub-IdP.
+ * Secure-Praefix `__Secure-` nur unter https (AUTH_URL).
+ */
+const useSecureCookies = (process.env.AUTH_URL ?? "").startsWith("https://");
+const SESSION_COOKIE = (useSecureCookies ? "__Secure-" : "") + "pulsenorth.session-token";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  // Auth.js-core-basePath = "/api/auth" (NICHT "/coach/api/auth"): Next strippt den
+  // Front-Door-basePath (/coach) aus req.nextUrl, BEVOR die Auth-Route ihn sieht —
+  // serverseitig kommt also immer "/api/auth/session" an. EXPLIZIT setzen, damit
+  // AUTH_URL.pathname (= /coach) den basePath nicht faelschlich auf "/coach"
+  // ueberschreibt (sonst UnknownAction). Der CLIENT (SessionProvider) nutzt dagegen
+  // den vollen Browser-Pfad "/coach/api/auth".
+  basePath: "/api/auth",
   session: { strategy: "jwt" },
+  cookies: {
+    sessionToken: {
+      name: SESSION_COOKIE,
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies },
+    },
+  },
   providers: [
     MicrosoftEntraID({
       clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_ID,

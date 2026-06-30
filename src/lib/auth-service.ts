@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "next-auth/react";
+import { withBasePath } from "@/lib/base-path";
 
 /**
  * Auth-Aktionen (NextAuth v5 + Microsoft Entra ID).
@@ -18,7 +19,7 @@ export async function signInWithMicrosoft() {
 
 export async function signOut() {
   try {
-    await nextAuthSignOut({ redirectTo: "/analyze" });
+    await nextAuthSignOut({ redirectTo: withBasePath("/analyze") });
     return { error: null };
   } catch (error) {
     return { error: error as Error };
