@@ -133,7 +133,7 @@ export default function AppShell(props: {
             >
               <X className="h-5 w-5" />
             </button>
-            <Link href="/analyze" className="block" aria-label="Pulscraft AI · Coach">
+            <Link href="/analyze" className="block" aria-label="PulseNorth.AI · Coach">
               <PulscraftWordmark product="Coach" iconOnly={collapsed} />
             </Link>
           </div>

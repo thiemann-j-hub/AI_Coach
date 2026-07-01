@@ -116,8 +116,8 @@ function LoginScreen() {
           <MessagesSquare className="h-7 w-7 text-primary" />
         </div>
         <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
-          <span className="text-foreground">Pulscraft</span>{" "}
-          <span className="text-primary">AI</span>
+          <span className="text-foreground">PulseNorth</span>
+          <span className="text-primary">.AI</span>
         </h1>
         <p className="mt-2 text-sm font-medium text-muted-foreground">Gesprächs-Coach</p>
         <p className="mt-3 text-lg font-medium text-gradient">{tagline}</p>
@@ -172,7 +172,7 @@ function LoginScreen() {
             </a>
           ))}
         </nav>
-        <p className="mt-3">© {new Date().getFullYear()} Pulscraft AI · Coach</p>
+        <p className="mt-3">© {new Date().getFullYear()} PulseNorth.AI · Coach</p>
       </footer>
     </div>
   );

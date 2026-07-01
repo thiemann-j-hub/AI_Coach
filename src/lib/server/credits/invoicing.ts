@@ -16,7 +16,7 @@ import { blobConfigured, invoiceBlobPath, uploadInvoicePdf } from "./invoice-blo
 /** Aussteller-Profil aus ENV (zum Ausstellungszeitpunkt eingefroren). */
 export function supplierFromEnv(): SupplierProfile {
   return {
-    companyName: process.env.INVOICE_SUPPLIER_NAME ?? "Pulscraft AI",
+    companyName: process.env.INVOICE_SUPPLIER_NAME ?? "PulseNorth.AI",
     addressLine1: process.env.INVOICE_SUPPLIER_ADDRESS ?? "",
     postalCode: process.env.INVOICE_SUPPLIER_ZIP ?? "",
     city: process.env.INVOICE_SUPPLIER_CITY ?? "",
