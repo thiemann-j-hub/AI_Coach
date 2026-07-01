@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
+import { STORAGE_KEY_SESSION as STORAGE_KEY, migrateLegacyStorageKeys } from '@/lib/storage-keys';
 import { useTranslation } from '@/i18n/useTranslation';
 
 type RunsListItem = {
@@ -35,8 +36,6 @@ type RunsListItem = {
   summary?: string | null;
   hasTranscript?: boolean;
 };
-
-const STORAGE_KEY = 'commscoach_sessionId';
 
 function newSessionId(): string {
   const c: any = globalThis.crypto as any;
@@ -115,6 +114,7 @@ export default function RunsDashboardClient() {
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
+    migrateLegacyStorageKeys(); // Alt-Key (commscoach_sessionId) -> coach_sessionId, damit laufende Sessions nicht abreißen
     const urlSid = searchParams.get('sessionId');
     if (urlSid && urlSid.trim()) {
       setSessionId(urlSid.trim());

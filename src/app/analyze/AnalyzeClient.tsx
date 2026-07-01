@@ -6,7 +6,7 @@ import AppShell from '@/components/app/app-shell';
 import { parsePdfToText } from '@/lib/pdf/parsePdfToText';
 import { authFetch } from '@/lib/api-client';
 import { signInWithMicrosoft } from '@/lib/auth-service';
-import { STORAGE_KEY_SESSION } from '@/lib/storage-keys';
+import { STORAGE_KEY_SESSION, migrateLegacyStorageKeys } from '@/lib/storage-keys';
 import { newSessionId, shortId } from '@/lib/session-utils';
 import {
   cleanTeamsTranscript,
@@ -89,6 +89,7 @@ export default function AnalyzeClient() {
   const busyRef = useRef(false);
 
   useEffect(() => {
+    migrateLegacyStorageKeys(); // Alt-Key (commscoach_sessionId) -> coach_sessionId, damit laufende Sessions nicht abreißen
     const urlSid = searchParams.get('sessionId');
     if (urlSid && urlSid.trim()) {
       const sid = urlSid.trim();

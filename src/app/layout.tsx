@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/providers/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { STORAGE_KEY_THEME } from "@/lib/storage-keys";
 import { locales, defaultLocale, localeBcp47, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 
@@ -53,7 +54,7 @@ export default async function RootLayout({
           attribute="class"
           defaultTheme="dark"
           enableSystem={false}
-          storageKey="theme"
+          storageKey={STORAGE_KEY_THEME}
           disableTransitionOnChange
         >
           <AuthProvider>
