@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Pulscraft-AI-Marken-Lockup (asset-frei, reines SVG/Text — keine PNG noetig).
- * Einheitlich ueber alle PULS-Craft-AI-Apps: [Pulse-Mark] Pulscraft AI · <Produkt>.
- * Schreibweise verbindlich: "Pulscraft" (foreground) + "AI" (primary).
+ * PulseNorth.AI-Marken-Lockup (asset-frei, reines SVG/Text — keine PNG noetig).
+ * Einheitlich ueber alle Apps: [Pulse-Mark] PulseNorth.AI · <Produkt>.
+ * Schreibweise verbindlich: "PulseNorth" (foreground) + ".AI" (primary, KEIN Leerzeichen).
+ * (Komponenten-/Dateiname bleibt "Pulscraft..." — nur der gerenderte Text aendert sich.)
  */
 
 /** Pulse-/Heartbeat-Mark im abgerundeten Quadrat (currentColor). */
@@ -43,8 +44,8 @@ export function PulscraftWordmark({
       <PulscraftMark />
       {!iconOnly && (
         <span className="text-base font-bold tracking-tight">
-          <span className="text-foreground">Pulscraft</span>{" "}
-          <span className="text-primary">AI</span>
+          <span className="text-foreground">PulseNorth</span>
+          <span className="text-primary">.AI</span>
           {product && (
             <span className="font-medium text-muted-foreground"> · {product}</span>
           )}

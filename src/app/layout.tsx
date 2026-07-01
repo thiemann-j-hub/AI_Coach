@@ -12,7 +12,7 @@ const sans = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: "Pulscraft AI · Coach",
+  title: "PulseNorth.AI · Coach",
   description: "AI-powered communication coaching.",
 };
 

@@ -254,7 +254,7 @@ export default function ReportDashboard({
     const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//PulseCraft AI//Coach//EN',
+      'PRODID:-//PulseNorth.AI//Coach//EN',
       'BEGIN:VEVENT',
       `UID:pulsecraft-${runId ?? 'practice'}@pulsecraft.ai`,
       `DTSTAMP:${fmt(new Date())}`,
@@ -270,7 +270,7 @@ export default function ReportDashboard({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'pulsecraft-7-tage-uebung.ics';
+    a.download = 'pulsenorth-7-tage-uebung.ics';
     a.click();
     URL.revokeObjectURL(url);
   }
