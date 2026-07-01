@@ -29,7 +29,7 @@ import { CreditBalance } from '@/components/app/credit-balance';
 type NavItem = { href: string; label: string; icon: LucideIcon };
 type NavGroup = { label: string; items: NavItem[] };
 
-const COLLAPSE_KEY = 'sidebar-collapsed';
+const COLLAPSE_KEY = 'coach_sidebar-collapsed';
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
