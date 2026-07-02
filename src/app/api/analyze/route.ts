@@ -19,6 +19,7 @@ import {
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
 import { runQualityChecks } from "@/lib/server/quality-checks";
+import { emitCoachMeasurement } from "@/lib/server/radar-emit";
 import { withTimeout, withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 
@@ -307,6 +308,25 @@ export async function POST(req: NextRequest) {
           shadowPersisted = shadow.ok === true;
           if (!shadow.ok) {
             logger.apiError("/api/analyze/shadow", new Error("persistShadowRun not ok: " + (shadow.reason ?? "unknown")));
+          } else if (shadow.createdAt) {
+            // Radar-Messpunkt (Wirbelsäule V6 Kap. 6): fire-and-forget NACH der
+            // Run-Persistenz — der Fachpfad darf NIE an Radar scheitern
+            // (radar-emit ist fail-soft; try/catch + .catch als Doppelboden).
+            // subjectId = Entra-oid (app-uebergreifend stabil), workspaceId =
+            // ZENTRALER Workspace aus dem Entitlement-Grant (resolve-workspace),
+            // ts = runDoc.createdAt (gelockt — NIE Date.now). Flag-gated:
+            // RADAR_EMIT=on, sonst No-Op.
+            try {
+              void emitCoachMeasurement({
+                workspaceId: grant.workspaceId,
+                subjectId: authResult.oid ?? "",
+                runId,
+                createdAt: shadow.createdAt,
+                competencyRatings: competency_ratings,
+              }).catch((e) => logger.apiError("/api/analyze/radar", e, { runId }));
+            } catch (e) {
+              logger.apiError("/api/analyze/radar", e, { runId });
+            }
           }
         }
       } catch (e) {

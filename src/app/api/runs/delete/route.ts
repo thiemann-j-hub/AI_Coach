@@ -11,6 +11,7 @@ import {
 import { paymentsEnabled } from "@/lib/server/credits/entitlement";
 import { getWorkspaceDoc, refundCredit } from "@/lib/server/credits/ledger";
 import { creditsCentralEnabled, centralRefund } from "@/lib/server/credits/credit-service";
+import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -27,7 +28,7 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
-  const { uid } = authResult;
+  const { uid, oid } = authResult;
 
   const rlKey = rateLimitKey(req, "runs-delete");
   const rlResponse = checkRateLimit(rlKey, 20, 60_000);
@@ -55,6 +56,14 @@ export async function POST(req: NextRequest) {
     if (!run) {
       return NextResponse.json({ ok: false, error: "Run not found", code: "NOT_FOUND" }, { status: 404 });
     }
+
+    // Analyse löschen = auch Messpunkt löschen (Nutzer-Löschrecht schlägt
+    // append-only): das radar-events-Doc `coach:${runId}` mit entfernen.
+    // IMMER versuchen (unabhaengig vom RADAR_EMIT-Flag — das Doc kann aus der
+    // Emit- ODER Backfill-Phase stammen), 404-tolerant, fail-soft (wirft nie).
+    // Kandidaten-Partitionen: run.workspaceId (Emit-Pfad = zentraler Workspace
+    // aus dem Grant) + eigene Entra-oid (Backfill-Altbestand des Owners).
+    await deleteCoachMeasurement(runId, [run.workspaceId, oid]);
 
     const ageMs = Date.now() - new Date(run.createdAt).getTime();
     const withinWindow = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
