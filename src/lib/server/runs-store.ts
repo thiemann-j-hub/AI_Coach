@@ -8,6 +8,10 @@ import {
   sessionsContainer,
   upsertItem,
 } from "@/lib/cosmos";
+import {
+  hasObservableMetric,
+  metricsFromCompetencyRatings,
+} from "@/lib/radar-contract";
 
 /**
  * Datenzugriff für Sessions + Runs (Cosmos DB, ersetzt Firestore-Subcollections).
@@ -267,4 +271,65 @@ export async function rateRun(
     ratedAt: new Date().toISOString(),
   });
   return true;
+}
+
+/** Schlanke Vorgänger-Info fuer die Delta-Card (P0-1). */
+export interface PreviousMeasuredRun {
+  runId: string;
+  createdAt: string;
+  conversationType: string | null;
+  conversationSubType: string | null;
+  competencyRatings: unknown;
+}
+
+/**
+ * Findet den VORGÄNGER-Messlauf fuer die Delta-Card — gelockte Definition
+ * (Plattform-Bedingung B): der juengste NON-DELETED Run DESSELBEN Subjekts
+ * (uid, nur eigene Runs) VOR dem aktuellen Lauf, der einen beobachtbaren
+ * Messpunkt traegt (hasObservableMetric ueber metricsFromCompetencyRatings —
+ * exakt das Kriterium, mit dem radar-emit emittiert → Report-Delta ≡
+ * Radar-Delta per Konstruktion). Failed/Draft-Laeufe ohne Ratings fallen
+ * dadurch automatisch heraus.
+ *
+ * Cross-Partition-Query (pk ist /sessionId, der Verlauf eines Subjekts spannt
+ * Sessions) — TOP 15 juengste Kandidaten, dann JS-Filter auf Beobachtbarkeit.
+ */
+export async function findPreviousMeasuredRun(
+  uid: string,
+  beforeCreatedAt: string,
+  excludeRunId: string
+): Promise<PreviousMeasuredRun | null> {
+  const rows = await queryItems<{
+    id: string;
+    createdAt: string;
+    conversationType?: string | null;
+    conversationSubType?: string | null;
+    competency_ratings?: unknown;
+  }>(
+    runsContainer(),
+    `SELECT TOP 15 c.id, c.createdAt, c.conversationType, c.conversationSubType,
+            c.analysisJson.competency_ratings AS competency_ratings
+     FROM c
+     WHERE c.uid = @uid AND c.id != @excludeRunId AND c.createdAt < @before
+       AND (NOT IS_DEFINED(c.deleted) OR c.deleted = false)
+     ORDER BY c.createdAt DESC`,
+    [
+      { name: "@uid", value: uid },
+      { name: "@excludeRunId", value: excludeRunId },
+      { name: "@before", value: beforeCreatedAt },
+    ]
+  );
+  for (const r of rows) {
+    if (!r?.createdAt) continue;
+    if (hasObservableMetric(metricsFromCompetencyRatings(r.competency_ratings))) {
+      return {
+        runId: r.id,
+        createdAt: r.createdAt,
+        conversationType: r.conversationType ?? null,
+        conversationSubType: r.conversationSubType ?? null,
+        competencyRatings: r.competency_ratings ?? [],
+      };
+    }
+  }
+  return null;
 }

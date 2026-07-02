@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Star, AlertTriangle, Download, AlarmClock, Check, Copy } from 'lucide-react';
+import { Star, AlertTriangle, Download, AlarmClock, Check, Copy, CalendarPlus } from 'lucide-react';
 import { ScoreRing } from './score-ring';
 import { InsightCard } from './insight-card';
+import { DeltaCard, type PreviousComparison } from './delta-card';
 import { useTranslation } from '@/i18n/useTranslation';
+import { localeBcp47, type Locale } from '@/i18n/config';
 import { authFetch } from '@/lib/api-client';
 import {
   unwrapRunResult,
@@ -188,6 +190,7 @@ export default function ReportDashboard({
   sessionId,
   runId,
   initialRating,
+  previousComparison,
 }: {
   result: AnyObj;
   metaChips?: Array<{ label: string; value: string }>;
@@ -196,8 +199,11 @@ export default function ReportDashboard({
   sessionId?: string;
   runId?: string;
   initialRating?: number | null;
+  /** Entwicklung seit letzter Messung (Server-berechnet, radar-contract 1–4) — ab Messung 2. */
+  previousComparison?: PreviousComparison | null;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const bcp47 = localeBcp47[locale as Locale] ?? 'de-DE';
 
   result = unwrapRunResult(result as AnyObj);
 
@@ -275,6 +281,41 @@ export default function ReportDashboard({
     URL.revokeObjectURL(url);
   }
 
+  /**
+   * Folgemessung-Hook (P0-2): EIN Kalendereintrag in ~4 Wochen (methodisch
+   * richtige Messkadenz), den der Nutzer SICH SELBST setzt — kein
+   * Server-Reminder, bewusst getrennt vom Hub-Handshake-Nudge. Date.now ist
+   * hier korrekt (Kalender-Planung, kein Radar-ts).
+   */
+  function handleFollowUp() {
+    const start = new Date();
+    start.setDate(start.getDate() + 28);
+    start.setHours(9, 0, 0, 0);
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\r?\n/g, '\\n');
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//PulseNorth.AI//Coach//EN',
+      'BEGIN:VEVENT',
+      `UID:coach-followup-${runId ?? 'next'}@pulsenorth.ai`,
+      `DTSTAMP:${fmt(new Date())}`,
+      `DTSTART:${fmt(start)}`,
+      'DURATION:PT30M',
+      `SUMMARY:${esc(t.report.followUpSummary)}`,
+      `DESCRIPTION:${esc(t.report.followUpDescription)}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pulsenorth-folgemessung.ics';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const competencies = Array.isArray(result?.competency_ratings)
     ? result.competency_ratings
     : Array.isArray(result?.competencies) ? result.competencies : [];
@@ -302,6 +343,13 @@ export default function ReportDashboard({
               {t.report.groundingWarning.replace('{count}', String(groundingWarnings))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* DELTA-CARD (P0-1): Entwicklung seit letzter Messung — nur ab Messung 2 */}
+      {previousComparison && (
+        <div className="xl:col-span-12">
+          <DeltaCard comparison={previousComparison} bcp47={bcp47} />
         </div>
       )}
 
@@ -408,6 +456,20 @@ export default function ReportDashboard({
               <AlarmClock className="h-4 w-4" />
               {t.report.reminder}
             </button>
+
+            {/* Folgemessung-Hook (P0-2): der Wiederkommen-CTA — ~4 Wochen ist
+                die methodisch richtige Messkadenz für den Längsschnitt. */}
+            <button
+              type="button"
+              className="w-full mt-2 py-3 bg-primary text-white text-sm font-semibold rounded-xl shadow-neon hover:bg-primary-dark hover:shadow-neon-hover transition-all flex items-center justify-center gap-2"
+              onClick={handleFollowUp}
+            >
+              <CalendarPlus className="h-4 w-4" />
+              {t.report.followUpCta}
+            </button>
+            <p className="mt-2 text-[11px] text-muted-foreground text-center">
+              {t.report.followUpHint}
+            </p>
           </div>
 
           {/* Rewrites */}

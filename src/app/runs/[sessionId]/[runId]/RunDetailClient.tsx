@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import AppShell from "@/components/app/app-shell";
 import ReportDashboard from "@/components/app/report-dashboard";
+import { type PreviousComparison } from "@/components/app/delta-card";
 import { DeleteRunButton } from "@/components/app/delete-run-button";
 import { authFetch } from "@/lib/api-client";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -102,6 +103,8 @@ export default function RunDetailClient({
 }) {
   const { t, locale } = useTranslation();
   const [run, setRun] = useState<RunData | null>(null);
+  // Entwicklung seit letzter Messung (Server-berechnet, radar-contract 1–4) — P0-1.
+  const [previousComparison, setPreviousComparison] = useState<PreviousComparison | null>(null);
   const [paymentsEnabled, setPaymentsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +127,7 @@ export default function RunDetailClient({
         }
         if (!cancelled) {
           setRun(j.run as RunData);
+          setPreviousComparison(j.previousComparison ?? null);
           setPaymentsEnabled(j.paymentsEnabled === true);
         }
       } catch (e: any) {
@@ -200,6 +204,7 @@ export default function RunDetailClient({
               sessionId={sessionId}
               runId={runId}
               initialRating={run.rating}
+              previousComparison={previousComparison}
             />
           )}
         </div>

@@ -156,7 +156,16 @@
     "loadingRun": "Loading analysis…",
     "accessDenied": "No access to this analysis.",
     "runNotFound": "Analysis not found.",
-    "groundingWarning": "Note: {count} evidence quote(s) could not be matched verbatim to the transcript — interpret those ratings with care."
+    "groundingWarning": "Note: {count} evidence quote(s) could not be matched verbatim to the transcript — interpret those ratings with care.",
+    "deltaTitle": "Progress since last measurement",
+    "deltaVs": "vs. analysis from {date}",
+    "deltaNotComparable": "not comparable",
+    "deltaNotComparableCount": "{count} competencies not comparable – not observable in one of the two runs",
+    "deltaViewRadar": "View full history in the radar",
+    "followUpCta": "Schedule follow-up measurement (~4 weeks)",
+    "followUpHint": "Downloads a calendar entry for you – you decide when to measure again.",
+    "followUpSummary": "Follow-up measurement: conversation analysis (PulseNorth Coach)",
+    "followUpDescription": "Time for your next measurement: analyze a recent conversation in PulseNorth Coach and see how your competencies have developed since the last measurement."
   },
   "linkedin": {
     "title": "Share on LinkedIn",

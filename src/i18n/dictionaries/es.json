@@ -156,7 +156,16 @@
     "loadingRun": "Cargando el análisis…",
     "accessDenied": "Sin acceso a este análisis.",
     "runNotFound": "Análisis no encontrado.",
-    "groundingWarning": "Nota: {count} cita(s) de evidencia no se pudieron verificar literalmente en la transcripción — interpreta esas valoraciones con cautela."
+    "groundingWarning": "Nota: {count} cita(s) de evidencia no se pudieron verificar literalmente en la transcripción — interpreta esas valoraciones con cautela.",
+    "deltaTitle": "Evolución desde la última medición",
+    "deltaVs": "vs. análisis del {date}",
+    "deltaNotComparable": "no comparable",
+    "deltaNotComparableCount": "{count} competencia(s) no comparable(s): no observable(s) en uno de los dos análisis",
+    "deltaViewRadar": "Ver todo el historial en el radar",
+    "followUpCta": "Planificar la próxima medición (~4 semanas)",
+    "followUpHint": "Descarga una entrada de calendario para ti; tú decides cuándo volver a medir.",
+    "followUpSummary": "Medición de seguimiento: análisis de conversación (PulseNorth Coach)",
+    "followUpDescription": "Es hora de la próxima medición: analiza una conversación reciente en PulseNorth Coach y observa cómo han evolucionado tus competencias desde la última medición."
   },
   "linkedin": {
     "title": "Compartir en LinkedIn",

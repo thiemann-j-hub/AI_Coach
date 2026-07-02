@@ -127,6 +127,21 @@ export default function DesignPreviewPage() {
                 { label: 'Dauer', value: '45 min' },
                 { label: 'Redeanteil', value: '40%' },
               ]}
+              // Dev-Preview der Delta-Card (P0-1): Sample-Vergleich, Schema wie
+              // /api/runs/get.previousComparison (Server-berechnet, 1–4-Skala).
+              previousComparison={{
+                prev: {
+                  runId: 'sample-prev',
+                  createdAt: '2026-06-12T09:00:00.000Z',
+                  conversationType: 'Mitarbeitergespräch',
+                  conversationSubType: null,
+                },
+                current: { C1: 4, C2: 3, C3: 2, C4: null, C5: null, C6: null, C7: null, C8: null, C9: null, C10: null, overall: 3 },
+                previous: { C1: 3, C2: 3, C3: 3, C4: 2, C5: null, C6: null, C7: null, C8: null, C9: null, C10: null, overall: 2.8 },
+                deltas: { C1: 1, C2: 0, C3: -1, C4: null, C5: null, C6: null, C7: null, C8: null, C9: null, C10: null, overall: 0.2 },
+                comparableCount: 3,
+                notComparableCount: 1,
+              }}
             />
           </div>
         </main>

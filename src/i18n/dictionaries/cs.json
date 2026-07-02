@@ -156,7 +156,16 @@
     "loadingRun": "Načítání analýzy…",
     "accessDenied": "K této analýze nemáte přístup.",
     "runNotFound": "Analýza nenalezena.",
-    "groundingWarning": "Poznámka: {count} důkazní citace se nepodařilo doslovně najít v přepisu — tato hodnocení berte s rezervou."
+    "groundingWarning": "Poznámka: {count} důkazní citace se nepodařilo doslovně najít v přepisu — tato hodnocení berte s rezervou.",
+    "deltaTitle": "Vývoj od posledního měření",
+    "deltaVs": "vs. analýza z {date}",
+    "deltaNotComparable": "neporovnatelné",
+    "deltaNotComparableCount": "{count} kompetencí neporovnatelných – v jedné z obou analýz nebyly pozorovatelné",
+    "deltaViewRadar": "Zobrazit celou historii v radaru",
+    "followUpCta": "Naplánovat další měření (~4 týdny)",
+    "followUpHint": "Stáhne pro vás položku kalendáře – kdy měřit znovu, rozhodujete vy.",
+    "followUpSummary": "Kontrolní měření: analýza rozhovoru (PulseNorth Coach)",
+    "followUpDescription": "Je čas na další měření: analyzujte aktuální rozhovor v PulseNorth Coach a podívejte se, jak se vaše kompetence od posledního měření vyvinuly."
   },
   "linkedin": {
     "title": "Sdílet na LinkedIn",

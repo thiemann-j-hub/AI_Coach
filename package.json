@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "quality:regression": "node --conditions=react-server --import tsx scripts/quality/run-regression.ts"
+    "quality:regression": "node --conditions=react-server --import tsx scripts/quality/run-regression.ts",
+    "quality:reliability": "node --conditions=react-server --import tsx scripts/quality/reliability.ts"
   },
   "dependencies": {
     "@azure/cosmos": "^4.9.3",

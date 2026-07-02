@@ -156,7 +156,16 @@
     "loadingRun": "Ładowanie analizy…",
     "accessDenied": "Brak dostępu do tej analizy.",
     "runNotFound": "Nie znaleziono analizy.",
-    "groundingWarning": "Uwaga: {count} cytat(ów) dowodowych nie udało się dosłownie dopasować do transkrypcji — interpretuj te oceny ostrożnie."
+    "groundingWarning": "Uwaga: {count} cytat(ów) dowodowych nie udało się dosłownie dopasować do transkrypcji — interpretuj te oceny ostrożnie.",
+    "deltaTitle": "Rozwój od ostatniego pomiaru",
+    "deltaVs": "vs. analiza z {date}",
+    "deltaNotComparable": "nieporównywalne",
+    "deltaNotComparableCount": "{count} kompetencji nieporównywalnych – nieobserwowalne w jednej z dwóch analiz",
+    "deltaViewRadar": "Zobacz pełną historię w radarze",
+    "followUpCta": "Zaplanuj kolejny pomiar (~4 tygodnie)",
+    "followUpHint": "Pobiera wpis do kalendarza – Ty decydujesz, kiedy zmierzyć ponownie.",
+    "followUpSummary": "Pomiar kontrolny: analiza rozmowy (PulseNorth Coach)",
+    "followUpDescription": "Czas na kolejny pomiar: przeanalizuj aktualną rozmowę w PulseNorth Coach i zobacz, jak rozwinęły się Twoje kompetencje od ostatniego pomiaru."
   },
   "linkedin": {
     "title": "Udostępnij na LinkedIn",

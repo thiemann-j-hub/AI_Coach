@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
-import { checkSessionOwnership, getRun } from "@/lib/server/runs-store";
+import { checkSessionOwnership, getRun, findPreviousMeasuredRun } from "@/lib/server/runs-store";
+import { computeMeasurementDelta } from "@/lib/measurement-delta";
 import { paymentsEnabled } from "@/lib/server/credits/entitlement";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
@@ -70,6 +71,38 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Delta-Card (P0-1): Vorgaenger = juengster eigener non-deleted Run mit
+    // beobachtbarem Messpunkt (Skalen-SSOT radar-contract, 1–4). Fail-soft:
+    // ein Query-Fehler kostet nur die Card, nie den Report.
+    let previousComparison: unknown = null;
+    try {
+      const currentRatings = data.analysisJson?.competency_ratings ?? [];
+      if (data.createdAt) {
+        const prev = await findPreviousMeasuredRun(uid, data.createdAt, runId);
+        if (prev) {
+          const delta = computeMeasurementDelta(currentRatings, prev.competencyRatings);
+          // Nur mitschicken, wenn es ueberhaupt eine Aussage gibt.
+          if (delta.comparableCount > 0 || delta.notComparableCount > 0) {
+            previousComparison = {
+              prev: {
+                runId: prev.runId,
+                createdAt: prev.createdAt,
+                conversationType: prev.conversationType,
+                conversationSubType: prev.conversationSubType,
+              },
+              current: delta.current,
+              previous: delta.previous,
+              deltas: delta.deltas,
+              comparableCount: delta.comparableCount,
+              notComparableCount: delta.notComparableCount,
+            };
+          }
+        }
+      }
+    } catch (e) {
+      logger.apiError("/api/runs/get/delta", e, { runId });
+    }
+
     return NextResponse.json(
       {
         ok: true,
@@ -88,6 +121,8 @@ export async function GET(req: NextRequest) {
           summary: data.summary ?? data.analysisJson?.summary ?? null,
           rating: typeof data.rating === "number" ? data.rating : null,
         },
+        // Entwicklung seit letzter Messung (null = erster Messlauf) — P0-1.
+        previousComparison,
         // Steuert die Refund-Affordanz des Delete-Buttons: nur wenn Payments aktiv
         // sind, kann der 10-Min-Refund tatsaechlich greifen (sonst neutrales Löschen).
         paymentsEnabled: paymentsEnabled(),
