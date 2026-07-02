@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T18:02:05.413Z",
+  "generatedAt": "2026-07-02T18:15:16.663Z",
   "model": "googleai/gemini-2.5-flash",
   "temperature": "provider-default",
   "scale": "1-4 (radar-contract, metricsFromCompetencyRatings)",
@@ -13,45 +13,6 @@
         {
           "C1": 3,
           "C2": 3,
-          "C3": 3,
-          "C4": 3,
-          "C5": 4,
-          "C6": 3,
-          "C7": null,
-          "C8": null,
-          "C9": null,
-          "C10": null,
-          "overall": 3.2
-        },
-        {
-          "C1": 3,
-          "C2": 3,
-          "C3": 3,
-          "C4": 3,
-          "C5": 4,
-          "C6": 3,
-          "C7": null,
-          "C8": null,
-          "C9": null,
-          "C10": null,
-          "overall": 3.2
-        },
-        {
-          "C1": 3,
-          "C2": 3,
-          "C3": 3,
-          "C4": 3,
-          "C5": 4,
-          "C6": 3,
-          "C7": null,
-          "C8": null,
-          "C9": null,
-          "C10": null,
-          "overall": 3.2
-        },
-        {
-          "C1": 3,
-          "C2": 3,
           "C3": 4,
           "C4": 3,
           "C5": 4,
@@ -61,6 +22,45 @@
           "C9": null,
           "C10": null,
           "overall": 3.3
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
         },
         {
           "C1": 3,
@@ -116,10 +116,10 @@
           "observedIn": 5,
           "flutter": false,
           "values": [
-            3,
-            3,
-            3,
             4,
+            3,
+            3,
+            3,
             3
           ],
           "mean": 3.2,
@@ -226,10 +226,10 @@
       ],
       "overall": {
         "values": [
-          3.2,
-          3.2,
-          3.2,
           3.3,
+          3.2,
+          3.2,
+          3.2,
           3.2
         ],
         "mean": 3.22,
@@ -245,9 +245,9 @@
       "runs": 5,
       "perRunMetrics": [
         {
-          "C1": null,
+          "C1": 1,
           "C2": 3,
-          "C3": null,
+          "C3": 1,
           "C4": 1,
           "C5": 1,
           "C6": 3,
@@ -255,20 +255,7 @@
           "C8": null,
           "C9": null,
           "C10": null,
-          "overall": 2
-        },
-        {
-          "C1": 1,
-          "C2": 3,
-          "C3": 1,
-          "C4": 1,
-          "C5": 1,
-          "C6": 2,
-          "C7": null,
-          "C8": 1,
-          "C9": null,
-          "C10": null,
-          "overall": 1.4
+          "overall": 1.7
         },
         {
           "C1": 1,
@@ -289,33 +276,48 @@
           "C3": 1,
           "C4": 1,
           "C5": 1,
-          "C6": 2,
+          "C6": 3,
           "C7": null,
           "C8": null,
           "C9": null,
           "C10": null,
-          "overall": 1.5
+          "overall": 1.7
         },
         {
-          "C1": null,
+          "C1": 1,
           "C2": 3,
-          "C3": null,
-          "C4": null,
+          "C3": 1,
+          "C4": 1,
           "C5": 1,
           "C6": 3,
           "C7": null,
           "C8": null,
           "C9": null,
           "C10": null,
-          "overall": 2.3
+          "overall": 1.7
+        },
+        {
+          "C1": 1,
+          "C2": 4,
+          "C3": 1,
+          "C4": 1,
+          "C5": 1,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 1.8
         }
       ],
       "competencies": [
         {
           "key": "C1",
-          "observedIn": 3,
-          "flutter": true,
+          "observedIn": 5,
+          "flutter": false,
           "values": [
+            1,
+            1,
             1,
             1,
             1
@@ -335,19 +337,21 @@
             3,
             3,
             3,
-            3
+            4
           ],
-          "mean": 3,
+          "mean": 3.2,
           "min": 3,
-          "max": 3,
-          "range": 0,
-          "stddev": 0
+          "max": 4,
+          "range": 1,
+          "stddev": 0.45
         },
         {
           "key": "C3",
-          "observedIn": 3,
-          "flutter": true,
+          "observedIn": 5,
+          "flutter": false,
           "values": [
+            1,
+            1,
             1,
             1,
             1
@@ -360,9 +364,10 @@
         },
         {
           "key": "C4",
-          "observedIn": 4,
-          "flutter": true,
+          "observedIn": 5,
+          "flutter": false,
           "values": [
+            1,
             1,
             1,
             1,
@@ -397,16 +402,16 @@
           "flutter": false,
           "values": [
             3,
-            2,
             3,
-            2,
+            3,
+            3,
             3
           ],
-          "mean": 2.6,
-          "min": 2,
+          "mean": 3,
+          "min": 3,
           "max": 3,
-          "range": 1,
-          "stddev": 0.55
+          "range": 0,
+          "stddev": 0
         },
         {
           "key": "C7",
@@ -421,15 +426,13 @@
         },
         {
           "key": "C8",
-          "observedIn": 1,
-          "flutter": true,
-          "values": [
-            1
-          ],
-          "mean": 1,
-          "min": 1,
-          "max": 1,
-          "range": 0,
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
           "stddev": null
         },
         {
@@ -457,17 +460,17 @@
       ],
       "overall": {
         "values": [
-          2,
-          1.4,
           1.7,
-          1.5,
-          2.3
+          1.7,
+          1.7,
+          1.7,
+          1.8
         ],
-        "mean": 1.78,
-        "range": 0.9,
-        "stddev": 0.37
+        "mean": 1.72,
+        "range": 0.1,
+        "stddev": 0.04
       },
-      "flutterCount": 4,
+      "flutterCount": 0,
       "maxRange": 1
     },
     {
@@ -475,6 +478,45 @@
       "lang": "de",
       "runs": 5,
       "perRunMetrics": [
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 2.5,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 2.5
+        },
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 2.5,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 2.5
+        },
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 3,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3
+        },
         {
           "C1": null,
           "C2": null,
@@ -493,52 +535,13 @@
           "C2": null,
           "C3": null,
           "C4": null,
-          "C5": 3,
+          "C5": 2.5,
           "C6": null,
           "C7": null,
           "C8": null,
           "C9": null,
           "C10": null,
-          "overall": 3
-        },
-        {
-          "C1": null,
-          "C2": null,
-          "C3": null,
-          "C4": null,
-          "C5": 3,
-          "C6": null,
-          "C7": null,
-          "C8": null,
-          "C9": null,
-          "C10": null,
-          "overall": 3
-        },
-        {
-          "C1": null,
-          "C2": null,
-          "C3": null,
-          "C4": null,
-          "C5": 2,
-          "C6": null,
-          "C7": null,
-          "C8": null,
-          "C9": null,
-          "C10": null,
-          "overall": 2
-        },
-        {
-          "C1": null,
-          "C2": null,
-          "C3": null,
-          "C4": null,
-          "C5": 2,
-          "C6": null,
-          "C7": null,
-          "C8": null,
-          "C9": null,
-          "C10": null,
-          "overall": 2
+          "overall": 2.5
         }
       ],
       "competencies": [
@@ -591,16 +594,16 @@
           "observedIn": 4,
           "flutter": true,
           "values": [
+            2.5,
+            2.5,
             3,
-            3,
-            2,
-            2
+            2.5
           ],
-          "mean": 2.5,
-          "min": 2,
+          "mean": 2.63,
+          "min": 2.5,
           "max": 3,
-          "range": 1,
-          "stddev": 0.58
+          "range": 0.5,
+          "stddev": 0.25
         },
         {
           "key": "C6",
@@ -660,17 +663,17 @@
       ],
       "overall": {
         "values": [
+          2.5,
+          2.5,
           3,
-          3,
-          2,
-          2
+          2.5
         ],
-        "mean": 2.5,
-        "range": 1,
-        "stddev": 0.58
+        "mean": 2.63,
+        "range": 0.5,
+        "stddev": 0.25
       },
       "flutterCount": 1,
-      "maxRange": 1
+      "maxRange": 0.5
     },
     {
       "scenario": "04-entwicklung-und-reflexion",
@@ -681,11 +684,24 @@
           "C1": null,
           "C2": 3,
           "C3": 4,
-          "C4": null,
+          "C4": 3,
           "C5": 4,
           "C6": 3,
           "C7": null,
           "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.4
+        },
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": 4,
           "C9": null,
           "C10": null,
           "overall": 3.5
@@ -724,37 +740,22 @@
           "C5": 4,
           "C6": 3,
           "C7": null,
-          "C8": 4,
+          "C8": null,
           "C9": null,
           "C10": null,
-          "overall": 3.5
-        },
-        {
-          "C1": 3,
-          "C2": 4,
-          "C3": 4,
-          "C4": 3,
-          "C5": 4,
-          "C6": 4,
-          "C7": null,
-          "C8": 4,
-          "C9": null,
-          "C10": null,
-          "overall": 3.7
+          "overall": 3.4
         }
       ],
       "competencies": [
         {
           "key": "C1",
-          "observedIn": 1,
-          "flutter": true,
-          "values": [
-            3
-          ],
-          "mean": 3,
-          "min": 3,
-          "max": 3,
-          "range": 0,
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
           "stddev": null
         },
         {
@@ -766,13 +767,13 @@
             3,
             3,
             3,
-            4
+            3
           ],
-          "mean": 3.2,
+          "mean": 3,
           "min": 3,
-          "max": 4,
-          "range": 1,
-          "stddev": 0.45
+          "max": 3,
+          "range": 0,
+          "stddev": 0
         },
         {
           "key": "C3",
@@ -793,9 +794,10 @@
         },
         {
           "key": "C4",
-          "observedIn": 4,
-          "flutter": true,
+          "observedIn": 5,
+          "flutter": false,
           "values": [
+            3,
             3,
             3,
             3,
@@ -833,13 +835,13 @@
             3,
             3,
             3,
-            4
+            3
           ],
-          "mean": 3.2,
+          "mean": 3,
           "min": 3,
-          "max": 4,
-          "range": 1,
-          "stddev": 0.45
+          "max": 3,
+          "range": 0,
+          "stddev": 0
         },
         {
           "key": "C7",
@@ -854,17 +856,16 @@
         },
         {
           "key": "C8",
-          "observedIn": 2,
+          "observedIn": 1,
           "flutter": true,
           "values": [
-            4,
             4
           ],
           "mean": 4,
           "min": 4,
           "max": 4,
           "range": 0,
-          "stddev": 0
+          "stddev": null
         },
         {
           "key": "C9",
@@ -891,24 +892,37 @@
       ],
       "overall": {
         "values": [
+          3.4,
           3.5,
           3.4,
           3.4,
-          3.5,
-          3.7
+          3.4
         ],
-        "mean": 3.5,
-        "range": 0.3,
-        "stddev": 0.12
+        "mean": 3.42,
+        "range": 0.1,
+        "stddev": 0.04
       },
-      "flutterCount": 3,
-      "maxRange": 1
+      "flutterCount": 1,
+      "maxRange": 0
     },
     {
       "scenario": "05-en-strategic-direction",
       "lang": "en",
       "runs": 5,
       "perRunMetrics": [
+        {
+          "C1": null,
+          "C2": 4,
+          "C3": 4,
+          "C4": 3,
+          "C5": 3,
+          "C6": 4,
+          "C7": null,
+          "C8": null,
+          "C9": 4,
+          "C10": null,
+          "overall": 3.7
+        },
         {
           "C1": 3,
           "C2": 4,
@@ -925,7 +939,7 @@
         {
           "C1": null,
           "C2": 4,
-          "C3": 4,
+          "C3": 3,
           "C4": 3,
           "C5": 4,
           "C6": 4,
@@ -933,7 +947,7 @@
           "C8": null,
           "C9": 4,
           "C10": null,
-          "overall": 3.8
+          "overall": 3.7
         },
         {
           "C1": null,
@@ -941,25 +955,12 @@
           "C3": 4,
           "C4": 3,
           "C5": 3,
-          "C6": 3,
-          "C7": null,
-          "C8": null,
-          "C9": 3,
-          "C10": null,
-          "overall": 3.3
-        },
-        {
-          "C1": null,
-          "C2": 4,
-          "C3": 3,
-          "C4": 3,
-          "C5": 3,
           "C6": 4,
           "C7": null,
           "C8": null,
-          "C9": 3,
+          "C9": 4,
           "C10": null,
-          "overall": 3.3
+          "overall": 3.7
         },
         {
           "C1": null,
@@ -967,12 +968,12 @@
           "C3": 3,
           "C4": 3,
           "C5": 4,
-          "C6": 3,
+          "C6": 4,
           "C7": null,
           "C8": null,
           "C9": 4,
           "C10": null,
-          "overall": 3.5
+          "overall": 3.7
         }
       ],
       "competencies": [
@@ -1013,8 +1014,8 @@
           "values": [
             4,
             4,
-            4,
             3,
+            4,
             3
           ],
           "mean": 3.6,
@@ -1045,9 +1046,9 @@
           "observedIn": 5,
           "flutter": false,
           "values": [
-            4,
-            4,
             3,
+            4,
+            4,
             3,
             4
           ],
@@ -1064,15 +1065,15 @@
           "values": [
             4,
             4,
-            3,
             4,
-            3
+            4,
+            4
           ],
-          "mean": 3.6,
-          "min": 3,
+          "mean": 4,
+          "min": 4,
           "max": 4,
-          "range": 1,
-          "stddev": 0.55
+          "range": 0,
+          "stddev": 0
         },
         {
           "key": "C7",
@@ -1103,15 +1104,15 @@
           "values": [
             4,
             4,
-            3,
-            3,
+            4,
+            4,
             4
           ],
-          "mean": 3.6,
-          "min": 3,
+          "mean": 4,
+          "min": 4,
           "max": 4,
-          "range": 1,
-          "stddev": 0.55
+          "range": 0,
+          "stddev": 0
         },
         {
           "key": "C10",
@@ -1128,14 +1129,14 @@
       "overall": {
         "values": [
           3.7,
-          3.8,
-          3.3,
-          3.3,
-          3.5
+          3.7,
+          3.7,
+          3.7,
+          3.7
         ],
-        "mean": 3.52,
-        "range": 0.5,
-        "stddev": 0.23
+        "mean": 3.7,
+        "range": 0,
+        "stddev": 0
       },
       "flutterCount": 1,
       "maxRange": 1

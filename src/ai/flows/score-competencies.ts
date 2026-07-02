@@ -120,6 +120,58 @@ Gib ausschließlich JSON gemäß Schema zurück.
 `,
 });
 
+/**
+ * Konsens-Scoring (flag-gated, Default AUS): SCORING_CONSENSUS=on bewertet das
+ * Transkript mit n=3 PARALLELEN Läufen und mergt per Mehrheitsentscheid.
+ * Grund (Reliabilitäts-Harness 2026-07-02): die Beobachtbarkeits-Entscheidung
+ * bei Rand-Evidenz bleibt trotz Prompt-Härtung stochastisch (null-Flattern) —
+ * eine Mehrheit ist mechanisch stabil, wo eine Einzelentscheidung würfelt.
+ */
+export function scoringConsensusEnabled(): boolean {
+  return (process.env.SCORING_CONSENSUS ?? 'off').toLowerCase() === 'on';
+}
+
+type Rating = z.infer<typeof CompetencyRatingSchema>;
+
+/**
+ * PURE Merge-Regel (testbar): Eine Kompetenz gilt nur als beobachtbar, wenn
+ * die MEHRHEIT der Läufe (>= ceil(n/2), bei n=3 also 2) sie beobachtet hat.
+ * Score = Median der beobachteten Werte; evidence/why kommen aus dem Lauf,
+ * dessen Score dem Median am nächsten liegt (kein synthetischer Text).
+ */
+export function mergeConsensusRuns(runs: Array<{ competencies: Rating[] }>): { competencies: Rating[] } {
+  const byId = new Map<string, Rating[]>();
+  const order: string[] = [];
+  for (const run of runs) {
+    for (const c of run?.competencies ?? []) {
+      if (!c?.id) continue;
+      if (!byId.has(c.id)) { byId.set(c.id, []); order.push(c.id); }
+      byId.get(c.id)!.push(c);
+    }
+  }
+  const majority = Math.ceil(runs.length / 2);
+  const merged: Rating[] = [];
+  for (const id of order) {
+    const variants = byId.get(id)!;
+    const observed = variants.filter((v) => typeof v.score === 'number' && v.score! >= 1);
+    if (observed.length < majority) {
+      // Mehrheit sagt "nicht beobachtbar" -> konsistent null (kein Flattern).
+      const nullVariant = variants.find((v) => v.score == null) ?? variants[0];
+      merged.push({ ...nullVariant, score: null, evidence: [], confidence: null });
+      continue;
+    }
+    const scores = observed.map((v) => v.score as number).sort((a, b) => a - b);
+    const mid = Math.floor(scores.length / 2);
+    const median = scores.length % 2 ? scores[mid] : (scores[mid - 1] + scores[mid]) / 2;
+    // Repraesentant = beobachteter Lauf mit minimalem Abstand zum Median
+    const rep = observed.reduce((best, v) =>
+      Math.abs((v.score as number) - median) < Math.abs((best.score as number) - median) ? v : best
+    );
+    merged.push({ ...rep, score: median });
+  }
+  return { competencies: merged };
+}
+
 export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesInputSchema>) {
   // Fence user-supplied transcript to reduce prompt injection risk
   const { sanitized: fencedText, injectionDetected } = sanitizeForPrompt(
@@ -131,6 +183,22 @@ export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesI
   }
 
   const hardenedInput = { ...input, transcriptText: fencedText };
+
+  if (scoringConsensusEnabled()) {
+    // n=3 parallel (kaum Latenz-Aufschlag, 3x Scoring-Tokens). Faellt ein Lauf
+    // aus, tragen die verbleibenden die Mehrheit (fail-soft via allSettled).
+    const settled = await Promise.allSettled([
+      prompt(hardenedInput), prompt(hardenedInput), prompt(hardenedInput),
+    ]);
+    const ok = settled
+      .filter((s): s is PromiseFulfilledResult<Awaited<ReturnType<typeof prompt>>> => s.status === 'fulfilled')
+      .map((s) => s.value.output)
+      .filter((o): o is NonNullable<typeof o> => !!o);
+    if (ok.length === 0) throw (settled[0] as PromiseRejectedResult).reason;
+    if (ok.length === 1) return ok[0];
+    return mergeConsensusRuns(ok);
+  }
+
   const { output } = await prompt(hardenedInput);
   return output!;
 }
