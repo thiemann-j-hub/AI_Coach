@@ -1,0 +1,1144 @@
+{
+  "generatedAt": "2026-07-02T18:02:05.413Z",
+  "model": "googleai/gemini-2.5-flash",
+  "temperature": "provider-default",
+  "scale": "1-4 (radar-contract, metricsFromCompetencyRatings)",
+  "nRuns": 5,
+  "results": [
+    {
+      "scenario": "01-klares-empathisches-feedback",
+      "lang": "de",
+      "runs": 5,
+      "perRunMetrics": [
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.3
+        },
+        {
+          "C1": 3,
+          "C2": 3,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.2
+        }
+      ],
+      "competencies": [
+        {
+          "key": "C1",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C2",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C3",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            4,
+            3
+          ],
+          "mean": 3.2,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.45
+        },
+        {
+          "key": "C4",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C5",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "mean": 4,
+          "min": 4,
+          "max": 4,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C6",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C7",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C8",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C9",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C10",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        }
+      ],
+      "overall": {
+        "values": [
+          3.2,
+          3.2,
+          3.2,
+          3.3,
+          3.2
+        ],
+        "mean": 3.22,
+        "range": 0.1,
+        "stddev": 0.04
+      },
+      "flutterCount": 0,
+      "maxRange": 1
+    },
+    {
+      "scenario": "02-harsch-ohne-empathie",
+      "lang": "de",
+      "runs": 5,
+      "perRunMetrics": [
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": null,
+          "C4": 1,
+          "C5": 1,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 2
+        },
+        {
+          "C1": 1,
+          "C2": 3,
+          "C3": 1,
+          "C4": 1,
+          "C5": 1,
+          "C6": 2,
+          "C7": null,
+          "C8": 1,
+          "C9": null,
+          "C10": null,
+          "overall": 1.4
+        },
+        {
+          "C1": 1,
+          "C2": 3,
+          "C3": 1,
+          "C4": 1,
+          "C5": 1,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 1.7
+        },
+        {
+          "C1": 1,
+          "C2": 3,
+          "C3": 1,
+          "C4": 1,
+          "C5": 1,
+          "C6": 2,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 1.5
+        },
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": null,
+          "C4": null,
+          "C5": 1,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 2.3
+        }
+      ],
+      "competencies": [
+        {
+          "key": "C1",
+          "observedIn": 3,
+          "flutter": true,
+          "values": [
+            1,
+            1,
+            1
+          ],
+          "mean": 1,
+          "min": 1,
+          "max": 1,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C2",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C3",
+          "observedIn": 3,
+          "flutter": true,
+          "values": [
+            1,
+            1,
+            1
+          ],
+          "mean": 1,
+          "min": 1,
+          "max": 1,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C4",
+          "observedIn": 4,
+          "flutter": true,
+          "values": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "mean": 1,
+          "min": 1,
+          "max": 1,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C5",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "mean": 1,
+          "min": 1,
+          "max": 1,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C6",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            2,
+            3,
+            2,
+            3
+          ],
+          "mean": 2.6,
+          "min": 2,
+          "max": 3,
+          "range": 1,
+          "stddev": 0.55
+        },
+        {
+          "key": "C7",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C8",
+          "observedIn": 1,
+          "flutter": true,
+          "values": [
+            1
+          ],
+          "mean": 1,
+          "min": 1,
+          "max": 1,
+          "range": 0,
+          "stddev": null
+        },
+        {
+          "key": "C9",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C10",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        }
+      ],
+      "overall": {
+        "values": [
+          2,
+          1.4,
+          1.7,
+          1.5,
+          2.3
+        ],
+        "mean": 1.78,
+        "range": 0.9,
+        "stddev": 0.37
+      },
+      "flutterCount": 4,
+      "maxRange": 1
+    },
+    {
+      "scenario": "03-zu-kurz-nicht-beobachtbar",
+      "lang": "de",
+      "runs": 5,
+      "perRunMetrics": [
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": null,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": null
+        },
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 3,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3
+        },
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 3,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3
+        },
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 2,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 2
+        },
+        {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null,
+          "C5": 2,
+          "C6": null,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 2
+        }
+      ],
+      "competencies": [
+        {
+          "key": "C1",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C2",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C3",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C4",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C5",
+          "observedIn": 4,
+          "flutter": true,
+          "values": [
+            3,
+            3,
+            2,
+            2
+          ],
+          "mean": 2.5,
+          "min": 2,
+          "max": 3,
+          "range": 1,
+          "stddev": 0.58
+        },
+        {
+          "key": "C6",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C7",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C8",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C9",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C10",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        }
+      ],
+      "overall": {
+        "values": [
+          3,
+          3,
+          2,
+          2
+        ],
+        "mean": 2.5,
+        "range": 1,
+        "stddev": 0.58
+      },
+      "flutterCount": 1,
+      "maxRange": 1
+    },
+    {
+      "scenario": "04-entwicklung-und-reflexion",
+      "lang": "de",
+      "runs": 5,
+      "perRunMetrics": [
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": 4,
+          "C4": null,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.5
+        },
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.4
+        },
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": null,
+          "C10": null,
+          "overall": 3.4
+        },
+        {
+          "C1": null,
+          "C2": 3,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": 4,
+          "C9": null,
+          "C10": null,
+          "overall": 3.5
+        },
+        {
+          "C1": 3,
+          "C2": 4,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 4,
+          "C7": null,
+          "C8": 4,
+          "C9": null,
+          "C10": null,
+          "overall": 3.7
+        }
+      ],
+      "competencies": [
+        {
+          "key": "C1",
+          "observedIn": 1,
+          "flutter": true,
+          "values": [
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": null
+        },
+        {
+          "key": "C2",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            4
+          ],
+          "mean": 3.2,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.45
+        },
+        {
+          "key": "C3",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "mean": 4,
+          "min": 4,
+          "max": 4,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C4",
+          "observedIn": 4,
+          "flutter": true,
+          "values": [
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C5",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "mean": 4,
+          "min": 4,
+          "max": 4,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C6",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            4
+          ],
+          "mean": 3.2,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.45
+        },
+        {
+          "key": "C7",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C8",
+          "observedIn": 2,
+          "flutter": true,
+          "values": [
+            4,
+            4
+          ],
+          "mean": 4,
+          "min": 4,
+          "max": 4,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C9",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C10",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        }
+      ],
+      "overall": {
+        "values": [
+          3.5,
+          3.4,
+          3.4,
+          3.5,
+          3.7
+        ],
+        "mean": 3.5,
+        "range": 0.3,
+        "stddev": 0.12
+      },
+      "flutterCount": 3,
+      "maxRange": 1
+    },
+    {
+      "scenario": "05-en-strategic-direction",
+      "lang": "en",
+      "runs": 5,
+      "perRunMetrics": [
+        {
+          "C1": 3,
+          "C2": 4,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 4,
+          "C7": null,
+          "C8": null,
+          "C9": 4,
+          "C10": null,
+          "overall": 3.7
+        },
+        {
+          "C1": null,
+          "C2": 4,
+          "C3": 4,
+          "C4": 3,
+          "C5": 4,
+          "C6": 4,
+          "C7": null,
+          "C8": null,
+          "C9": 4,
+          "C10": null,
+          "overall": 3.8
+        },
+        {
+          "C1": null,
+          "C2": 4,
+          "C3": 4,
+          "C4": 3,
+          "C5": 3,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": 3,
+          "C10": null,
+          "overall": 3.3
+        },
+        {
+          "C1": null,
+          "C2": 4,
+          "C3": 3,
+          "C4": 3,
+          "C5": 3,
+          "C6": 4,
+          "C7": null,
+          "C8": null,
+          "C9": 3,
+          "C10": null,
+          "overall": 3.3
+        },
+        {
+          "C1": null,
+          "C2": 4,
+          "C3": 3,
+          "C4": 3,
+          "C5": 4,
+          "C6": 3,
+          "C7": null,
+          "C8": null,
+          "C9": 4,
+          "C10": null,
+          "overall": 3.5
+        }
+      ],
+      "competencies": [
+        {
+          "key": "C1",
+          "observedIn": 1,
+          "flutter": true,
+          "values": [
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": null
+        },
+        {
+          "key": "C2",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "mean": 4,
+          "min": 4,
+          "max": 4,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C3",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            4,
+            3,
+            3
+          ],
+          "mean": 3.6,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.55
+        },
+        {
+          "key": "C4",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            3,
+            3,
+            3,
+            3,
+            3
+          ],
+          "mean": 3,
+          "min": 3,
+          "max": 3,
+          "range": 0,
+          "stddev": 0
+        },
+        {
+          "key": "C5",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            3,
+            3,
+            4
+          ],
+          "mean": 3.6,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.55
+        },
+        {
+          "key": "C6",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            3,
+            4,
+            3
+          ],
+          "mean": 3.6,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.55
+        },
+        {
+          "key": "C7",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C8",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        },
+        {
+          "key": "C9",
+          "observedIn": 5,
+          "flutter": false,
+          "values": [
+            4,
+            4,
+            3,
+            3,
+            4
+          ],
+          "mean": 3.6,
+          "min": 3,
+          "max": 4,
+          "range": 1,
+          "stddev": 0.55
+        },
+        {
+          "key": "C10",
+          "observedIn": 0,
+          "flutter": false,
+          "values": [],
+          "mean": null,
+          "min": null,
+          "max": null,
+          "range": null,
+          "stddev": null
+        }
+      ],
+      "overall": {
+        "values": [
+          3.7,
+          3.8,
+          3.3,
+          3.3,
+          3.5
+        ],
+        "mean": 3.52,
+        "range": 0.5,
+        "stddev": 0.23
+      },
+      "flutterCount": 1,
+      "maxRange": 1
+    }
+  ]
+}

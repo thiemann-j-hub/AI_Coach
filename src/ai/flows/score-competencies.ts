@@ -68,6 +68,10 @@ SKALA 1–4
 2 = erste solide Ansätze
 3 = gut und überwiegend wirksam
 4 = sehr gut / vorbildlich in dieser Situation
+TRENNSCHÄRFE: Bewerte je Kompetenz NUR ihren eigenen Kern und lass ihn nicht vom Gesamteindruck
+einfärben — z. B. kann C2 (Klarheit/Entscheidungsstärke) hoch sein, obwohl der Ton schlecht ist
+(der Ton gehört zu C5). Ein durchgängig negatives Gespräch macht nicht automatisch JEDE
+beobachtbare Kompetenz zur 1.
 
 REIHENFOLGE DER BEWERTUNG (zwingend, pro Kompetenz):
 1) Sammle zuerst die EVIDENCE: 1–2 wörtliche Zitate aus dem Transkript (max. ~18 Wörter),
@@ -75,8 +79,19 @@ REIHENFOLGE DER BEWERTUNG (zwingend, pro Kompetenz):
 2) Begründe (why) ausschließlich auf Basis dieser Zitate.
 3) Vergib ERST DANN den score — nur wenn die Evidenz ihn belegt.
 
-WENN NICHT ERKENNBAR:
-evidence = [], score = null, why = "nicht ausreichend beobachtbar".
+BEOBACHTBARKEITS-TEST (zwingend VOR jedem Score, pro Kompetenz — Konsistenz vor Vollständigkeit):
+Stelle GENAU diese Frage: "Gibt es mindestens EIN wörtliches Zitat, in dem die Führungskraft in einer
+Situation handelt, die DIESE Kompetenz konkret fordert?"
+- NEIN → evidence = [], score = null, why = "nicht ausreichend beobachtbar". IMMER. Keine Ausnahme.
+- JA  → score 1–4 vergeben. Auch KONTRAPRODUKTIVES Verhalten in einer relevanten Situation IST
+  Evidenz (dann score = 1) — z. B. abgeblockter Dialog belegt C5 mit 1, nicht mit null.
+ABER: Das bloße FEHLEN eines Themas ist KEINE Evidenz (kein Score 1, sondern null) — wenn die
+Situation die Kompetenz gar nicht fordert, wurde nichts beobachtet.
+GRENZFALL-REGEL: Ist der Beleg nur indirekt, angedeutet oder müsstest du interpretieren
+(confidence < 0.5), entscheide dich IMMER für null. Ein knapper Beleg, den du bei erneuter
+Bewertung desselben Transkripts vielleicht nicht wiederfinden würdest, ist KEIN Beleg.
+Dieselbe Transkriptstelle muss bei jeder Bewertung zur SELBEN Beobachtbarkeits-Entscheidung führen.
+
 Erfinde KEINE Zitate. Ein Zitat in evidence MUSS WÖRTLICH und ZUSAMMENHÄNGEND im Transkript stehen
 (keine Fragmente aus verschiedenen Sätzen zusammensetzen).
 
