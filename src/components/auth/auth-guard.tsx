@@ -163,7 +163,7 @@ function LoginScreen() {
           {legalLinks.map(([label, slug]) => (
             <a
               key={slug}
-              href={`https://pulscraft-ai.azurewebsites.net/${slug}`}
+              href={`https://pulsenorth.ai/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-primary"

@@ -10,5 +10,16 @@ export const dynamic = "force-dynamic";
  * dafuer ist /api/ready zustaendig. Oeffentlich + ungeauthet (Plattform-Check).
  */
 export async function GET() {
-  return NextResponse.json({ ok: true, status: "alive" }, { status: 200 });
+  // A3 Deploy-Provenienz: BUILD_SHA/BUILD_BRANCH/BUILD_STAMPED_AT = App-Service-
+  // App-Settings (Runtime, gesetzt beim Deploy via az) → Prod-Wahrheit sichtbar.
+  return NextResponse.json(
+    {
+      ok: true,
+      status: "alive",
+      sha: process.env.BUILD_SHA ?? "unstamped",
+      branch: process.env.BUILD_BRANCH ?? null,
+      stampedAt: process.env.BUILD_STAMPED_AT ?? null,
+    },
+    { status: 200 }
+  );
 }
