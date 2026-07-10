@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Star, AlertTriangle, Download, AlarmClock, Check, Copy, CalendarPlus } from 'lucide-react';
+import { Star, AlertTriangle, Download, AlarmClock, Check, Copy, CalendarPlus, GraduationCap, ArrowRight } from 'lucide-react';
 import { ScoreRing } from './score-ring';
 import { InsightCard } from './insight-card';
 import { DeltaCard, type PreviousComparison } from './delta-card';
@@ -23,6 +23,73 @@ import {
 import { LinkedInPostCard } from './linkedin-post-card';
 
 type AnyObj = Record<string, any>;
+
+/* ------------------------------------------------------------------ */
+/*  StudioRecommendationCard — M3-2 Cross-App-Wertkette (Task #25)     */
+/* ------------------------------------------------------------------ */
+// Schwächste Kompetenz der Analyse → 1-Klick ins Learning Studio mit
+// vorbefülltem Projekt (same-origin Deeplink /studio/{locale}/projects/new).
+// Sichtbarster Suite-Mehrwert: aus der Diagnose wird direkt eine Maßnahme.
+
+function StudioRecommendationCard({ competencies }: { competencies: any[] }) {
+  const { locale } = useTranslation();
+  const de = locale.startsWith('de');
+
+  const scored = (Array.isArray(competencies) ? competencies : [])
+    .map((c: AnyObj) => {
+      const s = toNumber(c?.score);
+      if (s === null) return null;
+      const pct = s <= 4 ? (s / 4) * 100 : s <= 10 ? (s / 10) * 100 : s;
+      return {
+        id: String(c?.id ?? c?.competencyId ?? '').trim(),
+        name: String(c?.title ?? c?.name ?? c?.label ?? '').trim(),
+        pct: clamp(pct, 0, 100),
+      };
+    })
+    .filter((x): x is { id: string; name: string; pct: number } => !!x && !!x.name);
+
+  if (scored.length === 0) return null;
+  const weakest = scored.reduce((a, b) => (b.pct < a.pct ? b : a));
+  // Nur empfehlen, wenn wirklich Luft nach oben ist — sonst wirkt es verkäuferisch.
+  if (weakest.pct >= 75) return null;
+
+  const studioLocale = de ? 'de' : locale.startsWith('es') ? 'es' : 'en';
+  const title = de
+    ? `Lernmodul: ${weakest.name}`
+    : `Learning module: ${weakest.name}`;
+  const goal = de
+    ? `Führungskompetenz „${weakest.name}" (${weakest.id}) gezielt stärken — abgeleitet aus einer PulseNorth-Gesprächsanalyse.`
+    : `Strengthen the leadership competency "${weakest.name}" (${weakest.id}) — derived from a PulseNorth conversation analysis.`;
+  const href = `/studio/${studioLocale}/projects/new?title=${encodeURIComponent(title)}&goal=${encodeURIComponent(goal)}&src=coach`;
+
+  return (
+    <div className="glass-panel rounded-2xl p-5">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
+          <GraduationCap className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <h3 className="font-semibold text-foreground">
+            {de ? 'Nächster Schritt: gezielt trainieren' : 'Next step: targeted training'}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {de
+              ? `Größtes Potenzial: ${weakest.id} · ${weakest.name}. Erstelle dazu in Minuten ein Lernmodul im Learning Studio.`
+              : `Biggest potential: ${weakest.id} · ${weakest.name}. Create a matching learning module in minutes.`}
+          </p>
+          <a
+            href={href}
+            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white shadow-neon transition-all hover:bg-primary-dark"
+          >
+            <GraduationCap className="h-4 w-4" />
+            {de ? 'Lernmodul im Studio erstellen' : 'Create module in Studio'}
+            <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /*  CompetencyPanel                                                    */
@@ -592,6 +659,9 @@ export default function ReportDashboard({
           </div>
           <CompetencyPanel competencies={competencies} />
         </div>
+
+        {/* M3-2: Diagnose → Maßnahme (Cross-App-Wertkette Coach→Studio) */}
+        <StudioRecommendationCard competencies={competencies} />
 
         {sessionId && runId && (
           <RatingCard

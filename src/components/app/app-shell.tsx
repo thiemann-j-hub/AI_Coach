@@ -25,6 +25,7 @@ import { UserNav } from '@/components/auth/user-nav';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { PulscraftWordmark } from '@/components/pulscraft-wordmark';
 import { CreditBalance } from '@/components/app/credit-balance';
+import { AppSwitcher } from '@/components/app/app-switcher';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
 type NavGroup = { label: string; items: NavItem[] };
@@ -239,6 +240,8 @@ export default function AppShell(props: {
 
             <div className="flex items-center gap-2 md:gap-3">
               {props.actions}
+              {/* M3-1: aus jeder App in jede App (Plattform-Kohäsion) */}
+              <AppSwitcher />
               <CreditBalance />
               <LanguageSwitcher compact />
               {user ? (
