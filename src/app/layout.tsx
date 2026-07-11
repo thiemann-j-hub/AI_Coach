@@ -8,6 +8,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { STORAGE_KEY_THEME } from "@/lib/storage-keys";
 import { locales, defaultLocale, localeBcp47, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+// Chatbot Blueprint Teil C, SSOT pulsenorth-ops/chat-widget-kit,
+// ruft /api/chat root-absolut = Hub-Catch-all
+import ChatWidget from "@/components/chatbot/ChatWidget";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
@@ -59,6 +62,7 @@ export default async function RootLayout({
         >
           <AuthProvider>
             {children}
+            <ChatWidget surface="coach" lang="de" />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
