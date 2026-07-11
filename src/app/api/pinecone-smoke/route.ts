@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pineconeSearchCards } from "@/lib/pinecone";
+// W5 (Pinecone-Ablösung): Smoke läuft jetzt gegen Cosmos-Vektor (gemini-768).
+import { searchCards as pineconeSearchCards } from "@/lib/cosmos-cards";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 

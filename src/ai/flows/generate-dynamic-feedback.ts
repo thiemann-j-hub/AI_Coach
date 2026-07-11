@@ -6,7 +6,10 @@
  * - return rag_context_* fields back to the UI
  */
 
-import { pineconeSearchCards } from '@/lib/pinecone';
+// W5 (Pinecone-Ablösung): Retrieval läuft jetzt über Cosmos-Vektor (gemini-768).
+// Alias-Import → Aufrufstellen unverändert (Rückgabe-Shape feldgenau identisch,
+// adversarial 5/5 SAFE + Live-Parität 8/8 Filter-korrekt bewiesen).
+import { searchCards as pineconeSearchCards } from '@/lib/cosmos-cards';
 import { withTimeout, timeoutMs } from '@/lib/with-timeout';
 import { z } from 'zod';
 import * as tailoredMod from './generate-tailored-feedback';
