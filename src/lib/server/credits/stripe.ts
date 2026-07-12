@@ -14,8 +14,10 @@ export function getStripe(): Stripe {
   if (!client) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) throw new Error("STRIPE_SECRET_KEY ist nicht gesetzt.");
-    // apiVersion bewusst nicht gepinnt -> SDK-Default des installierten Pakets.
-    client = new Stripe(key);
+    // apiVersion explizit gepinnt (= Version des installierten SDK 17.7.0):
+    // ohne Pin uebernimmt ein stilles SDK-Update die neue API-Version und kann
+    // Live-Verhalten (Webhook-Shapes, Defaults) unbemerkt aendern.
+    client = new Stripe(key, { apiVersion: "2025-02-24.acacia" });
   }
   return client;
 }

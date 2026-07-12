@@ -41,16 +41,57 @@ export function invoiceBlobPath(year: string, invoiceNumber: string): string {
   return `${year}/${invoiceNumber}.pdf`;
 }
 
-/** Laedt das eager gerenderte PDF hoch (idempotent ueberschreibend ist ok: gleiches eingefrorenes Doc). */
+/**
+ * Laedt das eager gerenderte PDF hoch. GoBD-WORM-tauglich: existiert der Blob
+ * bereits, wird NICHT ueberschrieben (write-once) — das PDF entsteht ohnehin
+ * deterministisch aus dem eingefrorenen Invoice-Doc, ein Re-Upload waere
+ * byte-gleich. Unter einer Container-Immutability-Policy wuerde ein Overwrite
+ * mit 409 abgewiesen; den Race (parallel entstandener Blob) behandeln wir
+ * deshalb ebenfalls als Erfolg.
+ */
 export async function uploadInvoicePdf(blobPath: string, pdf: Buffer): Promise<void> {
   const container = getService().getContainerClient(CONTAINER);
   const blob = container.getBlockBlobClient(blobPath);
-  await blob.uploadData(pdf, {
-    blobHTTPHeaders: {
-      blobContentType: "application/pdf",
-      blobContentDisposition: `inline; filename="${blobPath.split("/").pop()}"`,
-    },
-  });
+  if (await existingBlobMatches(blob, blobPath, pdf)) return;
+  try {
+    await blob.uploadData(pdf, {
+      blobHTTPHeaders: {
+        blobContentType: "application/pdf",
+        blobContentDisposition: `inline; filename="${blobPath.split("/").pop()}"`,
+      },
+    });
+  } catch (e: unknown) {
+    // 409 = Blob existiert inzwischen (Race) oder Immutability-Policy verweigert
+    // den Overwrite — wenn das vorhandene PDF passt, liegt es bereits
+    // unveraenderbar vor und der Upload gilt als Erfolg.
+    const code = (e as { statusCode?: number })?.statusCode;
+    if (code === 409 && (await existingBlobMatches(blob, blobPath, pdf))) return;
+    throw e;
+  }
+}
+
+/**
+ * Write-once-Pruefung: true = Blob existiert und die Groesse passt zum frisch
+ * gerenderten PDF (Re-Render desselben eingefrorenen Docs ist laengengleich —
+ * PDF-Timestamps sind fixe Breite). Abweichende Groesse = Tripwire fuer eine
+ * Rechnungsnummern-Kollision (zwei Rechnungen -> gleicher Pfad): HART werfen,
+ * damit nie das PDF einer fremden Rechnung am Doc verlinkt wird.
+ */
+async function existingBlobMatches(
+  blob: ReturnType<ReturnType<BlobServiceClient["getContainerClient"]>["getBlockBlobClient"]>,
+  blobPath: string,
+  pdf: Buffer
+): Promise<boolean> {
+  if (!(await blob.exists())) return false;
+  const props = await blob.getProperties();
+  if (typeof props.contentLength === "number" && props.contentLength !== pdf.byteLength) {
+    throw new Error(
+      `uploadInvoicePdf: Blob ${blobPath} existiert mit abweichender Groesse ` +
+        `(${props.contentLength} vs. ${pdf.byteLength} Bytes) — moegliche ` +
+        `Rechnungsnummern-Kollision; write-once, NICHT ueberschrieben.`
+    );
+  }
+  return true;
 }
 
 /**
