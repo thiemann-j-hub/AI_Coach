@@ -14,7 +14,14 @@
  */
 import { useEffect, useRef, useState } from "react";
 
-type Msg = { role: "user" | "assistant"; text: string; label?: string; citations?: { title: string; url: string }[] };
+type Msg = {
+  role: "user" | "assistant";
+  text: string;
+  label?: string;
+  citations?: { title: string; url: string }[];
+  eventId?: string;
+  rated?: "up" | "down";
+};
 type Props = {
   endpoint?: string; // Default "/api/chat" (same-origin). Marketing: absolute Hub-URL.
   surface?: string; // z.B. "hub" | "coach" | "marketing"
@@ -53,16 +60,43 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const t = STRINGS[lang];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, open]);
 
+  // Fokus-Komfort: nach jeder Antwort direkt weitertippen können (Live-Testfund).
+  useEffect(() => {
+    if (open && !busy) inputRef.current?.focus();
+  }, [open, busy]);
+
+  async function rate(idx: number, rating: "up" | "down") {
+    const m = msgs[idx];
+    if (!m?.eventId || m.rated) return;
+    setMsgs((arr) => arr.map((x, i) => (i === idx ? { ...x, rated: rating } : x)));
+    try {
+      await fetch(`${endpoint}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: anon ? "omit" : "include",
+        body: JSON.stringify({ eventId: m.eventId, rating }),
+      });
+    } catch {
+      /* Feedback ist fire-and-forget */
+    }
+  }
+
   async function send(text: string) {
     const q = text.trim();
     if (!q || busy) return;
     setInput("");
+    // Multi-Turn: die letzten Turns als Kontext mitschicken (Server sanitized hart).
+    const history = msgs
+      .filter((m) => m.text)
+      .slice(-6)
+      .map((m) => ({ role: m.role, text: m.text.slice(0, 600) }));
     setMsgs((m) => [...m, { role: "user", text: q }, { role: "assistant", text: "" }]);
     setBusy(true);
     try {
@@ -70,7 +104,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: anon ? "omit" : "include",
-        body: JSON.stringify({ message: q, lang, surface }),
+        body: JSON.stringify({ message: q, lang, surface, history }),
       });
       if (!res.ok || !res.body) throw new Error(String(res.status));
       const reader = res.body.getReader();
@@ -86,7 +120,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
         for (const part of parts) {
           const line = part.trim();
           if (!line.startsWith("data:")) continue;
-          let ev: { type?: string; text?: string; label?: string; citations?: { title: string; url: string }[]; message?: string };
+          let ev: { type?: string; text?: string; label?: string; citations?: { title: string; url: string }[]; message?: string; eventId?: string };
           try { ev = JSON.parse(line.slice(5).trim()); } catch { continue; }
           // Immutabel updaten (kein In-place-Mutation): sonst appended der
           // StrictMode-/Concurrent-Doppelaufruf des Updaters denselben Delta zweimal.
@@ -95,7 +129,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
             if (last?.role !== "assistant") return m;
             const next = { ...last };
             if (ev.type === "delta") next.text = next.text + (ev.text ?? "");
-            else if (ev.type === "done") { next.label = ev.label; next.citations = (ev.citations ?? []).filter((c) => c.title); }
+            else if (ev.type === "done") { next.label = ev.label; next.citations = (ev.citations ?? []).filter((c) => c.title); next.eventId = ev.eventId; }
             else if (ev.type === "error") next.text = next.text || t.error;
             else return m;
             return [...m.slice(0, -1), next];
@@ -149,12 +183,26 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
                     c.url ? <a key={j} href={c.url} target="_blank" rel="noopener noreferrer">{c.title}</a> : <span key={j}>{c.title}</span>
                   ))}</div>
                 )}
-                {m.role === "assistant" && m.label && <div className="pnchat-label">{m.label}</div>}
+                {m.role === "assistant" && m.label && (
+                  <div className="pnchat-foot">
+                    <span className="pnchat-label">{m.label}</span>
+                    {m.eventId && (
+                      <span className="pnchat-rate">
+                        <button aria-label="Hilfreich" data-active={m.rated === "up"} disabled={!!m.rated} onClick={() => rate(i, "up")}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill={m.rated === "up" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12" /><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" /></svg>
+                        </button>
+                        <button aria-label="Nicht hilfreich" data-active={m.rated === "down"} disabled={!!m.rated} onClick={() => rate(i, "down")}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill={m.rated === "down" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14V2" /><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" /></svg>
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
           <form className="pnchat-input" onSubmit={(e) => { e.preventDefault(); send(input); }}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.placeholder} disabled={busy} maxLength={2000} />
+            <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.placeholder} disabled={busy} maxLength={2000} />
             <button type="submit" disabled={busy || !input.trim()} aria-label={t.send}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
             </button>
@@ -187,6 +235,12 @@ const CSS = `
 .pnchat-cites{font-size:11px;color:#666;display:flex;flex-wrap:wrap;gap:6px}
 .pnchat-cites a{color:#1f6feb;text-decoration:underline}
 .pnchat-label{font-size:10px;color:#999;font-style:italic}
+.pnchat-foot{display:flex;align-items:center;gap:8px}
+.pnchat-rate{display:inline-flex;gap:4px}
+.pnchat-rate button{background:none;border:none;color:#999;cursor:pointer;padding:2px;line-height:0;border-radius:4px}
+.pnchat-rate button:hover:not(:disabled){color:#1f6feb;background:rgba(31,111,235,.08)}
+.pnchat-rate button[data-active="true"]{color:#1f6feb}
+.pnchat-rate button:disabled{cursor:default;opacity:.9}
 .pnchat-typing{display:inline-flex;gap:3px}
 .pnchat-typing i{width:6px;height:6px;border-radius:50%;background:#999;animation:pnbounce 1.2s infinite}
 .pnchat-typing i:nth-child(2){animation-delay:.2s}.pnchat-typing i:nth-child(3){animation-delay:.4s}
