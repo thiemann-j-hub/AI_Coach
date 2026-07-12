@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   Avatar,
   AvatarFallback,
@@ -34,12 +35,15 @@ export function UserNav() {
         <div className="text-sm font-bold text-foreground leading-none mb-1">
           {user.displayName || t.auth.user}
         </div>
-        <button
-          onClick={onSignOut}
-          className="text-xs text-muted-foreground hover:text-primary transition-colors"
-        >
-          {t.auth.signOut}
-        </button>
+        <div className="text-xs text-muted-foreground flex items-center gap-2 justify-end">
+          <Link href="/settings" className="hover:text-primary transition-colors">
+            Einstellungen
+          </Link>
+          <span aria-hidden>·</span>
+          <button onClick={onSignOut} className="hover:text-primary transition-colors">
+            {t.auth.signOut}
+          </button>
+        </div>
       </div>
       <Avatar className="h-10 w-10 border border-border shadow-neon">
         <AvatarImage src={user.photoURL || ""} alt={user.displayName || t.auth.user} />
