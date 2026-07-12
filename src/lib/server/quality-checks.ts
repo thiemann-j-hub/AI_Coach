@@ -23,8 +23,9 @@ export function qualityMode(): QualityMode {
 
 /**
  * Führt alle deterministischen Checks aus. Gibt { notes, blocked } zurück.
- * blocked = true nur in mode=enforce bei einem error-Note (aktuell erzeugt
- * kein Check error → enforce ≈ warn, bis bewusst verschärft).
+ * blocked = true nur in mode=enforce bei einem error-Note. error emittiert
+ * aktuell EVIDENCE_ALL_UNGROUNDED (gesamte Belegkette einer gescorten
+ * Kompetenz fabriziert) — die Route degradiert dann gezielt diese Kompetenz.
  */
 export function runQualityChecks(
   result: AnalysisForChecks,

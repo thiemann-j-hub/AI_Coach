@@ -249,6 +249,26 @@ export async function POST(req: NextRequest) {
       if (qc.notes.length) {
         logger.api("/api/analyze", "quality-notes", { uid: authResult.uid, count: qc.notes.length });
       }
+      // §2.2 enforce: fabrizierte Belegketten NICHT ausliefern. Gezielt nur die
+      // betroffene Kompetenz degradieren (Score zurückhalten, Fabrikat-Zitate
+      // strippen) statt die ganze bezahlte Analyse zu blocken — der Kunde sieht
+      // "nicht verifizierbar" statt eines halluzinierten Scores.
+      if (qc.blocked) {
+        const fabricated = new Set(
+          qc.notes.filter((n) => n.severity === "error" && n.field).map((n) => n.field as string)
+        );
+        const heldWhy =
+          d.lang === "en"
+            ? "evidence not verifiable in transcript — score withheld (quality gate)"
+            : "Belege nicht im Transkript verifizierbar — Score zurückgehalten (Qualitäts-Gate)";
+        competency_ratings = competency_ratings.map((c: any) =>
+          fabricated.has(c.id) ? { ...c, score: null, evidence: [], why: heldWhy } : c
+        );
+        logger.api("/api/analyze", "quality-enforce-degraded", {
+          uid: authResult.uid,
+          fields: [...fabricated],
+        });
+      }
     } catch (e: any) {
       logger.apiError("/api/analyze/quality", e);
     }

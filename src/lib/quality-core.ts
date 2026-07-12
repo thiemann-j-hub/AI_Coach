@@ -34,7 +34,15 @@ export function evidenceNeedle(q: string): string {
     .trim();
 }
 
-/** Evidenz-Zitate müssen (normalisiert) im gesendeten Transkript vorkommen. */
+/**
+ * Evidenz-Zitate müssen (normalisiert) im gesendeten Transkript vorkommen.
+ *
+ * Eskalation (§2.2 enforce): Ist die GESAMTE Evidenz einer gescorten Kompetenz
+ * nicht im Transkript auffindbar (jedes prüfbare Zitat fabriziert), ist der
+ * Score nicht vertrauenswürdig → severity "error" (EVIDENCE_ALL_UNGROUNDED).
+ * Einzelne ungroundete Zitate neben groundeten bleiben "warn" — das kann
+ * legitime Paraphrase sein; komplett fabrizierte Belegketten nicht.
+ */
 export function checkEvidenceGrounding(
   competencies: Array<{ id: string; score: number | null; evidence?: string[] }>,
   transcript: string
@@ -43,10 +51,14 @@ export function checkEvidenceGrounding(
   const hay = norm(transcript);
   if (!hay) return notes;
   for (const c of competencies) {
+    let checkable = 0;
+    let ungrounded = 0;
     for (const q of c.evidence ?? []) {
       const needle = evidenceNeedle(q);
       if (needle.length < 8) continue;
+      checkable++;
       if (!hay.includes(needle)) {
+        ungrounded++;
         notes.push({
           code: "EVIDENCE_NOT_GROUNDED",
           severity: "warn",
@@ -54,6 +66,14 @@ export function checkEvidenceGrounding(
           message: `Evidenz-Zitat für ${c.id} nicht wörtlich im Transkript: "${String(q).slice(0, 60)}…"`,
         });
       }
+    }
+    if (checkable > 0 && ungrounded === checkable && typeof c.score === "number") {
+      notes.push({
+        code: "EVIDENCE_ALL_UNGROUNDED",
+        severity: "error",
+        field: c.id,
+        message: `${c.id}: Score ${c.score}, aber KEIN Evidenz-Zitat im Transkript verifizierbar (${ungrounded}/${checkable} fabriziert).`,
+      });
     }
   }
   return notes;
