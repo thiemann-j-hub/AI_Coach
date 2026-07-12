@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-// W5 (Pinecone-Ablösung): Smoke läuft jetzt gegen Cosmos-Vektor (gemini-768).
-import { searchCards as pineconeSearchCards } from "@/lib/cosmos-cards";
+// RAG-Smoke gegen Cosmos-Vektor (gemini-768).
+import { searchCards } from "@/lib/cosmos-cards";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
 
   // Rate limit: 10 requests per minute
-  const rlKey = rateLimitKey(req, "pinecone-smoke");
+  const rlKey = rateLimitKey(req, "rag-smoke");
   const rlResponse = checkRateLimit(rlKey, 10, 60_000);
   if (rlResponse) return rlResponse;
 
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const topK = sp.get("topK") ?? sp.get("top_k") ?? undefined;
 
   try {
-    const out = await pineconeSearchCards({ text, lang, topK });
+    const out = await searchCards({ text, lang, topK });
 
     return NextResponse.json({
       ok: true,
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       results: out.results,
     });
   } catch (e: any) {
-    console.error("[pinecone-smoke] unexpected error:", e);
+    console.error("[rag-smoke] unexpected error:", e);
     return NextResponse.json(
       { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }

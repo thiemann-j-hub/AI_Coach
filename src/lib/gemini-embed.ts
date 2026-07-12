@@ -1,11 +1,10 @@
 /**
- * W5 (Pinecone-Ablösung) — Gemini-768-Embedding für Coach.
+ * Gemini-768-Embedding für Coach.
  *
- * Coach nutzte bisher Pinecone Integrated Embedding (multilingual-e5-large, 1024d,
- * server-seitig). Nach der Cosmos-Migration embedden wir chunk_text (Backfill) UND
- * die User-Query (Retrieval) selbst mit `gemini-embedding-001` (768d) — identisch
- * zur restlichen Plattform (Studio/Jobmap), damit Passage- und Query-Vektorraum
- * konsistent sind. Muster 1:1 aus Studio gemini.ts (embedText).
+ * Wir embedden chunk_text (Backfill) UND die User-Query (Retrieval) selbst mit
+ * `gemini-embedding-001` (768d) — identisch zur restlichen Plattform (Studio/
+ * Jobmap), damit Passage- und Query-Vektorraum konsistent sind. Muster 1:1 aus
+ * Studio gemini.ts (embedText).
  */
 import { GoogleGenAI } from "@google/genai";
 

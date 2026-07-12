@@ -20,7 +20,7 @@ export const GenerateTailoredFeedbackInputSchema = z.object({
   leaderLabel: z.string().optional().describe('Speaker label for the leader (e.g., FK).'),
   employeeLabel: z.string().optional().describe('Speaker label for the employee (e.g., MA).'),
 
-  relevantSnippets: z.array(z.string()).optional().describe('Relevant snippets retrieved from Pinecone, if any.'),
+  relevantSnippets: z.array(z.string()).optional().describe('Relevant snippets retrieved from the vector store, if any.'),
 });
 
 export type GenerateTailoredFeedbackInput = z.infer<typeof GenerateTailoredFeedbackInputSchema>;
@@ -54,7 +54,7 @@ const generateTailoredFeedbackPrompt = ai.definePrompt({
 IMPORTANT RULES:
 - Focus your evaluation primarily on the LEADER (manager).
 - The transcript uses speaker labels. If leaderLabel/employeeLabel are provided, use them to interpret who is who.
-- Do NOT reveal any internal sources, cards, vector DB, Pinecone, or metadata. Use relevant snippets only as guidance.
+- Do NOT reveal any internal sources, cards, vector DB, or metadata. Use relevant snippets only as guidance.
 - Do NOT use real names in quotes. Use the labels (leaderLabel / employeeLabel) or generic "Führungskraft" / "Mitarbeiter:in".
 - Output language: if lang is provided (e.g., "de"), write the feedback in that language. Otherwise, default to German.
 

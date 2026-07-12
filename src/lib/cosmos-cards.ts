@@ -1,11 +1,10 @@
 /**
- * Cosmos NoSQL Vector Search — 1:1-Ersatz für pineconeSearchCards (pinecone.ts).
+ * Cosmos NoSQL Vector Search — Karten-Retrieval für Coach.
  *
- * Coach hat Pinecone (Integrated Embedding, multilingual-e5-large, 1024d) durch
- * die eigene Gemini-768-Embedding + Azure-Cosmos-Vektorsuche abgelöst. Diese Datei
- * exportiert `searchCards`, deren Rückgabe strukturell IDENTISCH zu pinecone.ts
- * `PineconeCompatResult` ist — damit bleibt generate-dynamic-feedback.ts (nutzt
- * `.count` und `.results[].metadata.chunk_text`) UNVERÄNDERT.
+ * Coach embeddet Query + Passagen selbst mit Gemini-768 (768d) und sucht über
+ * Azure Cosmos-Vektor. Diese Datei exportiert `searchCards`; der Rückgabe-Shape
+ * `VectorSearchResult` liefert `.count` und `.results[].metadata.chunk_text` für
+ * generate-dynamic-feedback.ts.
  *
  * ── Ein Container, triviale Partition ─────────────────────────────────────────
  * DB `coach-vec` (NEU, dedizierter Durchsatz — ein vektor-indizierter Container
@@ -31,17 +30,17 @@ const VEC_CONTAINER = process.env.COSMOS_VECTOR_CONTAINER || "cards";
 const NAMESPACE = "cards_v3";
 const MAX_ATTEMPTS = 10;
 
-// ── Rückgabe-Shape — strukturell identisch zu pinecone.ts PineconeCompatResult ──
-type PineconeHit = {
+// ── Rückgabe-Shape — VectorSearchResult ──
+type VectorHit = {
   _id: string;
   _score: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fields?: Record<string, any>;
 };
-export type PineconeCompatResult = {
+export type VectorSearchResult = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   raw: any;
-  hits: PineconeHit[];
+  hits: VectorHit[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matches: Array<{ id: string; score: number; metadata: Record<string, any> }>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,9 +49,9 @@ export type PineconeCompatResult = {
 };
 
 /**
- * Projizierte Metadatenfelder — exakt pinecone.ts DEFAULT_FIELDS (chunk_text +
+ * Projizierte Metadatenfelder — die flachen Metadatenfelder (chunk_text +
  * alle flachen Metadaten neben embedding). `metadata` des Treffers = genau diese
- * Felder (NICHT das embedding). id/score werden separat geführt (wie Pinecone).
+ * Felder (NICHT das embedding). id/score werden separat geführt.
  */
 const CARD_FIELDS = [
   "chunk_text",
@@ -137,7 +136,7 @@ async function queryWithRetry(query: string, params: SqlParam[]): Promise<Doc[]>
   throw new Error(`[cosmos-cards] query nach ${MAX_ATTEMPTS} Versuchen weiter gedrosselt: ${(lastErr as Error)?.message ?? lastErr}`);
 }
 
-// ── Pinecone-Filter ($eq/$ne/$in bzw. Rohwert) → parametrisierte SQL-Bedingung ──
+// ── Metadaten-Filter ($eq/$ne/$in bzw. Rohwert) → parametrisierte SQL-Bedingung ──
 // WERTE laufen IMMER als SQL-Parameter (@p{n}) — nie interpoliert. FELDNAMEN
 // werden gegen eine Whitelist geprüft und sonst still verworfen: ein Filter-KEY
 // ist andernfalls die einzige Injection-Fläche (roh in `c.${field}`), und der
@@ -220,34 +219,34 @@ async function runVectorSearch(
   return queryWithRetry(query, params);
 }
 
-/** Roh-Docs → PineconeCompatResult (metadata = CARD_FIELDS, ohne embedding/id/score). */
-function toCompat(raw: Doc[]): PineconeCompatResult {
+/** Roh-Docs → VectorSearchResult (metadata = CARD_FIELDS, ohne embedding/id/score). */
+function toCompat(raw: Doc[]): VectorSearchResult {
   const matches = (raw || []).map((d) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const metadata: Record<string, any> = {};
     for (const f of CARD_FIELDS) if (d[f] !== undefined && d[f] !== null) metadata[f] = d[f];
     return { id: String(d.id ?? ""), score: Number(d.score) || 0, metadata };
   });
-  const hits: PineconeHit[] = matches.map((m) => ({ _id: m.id, _score: m.score, fields: m.metadata }));
+  const hits: VectorHit[] = matches.map((m) => ({ _id: m.id, _score: m.score, fields: m.metadata }));
   return { raw, hits, matches, results: matches, count: matches.length };
 }
 
 /**
- * Query-Adapter, der pineconeSearchCards ersetzt.
+ * Query-Adapter, der searchCards ersetzt.
  *
  * Ablauf: (1) Query-Text mit Gemini-768 embedden; (2) WHERE bauen (immer
  * namespace='cards_v3', Filter conversation_type/jurisdiction whitelist-gegated,
  * lang separat); (3) VectorDistance-Query TOP k nearest-first; (4) Lang-Fallback
- * (wie Coach heute in pinecone.ts): lang gesetzt UND 0 Treffer → OHNE lang erneut;
- * (5) Rückgabe im PineconeCompatResult-Shape.
+ * (Lang-Fallback wie zuvor): lang gesetzt UND 0 Treffer → OHNE lang erneut;
+ * (5) Rückgabe im VectorSearchResult-Shape.
  */
 export async function searchCards(args: {
   text: string;
-  topK?: number | string; // string zulässig (Query-Param der Smoke-Route), wie Pinecone
+  topK?: number | string; // string zulässig (Query-Param der Smoke-Route)
   lang?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filter?: Record<string, unknown>;
-}): Promise<PineconeCompatResult> {
+}): Promise<VectorSearchResult> {
   const text = String(args?.text ?? "").trim();
   if (!text) throw new Error("Missing search text (expected args.text)");
   const rawK = typeof args?.topK === "string" ? Number(args.topK) : args?.topK;
@@ -259,7 +258,7 @@ export async function searchCards(args: {
 
   let raw = await runVectorSearch(q, topK, filter, lang);
 
-  // Lang-Fallback: lang gesetzt UND 0 Treffer → erneut OHNE lang (pinecone.ts:85-93).
+  // Lang-Fallback: lang gesetzt UND 0 Treffer → erneut OHNE lang.
   if (lang && raw.length === 0) {
     raw = await runVectorSearch(q, topK, filter, undefined);
   }

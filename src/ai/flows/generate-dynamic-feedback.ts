@@ -1,22 +1,20 @@
 /**
- * @fileOverview Orchestrates Pinecone retrieval + tailored feedback generation.
+ * @fileOverview Orchestrates vector retrieval (Cosmos) + tailored feedback generation.
  *
  * We do retrieval explicitly (instead of relying on tool calls) so we can:
  * - guarantee retrieval happens
  * - return rag_context_* fields back to the UI
  */
 
-// W5 (Pinecone-Ablösung): Retrieval läuft jetzt über Cosmos-Vektor (gemini-768).
-// Alias-Import → Aufrufstellen unverändert (Rückgabe-Shape feldgenau identisch,
-// adversarial 5/5 SAFE + Live-Parität 8/8 Filter-korrekt bewiesen).
-import { searchCards as pineconeSearchCards } from '@/lib/cosmos-cards';
+// Retrieval über Cosmos-Vektor (gemini-768).
+import { searchCards } from '@/lib/cosmos-cards';
 import { withTimeout, timeoutMs } from '@/lib/with-timeout';
 import { z } from 'zod';
 import * as tailoredMod from './generate-tailored-feedback';
 
-/** Hartes Timeout fuer den Pinecone-Retrieval (Default 6s). Bei Ueberschreitung
+/** Hartes Timeout fuer den Vektor-Retrieval (Default 6s). Bei Ueberschreitung
  *  degradiert retrieveCards sauber auf leeres RAG (try/catch), statt zu haengen. */
-const PINECONE_TIMEOUT_MS = timeoutMs('PINECONE_TIMEOUT_MS', 6_000);
+const RAG_TIMEOUT_MS = timeoutMs('RAG_TIMEOUT_MS', 6_000);
 
 export const GenerateDynamicFeedbackInputSchema = z.object({
   conversationType: z.string(),
@@ -80,18 +78,18 @@ async function retrieveCards(
     const filter = Object.keys(baseFilter).length ? baseFilter : undefined;
 
     const first = await withTimeout(
-      pineconeSearchCards({ text: query, topK: 8, lang: input.lang, filter }),
-      PINECONE_TIMEOUT_MS,
-      'pinecone-search'
+      searchCards({ text: query, topK: 8, lang: input.lang, filter }),
+      RAG_TIMEOUT_MS,
+      'rag-search'
     );
 
     // If lang is set but we got nothing: try again without lang
     const effective =
       isNonEmptyString(input.lang) && first.count === 0
         ? await withTimeout(
-            pineconeSearchCards({ text: query, topK: 8, filter }),
-            PINECONE_TIMEOUT_MS,
-            'pinecone-search-fallback'
+            searchCards({ text: query, topK: 8, filter }),
+            RAG_TIMEOUT_MS,
+            'rag-search-fallback'
           )
         : first;
 

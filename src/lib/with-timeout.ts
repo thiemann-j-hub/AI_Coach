@@ -1,5 +1,5 @@
 /**
- * Transport-agnostischer Timeout-Wrapper. Bound externe Calls (LLM/Pinecone),
+ * Transport-agnostischer Timeout-Wrapper. Bound externe Calls (LLM/Vektorsuche),
  * deren SDKs keine AbortSignal/Timeout-Option sauber durchreichen: ein Promise.race
  * gegen einen Timeout, der mit TimeoutError rejected. Das unterliegende Request
  * laeuft ggf. im Hintergrund weiter, aber der HTTP-Handler wird freigegeben —
