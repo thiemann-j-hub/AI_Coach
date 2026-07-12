@@ -92,7 +92,8 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
       { label: 'TRANSCRIPT' }
     );
     if (injectionDetected) {
-      console.warn(`[prompt-guard] Injection pattern detected in inputText: "${injectionDetected}"`);
+      // R9: NUR Signal loggen, NICHT den gematchten Nutzer-Text (PII/App-Insights).
+      console.warn(`[prompt-guard] Injection pattern detected in inputText (content redacted).`);
     }
 
     const hardenedInput = { ...input, inputText: fencedText };

@@ -179,7 +179,8 @@ export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesI
     { label: 'TRANSCRIPT' }
   );
   if (injectionDetected) {
-    console.warn(`[prompt-guard] Injection pattern detected in transcriptText: "${injectionDetected}"`);
+    // R9: NUR Signal loggen, NICHT den gematchten Nutzer-Text (PII/App-Insights).
+    console.warn(`[prompt-guard] Injection pattern detected in transcriptText (content redacted).`);
   }
 
   const hardenedInput = { ...input, transcriptText: fencedText };
