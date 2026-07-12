@@ -24,7 +24,13 @@ function getClient(): CosmosClient {
     if (!endpoint || !key) {
       throw new Error("COSMOS_ENDPOINT / COSMOS_KEY sind nicht gesetzt.");
     }
-    client = new CosmosClient({ endpoint, key });
+    client = new CosmosClient({
+      endpoint,
+      key,
+      // Z4: SDK-Retry absorbiert 429/449/503-Throttling automatisch, bevor ein
+      // RU-Engpass zum Route-500 wird.
+      connectionPolicy: { retryOptions: { maxRetryAttemptCount: 9, maxWaitTimeInSeconds: 60 } },
+    });
   }
   return client;
 }
