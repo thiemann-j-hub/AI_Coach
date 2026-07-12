@@ -67,6 +67,22 @@ describe("checkEvidenceGrounding — §2.2 error-Eskalation", () => {
     expect(notes).toHaveLength(0);
   });
 
+  it("Interpunktions-Drift groundet trotzdem (CI-Flake-Ursache)", () => {
+    const notes = checkEvidenceGrounding(
+      [
+        {
+          id: "C7",
+          score: 3,
+          // Zitat weicht in Komma/Punkt/Gedankenstrich vom Transkript ab —
+          // Wortlaut identisch => KEIN Fabrikat.
+          evidence: ["Das finde ich gut. Ich habe dazu — drei konkrete Vorschläge vorbereitet!"],
+        },
+      ],
+      TRANSCRIPT
+    );
+    expect(notes).toHaveLength(0);
+  });
+
   it("Sprecher-Prefix wird gestrippt (groundet trotz Label)", () => {
     const notes = checkEvidenceGrounding(
       [{ id: "C6", score: 3, evidence: ["Führungskraft: Ich möchte heute über die Projektziele sprechen"] }],

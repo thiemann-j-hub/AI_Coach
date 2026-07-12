@@ -24,6 +24,21 @@ export function norm(s: string): string {
   return s.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Grounding-Vergleichsform: zusätzlich zur norm() alle Interpunktion entfernen.
+ * LLM-Zitate weichen regelmäßig in Kommata/Punkten/Gedankenstrichen vom
+ * Transkript ab („sounds clear, thank you" vs. „sounds clear — thank you") —
+ * für die Fabrikat-Erkennung zählt der WORTLAUT, nicht die Zeichensetzung.
+ * Macht den Check präziser in beide Richtungen: weniger falsche
+ * EVIDENCE_NOT_GROUNDED-Warns UND ein schärferer EVIDENCE_ALL_UNGROUNDED-error.
+ */
+export function groundForm(s: string): string {
+  return norm(s)
+    .replace(/[.,;:!?…"'’‚`´()\[\]{}«»‹›„“”–—\-\/*_+=|<>#~^%&$§]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Evidenz-Zitat auf den belegbaren Kern reduzieren (Sprecher-Prefix/Quotes entfernen).
  *  Strippt einen beliebigen führenden Sprecher-Prefix ("Lead:", "Führungskraft:", "FK:" …),
  *  damit der Grounding-Check den Zitat-Körper wörtlich im Transkript findet. */
@@ -48,13 +63,13 @@ export function checkEvidenceGrounding(
   transcript: string
 ): QualityNote[] {
   const notes: QualityNote[] = [];
-  const hay = norm(transcript);
+  const hay = groundForm(transcript);
   if (!hay) return notes;
   for (const c of competencies) {
     let checkable = 0;
     let ungrounded = 0;
     for (const q of c.evidence ?? []) {
-      const needle = evidenceNeedle(q);
+      const needle = groundForm(evidenceNeedle(q));
       if (needle.length < 8) continue;
       checkable++;
       if (!hay.includes(needle)) {
