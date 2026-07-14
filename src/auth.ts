@@ -70,6 +70,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    /**
+     * R6 (Master-Blueprint §3.3) — Defense-in-Depth beim Sign-In. Lehnt NUR bei
+     * EXPLIZIT `email_verified === false` ab (nicht bei fehlendem Claim), analog
+     * zum Studio-Muster. BEWUSST KEIN hartes oid-Allowlist: PulseNorth ist
+     * B2B-Self-Service (Kunde meldet sich an + zahlt) — ein Allowlist würde
+     * Neukunden aussperren. Der fälschbare-E-Mail-Vektor (R2/R3) wird separat
+     * über Invite-Token geschlossen; hier nur das unstrittige Anti-Spoofing.
+     */
+    async signIn({ profile }) {
+      const p = (profile || {}) as Record<string, unknown>;
+      if (p.email_verified === false || p.email_verified === "false") {
+        const oid = typeof p.oid === "string" ? p.oid : "?";
+        console.warn(`[auth.signIn] REJECT: email_verified === false (oid=${oid})`);
+        // basePath-bewusst (Review-Fund, Studio-Muster): Auth.js loest den Return
+        // gegen die ORIGIN-baseUrl auf (ohne /coach) — `false` landete sonst auf
+        // der HUB-Fehlerseite. Coach hat keine /login-Route -> Coach-Wurzel.
+        return "/coach?error=email-not-verified";
+      }
+      return true;
+    },
     async jwt({ token, profile, account }) {
       // Nur bei der Erstanmeldung (OAuth-Callback) ist `account` gesetzt. Reihenfolge
       // wichtig: oid ZUERST festhalten, dann den Token-Store seeden (Blueprint §2).
