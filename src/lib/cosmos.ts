@@ -8,8 +8,9 @@ import { Container, CosmosClient, SqlParameter } from "@azure/cosmos";
  *   sessions   (pk /id)          — Session-Metadaten (uid, updatedAt)
  *   runs       (pk /sessionId)   — Analyse-Runs
  *   usage      (pk /id)          — Tages-Token-Budget (cost-cap)
- *   workspaces (pk /workspaceId) — Credit-System (workspace/creditBatch/ledger/stripeEvent/invoice)
- *   domains    (pk /domain)      — Free-Run-Gate pro verifizierter B2B-Domain
+ *   workspaces (pk /workspaceId) — Workspace-Stammdocs (Membership); Alt-Docs des
+ *                                  abgebauten lokalen Ledgers (creditBatch/ledger/
+ *                                  stripeEvent) koennen physisch noch liegen (KK-1)
  *
  * Zugriff ausschließlich serverseitig (Key aus Key Vault) — die früheren
  * firestore.rules entfallen ersatzlos.
@@ -56,17 +57,13 @@ export function usageContainer(): Container {
 }
 
 /**
- * Credit-/Workspace-Container (pk /workspaceId) im Single-Container-Design:
- * Doc-Typen workspace | creditBatch | ledger | stripeEvent | invoice teilen
- * dieselbe Partition und werden via TransactionalBatch atomar mutiert.
+ * Workspace-Container (pk /workspaceId). Seit KK-1 nur noch Lesezugriff auf das
+ * workspace-Stammdoc (Membership-Check der Rechnungs-Route); Alt-Docs des
+ * abgebauten lokalen Ledgers (creditBatch/ledger/stripeEvent) koennen physisch
+ * noch in den Partitionen liegen.
  */
 export function workspacesContainer(): Container {
   return getDb().container("workspaces");
-}
-
-/** Free-Run-Gate pro verifizierter B2B-Domain (pk /domain). */
-export function domainsContainer(): Container {
-  return getDb().container("domains");
 }
 
 /**

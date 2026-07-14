@@ -5,7 +5,6 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkSessionOwnership, getRun, findPreviousMeasuredRun } from "@/lib/server/runs-store";
 import { computeMeasurementDelta } from "@/lib/measurement-delta";
-import { paymentsEnabled } from "@/lib/server/credits/entitlement";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
@@ -123,9 +122,13 @@ export async function GET(req: NextRequest) {
         },
         // Entwicklung seit letzter Messung (null = erster Messlauf) — P0-1.
         previousComparison,
-        // Steuert die Refund-Affordanz des Delete-Buttons: nur wenn Payments aktiv
-        // sind, kann der 10-Min-Refund tatsaechlich greifen (sonst neutrales Löschen).
-        paymentsEnabled: paymentsEnabled(),
+        // Steuert die Refund-Affordanz des Delete-Buttons. KK-1: Der lokale
+        // PAYMENTS_ENABLED-Stack ist abgebaut; das Flag war in Prod nie gesetzt,
+        // daher bleibt die Affordanz (verhaltensgleich) hart aus. Bekannter
+        // Folge-Punkt: im CREDITS_CENTRAL-Pfad greift der 10-Min-Refund real
+        // (runs/delete, centralSpendTxId) — die Affordanz koennte daran
+        // angeschlossen werden (bewusste Owner-Entscheidung, nicht Teil von KK-1).
+        paymentsEnabled: false,
       },
       { status: 200 }
     );

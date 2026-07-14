@@ -133,8 +133,8 @@ export async function POST(req: NextRequest) {
     if (!budget.allowed && budget.response) return budget.response;
 
     // Business-Gate (Credits) — Point-of-Sale, VOR dem teuren Gemini-Call.
-    // Greift bei CREDITS_CENTRAL=on (zentral verbrauchen) ODER PAYMENTS_ENABLED=on
-    // (lokales Ledger). Bei beiden off unveraendertes Verhalten (Free-Run).
+    // Greift bei CREDITS_CENTRAL=on (zentral verbrauchen; KK-1: das lokale
+    // PAYMENTS_ENABLED-Ledger ist abgebaut). Bei off kein Credit-Gate (nur cost-cap).
     if (creditGateEnabled()) {
       const ent = await reserveEntitlement({
         uid: authResult.uid,

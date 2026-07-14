@@ -2,32 +2,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
-import { paymentsEnabled } from "@/lib/server/credits/entitlement";
 import { creditsCentralEnabled, centralWalletStatus } from "@/lib/server/credits/credit-service";
-import { resolveWorkspace } from "@/lib/server/credits/workspace-store";
-import { getAvailableCredits } from "@/lib/server/credits/ledger";
-import { CREDIT_PACKAGES } from "@/lib/server/credits/types";
-import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Saldo + Paket-Katalog fuer die Credits-Seite. Loest den Workspace auf (inkl. Lazy Reconciliation). */
+/**
+ * Anzeige-Katalog fuer die Credits-Seite. Der KAUF laeuft zentral ueber die
+ * Website (topUpUrl) — die Stripe-Price-Zuordnung lebt im zentralen
+ * Credit-Service, hier ist nur noch die Darstellung (KK-1: lokaler
+ * Checkout/CREDIT_PACKAGES-Stack abgebaut).
+ */
+const DISPLAY_PACKAGES = [
+  { id: "single", credits: 1 },
+  { id: "pack_5", credits: 5 },
+];
+
+/** Saldo + Paket-Katalog fuer die Credits-Seite (CREDITS_CENTRAL: Saldo kommt zentral). */
 export async function GET(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
-  const { uid, email } = authResult;
+  const { uid } = authResult;
 
   const rlKey = rateLimitKey(req, "credits");
   const rlResponse = checkRateLimit(rlKey, 30, 60_000);
   if (rlResponse) return rlResponse;
 
-  const packages = Object.entries(CREDIT_PACKAGES).map(([id, p]) => ({ id, credits: p.credits }));
+  const packages = DISPLAY_PACKAGES;
   const topUpUrl = process.env.CREDIT_TOPUP_URL || undefined;
 
   // CREDITS_CENTRAL=on: Saldo zentral lesen — Token kommt aus dem Server-Store
   // (getValid(oid), refresht bei Bedarf). Kauf laeuft zentral (Website) -> der
-  // Client schickt "Buy" an topUpUrl statt /api/checkout.
+  // Client schickt "Buy" an topUpUrl.
   if (creditsCentralEnabled()) {
     const w = await centralWalletStatus();
     // expired (Token tot / CreditService-401) -> Re-Login signalisieren, NICHT
@@ -52,24 +58,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const enabled = paymentsEnabled();
-
-  if (!enabled) {
-    return NextResponse.json({ ok: true, enabled: false, balance: 0, workspaceId: uid, packages }, { status: 200 });
-  }
-
-  try {
-    const ws = await resolveWorkspace({ uid, email });
-    const balance = await getAvailableCredits(ws.workspaceId);
-    return NextResponse.json(
-      { ok: true, enabled: true, balance, workspaceId: ws.workspaceId, packages },
-      { status: 200 }
-    );
-  } catch (err: any) {
-    logger.apiError("/api/credits", err);
-    return NextResponse.json(
-      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
-      { status: 500 }
-    );
-  }
+  // CREDITS_CENTRAL=off (z. B. lokal): kein Credit-System aktiv — inerte Huelle
+  // (der lokale Ledger-Pfad wurde mit KK-1 abgebaut).
+  return NextResponse.json({ ok: true, enabled: false, balance: 0, workspaceId: uid, packages }, { status: 200 });
 }

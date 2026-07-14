@@ -8,8 +8,6 @@ import {
   clearRunRefundPending,
   markRunDeleted,
 } from "@/lib/server/runs-store";
-import { paymentsEnabled } from "@/lib/server/credits/entitlement";
-import { getWorkspaceDoc, refundCredit } from "@/lib/server/credits/ledger";
 import { creditsCentralEnabled, centralRefund } from "@/lib/server/credits/credit-service";
 import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import { logger } from "@/lib/logger";
@@ -90,36 +88,10 @@ export async function POST(req: NextRequest) {
       } else if (withinWindow && !run.centralSpendTxId) {
         logger.api("/api/runs/delete", "central-refund-skipped-no-txid", { uid, sessionId, runId });
       }
-    } else if (paymentsEnabled()) {
-      const workspaceId = run.workspaceId ?? run.uid;
-
-      // Mitgliedschafts-Revalidierung: nur erstatten, wenn der Loeschende AKTUELL
-      // noch Mitglied der Run-Partition ist. Ein zwischenzeitlich aus dem Team
-      // entferntes Mitglied darf den (Team-)Ledger nicht mehr bewegen — der
-      // Soft-Delete oben bleibt davon unberuehrt. Solo-Partition (ws===uid) ist
-      // implizit Mitgliedschaft.
-      let stillMember = workspaceId === uid;
-      if (!stillMember) {
-        const ws = await getWorkspaceDoc(workspaceId);
-        stillMember = ws ? ws.members.some((m) => m.uid === uid) : false;
-      }
-
-      willRefund = withinWindow && stillMember;
-      if (withinWindow && !stillMember) {
-        logger.api("/api/runs/delete", "refund-skipped-not-member", { uid, sessionId, runId, workspaceId });
-      }
-      if (willRefund) {
-        // refundPending markieren (Backstop), dann idempotent inline erstatten.
-        await markRunDeleted(sessionId, runId, true);
-        try {
-          await refundCredit({ workspaceId, runId, reason: "refund_user_delete" });
-          await clearRunRefundPending(sessionId, runId);
-        } catch (e) {
-          // Inline fehlgeschlagen -> refundPending bleibt true -> v1-Sweep holt nach.
-          logger.apiError("/api/runs/delete/refund", e);
-        }
-      }
     }
+    // KK-1: Der lokale Refund-Zweig (PAYMENTS_ENABLED + refundCredit gegen das
+    // lokale Ledger) wurde abgebaut — der zentrale gebundene Refund oben ist der
+    // einzige Geld-Pfad. Bei CREDITS_CENTRAL=off ist Loeschen neutral (kein Refund).
 
     logger.api("/api/runs/delete", "deleted", { uid, sessionId, runId, refunded: willRefund });
     return NextResponse.json({ ok: true, deleted: true, refunded: willRefund }, { status: 200 });

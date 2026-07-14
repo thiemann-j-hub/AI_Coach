@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { invoicesContainer, queryItems } from "@/lib/cosmos";
-import { getWorkspaceDoc } from "@/lib/server/credits/ledger";
+import { getWorkspaceDoc } from "@/lib/server/credits/workspace-store";
 import { ensureInvoicePdf } from "@/lib/server/credits/invoicing";
 import { blobConfigured, getInvoiceSasUrl } from "@/lib/server/credits/invoice-blob";
 import { InvoiceDoc } from "@/lib/server/credits/types";

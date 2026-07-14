@@ -9,8 +9,6 @@ import {
   upsertSession,
 } from "@/lib/server/runs-store";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
-import { paymentsEnabled } from "@/lib/server/credits/entitlement";
-import { getHold } from "@/lib/server/credits/ledger";
 import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
@@ -224,37 +222,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Billing-Integritaet (nur bei aktivem Bezahlsystem): ein abrechenbarer Run
-    // darf NUR entstehen, wenn ein bezahlter Hold dahinter steht. Schliesst die
-    // Luecke "Analyse geliefert, aber Credit erstattet (z.B. nach Shadow-Persist-
-    // Fehler) -> Gratis-Run". (a) Ohne runId kein abrechenbarer Run; (b) ist der
-    // Hold zu dieser runId bereits 'refunded', wird abgelehnt. Der Hold ist die
-    // Server-Wahrheit — ein gefaelschter Client kann ihn nicht setzen. Bei
-    // PAYMENTS_ENABLED=off ist dies inert (kein Hold-Modell aktiv).
-    //
     // Partition-Pin: existiert bereits ein (Schatten-)Run, MUSS seine gespeicherte
-    // workspaceId uebernommen werden — sie ist die Partition, gegen die der Hold
-    // gebucht wurde. Nur neu abgeleitet (getWorkspaceIdForUser), wenn es noch
-    // keinen Run gibt. Verhindert, dass ein Mitgliedschaftswechsel mitten im Flow
-    // Hold und Run in verschiedene Partitionen spaltet (Refund/Delete liefe sonst
-    // ins Leere). Delete liest dieselbe gespeicherte workspaceId.
+    // workspaceId uebernommen werden — sie ist die Partition des zentralen Spends
+    // (Entitlement-Grant aus /api/analyze). Nur neu abgeleitet
+    // (getWorkspaceIdForUser), wenn es noch keinen Run gibt. Verhindert, dass ein
+    // Mitgliedschaftswechsel mitten im Flow Spend und Run in verschiedene
+    // Partitionen spaltet (Refund/Delete liefe sonst ins Leere). Delete liest
+    // dieselbe gespeicherte workspaceId.
+    //
+    // KK-1: Der lokale Hold-Integritaets-Check (PAYMENTS_ENABLED + getHold) wurde
+    // mit dem lokalen Ledger abgebaut. Im zentralen Pfad sichert die Save-Grenze
+    // der Schatten-Run aus /api/analyze (runId + centralSpendTxId werden dort
+    // serverseitig gebunden; /api/analyze liefert die runId nur bei garantierter
+    // Persistenz aus).
     const runWorkspaceId = existingRun?.workspaceId ?? (await getWorkspaceIdForUser(uid));
-
-    if (paymentsEnabled()) {
-      if (!parsed.data.runId) {
-        return NextResponse.json(
-          { ok: false, error: "Billable run requires a paid runId", code: "MISSING_PAID_RUN" },
-          { status: 409 }
-        );
-      }
-      const hold = await getHold(runWorkspaceId, parsed.data.runId);
-      if (hold && hold.status === "refunded") {
-        return NextResponse.json(
-          { ok: false, error: "Credit for this run was refunded; run not persisted", code: "RUN_REFUNDED" },
-          { status: 409 }
-        );
-      }
-    }
 
     await upsertSession(sessionId, uid);
 

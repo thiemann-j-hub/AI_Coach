@@ -48,7 +48,6 @@ export default function CreditsClient() {
   const [state, setState] = useState<CreditsState | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [buying, setBuying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,35 +109,17 @@ export default function CreditsClient() {
     }
   }
 
-  async function buy(packageId: string) {
+  // KK-1: Der lokale Stripe-Checkout (/api/checkout) wurde mit dem lokalen
+  // Geld-Stack abgebaut. Kauf laeuft ausschliesslich zentral ueber die Website
+  // (topUpUrl); ohne central/topUpUrl sind die Kauf-Buttons ohnehin disabled
+  // (enabled:false) bzw. zeigt der Hinweis auf die Website.
+  function buy(_packageId: string) {
     if (!state) return;
-    // CREDITS_CENTRAL: Kauf laeuft zentral ueber die Website -> dorthin leiten.
-    if (state.central) {
-      if (state.topUpUrl) {
-        window.location.href = state.topUpUrl;
-      } else {
-        setError(de ? 'Kauf erfolgt auf der Website.' : 'Purchase happens on the website.');
-      }
+    if (state.central && state.topUpUrl) {
+      window.location.href = state.topUpUrl;
       return;
     }
-    setBuying(packageId);
-    setError(null);
-    try {
-      const res = await authFetch('/api/checkout', {
-        method: 'POST',
-        body: JSON.stringify({ packageId, workspaceId: state.workspaceId }),
-      });
-      const j = await res.json();
-      if (j?.ok && j?.url) {
-        window.location.href = j.url; // zur von Stripe gehosteten Bezahlseite
-        return;
-      }
-      setError(j?.error ? String(j.error) : de ? 'Checkout fehlgeschlagen.' : 'Checkout failed.');
-    } catch {
-      setError(de ? 'Checkout fehlgeschlagen.' : 'Checkout failed.');
-    } finally {
-      setBuying(null);
-    }
+    setError(de ? 'Kauf erfolgt auf der Website.' : 'Purchase happens on the website.');
   }
 
   return (
@@ -227,9 +208,9 @@ export default function CreditsClient() {
                   <button
                     className="mt-auto py-2.5 px-4 rounded-xl btn-gradient text-white font-semibold disabled:opacity-50 disabled:pointer-events-none"
                     onClick={() => buy(p.id)}
-                    disabled={!state?.enabled || buying !== null}
+                    disabled={!state?.enabled}
                   >
-                    {buying === p.id ? (de ? 'Weiterleiten…' : 'Redirecting…') : de ? 'Kaufen' : 'Buy'}
+                    {de ? 'Kaufen' : 'Buy'}
                   </button>
                 </div>
               );
