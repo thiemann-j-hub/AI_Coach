@@ -68,6 +68,9 @@ export default function AnalyzeClient() {
 
   const [leaderLabel, setLeaderLabel] = useState<string>('');
   const [employeeLabel, setEmployeeLabel] = useState<string>('');
+  // Fallback: Rollen frei eintippen, wenn die automatische Erkennung nichts/das
+  // Falsche findet — sonst ist „Analyse starten" ohne Erklärung tot (Live-Testfund).
+  const [manualRoles, setManualRoles] = useState(false);
 
   const [privacyMode, setPrivacyMode] = useState(true);
   const [extraTerms, setExtraTerms] = useState('');
@@ -486,34 +489,54 @@ export default function AnalyzeClient() {
             <div className="space-y-6">
               <div>
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.manager}</label>
-                <div className="relative">
-                  <select
-                    className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                {manualRoles ? (
+                  <input
+                    type="text"
+                    className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={leaderLabel}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setLeaderLabel(v);
-                      if (detectedSpeakers.length === 2) {
-                        const other = detectedSpeakers.find(s => s !== v);
-                        if (other) setEmployeeLabel(other);
-                      }
-                    }}
+                    onChange={(e) => setLeaderLabel(e.target.value)}
+                    placeholder={t.analyze.leaderPlaceholder}
                     disabled={loading}
-                  >
-                    <option value="">{detectedSpeakers.length > 0 ? t.analyze.pleaseSelect : t.analyze.pasteTranscript}</option>
-                    {detectedSpeakers.map(sp => (
-                      <option key={sp} value={sp}>{sp} {t.analyze.me}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-3.5 text-muted-foreground h-5 w-5 pointer-events-none" />
-                </div>
+                  />
+                ) : (
+                  <div className="relative">
+                    <select
+                      className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                      value={leaderLabel}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setLeaderLabel(v);
+                        if (detectedSpeakers.length === 2) {
+                          const other = detectedSpeakers.find(s => s !== v);
+                          if (other) setEmployeeLabel(other);
+                        }
+                      }}
+                      disabled={loading}
+                    >
+                      <option value="">{detectedSpeakers.length > 0 ? t.analyze.pleaseSelect : t.analyze.pasteTranscript}</option>
+                      {detectedSpeakers.map(sp => (
+                        <option key={sp} value={sp}>{sp} {t.analyze.me}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-3.5 text-muted-foreground h-5 w-5 pointer-events-none" />
+                  </div>
+                )}
                 <p className="text-[11px] text-muted-foreground mt-2">
-                  {t.analyze.speakerTip}
+                  {manualRoles ? t.analyze.manualRolesHint : t.analyze.speakerTip}
                 </p>
               </div>
               <div>
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.employee}</label>
-                {detectedSpeakers.length <= 2 ? (
+                {manualRoles ? (
+                  <input
+                    type="text"
+                    className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    value={employeeLabel}
+                    onChange={(e) => setEmployeeLabel(e.target.value)}
+                    placeholder={t.analyze.employeePlaceholder}
+                    disabled={loading}
+                  />
+                ) : detectedSpeakers.length <= 2 ? (
                   <div className="w-full bg-background border border-border text-muted-foreground rounded-lg px-4 py-3 opacity-70">
                     {employeeLabel || t.analyze.selectManagerFirst}
                   </div>
@@ -534,6 +557,14 @@ export default function AnalyzeClient() {
                   </div>
                 )}
               </div>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => setManualRoles((v) => !v)}
+                disabled={loading}
+              >
+                {manualRoles ? t.analyze.manualRolesOff : t.analyze.manualRolesOn}
+              </button>
             </div>
 
             {/* Privacy & Start */}

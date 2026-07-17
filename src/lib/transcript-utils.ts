@@ -35,12 +35,22 @@ export function parseExtraTerms(raw: string): string[] {
 /*  Teams transcript cleanup                                           */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Sprecherzeile im manuellen Format "Name: Text" — 1–4 Wörter vor dem Doppelpunkt.
+ * Erfasst auch volle Namen ("Anna Müller:", "Dr. Anna Müller-Schmidt:") und nicht
+ * nur Ein-Wort-Kürzel wie "FK:" (Live-Testfund: mehrwortige Namen wurden nie
+ * erkannt → Rollen-Dropdown blieb leer → Analyse-Start unmöglich). Folgewörter
+ * müssen großgeschrieben beginnen — das begrenzt Fehltreffer auf Fließtext-
+ * Phrasen wie "wichtig zu beachten:".
+ */
+const NAME_LINE_RE = /^([A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß.'’-]{0,19}(?:[ \t]+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.'’-]{0,19}){0,3}):\s+/;
+
 export function cleanTeamsTranscript(text: string): string {
   const lines = String(text ?? '').split(/\r?\n/);
   const kept = lines.filter((line) => {
     const s = line.trim();
     if (/^\d{2}:\d{2}:\d{2}\s+/.test(s)) return true;
-    if (/^[A-Za-zÄÖÜäöüß]{1,8}:\s+/.test(s)) return true;
+    if (NAME_LINE_RE.test(s)) return true;
     if (/^(Datum|Dauer)\s*:/i.test(s)) return true;
     return false;
   });
@@ -69,7 +79,7 @@ export function detectSpeakers(text: string): string[] {
       if (name && key !== 'microsoft teams' && !IGNORED_SPEAKERS.has(key)) speakers.add(name);
       continue;
     }
-    const m2 = s.match(/^([A-Za-zÄÖÜäöüß]{1,16}):\s+/);
+    const m2 = s.match(NAME_LINE_RE);
     if (m2?.[1]) {
       const name = m2[1].trim();
       const key = name.toLowerCase();
