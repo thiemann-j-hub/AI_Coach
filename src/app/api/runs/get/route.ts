@@ -4,6 +4,8 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkSessionOwnership, getRun, findPreviousMeasuredRun } from "@/lib/server/runs-store";
+import { creditsCentralEnabled } from "@/lib/server/credits/credit-service";
+import { refundEligibleOnDelete } from "@/lib/refund-affordance";
 import { computeMeasurementDelta } from "@/lib/measurement-delta";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
@@ -122,13 +124,13 @@ export async function GET(req: NextRequest) {
         },
         // Entwicklung seit letzter Messung (null = erster Messlauf) — P0-1.
         previousComparison,
-        // Steuert die Refund-Affordanz des Delete-Buttons. KK-1: Der lokale
-        // PAYMENTS_ENABLED-Stack ist abgebaut; das Flag war in Prod nie gesetzt,
-        // daher bleibt die Affordanz (verhaltensgleich) hart aus. Bekannter
-        // Folge-Punkt: im CREDITS_CENTRAL-Pfad greift der 10-Min-Refund real
-        // (runs/delete, centralSpendTxId) — die Affordanz koennte daran
-        // angeschlossen werden (bewusste Owner-Entscheidung, nicht Teil von KK-1).
-        paymentsEnabled: false,
+        // Steuert die Refund-Affordanz des Delete-Buttons: true, wenn der
+        // zentrale Credit-Pfad aktiv ist UND dieser Run seine spend-Transaktion
+        // traegt — exakt die Bedingung, unter der /api/runs/delete im
+        // 10-Min-Fenster real erstattet. Das Fenster selbst rechnet der Client
+        // live aus createdAt (geteilte SSOT refund-affordance); ein serverseitig
+        // eingefrorenes Fenster-Flag wuerde zwischen Fetch und Klick veralten.
+        refundOnDelete: refundEligibleOnDelete(creditsCentralEnabled(), data.centralSpendTxId),
       },
       { status: 200 }
     );

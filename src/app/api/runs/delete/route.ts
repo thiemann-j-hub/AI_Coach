@@ -9,14 +9,12 @@ import {
   markRunDeleted,
 } from "@/lib/server/runs-store";
 import { creditsCentralEnabled, centralRefund } from "@/lib/server/credits/credit-service";
+import { refundWindowFrom } from "@/lib/refund-affordance";
 import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-/** Kulanz-Fenster: Credit-Rueckgabe bei Loeschung innerhalb von 10 Minuten. */
-const REFUND_WINDOW_MS = 10 * 60 * 1000;
 
 const bodySchema = z.object({
   sessionId: z.string().min(8).max(128).regex(/^[A-Za-z0-9_-]+$/),
@@ -63,8 +61,9 @@ export async function POST(req: NextRequest) {
     // aus dem Grant) + eigene Entra-oid (Backfill-Altbestand des Owners).
     await deleteCoachMeasurement(runId, [run.workspaceId, oid]);
 
-    const ageMs = Date.now() - new Date(run.createdAt).getTime();
-    const withinWindow = Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+    // Kulanz-Fenster (10 Min) aus der geteilten SSOT refund-affordance —
+    // dieselbe Rechnung steuert die Button-Affordanz im Client.
+    const { withinWindow } = refundWindowFrom(run.createdAt, Date.now());
 
     if (creditsCentralEnabled()) {
       // ZENTRALER Pfad: Refund gegen den zentralen Wallet MIT der gespeicherten

@@ -6,27 +6,26 @@ import { Trash2, RotateCcw, Loader2 } from "lucide-react";
 import { authFetch } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/i18n/useTranslation";
-
-/** Kulanz-Fenster muss zum Server (/api/runs/delete) passen: 10 Minuten. */
-const REFUND_WINDOW_MS = 10 * 60 * 1000;
+import { refundWindowFrom } from "@/lib/refund-affordance";
 
 /**
  * Löscht einen Run und macht das 10-Min-Erstattungsfenster im UI eindeutig
- * sichtbar (Zustand aus createdAt). Die Server-Wahrheit (/api/runs/delete)
- * bleibt die Autorität — der Toast nach dem Klick spiegelt, was wirklich
- * passiert ist (erstattet ja/nein).
+ * sichtbar (Zustand aus createdAt, SSOT refund-affordance). Die Server-Wahrheit
+ * (/api/runs/delete) bleibt die Autorität — der Toast nach dem Klick spiegelt,
+ * was wirklich passiert ist (erstattet ja/nein).
  */
 export function DeleteRunButton({
   sessionId,
   runId,
   createdAt,
-  paymentsEnabled = false,
+  refundOnDelete = false,
 }: {
   sessionId: string;
   runId: string;
   createdAt: string | null;
-  /** Nur wenn das Bezahlsystem aktiv ist, kann der 10-Min-Refund greifen. */
-  paymentsEnabled?: boolean;
+  /** Server-Wahrheit aus /api/runs/get: Run ist im zentralen Credit-Pfad
+   *  grundsätzlich erstattbar (CREDITS_CENTRAL an + spend-Transaktion gespeichert). */
+  refundOnDelete?: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -35,18 +34,17 @@ export function DeleteRunButton({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const ageMs = createdAt ? Date.now() - new Date(createdAt).getTime() : Infinity;
-  // Refund-Affordanz NUR zeigen, wenn das Bezahlsystem aktiv ist UND der Run im
-  // 10-Min-Fenster liegt — sonst verspräche der Button bei Payments-off eine
-  // Erstattung, die der Server nie ausführt.
-  const refundable =
-    paymentsEnabled && Number.isFinite(ageMs) && ageMs <= REFUND_WINDOW_MS;
+  // Refund-Affordanz NUR zeigen, wenn der Run zentral erstattbar ist UND im
+  // 10-Min-Fenster liegt — sonst verspräche der Button eine Erstattung, die
+  // der Server nie ausführt.
+  const { withinWindow, windowEndsAtMs } = refundWindowFrom(createdAt, Date.now());
+  const refundable = refundOnDelete && withinWindow;
   const refundUntil =
-    refundable && createdAt
-      ? new Date(new Date(createdAt).getTime() + REFUND_WINDOW_MS).toLocaleTimeString(
-          de ? "de-DE" : "en-US",
-          { hour: "2-digit", minute: "2-digit" }
-        )
+    refundable && windowEndsAtMs !== null
+      ? new Date(windowEndsAtMs).toLocaleTimeString(de ? "de-DE" : "en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : null;
 
   async function doDelete() {
@@ -61,12 +59,12 @@ export function DeleteRunButton({
         throw new Error(j?.error ? String(j.error) : `HTTP ${res.status}`);
       }
       // Toast spiegelt die Server-Wahrheit. "Fenster abgelaufen" NUR zeigen,
-      // wenn Payments aktiv sind (sonst gab es nie eine Refund-Erwartung).
+      // wenn der Run erstattbar war (sonst gab es nie eine Refund-Erwartung).
       const description = j?.refunded
         ? de
           ? "1 Credit wurde erstattet."
           : "1 credit was refunded."
-        : paymentsEnabled
+        : refundOnDelete
           ? de
             ? "Kein Credit erstattet (Fenster abgelaufen)."
             : "No credit refunded (window expired)."

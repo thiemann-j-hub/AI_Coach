@@ -105,7 +105,9 @@ export default function RunDetailClient({
   const [run, setRun] = useState<RunData | null>(null);
   // Entwicklung seit letzter Messung (Server-berechnet, radar-contract 1–4) — P0-1.
   const [previousComparison, setPreviousComparison] = useState<PreviousComparison | null>(null);
-  const [paymentsEnabled, setPaymentsEnabled] = useState(false);
+  // Refund-Affordanz des Delete-Buttons (Server-Wahrheit aus /api/runs/get:
+  // zentraler Credit-Pfad aktiv + spend-Transaktion am Run gespeichert).
+  const [refundOnDelete, setRefundOnDelete] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,7 +130,7 @@ export default function RunDetailClient({
         if (!cancelled) {
           setRun(j.run as RunData);
           setPreviousComparison(j.previousComparison ?? null);
-          setPaymentsEnabled(j.paymentsEnabled === true);
+          setRefundOnDelete(j.refundOnDelete === true);
         }
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? "Unbekannter Fehler");
@@ -177,7 +179,7 @@ export default function RunDetailClient({
                   sessionId={sessionId}
                   runId={runId}
                   createdAt={run.createdAt}
-                  paymentsEnabled={paymentsEnabled}
+                  refundOnDelete={refundOnDelete}
                 />
               )}
             </div>
