@@ -40,6 +40,25 @@ const STRINGS = {
     close: "Schließen",
     sources: "Quellen",
     error: "Es gab ein Problem. Bitte versuche es erneut.",
+    fbOpen: "Feedback / Problem melden",
+    fbTitle: "Feedback geben",
+    fbIntro: "Ein Fehler oder eine Idee? Beschreib es kurz — der aktuelle Seiten-Kontext wird automatisch mitgeschickt.",
+    fbCategory: "Art",
+    fbCatBug: "Fehler / Bug",
+    fbCatOpt: "Verbesserung",
+    fbCatFeature: "Neue Funktion",
+    fbCatUsability: "Bedienung",
+    fbTitleField: "Kurz: worum geht's?",
+    fbProblem: "Was ist das Problem oder dein Vorschlag?",
+    fbDesired: "Wie sollte es idealerweise sein?",
+    fbRepro: "Schritte zum Nachstellen (optional)",
+    fbScreenshot: "Screenshot anhängen (optional)",
+    fbSubmit: "Absenden",
+    fbSubmitting: "Wird gesendet …",
+    fbThanks: "Danke! Dein Hinweis ist angekommen — wir schauen ihn uns an.",
+    fbError: "Konnte nicht gesendet werden. Bitte versuche es erneut.",
+    fbBack: "Zurück zum Chat",
+    fbContext: "Mitgeschickt: aktuelle Seite, Browser, App-Version.",
   },
   en: {
     title: "PulseNorth Assistant",
@@ -51,6 +70,25 @@ const STRINGS = {
     close: "Close",
     sources: "Sources",
     error: "Something went wrong. Please try again.",
+    fbOpen: "Report feedback / a problem",
+    fbTitle: "Give feedback",
+    fbIntro: "Found a bug or have an idea? Describe it briefly — the current page context is sent automatically.",
+    fbCategory: "Type",
+    fbCatBug: "Bug",
+    fbCatOpt: "Improvement",
+    fbCatFeature: "New feature",
+    fbCatUsability: "Usability",
+    fbTitleField: "In short: what is it about?",
+    fbProblem: "What is the problem or your suggestion?",
+    fbDesired: "How should it ideally work?",
+    fbRepro: "Steps to reproduce (optional)",
+    fbScreenshot: "Attach a screenshot (optional)",
+    fbSubmit: "Submit",
+    fbSubmitting: "Sending …",
+    fbThanks: "Thanks! Your note has arrived — we'll take a look.",
+    fbError: "Could not be sent. Please try again.",
+    fbBack: "Back to chat",
+    fbContext: "Sent along: current page, browser, app version.",
   },
 };
 
@@ -59,6 +97,14 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  // Feedback-/Ticket-Formular (nur Zone A / eingeloggt; anon blendet es aus).
+  const [fbOpen, setFbOpen] = useState(false);
+  const [fbBusy, setFbBusy] = useState(false);
+  const [fbState, setFbState] = useState<"form" | "done" | "error">("form");
+  // Feature-Flag: solange dark (Server-Bit off) bleiben Button + Formular AUS.
+  const [fbAvailable, setFbAvailable] = useState(false);
+  const [fb, setFb] = useState({ category: "OPTIMIZATION", title: "", problemDesc: "", desiredBehavior: "", reproSteps: "" });
+  const fileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const t = STRINGS[lang];
@@ -71,6 +117,18 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
   useEffect(() => {
     if (open && !busy) inputRef.current?.focus();
   }, [open, busy]);
+
+  // Capability-Probe: nur eingeloggte (Zone A) Widgets fragen den Server, ob das
+  // Feedback-Feature freigeschaltet ist. Solange dark → fbAvailable bleibt false.
+  useEffect(() => {
+    if (anon) return;
+    let alive = true;
+    fetch(`${endpoint}/idea`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { enabled: false }))
+      .then((j) => { if (alive) setFbAvailable(j?.enabled === true); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [anon, endpoint]);
 
   async function rate(idx: number, rating: "up" | "down") {
     const m = msgs[idx];
@@ -85,6 +143,40 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
       });
     } catch {
       /* Feedback ist fire-and-forget */
+    }
+  }
+
+  function openFeedback() {
+    setFb({ category: "OPTIMIZATION", title: "", problemDesc: "", desiredBehavior: "", reproSteps: "" });
+    setFbState("form");
+    setFbOpen(true);
+  }
+
+  // Feedback-/Ticket-Einreichung: EIN multipart-POST an /idea (Felder + optionaler
+  // Screenshot) inkl. transparent mitgeschicktem Auto-Kontext (Seite/Browser/Viewport).
+  async function submitFeedback() {
+    if (fbBusy || !fb.title.trim()) return;
+    setFbBusy(true);
+    try {
+      const form = new FormData();
+      form.set("category", fb.category);
+      form.set("title", fb.title);
+      form.set("problemDesc", fb.problemDesc);
+      form.set("desiredBehavior", fb.desiredBehavior);
+      form.set("reproSteps", fb.reproSteps);
+      form.set("surface", surface);
+      form.set("pageUrl", typeof location !== "undefined" ? location.href : "");
+      form.set("userAgent", typeof navigator !== "undefined" ? navigator.userAgent : "");
+      form.set("viewport", typeof window !== "undefined" ? `${window.innerWidth}x${window.innerHeight}` : "");
+      const file = fileRef.current?.files?.[0];
+      if (file) form.set("screenshot", file);
+      const res = await fetch(`${endpoint}/idea`, { method: "POST", credentials: anon ? "omit" : "include", body: form });
+      if (!res.ok) throw new Error(String(res.status));
+      setFbState("done");
+    } catch {
+      setFbState("error");
+    } finally {
+      setFbBusy(false);
     }
   }
 
@@ -122,6 +214,9 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
           if (!line.startsWith("data:")) continue;
           let ev: { type?: string; text?: string; label?: string; citations?: { title: string; url: string }[]; message?: string; eventId?: string };
           try { ev = JSON.parse(line.slice(5).trim()); } catch { continue; }
+          // Feedback-Intent: der Server signalisiert „öffne das Formular" statt einer
+          // Text-Antwort (deterministisch, kein LLM-Verbrauch). Nur Zone A.
+          if (ev.type === "form" && !anon && fbAvailable) { openFeedback(); continue; }
           // Immutabel updaten (kein In-place-Mutation): sonst appended der
           // StrictMode-/Concurrent-Doppelaufruf des Updaters denselben Delta zweimal.
           setMsgs((m) => {
@@ -159,8 +254,16 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
         <div className="pnchat-panel" role="dialog" aria-label={t.title}>
           <div className="pnchat-head">
             <span className="pnchat-dot" /> {t.title}
-            <button className="pnchat-x" aria-label={t.close} onClick={() => setOpen(false)}>×</button>
+            <span className="pnchat-head-actions">
+              {!anon && fbAvailable && !fbOpen && (
+                <button className="pnchat-fbbtn" aria-label={t.fbOpen} title={t.fbOpen} onClick={openFeedback}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 8a6 6 0 0 0-12 0c0 1 .3 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></svg>
+                </button>
+              )}
+              <button className="pnchat-x" aria-label={t.close} onClick={() => setOpen(false)}>×</button>
+            </span>
           </div>
+          {!fbOpen && (<>
           <div className="pnchat-body" ref={scrollRef}>
             {msgs.length === 0 && (
               <div className="pnchat-intro">
@@ -207,6 +310,42 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
             </button>
           </form>
+          </>)}
+          {fbOpen && (
+            <div className="pnchat-fbform">
+              {fbState === "done" ? (
+                <div className="pnchat-fbdone">
+                  <p>✅ {t.fbThanks}</p>
+                  <button className="pnchat-fbsubmit" onClick={() => setFbOpen(false)}>{t.fbBack}</button>
+                </div>
+              ) : (
+                <>
+                  <p className="pnchat-fbintro">{t.fbIntro}</p>
+                  <label className="pnchat-fblabel">{t.fbCategory}
+                    <select value={fb.category} onChange={(e) => setFb({ ...fb, category: e.target.value })}>
+                      <option value="BUG">{t.fbCatBug}</option>
+                      <option value="OPTIMIZATION">{t.fbCatOpt}</option>
+                      <option value="FEATURE">{t.fbCatFeature}</option>
+                      <option value="USABILITY">{t.fbCatUsability}</option>
+                    </select>
+                  </label>
+                  <input className="pnchat-fbtitle" value={fb.title} maxLength={300} placeholder={t.fbTitleField} onChange={(e) => setFb({ ...fb, title: e.target.value })} />
+                  <textarea className="pnchat-fbta" rows={2} maxLength={4000} placeholder={t.fbProblem} value={fb.problemDesc} onChange={(e) => setFb({ ...fb, problemDesc: e.target.value })} />
+                  <textarea className="pnchat-fbta" rows={2} maxLength={4000} placeholder={t.fbDesired} value={fb.desiredBehavior} onChange={(e) => setFb({ ...fb, desiredBehavior: e.target.value })} />
+                  <textarea className="pnchat-fbta" rows={2} maxLength={4000} placeholder={t.fbRepro} value={fb.reproSteps} onChange={(e) => setFb({ ...fb, reproSteps: e.target.value })} />
+                  <label className="pnchat-fbfile">{t.fbScreenshot}
+                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" />
+                  </label>
+                  {fbState === "error" && <p className="pnchat-fberr">{t.fbError}</p>}
+                  <div className="pnchat-fbctx">{t.fbContext}</div>
+                  <div className="pnchat-fbactions">
+                    <button className="pnchat-fbcancel" onClick={() => setFbOpen(false)} disabled={fbBusy}>{t.fbBack}</button>
+                    <button className="pnchat-fbsubmit" onClick={submitFeedback} disabled={fbBusy || !fb.title.trim()}>{fbBusy ? t.fbSubmitting : t.fbSubmit}</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -250,7 +389,28 @@ const CSS = `
 .pnchat-input input:focus{border-color:#1f6feb}
 .pnchat-input button{width:40px;border:none;background:#1f6feb;color:#fff;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .pnchat-input button:disabled{opacity:.4;cursor:not-allowed}
+.pnchat-head-actions{margin-left:auto;display:flex;align-items:center;gap:2px}
+.pnchat-fbbtn{background:none;border:none;color:#fff;cursor:pointer;padding:4px;line-height:0;border-radius:6px;opacity:.85;display:flex}
+.pnchat-fbbtn:hover{opacity:1;background:rgba(255,255,255,.15)}
+.pnchat-fbform{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.pnchat-fbintro{margin:0;color:#555;font-size:13px;line-height:1.5}
+.pnchat-fblabel{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555;font-weight:600}
+.pnchat-fbform select,.pnchat-fbtitle,.pnchat-fbta{width:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.15);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#111}
+.pnchat-fbform select:focus,.pnchat-fbtitle:focus,.pnchat-fbta:focus{border-color:#1f6feb}
+.pnchat-fbta{resize:vertical;min-height:38px}
+.pnchat-fbfile{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#555}
+.pnchat-fbfile input{font-size:12px}
+.pnchat-fbctx{font-size:10px;color:#999}
+.pnchat-fberr{margin:0;font-size:12px;color:#d1242f}
+.pnchat-fbactions{display:flex;gap:8px;margin-top:2px}
+.pnchat-fbsubmit{flex:1;border:none;background:#1f6feb;color:#fff;border-radius:9px;padding:10px;font-size:13px;font-weight:600;cursor:pointer}
+.pnchat-fbsubmit:disabled{opacity:.4;cursor:not-allowed}
+.pnchat-fbcancel{border:1px solid rgba(0,0,0,.15);background:none;color:#555;border-radius:9px;padding:10px 14px;font-size:13px;cursor:pointer}
+.pnchat-fbdone{display:flex;flex-direction:column;gap:14px;padding:20px 4px;text-align:center;color:#333;font-size:14px;line-height:1.5}
 @media (prefers-color-scheme:dark){
+.pnchat-fbintro,.pnchat-fblabel,.pnchat-fbfile,.pnchat-fbdone{color:#9aa4af}
+.pnchat-fbform select,.pnchat-fbtitle,.pnchat-fbta{background:#0d1117;color:#e6edf3;border-color:rgba(255,255,255,.15)}
+.pnchat-fbcancel{color:#9aa4af;border-color:rgba(255,255,255,.15)}
 .pnchat-panel{background:#161b22;color:#e6edf3;border-color:rgba(255,255,255,.1)}
 .pnchat-assistant .pnchat-bubble{background:#21262d;color:#e6edf3}
 .pnchat-intro p{color:#9aa4af}
@@ -261,6 +421,8 @@ const CSS = `
 :root[data-theme="dark"] .pnchat-panel,html.dark .pnchat-panel{background:#161b22;color:#e6edf3;border-color:rgba(255,255,255,.1)}
 :root[data-theme="dark"] .pnchat-assistant .pnchat-bubble,html.dark .pnchat-assistant .pnchat-bubble{background:#21262d;color:#e6edf3}
 :root[data-theme="dark"] .pnchat-input input,html.dark .pnchat-input input{background:#0d1117;color:#e6edf3;border-color:rgba(255,255,255,.15)}
+:root[data-theme="dark"] .pnchat-fbform select,:root[data-theme="dark"] .pnchat-fbtitle,:root[data-theme="dark"] .pnchat-fbta,html.dark .pnchat-fbform select,html.dark .pnchat-fbtitle,html.dark .pnchat-fbta{background:#0d1117;color:#e6edf3;border-color:rgba(255,255,255,.15)}
+:root[data-theme="dark"] .pnchat-fbintro,:root[data-theme="dark"] .pnchat-fblabel,:root[data-theme="dark"] .pnchat-fbfile,:root[data-theme="dark"] .pnchat-fbdone,html.dark .pnchat-fbintro,html.dark .pnchat-fblabel,html.dark .pnchat-fbfile,html.dark .pnchat-fbdone{color:#9aa4af}
 :root[data-theme="dark"] .pnchat-intro p,html.dark .pnchat-intro p{color:#9aa4af}
 :root[data-theme="dark"] .pnchat-cites,html.dark .pnchat-cites{color:#9aa4af}
 :root[data-theme="light"] .pnchat-panel,html.light .pnchat-panel{background:#fff;color:#111}
