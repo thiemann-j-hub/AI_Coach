@@ -23,7 +23,7 @@ import { useTranslation } from '@/i18n/useTranslation';
 import { LoginModal } from '@/components/auth/login-modal';
 import { UserNav } from '@/components/auth/user-nav';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { PulscraftWordmark } from '@/components/pulscraft-wordmark';
+import { PulscraftProductName, PulscraftWordmark } from '@/components/pulscraft-wordmark';
 import { CreditBalance } from '@/components/app/credit-balance';
 import { AppSwitcher } from '@/components/app/app-switcher';
 
@@ -134,9 +134,21 @@ export default function AppShell(props: {
             >
               <X className="h-5 w-5" />
             </button>
-            <Link href="/analyze" className="block" aria-label="PulseNorth.AI · Coach">
-              <PulscraftWordmark product="Coach" iconOnly={collapsed} />
-            </Link>
+            {/* Brand-Zeile: ZWEI Geschwister-Links (kein <a> im <a>).
+                Marke+Logo -> Hub: bewusst plain <a href="/"> ROOT-absolut, denn
+                next/link wuerde den basePath (/coach) anhaengen und auf die App
+                selbst zeigen (gleiches Muster wie der root-absolute /api/chat-Call).
+                App-Name -> /analyze via next/link (basePath-aware). */}
+            <div className="flex items-center">
+              <a href="/" className="block transition-opacity hover:opacity-80" aria-label="PulseNorth Hub">
+                <PulscraftWordmark product="" iconOnly={collapsed} />
+              </a>
+              {!collapsed && (
+                <Link href="/analyze" className="block transition-opacity hover:opacity-80" aria-label="Coach Startseite">
+                  <PulscraftProductName product="Coach" />
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Navigation (MAIN / …) */}

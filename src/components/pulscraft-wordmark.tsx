@@ -30,11 +30,33 @@ export function PulscraftMark({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Produktname-Suffix ("&nbsp;· <Produkt>") — einzeln komponierbar (z. B. als eigener
+ * Link neben der Marke). Typografie identisch zum Lockup; fuehrendes NBSP statt
+ * Leerzeichen, damit der Abstand auch als eigenstaendiges Element erhalten bleibt
+ * (fuehrende normale Leerzeichen wuerden vom Browser weggetrimmt).
+ */
+export function PulscraftProductName({
+  product,
+  className,
+}: {
+  product: string;
+  className?: string;
+}) {
+  return (
+    <span className={cn("text-base font-medium tracking-tight text-muted-foreground", className)}>
+      {"\u00A0· "}
+      {product}
+    </span>
+  );
+}
+
 export function PulscraftWordmark({
   product = "Coach",
   iconOnly = false,
   className,
 }: {
+  /** Produktname hinter der Marke; leerer String ("") unterdrueckt das Suffix. */
   product?: string;
   iconOnly?: boolean;
   className?: string;
@@ -46,9 +68,7 @@ export function PulscraftWordmark({
         <span className="text-base font-bold tracking-tight">
           <span className="text-foreground">PulseNorth</span>
           <span className="text-primary">.AI</span>
-          {product && (
-            <span className="font-medium text-muted-foreground"> · {product}</span>
-          )}
+          {product ? <PulscraftProductName product={product} /> : null}
         </span>
       )}
     </span>
