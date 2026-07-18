@@ -21,7 +21,12 @@ type Msg = {
   citations?: { title: string; url: string }[];
   eventId?: string;
   rated?: "up" | "down";
+  // Assistent-Angebot unter der Antwort: „Als Hinweis an die Entwicklung senden"
+  // (gesetzt, wenn die Nutzer-Nachricht nach Problem-Sprache klingt). Trägt die
+  // Vorbefüllung fürs Formular.
+  offer?: { category: string; title: string; problemDesc: string };
 };
+type FbPrefill = { category?: string; title?: string; problemDesc?: string };
 type Props = {
   endpoint?: string; // Default "/api/chat" (same-origin). Marketing: absolute Hub-URL.
   surface?: string; // z.B. "hub" | "coach" | "marketing"
@@ -59,6 +64,10 @@ const STRINGS = {
     fbError: "Konnte nicht gesendet werden. Bitte versuche es erneut.",
     fbBack: "Zurück zum Chat",
     fbContext: "Mitgeschickt: aktuelle Seite, Browser, App-Version.",
+    fbChipIntro: "💡 Problem oder Idee melden",
+    fbOffer: "→ Als Hinweis an die Entwicklung senden",
+    fbDoneMsg: "✅ Danke! Dein Hinweis ist angekommen (Referenz {ref}). Wir schauen ihn uns an — bei Rückfragen melden wir uns.",
+    fbDoneNoShot: "Hinweis: Der Screenshot konnte nicht übertragen werden — dein Hinweis selbst ist angekommen.",
   },
   en: {
     title: "PulseNorth Assistant",
@@ -89,8 +98,25 @@ const STRINGS = {
     fbError: "Could not be sent. Please try again.",
     fbBack: "Back to chat",
     fbContext: "Sent along: current page, browser, app version.",
+    fbChipIntro: "💡 Report a problem or idea",
+    fbOffer: "→ Send this as a note to the dev team",
+    fbDoneMsg: "✅ Thanks! Your note has arrived (reference {ref}). We'll take a look — and get back to you if we have questions.",
+    fbDoneNoShot: "Note: the screenshot could not be uploaded — your note itself has arrived.",
   },
 };
+
+/* Problem-Sprache (Client-Heuristik): löst KEIN Formular aus, sondern nur das
+   Assistent-ANGEBOT unter der normalen Antwort. Fehltreffer sind billig (ein
+   ignorierbarer Chip), deshalb bewusst breiter als der Server-Intent. */
+const PROBLEM_RE = /(funktioniert nicht|geht nicht|klappt nicht|kaputt|fehler|bug|absturz|stürzt ab|hängt|lädt nicht|reagiert nicht|fehlt mir|vermisse|wäre schön|not working|doesn'?t work|broken|error|crash(es|ed)?|fails|stuck|missing|would be nice)/i;
+
+/** Kategorie aus der Nutzer-Nachricht raten (Vorbefüllung; im Formular änderbar). */
+function guessCategory(s: string): string {
+  const x = s.toLowerCase();
+  if (/(funktioniert nicht|geht nicht|klappt nicht|kaputt|fehler|bug|absturz|stürzt|hängt|lädt nicht|reagiert nicht|broken|error|crash|fails|not working|doesn'?t work|stuck)/.test(x)) return "BUG";
+  if (/(fehlt|vermisse|wäre schön|wünsch|feature|neue funktion|missing|would be nice|wish|new feature)/.test(x)) return "FEATURE";
+  return "OPTIMIZATION";
+}
 
 export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", anon = false, lang = "de" }: Props) {
   const [open, setOpen] = useState(false);
@@ -101,7 +127,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
   const [fbOpen, setFbOpen] = useState(false);
   const [fbBusy, setFbBusy] = useState(false);
   const [fbState, setFbState] = useState<"form" | "done" | "error">("form");
-  // Feature-Flag: solange dark (Server-Bit off) bleiben Button + Formular AUS.
+  // Feature-Flag: solange dark (Server-Bit off) bleiben Einstiege + Formular AUS.
   const [fbAvailable, setFbAvailable] = useState(false);
   const [fb, setFb] = useState({ category: "OPTIMIZATION", title: "", problemDesc: "", desiredBehavior: "", reproSteps: "" });
   const fileRef = useRef<HTMLInputElement>(null);
@@ -119,7 +145,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
   }, [open, busy]);
 
   // Capability-Probe: nur eingeloggte (Zone A) Widgets fragen den Server, ob das
-  // Feedback-Feature freigeschaltet ist. Solange dark → fbAvailable bleibt false.
+  // Hinweis-Feature freigeschaltet ist. Solange dark → fbAvailable bleibt false.
   useEffect(() => {
     if (anon) return;
     let alive = true;
@@ -146,8 +172,14 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
     }
   }
 
-  function openFeedback() {
-    setFb({ category: "OPTIMIZATION", title: "", problemDesc: "", desiredBehavior: "", reproSteps: "" });
+  function openFeedback(prefill?: FbPrefill) {
+    setFb({
+      category: prefill?.category ?? "OPTIMIZATION",
+      title: prefill?.title ?? "",
+      problemDesc: prefill?.problemDesc ?? "",
+      desiredBehavior: "",
+      reproSteps: "",
+    });
     setFbState("form");
     setFbOpen(true);
   }
@@ -172,7 +204,16 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
       if (file) form.set("screenshot", file);
       const res = await fetch(`${endpoint}/idea`, { method: "POST", credentials: anon ? "omit" : "include", body: form });
       if (!res.ok) throw new Error(String(res.status));
-      setFbState("done");
+      const j = (await res.json().catch(() => ({}))) as { id?: string; attachment?: boolean };
+      if (j?.id) {
+        // Assistent bestätigt IM GESPRÄCH mit echter Referenz (kein stilles Formular-Danke).
+        const ref = j.id.slice(0, 8).toUpperCase();
+        const noShot = file && j.attachment !== true ? `\n${t.fbDoneNoShot}` : "";
+        setMsgs((m) => [...m, { role: "assistant", text: t.fbDoneMsg.replace("{ref}", ref) + noShot }]);
+        setFbOpen(false);
+      } else {
+        setFbState("done"); // Fallback ohne Referenz (sollte nicht vorkommen)
+      }
     } catch {
       setFbState("error");
     } finally {
@@ -202,6 +243,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
       const reader = res.body.getReader();
       const dec = new TextDecoder();
       let buf = "";
+      let formOpened = false; // Formular bereits per Server-Intent geöffnet → kein zusätzliches Angebot
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const { done, value } = await reader.read();
@@ -214,9 +256,14 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
           if (!line.startsWith("data:")) continue;
           let ev: { type?: string; text?: string; label?: string; citations?: { title: string; url: string }[]; message?: string; eventId?: string };
           try { ev = JSON.parse(line.slice(5).trim()); } catch { continue; }
-          // Feedback-Intent: der Server signalisiert „öffne das Formular" statt einer
-          // Text-Antwort (deterministisch, kein LLM-Verbrauch). Nur Zone A.
-          if (ev.type === "form" && !anon && fbAvailable) { openFeedback(); continue; }
+          // Klare Melde-Absicht: der Server signalisiert „öffne das Formular" statt
+          // einer Text-Antwort (deterministisch, kein LLM-Verbrauch). Nur Zone A.
+          // Vorbefüllt aus der Nutzer-Nachricht — der Assistent hat schon mitgedacht.
+          if (ev.type === "form" && !anon && fbAvailable) {
+            formOpened = true;
+            openFeedback({ category: guessCategory(q), title: q.slice(0, 120), problemDesc: q });
+            continue;
+          }
           // Immutabel updaten (kein In-place-Mutation): sonst appended der
           // StrictMode-/Concurrent-Doppelaufruf des Updaters denselben Delta zweimal.
           setMsgs((m) => {
@@ -224,7 +271,15 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
             if (last?.role !== "assistant") return m;
             const next = { ...last };
             if (ev.type === "delta") next.text = next.text + (ev.text ?? "");
-            else if (ev.type === "done") { next.label = ev.label; next.citations = (ev.citations ?? []).filter((c) => c.title); next.eventId = ev.eventId; }
+            else if (ev.type === "done") {
+              next.label = ev.label; next.citations = (ev.citations ?? []).filter((c) => c.title); next.eventId = ev.eventId;
+              // Problem-Sprache ohne explizite Melde-Absicht: der Assistent hat normal
+              // geantwortet (vielleicht half's ja) — und BIETET darunter an, den Punkt
+              // als Hinweis an die Entwicklung zu geben (vorbefüllt, ein Klick).
+              if (!anon && fbAvailable && !formOpened && PROBLEM_RE.test(q)) {
+                next.offer = { category: guessCategory(q), title: q.slice(0, 120), problemDesc: q };
+              }
+            }
             else if (ev.type === "error") next.text = next.text || t.error;
             else return m;
             return [...m.slice(0, -1), next];
@@ -256,7 +311,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
             <span className="pnchat-dot" /> {t.title}
             <span className="pnchat-head-actions">
               {!anon && fbAvailable && !fbOpen && (
-                <button className="pnchat-fbbtn" aria-label={t.fbOpen} title={t.fbOpen} onClick={openFeedback}>
+                <button className="pnchat-fbbtn" aria-label={t.fbOpen} title={t.fbOpen} onClick={() => openFeedback()}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 8a6 6 0 0 0-12 0c0 1 .3 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></svg>
                 </button>
               )}
@@ -272,6 +327,9 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
                   {t.chips.map((c) => (
                     <button key={c} className="pnchat-chip" onClick={() => send(c)}>{c}</button>
                   ))}
+                  {!anon && fbAvailable && (
+                    <button className="pnchat-chip pnchat-chip-fb" onClick={() => openFeedback()}>{t.fbChipIntro}</button>
+                  )}
                 </div>
               </div>
             )}
@@ -281,6 +339,9 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
                   {(m.role === "assistant" ? m.text.replace(/\s*\[(?:Quelle|Source):[^\]]*\]/gi, "") : m.text) ||
                     (m.role === "assistant" && busy && i === msgs.length - 1 ? <span className="pnchat-typing"><i /><i /><i /></span> : null)}
                 </div>
+                {m.role === "assistant" && m.offer && (
+                  <button className="pnchat-offer" onClick={() => openFeedback(m.offer)}>{t.fbOffer}</button>
+                )}
                 {m.role === "assistant" && m.citations && m.citations.length > 0 && (
                   <div className="pnchat-cites">{t.sources}: {m.citations.map((c, j) => (
                     c.url ? <a key={j} href={c.url} target="_blank" rel="noopener noreferrer">{c.title}</a> : <span key={j}>{c.title}</span>
@@ -365,6 +426,10 @@ const CSS = `
 .pnchat-chips{display:flex;flex-direction:column;gap:8px}
 .pnchat-chip{text-align:left;padding:10px 12px;border:1px solid rgba(31,111,235,.3);background:rgba(31,111,235,.06);color:#1f6feb;border-radius:10px;cursor:pointer;font-size:13px}
 .pnchat-chip:hover{background:rgba(31,111,235,.12)}
+.pnchat-chip-fb{border-style:dashed;border-color:rgba(163,113,247,.45);background:rgba(163,113,247,.06);color:#8250df}
+.pnchat-chip-fb:hover{background:rgba(163,113,247,.12)}
+.pnchat-offer{display:block;margin:6px 0 0;padding:7px 10px;border:1px dashed rgba(163,113,247,.5);background:rgba(163,113,247,.06);color:#8250df;border-radius:9px;cursor:pointer;font-size:12.5px;text-align:left}
+.pnchat-offer:hover{background:rgba(163,113,247,.14)}
 .pnchat-msg{display:flex;flex-direction:column;gap:4px;max-width:88%}
 .pnchat-user{align-self:flex-end;align-items:flex-end}
 .pnchat-assistant{align-self:flex-start}
@@ -422,6 +487,7 @@ const CSS = `
 :root[data-theme="dark"] .pnchat-assistant .pnchat-bubble,html.dark .pnchat-assistant .pnchat-bubble{background:#21262d;color:#e6edf3}
 :root[data-theme="dark"] .pnchat-input input,html.dark .pnchat-input input{background:#0d1117;color:#e6edf3;border-color:rgba(255,255,255,.15)}
 :root[data-theme="dark"] .pnchat-fbform select,:root[data-theme="dark"] .pnchat-fbtitle,:root[data-theme="dark"] .pnchat-fbta,html.dark .pnchat-fbform select,html.dark .pnchat-fbtitle,html.dark .pnchat-fbta{background:#0d1117;color:#e6edf3;border-color:rgba(255,255,255,.15)}
+:root[data-theme="dark"] .pnchat-chip-fb,html.dark .pnchat-chip-fb,:root[data-theme="dark"] .pnchat-offer,html.dark .pnchat-offer{color:#a371f7;border-color:rgba(163,113,247,.5);background:rgba(163,113,247,.1)}
 :root[data-theme="dark"] .pnchat-fbintro,:root[data-theme="dark"] .pnchat-fblabel,:root[data-theme="dark"] .pnchat-fbfile,:root[data-theme="dark"] .pnchat-fbdone,html.dark .pnchat-fbintro,html.dark .pnchat-fblabel,html.dark .pnchat-fbfile,html.dark .pnchat-fbdone{color:#9aa4af}
 :root[data-theme="dark"] .pnchat-intro p,html.dark .pnchat-intro p{color:#9aa4af}
 :root[data-theme="dark"] .pnchat-cites,html.dark .pnchat-cites{color:#9aa4af}
