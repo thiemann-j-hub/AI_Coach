@@ -19,6 +19,10 @@ import {
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
 import { runQualityChecks } from "@/lib/server/quality-checks";
+import {
+  defaultCompetencyRatings,
+  normalizeCompetencyRatings,
+} from "@/lib/competency-model";
 import { emitCoachMeasurement } from "@/lib/server/radar-emit";
 import { withTimeout, withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
@@ -53,44 +57,11 @@ const requestSchema = z.object({
     .optional(),
 });
 
-const COMP_MODEL = [
-  { id: "C1", name: "Integrieren und Verbinden" },
-  { id: "C2", name: "Klarheit und Entscheidungsstärke" },
-  { id: "C3", name: "Befähigen und Entwickeln" },
-  { id: "C4", name: "Sicherheit und Stabilität geben" },
-  { id: "C5", name: "Kommunikation und Kooperation" },
-  { id: "C6", name: "Zielorientierte Umsetzung" },
-  { id: "C7", name: "Innovative Kultur fördern" },
-  { id: "C8", name: "Selbstreflexion und Lernmotivation" },
-  { id: "C9", name: "Zukunftsorientierung und strategischer Weitblick" },
-  { id: "C10", name: "KI- und Datenkompetenz" },
-];
-
-function defaultCompetencyRatings() {
-  return COMP_MODEL.map((c) => ({
-    id: c.id,
-    name: c.name,
-    score: null as number | null,
-    confidence: null as number | null,
-    why: "nicht ausreichend beobachtbar",
-    evidence: [] as string[],
-  }));
-}
-
-function normalizeScore(v: any): number | null {
-  const n = typeof v === "number" ? v : null;
-  if (n == null) return null;
-  if (n < 1 || n > 4) return null;
-  return n;
-}
+// COMP_MODEL + Normalisierung leben seit SIM-2 im geteilten Modul
+// @/lib/competency-model (eine Runtime-Quelle für Analyze UND Simulation).
 
 function asStr(v: any): string {
   return typeof v === "string" ? v : String(v ?? "");
-}
-
-function normalizeEvidence(v: any): string[] {
-  if (!Array.isArray(v)) return [];
-  return v.map((x) => asStr(x)).filter((s) => s.trim()).slice(0, 2);
 }
 
 export async function POST(req: NextRequest) {
@@ -190,40 +161,10 @@ export async function POST(req: NextRequest) {
       if (compSettled.status === "rejected") throw compSettled.reason;
       const comp = compSettled.value;
 
-      const list = Array.isArray((comp as any)?.competencies) ? (comp as any).competencies : [];
-      const map = new Map<string, any>(list.map((x: any) => [asStr(x?.id).trim(), x]));
-
-      competency_ratings = COMP_MODEL.map((c) => {
-        const r = map.get(c.id);
-        if (!r) return { ...defaultCompetencyRatings().find((x) => x.id === c.id)! };
-
-        let why = asStr(r?.why ?? "").trim();
-        const score = normalizeScore(r?.score);
-        const notObservable = d.lang === "en" ? "not sufficiently observable" : "nicht ausreichend beobachtbar";
-        if (!score) {
-          why = notObservable;
-        } else if (!why) {
-          why = "—";
-        }
-
-        let evidence = normalizeEvidence(r?.evidence);
-        evidence = evidence.map((q) => {
-          let s = asStr(q);
-          if (leaderLbl) s = s.split(leaderLbl).join("Führungskraft");
-          if (empLbl) s = s.split(empLbl).join("Mitarbeiter:in");
-          return s;
-        });
-
-        const confidenceRaw = typeof r?.confidence === "number" ? r.confidence : null;
-
-        return {
-          id: c.id,
-          name: c.name,
-          score,
-          confidence: confidenceRaw,
-          why,
-          evidence,
-        };
+      competency_ratings = normalizeCompetencyRatings(comp, {
+        lang: d.lang,
+        leaderLabel: leaderLbl || undefined,
+        employeeLabel: empLbl || undefined,
       });
     } catch (e: any) {
       competency_error = e?.message ?? String(e);

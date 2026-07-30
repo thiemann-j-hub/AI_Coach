@@ -8,6 +8,7 @@ import {
   BarChart3,
   History,
   CreditCard,
+  MessagesSquare,
   Users,
   PlusCircle,
   ChevronLeft,
@@ -84,6 +85,7 @@ export default function AppShell(props: {
         label: 'MAIN',
         items: [
           { href: '/analyze', label: t.nav.analyze, icon: BarChart3 },
+          { href: '/simulation', label: t.nav.simulation, icon: MessagesSquare },
           { href: '/runs-dashboard', label: t.nav.history, icon: History },
           { href: '/credits', label: 'Credits', icon: CreditCard },
           { href: '/workspace', label: t.nav.workspace, icon: Users },
