@@ -13,11 +13,6 @@ export const dynamic = "force-dynamic";
  * Credit-Service, hier ist nur noch die Darstellung (KK-1: lokaler
  * Checkout/CREDIT_PACKAGES-Stack abgebaut).
  */
-const DISPLAY_PACKAGES = [
-  { id: "single", credits: 1 },
-  { id: "pack_5", credits: 5 },
-];
-
 /** Saldo + Paket-Katalog fuer die Credits-Seite (CREDITS_CENTRAL: Saldo kommt zentral). */
 export async function GET(req: NextRequest) {
   const authResult = await requireAuth(req);
@@ -28,7 +23,6 @@ export async function GET(req: NextRequest) {
   const rlResponse = checkRateLimit(rlKey, 30, 60_000);
   if (rlResponse) return rlResponse;
 
-  const packages = DISPLAY_PACKAGES;
   const topUpUrl = process.env.CREDIT_TOPUP_URL || undefined;
 
   // CREDITS_CENTRAL=on: Saldo zentral lesen — Token kommt aus dem Server-Store
@@ -40,7 +34,7 @@ export async function GET(req: NextRequest) {
     // still als „0" maskieren. Saldo + Workspace echt unbekannt (null).
     if (w.state === "expired") {
       return NextResponse.json(
-        { ok: true, enabled: true, central: true, sessionExpired: true, balance: null, workspaceId: null, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { ok: true, enabled: true, central: true, sessionExpired: true, balance: null, workspaceId: null, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }
@@ -48,17 +42,17 @@ export async function GET(req: NextRequest) {
     // Chip versteckt, /credits zeigt „—" (kein 0-Default). Re-Login seedet den Store.
     if (w.state === "inert") {
       return NextResponse.json(
-        { ok: true, enabled: true, central: true, degraded: true, balance: null, workspaceId: null, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+        { ok: true, enabled: true, central: true, degraded: true, balance: null, workspaceId: null, ...(topUpUrl ? { topUpUrl } : {}) },
         { status: 200 }
       );
     }
     return NextResponse.json(
-      { ok: true, enabled: true, central: true, balance: w.credits, workspaceId: w.workspaceId, packages, ...(topUpUrl ? { topUpUrl } : {}) },
+      { ok: true, enabled: true, central: true, balance: w.credits, workspaceId: w.workspaceId, ...(topUpUrl ? { topUpUrl } : {}) },
       { status: 200 }
     );
   }
 
   // CREDITS_CENTRAL=off (z. B. lokal): kein Credit-System aktiv — inerte Huelle
   // (der lokale Ledger-Pfad wurde mit KK-1 abgebaut).
-  return NextResponse.json({ ok: true, enabled: false, balance: 0, workspaceId: uid, packages }, { status: 200 });
+  return NextResponse.json({ ok: true, enabled: false, balance: 0, workspaceId: uid }, { status: 200 });
 }

@@ -9,14 +9,12 @@ import { signInWithMicrosoft } from '@/lib/auth-service';
 import { useTranslation } from '@/i18n/useTranslation';
 import { Download, FileText, LogIn } from 'lucide-react';
 
-type Pkg = { id: string; credits: number };
 type CreditsState = {
   enabled: boolean;
   /** null = Saldo unbekannt (Dienst gestoert / Sitzung abgelaufen), nicht 0. */
   balance: number | null;
   /** null im zentralen Modus, wenn der Workspace nicht aufgeloest werden konnte. */
   workspaceId: string | null;
-  packages: Pkg[];
   /** CREDITS_CENTRAL: Saldo kommt zentral, Kauf laeuft ueber die Website (topUpUrl). */
   central?: boolean;
   topUpUrl?: string | null;
@@ -34,10 +32,11 @@ type Invoice = {
   currency: string;
 };
 
-const PACKAGE_LABEL: Record<string, { de: string; en: string }> = {
-  single: { de: 'Einzel-Credit', en: 'Single credit' },
-  pack_5: { de: '5er-Paket', en: '5-pack' },
-};
+// KK-1-Nachzügler (GL-Aufräumer 31.07.): Die alten Anzeige-Pakete
+// (Einzel-Credit/5er-Paket) stammten aus der Vor-Zentral-Ära und zeigten
+// einen Katalog, den es zentral nicht gibt (real: Starter/Team/Scale auf
+// der Website). Der Kauf lief ohnehin nur noch über topUpUrl — die Kacheln
+// sind ersatzlos durch EINEN zentralen Top-up-CTA ersetzt.
 
 export default function CreditsClient() {
   const { locale } = useTranslation();
@@ -64,7 +63,6 @@ export default function CreditsClient() {
             enabled: cj.enabled,
             balance: typeof cj.balance === 'number' ? cj.balance : null,
             workspaceId: cj.workspaceId,
-            packages: cj.packages,
             central: cj.central === true,
             topUpUrl: cj.topUpUrl ?? null,
             sessionExpired: cj.sessionExpired === true,
@@ -187,35 +185,21 @@ export default function CreditsClient() {
           ) : null}
         </div>
 
-        {/* Pakete */}
+        {/* Guthaben aufladen — zentraler Kauf über die Website (ein Wallet für alle Apps) */}
         <div>
-          <h2 className="text-lg font-semibold mb-1">{de ? 'Credits kaufen' : 'Buy credits'}</h2>
+          <h2 className="text-lg font-semibold mb-1">{de ? 'Guthaben aufladen' : 'Top up credits'}</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {de ? 'Alle Preise exkl. MwSt.' : 'All prices excl. VAT.'} 1 Credit = 1 {de ? 'Analyse' : 'analysis'}.
+            {de
+              ? 'Credits gelten in allen PulseNorth-Apps (1 Credit = 1 Analyse). Der Kauf läuft über die zentrale Preisseite.'
+              : 'Credits work across all PulseNorth apps (1 credit = 1 analysis). Purchases happen on the central pricing page.'}
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {(state?.packages ?? []).map((p) => {
-              const lbl = PACKAGE_LABEL[p.id]?.[de ? 'de' : 'en'] ?? p.id;
-              return (
-                <div key={p.id} className="p-5 rounded-2xl bg-card border border-border flex flex-col gap-3">
-                  <div className="text-base font-semibold">{lbl}</div>
-                  <div className="text-3xl font-bold">
-                    {p.credits}
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">
-                      {de ? (p.credits === 1 ? 'Credit' : 'Credits') : p.credits === 1 ? 'credit' : 'credits'}
-                    </span>
-                  </div>
-                  <button
-                    className="mt-auto py-2.5 px-4 rounded-xl btn-gradient text-white font-semibold disabled:opacity-50 disabled:pointer-events-none"
-                    onClick={() => buy(p.id)}
-                    disabled={!state?.enabled}
-                  >
-                    {de ? 'Kaufen' : 'Buy'}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+          <button
+            className="py-2.5 px-6 rounded-xl btn-gradient text-white font-semibold disabled:opacity-50 disabled:pointer-events-none"
+            onClick={() => buy('topup')}
+            disabled={!state?.enabled}
+          >
+            {de ? 'Guthaben aufladen' : 'Top up credits'}
+          </button>
         </div>
 
         {/* Rechnungen */}
