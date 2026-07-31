@@ -55,6 +55,13 @@ export interface CoachMeasurementDoc {
   runId: string;
   metrics: RadarMetrics;
   scale: { min: number; max: number };
+  /**
+   * GL-A4 (31.07.2026, ADDITIV — v1-kompatibel, alle Leser tolerieren Fehlen):
+   * je beobachtbarer Kompetenz bis zu 2 woertliche, anonymisierte Zitate aus
+   * der Analyse („Warum diese Note?" im Hub-Radar). Nur gesetzt, wenn Zitate
+   * existieren; Alt-Events tragen das Feld nicht.
+   */
+  evidence?: Partial<Record<CompetencyKey, string[]>>;
 }
 
 /** Idempotente Doc-id — exakt Hub `measurementDocId(appId, runId)`. */
@@ -97,6 +104,34 @@ export function metricsFromCompetencyRatings(ratings: unknown): RadarMetrics {
   return m;
 }
 
+/**
+ * GL-A4: extrahiert je Kompetenz bis zu 2 nicht-leere Evidenz-Zitate aus den
+ * competency_ratings — NUR fuer Kompetenzen, die auch einen beobachtbaren
+ * Score tragen (Zitate ohne Score waeren im Radar irrefuehrend). Zitate werden
+ * auf 220 Zeichen gekappt (Ledger-Doc klein halten). `undefined`, wenn nichts
+ * da ist (kein leeres Objekt ins Doc schreiben).
+ */
+export function evidenceFromCompetencyRatings(
+  ratings: unknown
+): Partial<Record<CompetencyKey, string[]>> | undefined {
+  if (!Array.isArray(ratings)) return undefined;
+  const out: Partial<Record<CompetencyKey, string[]>> = {};
+  for (const r of ratings) {
+    const id = typeof (r as { id?: unknown })?.id === "string" ? (r as { id: string }).id : "";
+    if (!(COMPETENCY_KEYS as readonly string[]).includes(id)) continue;
+    const s = (r as { score?: unknown })?.score;
+    if (!(typeof s === "number" && Number.isFinite(s) && s > 0)) continue;
+    const ev = (r as { evidence?: unknown })?.evidence;
+    if (!Array.isArray(ev)) continue;
+    const quotes = ev
+      .filter((q): q is string => typeof q === "string" && q.trim().length > 0)
+      .map((q) => (q.length > 220 ? `${q.slice(0, 219)}…` : q))
+      .slice(0, 2);
+    if (quotes.length) out[id as CompetencyKey] = quotes;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 /** true, wenn mindestens EIN Wert Signal traegt (Hub verwirft Leer-Events). */
 export function hasObservableMetric(m: RadarMetrics): boolean {
   return (
@@ -123,6 +158,7 @@ export function buildCoachMeasurementDoc(args: {
   }
   const metrics = metricsFromCompetencyRatings(args.competencyRatings);
   if (!hasObservableMetric(metrics)) return null;
+  const evidence = evidenceFromCompetencyRatings(args.competencyRatings);
   return {
     id: coachMeasurementDocId(args.runId),
     v: RADAR_CONTRACT_VERSION,
@@ -134,5 +170,6 @@ export function buildCoachMeasurementDoc(args: {
     runId: args.runId,
     metrics,
     scale: { min: COACH_SCALE.min, max: COACH_SCALE.max },
+    ...(evidence ? { evidence } : {}),
   };
 }

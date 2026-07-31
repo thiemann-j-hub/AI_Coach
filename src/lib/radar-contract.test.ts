@@ -3,6 +3,7 @@ import {
   metricsFromCompetencyRatings,
   buildCoachMeasurementDoc,
   coachMeasurementDocId,
+  evidenceFromCompetencyRatings,
   RADAR_CONTRACT_VERSION,
 } from "./radar-contract";
 
@@ -108,5 +109,48 @@ describe("radar-contract: Metrik-Mapping (gelockte Regeln)", () => {
     expect(metricsFromCompetencyRatings("kaputt").overall).toBeNull();
     expect(metricsFromCompetencyRatings([{ id: "X9", score: 3 }]).C1).toBeNull();
     expect(coachMeasurementDocId("abc")).toBe("coach:abc");
+  });
+});
+
+describe("radar-contract: Evidenz (GL-A4, additiv)", () => {
+  const withEv = (id: string, score: number | null, evidence: unknown) => ({
+    ...rating(id, score),
+    evidence,
+  });
+
+  it("übernimmt max 2 nicht-leere Zitate NUR für beobachtbare Kompetenzen", () => {
+    const ev = evidenceFromCompetencyRatings([
+      withEv("C1", 3, ["Führungskraft: klare Ansage.", "  ", "Drittes Zitat", "Viertes"]),
+      withEv("C2", null, ["Zitat ohne Score darf nicht rein"]),
+      withEv("C3", 2, []),
+    ]);
+    expect(ev).toBeDefined();
+    expect(ev!.C1).toEqual(["Führungskraft: klare Ansage.", "Drittes Zitat"]);
+    expect(ev!.C2).toBeUndefined();
+    expect(ev!.C3).toBeUndefined();
+  });
+
+  it("kappt Überlängen auf 220 Zeichen und liefert undefined statt leerem Objekt", () => {
+    const long = "x".repeat(500);
+    const ev = evidenceFromCompetencyRatings([withEv("C5", 4, [long])]);
+    expect(ev!.C5![0].length).toBe(220);
+    expect(evidenceFromCompetencyRatings([withEv("C5", 4, [])])).toBeUndefined();
+    expect(evidenceFromCompetencyRatings("kaputt")).toBeUndefined();
+  });
+
+  it("buildCoachMeasurementDoc trägt evidence nur, wenn vorhanden (Alt-Form bleibt identisch)", () => {
+    const base = {
+      workspaceId: "ws-1",
+      subjectId: "oid-1",
+      runId: "run-1",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    };
+    const ohne = buildCoachMeasurementDoc({ ...base, competencyRatings: [rating("C1", 3)] });
+    expect(ohne && "evidence" in ohne).toBe(false);
+    const mit = buildCoachMeasurementDoc({
+      ...base,
+      competencyRatings: [withEv("C1", 3, ["Beleg A"])],
+    });
+    expect(mit!.evidence).toEqual({ C1: ["Beleg A"] });
   });
 });
