@@ -49,6 +49,14 @@ const FORBIDDEN_ORIGINALS = [
   "Stauch",
   "Bierschuppen",
   "Frau König",
+  // Rollenspiel AC1 (02.08.2026, Peer-Gespräch Produktlinien/Fuhrpark):
+  "Herking",
+  "PrimeLube",
+  "Mika Wagner",
+  "Fliedner",
+  "Frau Beck",
+  "Lubricants",
+  "SolutionConsultants",
 ];
 
 describe("simulation scenarios — Abwandlungs-Auflage", () => {
@@ -62,14 +70,17 @@ describe("simulation scenarios — Abwandlungs-Auflage", () => {
 });
 
 describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => {
-  it("Lerntreppe mit zwei Spuren: je Stufe 1–3 ein Mitarbeiter- und ein Kollegengespräch", () => {
-    expect(SIMULATION_SCENARIOS).toHaveLength(6);
-    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3]);
+  it("Lerntreppe mit zwei Spuren: jede Stufe 1–3 hat beide Gesprächstypen", () => {
+    expect(SIMULATION_SCENARIOS).toHaveLength(7);
+    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3]);
     for (const stufe of [1, 2, 3]) {
-      const types = SIMULATION_SCENARIOS.filter((s) => s.difficulty === stufe).map(
-        (s) => s.conversationType,
+      const types = new Set(
+        SIMULATION_SCENARIOS.filter((s) => s.difficulty === stufe).map(
+          (s) => s.conversationType,
+        ),
       );
-      expect(types.sort()).toEqual(["kollegengespräch", "mitarbeitergespräch"]);
+      expect(types.has("mitarbeitergespräch")).toBe(true);
+      expect(types.has("kollegengespräch")).toBe(true);
     }
   });
 

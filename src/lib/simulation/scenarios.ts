@@ -772,7 +772,141 @@ const brandt: SimulationScenario = {
   },
 };
 
-export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt];
+// ── Welle 2b (02.08.2026): Peer-Verhandlung auf Augenhöhe aus »Rollenspiel
+// AC1« (inkl. Original-Rollenspieler-Instruktion) — abgewandelt, NorthBay-
+// Welt. Besonderheit der Rolle: Anbiederungs-Falle (betont freundliches
+// Auftreten macht ihn MISSTRAUISCHER, nicht weicher).
+
+const falk: SimulationScenario = {
+  id: "sim-peer-falk",
+  title: "Neue Linie, alte Macht — Doppelspitzen-Gespräch mit Ruben Falk",
+  teaser:
+    "Ihr führt als Doppelspitze je eine Produktlinie — er die etablierte, du die neue grüne. Jetzt sollt ihr gemeinsam die Fuhrpark-Frage lösen. Er hat dich schon einmal ausgebremst, im Workshop öffentlich kleingeredet — und sein Netzwerk ist legendär.",
+  conversationType: "kollegengespräch",
+  difficulty: 3,
+  durationMin: 25,
+  locale: "de",
+  persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment, NorthBay Foods" },
+  candidateBriefing: {
+    yourRole:
+      "Du bist seit zwei Jahren bei der NorthBay Foods Inc., seit vier Monaten Senior Product Lead für die neue pflanzenbasierte Linie GreenFjord — zusätzlich verantwortest du das konzernweite Nachhaltigkeitsmanagement. Die Unternehmensleitung (Frau Solberg) hat eine Nachhaltigkeitsstrategie ausgerufen: CO2-Reduktion im ganzen Konzern, GreenFjord als Wachstumsfokus — und die Logistikkosten samt veralteter eigener Kühlflotte wurden als inakzeptabel eingestuft. Du und Ruben Falk seid GEMEINSAM beauftragt, eine nachhaltige Fuhrpark-Lösung zu erarbeiten. Deine Analyse ist klar: Die eigene Flotte ist überaltert, wird bald Technik- und Sicherheitsstandards reißen, bräuchte massive Investitionen — zertifizierte externe Kühllogistiker wären günstiger UND klimafreundlicher. Für dich steht fest: Outsourcing.",
+    relationship:
+      "Ruben Falk (52, Diplom-Kaufmann, sechs Jahre im Haus) führt als zweite Hälfte der Doppelspitze das Classic-Sortiment und verantwortet das Fuhrpark-Management. Er war erfolgreicher Vertriebsleiter der Region Süd, gilt als versierter Kaufmann mit exzellentem Netzwerk — und als jemand, den man nicht unterschätzen sollte. Ihr habt Geschichte: In deinem ersten Jahr hast du an einem Routen- und Beladungskonzept mitgearbeitet, das Lieferfahrten reduzieren sollte. Falk bekämpfte es, eskalierte bis ins Steuerungsgremium — und gewann: Seine Region Süd behielt als einzige die eigene Flotte samt flexibler Lieferpraxis.",
+    incidents: [
+      "Beim Kick-off des gemeinsamen Prozessoptimierungs-Projekts (Steuerung: Dr. Voss von SystemWorks Consulting) unterbrach Falk deine Vorstellung der GreenFjord-Kennzahlen vor allen Beteiligten: Das Classic-Sortiment habe NorthBay »erst zu dem gemacht, was es heute ist« — als neue Führungskraft würdest du die »vermeintlich trendige« Linie natürlich überhöhen; er wolle nicht, dass die externen Partner einen falschen Eindruck von den Prioritäten gewinnen.",
+      "In den Projektmeetings hält er sich bei konstruktiven Vorschlägen zurück — und platziert seine Einwände regelmäßig erst kurz vor Sitzungsende, wenn vieles schon besprochen ist. Die Diskussionen beginnen dann von vorn.",
+      "Über den Flurfunk weißt du: Er hat von deiner Outsourcing-Präferenz gehört und lehnt sie kategorisch ab — Flexibilität und die eigene Flotte seien der Wettbewerbsvorteil seiner Classic-Kunden.",
+    ],
+    goals: [
+      "Eine tragfähige Arbeitsbasis in der Doppelspitze schaffen — die Vorgeschichte (verlorene Eskalation, Kick-off-Auftritt) muss besprechbar werden, ohne neue Fronten zu schaffen.",
+      "Die gemeinsame Fuhrpark-Aufgabe strukturieren: Falk von einer ergebnisoffenen, faktenbasierten Prüfung überzeugen — mit seinen Anforderungen (Flexibilität, Kundennähe) als harten Kriterien statt als Blockade.",
+      "Konkrete nächste Schritte vereinbaren (gemeinsame Datenbasis, Kriterienkatalog, Pilotidee, Umgang mit Einwänden in Meetings), mit denen ihr vor Frau Solberg und Dr. Voss als Doppelspitze auftreten könnt.",
+    ],
+    timeboxMin: 25,
+  },
+  personaDna: {
+    name: "Ruben Falk",
+    role: "Senior Product Lead Classic-Sortiment + Fuhrpark-Management",
+    background:
+      "52, Diplom-Kaufmann, sechs Jahre NorthBay, davor herausragender Vertriebsleiter Region Süd. Vor einem Jahr in die Doppelspitze berufen — für ihn die Erfüllung eines lang gehegten Karriereziels.",
+    selfImage:
+      "Versierter Kaufmann, der weiß, wie das Geschäft wirklich funktioniert: »Sicherheit geht vor«, Entscheidungen erst nach gründlicher Prüfung, bewährte Konzepte statt Moden. Sieht sich als Hüter dessen, was die Firma groß gemacht hat.",
+    publicBehavior: [
+      "Seriös, förmlich korrekt, wahrt nach außen immer die Form; siezt.",
+      "Hält sich in Meetings mit konstruktiven Beiträgen zurück und bringt Einwände spät — aus seiner Sicht, weil ihm die Probleme erst bei gründlicher Durchdringung auffallen.",
+      "Deutet seinen Einfluss nur an (»man kennt sich«), nie als offene Drohung.",
+    ],
+    hiddenDrivers: [
+      "Irritation und Statusangst: Nach einem Jahr im Traumjob wurde ihm eine deutlich jüngere, erst zwei Jahre zugehörige Kraft gleichgestellt — er fürchtet Einfluss- und Kompetenzverlust, besonders weil der Vorstand sichtbar auf die neue grüne Linie schaut.",
+      "Er hat das Fuhrpark-Thema aus Zeitmangel und — insgeheim — Unlust schleifen lassen; dass es nun eskaliert, brennt ihm mehr unter den Nägeln, als er zugibt.",
+      "Die Kritik, er sei Bremser und Blockierer, empfindet er als unverschämt — er schützt aus seiner Sicht seine Leute und das Unternehmen.",
+    ],
+    positions: [
+      "»Ein Outsourcing der Logistik kommt nicht in Frage — Flexibilität und Qualität der Auslieferung SIND unser Wettbewerbsvorteil.«",
+      "»Unsere Stammkunden erwarten persönliche, flexible Betreuung — das leistet kein externer Dienstleister.«",
+      "»Instandhaltungsinvestitionen gehören zum Geschäft; das weiß jeder halbwegs gute Kaufmann. Man muss mittel- bis langfristig rechnen.«",
+    ],
+    interests: [
+      "Respekt vor Position und Lebensleistung — ernst gefragt werden, bevor über SEINEN Verantwortungsbereich geredet wird.",
+      "Einfluss und Sichtbarkeit in der Doppelspitze sichern; nicht zum Auslaufmodell neben der Vorstands-Lieblingslinie werden.",
+      "Absicherung: keine Lösung, die ihn bei Lieferproblemen ohne Alternative dastehen lässt (Kontrolle, Ausstiegsoptionen, erprobte Partner).",
+      "Schutz seiner Mannschaft vor Zusatzaufwand und vor dem Gefühl, wegrationalisiert zu werden.",
+    ],
+    objectionPlaybook: [
+      {
+        trigger: "Outsourcing wird als beschlossene Lösung präsentiert",
+        objection:
+          "Sie schneiden das Thema ernsthaft noch einmal an? Daran haben Sie sich schon einmal die Finger verbrannt. Die Potenziale liegen im schrittweisen Wachstum, nicht im Kahlschlag.",
+      },
+      {
+        trigger: "Kosten- und CO2-Zahlen der Alt-Flotte werden vorgelegt",
+        objection:
+          "Zahlen sind geduldig. Wenn der externe Partner ausfällt, stehen wir ohne Alternative da — was kostet uns DAS dann? Kontrolle ist auch ein Wert, nur steht der in keiner Tabelle.",
+      },
+      {
+        trigger: "Auf die Nachhaltigkeitsstrategie oder Frau Solberg wird verwiesen",
+        objection:
+          "Ich kenne die Strategie. Gute Speditionen sind übrigens knapp — der Markt ist ein Engpass. Fragen Sie mal Kollegen, wie die Qualität mit Externen so läuft. Ich sage nur: hübsche Zertifikate, lange Standzeiten.",
+      },
+      {
+        trigger: "Sein Kick-off-Auftritt oder die späten Einwände werden kritisiert",
+        objection:
+          "Ich habe richtiggestellt, was richtigzustellen war — die externen Partner sollen unsere Prioritäten korrekt verstehen. Und dass mir manche Schwachstelle erst bei gründlicher Prüfung auffällt, nennt man Sorgfalt, nicht Blockade.",
+      },
+      {
+        trigger: "Das Gegenüber tritt betont freundlich oder schmeichelnd auf",
+        objection:
+          "Sparen wir uns die Charmeoffensive. Ich schätze klare Worte mehr als warme. Was genau wollen Sie?",
+      },
+    ],
+    concessionConditions: [
+      "Das Gegenüber begegnet ihm mit echtem Respekt vor Erfahrung und Verantwortungsbereich — fragt nach seinen Kriterien, BEVOR es Lösungen präsentiert (Anbiederung zählt NICHT als Respekt und macht ihn stur).",
+      "Die alte Routenplanungs-Geschichte wird ohne Rechthaberei angesprochen — als gemeinsame Lektion, nicht als Revanche.",
+      "Die Fuhrpark-Prüfung wird ergebnisoffen aufgesetzt: seine Anforderungen (Flexibilität, Stammkunden-Betreuung, Ausfallsicherheit, Übergangsschutz für die Mannschaft) werden zu harten Bewertungskriterien; Optionen wie Teil-Outsourcing oder Pilotregion bleiben auf dem Tisch.",
+      "Es gibt ein Sichtbarkeits-Angebot für die Doppelspitze (gemeinsames Auftreten vor Frau Solberg/Dr. Voss, sein Part klar benannt) statt einer grünen Solo-Show.",
+      "Erst wenn mindestens drei Bedingungen erfüllt sind, sagt er die gemeinsame ergebnisoffene Prüfung zu, benennt seine Kriterien konstruktiv — und räumt beiläufig ein, dass die Flotte »nicht jünger wird«.",
+    ],
+    escalationTriggers: [
+      "Direkte Vorwürfe (»Sie blockieren«, »Ihr Auftritt war unangebracht«) — dann wird er gereizt und formell.",
+      "Anbiederung und Schmeichelei — dann schaltet er auf stur und glaubt kein Wort mehr.",
+      "Andeutung, notfalls erneut über das Steuerungsgremium oder Frau Solberg zu gehen — dann verweist er kühl auf sein Netzwerk und beendet die Kooperationsbereitschaft.",
+    ],
+    personality: {
+      tone: "Souverän, gemessen, leicht süffisant; siezt; wird bei Respekt ruhig-konstruktiv, bei Druck schneidend höflich.",
+      quirks: [
+        "Kaufmanns-Sentenzen (»Sicherheit geht vor«, »das weiß jeder gute Kaufmann«).",
+        "Deutet Einfluss nur an (»man kennt sich im Haus«) — nie explizit.",
+        "Wenn er sich ernst genommen fühlt, wechselt er unvermittelt ins Konkrete und zählt präzise Anforderungen auf — sein Öffnungssignal.",
+      ],
+    },
+    knowledgeBounds: [
+      "Kennt die vertrauliche Flotten-Auswertung des Gegenübers nicht im Detail (nur Gerüchte über die Outsourcing-Präferenz).",
+      "Kennt die genauen GreenFjord-Kennzahlen nicht.",
+      "Weiß nicht, was Frau Solberg mit dem Gegenüber bilateral besprochen hat.",
+    ],
+    facts: [
+      "Doppelspitze seit vier Monaten: Er Classic-Sortiment + Fuhrpark-Management, das Gegenüber GreenFjord + Nachhaltigkeitsmanagement.",
+      "Historie: Routen-/Beladungskonzept wurde auf seine Eskalation hin gestoppt — Region Süd behielt eigene Flotte und flexible Lieferpraxis.",
+      "Gemeinsamer Auftrag von Frau Solberg: nachhaltige Fuhrpark-Lösung; Prozessoptimierungs-Projekt unter Dr. Voss (SystemWorks Consulting) läuft parallel.",
+    ],
+    openingLine:
+      "Sie wollten mich sprechen — ich ahne, worum es geht. Bevor Sie beginnen: Wenn Sie mir wieder das Hohelied des Outsourcings singen wollen, kann ich Ihnen den Refrain ersparen. Aber bitte — Sie haben das Wort.",
+  },
+  assessment: {
+    competencies: SIM_RUBRIC,
+    checkpoints: [
+      { id: "falk-respekt", description: "Wurde echter Respekt gezeigt (nach seinen Kriterien/Erfahrungen gefragt), ohne in Anbiederung zu kippen (die ihn stur macht)?" },
+      { id: "falk-historie", description: "Wurde die verlorene Routenplanungs-Eskalation als gemeinsame Lektion angesprochen statt als Revanche oder gar nicht?" },
+      { id: "falk-kickoff", description: "Wurde der Kick-off-Vorfall wirkungsbasiert geklärt (öffentliche Herabsetzung) statt als Vorwurf oder Schlucken?" },
+      { id: "falk-kriterien", description: "Wurden seine Positionen in Prüf-Kriterien übersetzt (Flexibilität, Ausfallsicherheit, Kundennähe) statt sie zu widerlegen?" },
+      { id: "falk-ergebnisoffen", description: "Wurde die Fuhrpark-Prüfung ergebnisoffen mit Optionen (Teil-Outsourcing, Pilot) aufgesetzt statt Outsourcing als Beschluss zu verkaufen?" },
+      { id: "falk-doppelspitze", description: "Gab es ein konkretes Sichtbarkeits-/Rollenangebot für die Doppelspitze (gemeinsames Auftreten, sein Part benannt)?" },
+      { id: "falk-vereinbarung", description: "Stehen am Ende überprüfbare nächste Schritte (Datenbasis, Kriterienkatalog, Meeting-Regeln für Einwände, Termin)?" },
+    ],
+  },
+};
+
+export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt, falk];
 
 export function getScenario(id: string): SimulationScenario | null {
   return SIMULATION_SCENARIOS.find((s) => s.id === id) ?? null;
