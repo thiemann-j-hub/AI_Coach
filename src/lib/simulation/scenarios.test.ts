@@ -31,6 +31,24 @@ const FORBIDDEN_ORIGINALS = [
   "Bonamie",
   "SystemSolution",
   "Easy-Error",
+  // Nachgeliefertes AC-Material (02.08.2026): Azubi-Peer-Übung, Post-Merger-
+  // Teammeeting, Performance-Gespräch + Rollenspieler-Briefings. Regel:
+  // Original-Namen ZUERST hierher, dann abwandeln.
+  "Redder",
+  "FREICAMP",
+  "Freicamp",
+  "E-Movement",
+  "ABACUS",
+  "Damis",
+  "Amado",
+  "Robyn",
+  "Tina Anderson",
+  "Tim Martin",
+  "Näther",
+  "Canadian Meat",
+  "Stauch",
+  "Bierschuppen",
+  "Frau König",
 ];
 
 describe("simulation scenarios — Abwandlungs-Auflage", () => {
@@ -44,9 +62,15 @@ describe("simulation scenarios — Abwandlungs-Auflage", () => {
 });
 
 describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => {
-  it("es gibt genau 3 Szenarien als Lerntreppe (Stufe 1, 2, 3)", () => {
-    expect(SIMULATION_SCENARIOS).toHaveLength(3);
-    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 2, 3]);
+  it("Lerntreppe mit zwei Spuren: je Stufe 1–3 ein Mitarbeiter- und ein Kollegengespräch", () => {
+    expect(SIMULATION_SCENARIOS).toHaveLength(6);
+    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3]);
+    for (const stufe of [1, 2, 3]) {
+      const types = SIMULATION_SCENARIOS.filter((s) => s.difficulty === stufe).map(
+        (s) => s.conversationType,
+      );
+      expect(types.sort()).toEqual(["kollegengespräch", "mitarbeitergespräch"]);
+    }
   });
 
   it.each(SIMULATION_SCENARIOS.map((s) => [s.id, s] as const))(
@@ -113,7 +137,7 @@ describe("publicScenario — Anti-Leak", () => {
         expect(json).not.toContain(driver);
       }
     }
-    expect(publicScenarios()).toHaveLength(3);
+    expect(publicScenarios()).toHaveLength(SIMULATION_SCENARIOS.length);
   });
 
   it("getScenario findet per id und liefert null für Unbekanntes", () => {
