@@ -57,6 +57,16 @@ const FORBIDDEN_ORIGINALS = [
   "Frau Beck",
   "Lubricants",
   "SolutionConsultants",
+  // Employee Appraisal AC2 (02.08.2026, EN High-Performer-Kritikgespräch):
+  "Radtke",
+  "NoRa",
+  "Teuber",
+  "Wollner",
+  "Bohne",
+  "Gerber",
+  "Arno Müller",
+  "Rudolf",
+  "Plant Super",
 ];
 
 describe("simulation scenarios — Abwandlungs-Auflage", () => {
@@ -71,8 +81,8 @@ describe("simulation scenarios — Abwandlungs-Auflage", () => {
 
 describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => {
   it("Lerntreppe mit zwei Spuren: jede Stufe 1–3 hat beide Gesprächstypen", () => {
-    expect(SIMULATION_SCENARIOS).toHaveLength(7);
-    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3]);
+    expect(SIMULATION_SCENARIOS).toHaveLength(8);
+    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3, 3]);
     for (const stufe of [1, 2, 3]) {
       const types = new Set(
         SIMULATION_SCENARIOS.filter((s) => s.difficulty === stufe).map(

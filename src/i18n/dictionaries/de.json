@@ -77,7 +77,8 @@
     "nextStepTitle": "Dein nächster Schritt",
     "c10Title": "Anschluss ans Kompetenzmodell (C1–C10)",
     "c10Hint": "Bewertet wie eine Transkript-Analyse — beobachtbar zählt nur, was das Gespräch wirklich zeigt.",
-    "newSimulation": "Neue Simulation starten"
+    "newSimulation": "Neue Simulation starten",
+    "englishOnly": "Szenario auf Englisch"
   },
   "auth": {
     "signIn": "Anmelden",

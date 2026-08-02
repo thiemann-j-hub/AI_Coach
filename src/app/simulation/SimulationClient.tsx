@@ -33,6 +33,7 @@ interface PublicScenario {
   teaser: string;
   difficulty: 1 | 2 | 3;
   durationMin: number;
+  locale?: "de" | "en";
   persona: { name: string; role: string };
   candidateBriefing: {
     yourRole: string;
@@ -495,7 +496,7 @@ export default function SimulationClient() {
                   {ts.withLabel} {s.persona.name} — {s.persona.role}
                 </div>
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
-                  {ts.germanOnly}
+                  {s.locale === "en" ? ts.englishOnly : ts.germanOnly}
                 </div>
               </button>
             ))}

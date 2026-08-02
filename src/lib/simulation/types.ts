@@ -78,7 +78,7 @@ export interface SimulationScenario {
   difficulty: SimulationDifficulty;
   durationMin: number;
   /** V1: Szenario-Inhalte bewusst Deutsch (Materialtreue); UI-Chrome ist ×7 lokalisiert. */
-  locale: "de";
+  locale: "de" | "en";
   /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). */
   persona: { name: string; role: string };
   candidateBriefing: CandidateBriefing;
@@ -94,7 +94,7 @@ export interface PublicSimulationScenario {
   conversationType: string;
   difficulty: SimulationDifficulty;
   durationMin: number;
-  locale: "de";
+  locale: "de" | "en";
   persona: { name: string; role: string };
   candidateBriefing: CandidateBriefing;
   competencies: SimRubricCompetency[];

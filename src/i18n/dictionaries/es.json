@@ -77,7 +77,8 @@
     "nextStepTitle": "Tu próximo paso",
     "c10Title": "Conexión con el modelo de competencias (C1–C10)",
     "c10Hint": "Se evalúa como un análisis de transcripción: solo cuenta lo que la conversación muestra realmente.",
-    "newSimulation": "Iniciar una nueva simulación"
+    "newSimulation": "Iniciar una nueva simulación",
+    "englishOnly": "Escenario en inglés"
   },
   "auth": {
     "signIn": "Iniciar sesión",

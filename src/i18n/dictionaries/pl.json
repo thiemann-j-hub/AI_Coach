@@ -77,7 +77,8 @@
     "nextStepTitle": "Twój następny krok",
     "c10Title": "Powiązanie z modelem kompetencji (C1–C10)",
     "c10Hint": "Oceniane jak analiza transkryptu — liczy się tylko to, co rozmowa naprawdę pokazuje.",
-    "newSimulation": "Rozpocznij nową symulację"
+    "newSimulation": "Rozpocznij nową symulację",
+    "englishOnly": "Scenariusz po angielsku"
   },
   "auth": {
     "signIn": "Zaloguj się",

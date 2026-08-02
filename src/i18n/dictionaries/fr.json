@@ -77,7 +77,8 @@
     "nextStepTitle": "Votre prochaine étape",
     "c10Title": "Lien avec le modèle de compétences (C1–C10)",
     "c10Hint": "Noté comme une analyse de transcription — seul ce que la conversation montre réellement compte.",
-    "newSimulation": "Démarrer une nouvelle simulation"
+    "newSimulation": "Démarrer une nouvelle simulation",
+    "englishOnly": "Scénario en anglais"
   },
   "auth": {
     "signIn": "Se connecter",

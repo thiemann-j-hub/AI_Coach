@@ -77,7 +77,8 @@
     "nextStepTitle": "Your next step",
     "c10Title": "Link to the competency model (C1–C10)",
     "c10Hint": "Scored exactly like a transcript analysis — only what the conversation actually shows counts as observable.",
-    "newSimulation": "Start a new simulation"
+    "newSimulation": "Start a new simulation",
+    "englishOnly": "Scenario in English"
   },
   "auth": {
     "signIn": "Sign In",

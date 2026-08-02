@@ -77,7 +77,8 @@
     "nextStepTitle": "Váš další krok",
     "c10Title": "Napojení na kompetenční model (C1–C10)",
     "c10Hint": "Hodnoceno jako analýza přepisu — počítá se jen to, co rozhovor skutečně ukazuje.",
-    "newSimulation": "Zahájit novou simulaci"
+    "newSimulation": "Zahájit novou simulaci",
+    "englishOnly": "Scénář v angličtině"
   },
   "auth": {
     "signIn": "Přihlásit se",
