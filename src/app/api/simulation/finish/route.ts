@@ -27,8 +27,15 @@ import {
   assembleTranscript,
   countUserTurns,
   getSimulation,
+  latestFinishedForScenario,
   saveSimulation,
 } from "@/lib/server/simulation-store";
+import {
+  computeDebrief,
+  computeDelta,
+  type Debrief,
+} from "@/lib/simulation/debrief";
+import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
 import { withRetry, withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 
@@ -92,6 +99,10 @@ export async function POST(req: NextRequest) {
         feedback: doc.feedbackJson ?? null,
         competencyRatings: doc.competencyRatings ?? null,
         competencyError: doc.competencyError ?? null,
+        debrief: doc.debriefJson ?? null,
+        delta: doc.deltaJson ?? null,
+        attempt: doc.attempt ?? 1,
+        focus: doc.focus ?? null,
       });
     }
     if (countUserTurns(doc.turns) < MIN_USER_TURNS) {
@@ -127,7 +138,12 @@ export async function POST(req: NextRequest) {
     // Rubrik-Feedback (Pflichtpfad) + C1–C10-Scoring (degradiert nur) parallel.
     const [fbSettled, compSettled] = await Promise.allSettled([
       withRetry(
-        () => generateSimulationFeedback({ scenario, turns: doc.turns }),
+        () =>
+          generateSimulationFeedback({
+            scenario,
+            turns: doc.turns,
+            focus: doc.focus ?? undefined,
+          }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-feedback", retries: 1 }
       ),
       withTimeout(
@@ -159,6 +175,35 @@ export async function POST(req: NextRequest) {
       logger.apiError("/api/simulation/finish/competencies", e);
     }
 
+    // Debrief 2.0 (D1): deterministische Gesamtwertung in Code — das LLM
+    // liefert nur Einzel-Scores. Plus Delta zum Vorversuch (D2), best effort.
+    const debrief = computeDebrief({
+      rubric: feedback.rubric.map((r) => ({ key: r.key, label: r.label, score: r.score })),
+      checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
+      passThreshold: scenario.assessment.passThreshold,
+    });
+    let delta = null;
+    try {
+      const prev = await latestFinishedForScenario(auth.uid, doc.scenarioId, doc.id);
+      const prevFb = prev?.feedbackJson as SimulationFeedbackOutput | undefined;
+      if (prev && prevFb?.rubric) {
+        const prevDebrief =
+          (prev.debriefJson as Debrief | null) ??
+          computeDebrief({
+            rubric: prevFb.rubric.map((r) => ({ key: r.key, label: r.label, score: r.score })),
+            checkpoints: (prevFb.checkpoints ?? []).map((c) => ({ id: c.id, hit: c.hit })),
+            passThreshold: scenario.assessment.passThreshold,
+          });
+        delta = computeDelta({
+          current: debrief,
+          previous: prevDebrief,
+          prevAttempt: prev.attempt ?? 1,
+        });
+      }
+    } catch (e) {
+      logger.apiError("/api/simulation/finish/delta", e, { simId: doc.id });
+    }
+
     // Persistenz VOR settle: Credit verbraucht => Auswertung existiert.
     const finishedAt = new Date().toISOString();
     doc.status = "finished";
@@ -166,6 +211,8 @@ export async function POST(req: NextRequest) {
     doc.feedbackJson = feedback;
     doc.competencyRatings = competencyRatings;
     doc.competencyError = competencyError;
+    doc.debriefJson = debrief;
+    doc.deltaJson = delta;
     if (grant) {
       doc.workspaceId = grant.workspaceId;
       doc.centralSpendTxId = grant.centralTxId ?? null;
@@ -192,12 +239,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    logger.api("/api/simulation/finish", "complete", { uid: auth.uid, simId: doc.id });
+    logger.api("/api/simulation/finish", "complete", {
+      uid: auth.uid,
+      simId: doc.id,
+      overall: debrief.overall,
+      verdict: debrief.verdict,
+    });
     return NextResponse.json({
       ok: true,
       feedback,
       competencyRatings,
       competencyError,
+      debrief,
+      delta,
+      attempt: doc.attempt ?? 1,
+      focus: doc.focus ?? null,
     });
   } catch (err) {
     if (grant) await compensateEntitlement(grant);

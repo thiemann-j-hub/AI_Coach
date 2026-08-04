@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "quality:regression": "node --conditions=react-server --import tsx scripts/quality/run-regression.ts",
-    "quality:reliability": "node --conditions=react-server --import tsx scripts/quality/reliability.ts"
+    "quality:reliability": "node --conditions=react-server --import tsx scripts/quality/reliability.ts",
+    "verify:debrief": "tsx scripts/verify-debrief.ts"
   },
   "dependencies": {
     "@azure/cosmos": "^4.9.3",

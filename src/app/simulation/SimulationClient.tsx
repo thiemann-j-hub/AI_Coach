@@ -1,25 +1,36 @@
 'use client';
 
 /**
- * Gesprächssimulation (SIM-3): Szenario-Auswahl → Briefing → Chat mit der
- * KI-Rolle → kostenpflichtige Auswertung (1 Credit) mit Rubrik, Schlüssel-
- * momenten und C1–C10-Anschluss. Szenario-Inhalte V1 bewusst Deutsch.
+ * Gesprächssimulation — Debrief 2.0 (Blueprint COACH-DEBRIEF-BLUEPRINT.md).
+ *
+ * Ablauf: Szenario-Auswahl → Kontext-Treppe (Situation → Ziele → So gelingt es)
+ * → Chat mit der KI-Rolle (inkl. Time-out-Coach) → kostenpflichtige Auswertung
+ * mit deterministischem Gesamtscore, Erwartungslabels, Zitat-Belegen, Delta zum
+ * Vorversuch und Fokus-Retry. Grundsatz: »Kein Score ohne Zitat« — und
+ * »nicht beobachtbar« ist ehrlicher als 0 %.
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   ChevronDown,
   Clock,
+  Compass,
   Flag,
+  Lightbulb,
   Loader2,
   MessagesSquare,
+  Pause,
   Play,
+  RotateCcw,
   Send,
   Sparkles,
   Target,
+  TrendingDown,
+  TrendingUp,
   User,
   XCircle,
 } from 'lucide-react';
@@ -33,7 +44,7 @@ interface PublicScenario {
   teaser: string;
   difficulty: 1 | 2 | 3;
   durationMin: number;
-  locale?: "de" | "en";
+  locale?: 'de' | 'en';
   persona: { name: string; role: string };
   candidateBriefing: {
     yourRole: string;
@@ -42,6 +53,8 @@ interface PublicScenario {
     factSheet?: string[];
     goals: string[];
     timeboxMin: number;
+    approachHints?: string[];
+    expectation?: string;
   };
   competencies: { key: string; label: string }[];
 }
@@ -52,6 +65,12 @@ interface Turn {
   ts: string;
 }
 
+interface CoachNote {
+  question: string;
+  answer: string;
+  ts: string;
+}
+
 interface RecentSim {
   id: string;
   scenarioId: string;
@@ -59,6 +78,9 @@ interface RecentSim {
   createdAt: string;
   updatedAt: string;
   turnCount: number;
+  attempt: number;
+  overall: number | null;
+  verdict: 'passed' | 'failed' | 'unrated' | null;
 }
 
 interface Feedback {
@@ -66,6 +88,32 @@ interface Feedback {
   rubric: { key: string; label: string; evidence: string[]; why: string; score: number | null }[];
   checkpoints: { id: string; hit: boolean; comment: string }[];
   nextStep: string;
+  focusReview?: { addressed: boolean; comment: string } | null;
+}
+
+interface DebriefAnchor {
+  key: string;
+  label: string;
+  score: number | null;
+  pct: number | null;
+  expectation: 'not-observable' | 'below' | 'approaching' | 'meets' | 'exceeds';
+}
+
+interface Debrief {
+  overall: number | null;
+  verdict: 'passed' | 'failed' | 'unrated';
+  passMarkPct: number;
+  coverage: number;
+  anchors: DebriefAnchor[];
+  checkpointsHit: number;
+  checkpointsTotal: number;
+}
+
+interface Delta {
+  overall: number | null;
+  anchors: Array<{ key: string; delta: number | null }>;
+  prevOverall: number | null;
+  prevAttempt: number;
 }
 
 interface CompetencyRating {
@@ -88,26 +136,111 @@ const LEVEL_STYLES: Record<number, string> = {
   3: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
 };
 
-function ScoreBadge({ score }: { score: number | null }) {
-  const { t } = useTranslation();
-  if (score == null) {
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-        {t.simulation.notObservable}
-      </span>
-    );
-  }
-  const color =
-    score >= 3.5
-      ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-      : score >= 2.5
-        ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
-        : score >= 1.5
-          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-          : 'bg-rose-500/15 text-rose-400 border-rose-500/30';
+/** Initialen-Avatar der Persona — bewusst kein Foto, aber ein Gesicht der Marke. */
+function PersonaAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
+  const initials = name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+  const cls =
+    size === 'lg'
+      ? 'h-16 w-16 text-xl'
+      : size === 'sm'
+        ? 'h-7 w-7 text-[10px]'
+        : 'h-10 w-10 text-sm';
   return (
-    <span className={cx('text-xs font-bold px-2 py-0.5 rounded-full border', color)}>
-      {score} / 4
+    <span
+      className={cx(
+        cls,
+        'shrink-0 rounded-full grid place-items-center font-bold text-white',
+        'bg-gradient-to-br from-primary to-accent shadow-neon'
+      )}
+      aria-hidden
+    >
+      {initials}
+    </span>
+  );
+}
+
+/** Animierter Gesamtscore-Ring (Debrief-Held). */
+function ScoreRing({
+  value,
+  verdict,
+  passMark,
+  labelUnrated,
+}: {
+  value: number | null;
+  verdict: Debrief['verdict'];
+  passMark: number;
+  labelUnrated: string;
+}) {
+  const [animated, setAnimated] = useState(0);
+  useEffect(() => {
+    const target = value ?? 0;
+    const id = requestAnimationFrame(() => setAnimated(target));
+    return () => cancelAnimationFrame(id);
+  }, [value]);
+
+  const R = 52;
+  const C = 2 * Math.PI * R;
+  const pct = Math.min(100, Math.max(0, animated));
+  const stroke =
+    verdict === 'passed' ? '#34d399' : verdict === 'failed' ? '#fb7185' : '#94a3b8';
+  // Bestehensmarke als kleiner Punkt auf dem Ring.
+  const markAngle = (passMark / 100) * 2 * Math.PI - Math.PI / 2;
+  const markX = 60 + R * Math.cos(markAngle);
+  const markY = 60 + R * Math.sin(markAngle);
+
+  return (
+    <div className="relative h-[120px] w-[120px] shrink-0" role="img" aria-label={value != null ? `${value} %` : labelUnrated}>
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+        <circle cx="60" cy="60" r={R} fill="none" strokeWidth="10" className="stroke-border" />
+        <circle
+          cx="60"
+          cy="60"
+          r={R}
+          fill="none"
+          strokeWidth="10"
+          strokeLinecap="round"
+          stroke={stroke}
+          strokeDasharray={C}
+          strokeDashoffset={C - (pct / 100) * C}
+          style={{ transition: 'stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)' }}
+        />
+      </svg>
+      <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full pointer-events-none">
+        <circle cx={markX} cy={markY} r="3.5" className="fill-foreground/60" />
+      </svg>
+      <div className="absolute inset-0 grid place-items-center">
+        {value != null ? (
+          <div className="text-center leading-none">
+            <div className="text-3xl font-bold tabular-nums">{value}</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">%</div>
+          </div>
+        ) : (
+          <div className="text-[11px] text-muted-foreground text-center px-3 leading-tight">{labelUnrated}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DeltaTag({ delta }: { delta: number | null }) {
+  if (delta == null || delta === 0) return null;
+  const up = delta > 0;
+  return (
+    <span
+      className={cx(
+        'inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded-full',
+        up ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'
+      )}
+    >
+      {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+      {up ? '+' : ''}
+      {delta}
     </span>
   );
 }
@@ -120,6 +253,7 @@ export default function SimulationClient() {
   const [scenarios, setScenarios] = useState<PublicScenario[]>([]);
   const [recent, setRecent] = useState<RecentSim[]>([]);
   const [scenario, setScenario] = useState<PublicScenario | null>(null);
+  const [briefStep, setBriefStep] = useState(0);
   const [simId, setSimId] = useState<string | null>(null);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
@@ -129,10 +263,21 @@ export default function SimulationClient() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [briefingOpen, setBriefingOpen] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [debrief, setDebrief] = useState<Debrief | null>(null);
+  const [delta, setDelta] = useState<Delta | null>(null);
+  const [attempt, setAttempt] = useState(1);
+  const [focus, setFocus] = useState<string | null>(null);
   const [ratings, setRatings] = useState<CompetencyRating[] | null>(null);
   const [showC10, setShowC10] = useState(false);
+  const [openEvidence, setOpenEvidence] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [topUpUrl, setTopUpUrl] = useState<string | null>(null);
+  // Time-out-Coach (D3)
+  const [timeoutOpen, setTimeoutOpen] = useState(false);
+  const [coachNotes, setCoachNotes] = useState<CoachNote[]>([]);
+  const [timeoutQuestion, setTimeoutQuestion] = useState('');
+  const [timeoutBusy, setTimeoutBusy] = useState(false);
+  const [timeoutsMax, setTimeoutsMax] = useState(3);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const scenarioById = useMemo(() => {
@@ -146,6 +291,28 @@ export default function SimulationClient() {
       `${ts.levelPrefix} ${d} · ${d === 1 ? ts.level1 : d === 2 ? ts.level2 : ts.level3}`,
     [ts]
   );
+
+  const expectationLabel = useCallback(
+    (e: DebriefAnchor['expectation']) =>
+      e === 'exceeds'
+        ? ts.expExceeds
+        : e === 'meets'
+          ? ts.expMeets
+          : e === 'approaching'
+            ? ts.expApproaching
+            : e === 'below'
+              ? ts.expBelow
+              : ts.notObservable,
+    [ts]
+  );
+
+  const EXPECTATION_STYLES: Record<DebriefAnchor['expectation'], string> = {
+    exceeds: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    meets: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+    approaching: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    below: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+    'not-observable': 'bg-muted text-muted-foreground border-border',
+  };
 
   const loadCatalog = useCallback(async () => {
     try {
@@ -194,29 +361,41 @@ export default function SimulationClient() {
       setError(ts.notEnoughTurns);
     } else if (code === 'TURN_LIMIT') {
       setError(ts.turnLimit);
+    } else if (code === 'TIMEOUT_LIMIT') {
+      setError(ts.timeoutLimit);
     } else {
       setError(ts.genericError);
     }
   }
 
-  async function startSimulation(s: PublicScenario) {
+  async function startSimulation(s: PublicScenario, withFocus?: string | null) {
     setStarting(true);
     setError(null);
     try {
       const res = await authFetch('/api/simulation/start', {
         method: 'POST',
-        body: JSON.stringify({ scenarioId: s.id }),
+        body: JSON.stringify({
+          scenarioId: s.id,
+          ...(withFocus ? { focus: withFocus } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
         await handleApiFailure(res);
         return;
       }
+      setScenario(s);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
+      setAttempt(json.simulation.attempt ?? 1);
+      setFocus(json.simulation.focus ?? null);
       setFeedback(null);
+      setDebrief(null);
+      setDelta(null);
       setRatings(null);
+      setCoachNotes([]);
       setBriefingOpen(false);
+      setTimeoutOpen(false);
       setView('chat');
     } catch {
       setError(ts.genericError);
@@ -239,12 +418,19 @@ export default function SimulationClient() {
       setScenario(s);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
+      setAttempt(json.simulation.attempt ?? 1);
+      setFocus(json.simulation.focus ?? null);
+      setCoachNotes(json.simulation.coachNotes ?? []);
       if (json.simulation.status === 'finished' && json.simulation.feedback) {
         setFeedback(json.simulation.feedback);
+        setDebrief(json.simulation.debrief ?? null);
+        setDelta(json.simulation.delta ?? null);
         setRatings(json.simulation.competencyRatings ?? null);
         setView('feedback');
       } else {
         setFeedback(null);
+        setDebrief(null);
+        setDelta(null);
         setRatings(null);
         setBriefingOpen(false);
         setView('chat');
@@ -287,6 +473,36 @@ export default function SimulationClient() {
     }
   }
 
+  async function requestTimeout() {
+    if (!simId || timeoutBusy) return;
+    setTimeoutBusy(true);
+    setError(null);
+    try {
+      const res = await authFetch('/api/simulation/timeout', {
+        method: 'POST',
+        body: JSON.stringify({
+          simId,
+          ...(timeoutQuestion.trim() ? { question: timeoutQuestion.trim() } : {}),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        await handleApiFailure(res);
+        return;
+      }
+      setCoachNotes((prev) => [
+        ...prev,
+        { question: timeoutQuestion.trim(), answer: json.tip, ts: new Date().toISOString() },
+      ]);
+      setTimeoutsMax(json.timeoutsMax ?? 3);
+      setTimeoutQuestion('');
+    } catch {
+      setError(ts.genericError);
+    } finally {
+      setTimeoutBusy(false);
+    }
+  }
+
   async function finishSimulation() {
     if (!simId || finishing) return;
     setFinishing(true);
@@ -302,8 +518,13 @@ export default function SimulationClient() {
         return;
       }
       setFeedback(json.feedback);
+      setDebrief(json.debrief ?? null);
+      setDelta(json.delta ?? null);
+      setAttempt(json.attempt ?? 1);
+      setFocus(json.focus ?? null);
       setRatings(json.competencyRatings ?? null);
       setConfirmOpen(false);
+      setTimeoutOpen(false);
       setView('feedback');
     } catch {
       setError(ts.genericError);
@@ -317,9 +538,17 @@ export default function SimulationClient() {
     setSimId(null);
     setTurns([]);
     setFeedback(null);
+    setDebrief(null);
+    setDelta(null);
     setRatings(null);
+    setFocus(null);
+    setAttempt(1);
+    setCoachNotes([]);
     setError(null);
     setConfirmOpen(false);
+    setTimeoutOpen(false);
+    setBriefStep(0);
+    setOpenEvidence({});
     setView('loading');
     void loadCatalog();
   }
@@ -339,63 +568,6 @@ export default function SimulationClient() {
           </a>
         )}
       </div>
-    </div>
-  );
-
-  const briefingBlock = (s: PublicScenario) => (
-    <div className="space-y-4">
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-          {ts.yourRole}
-        </h3>
-        <p className="text-sm leading-relaxed">{s.candidateBriefing.yourRole}</p>
-      </section>
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-          {ts.relationship}
-        </h3>
-        <p className="text-sm leading-relaxed">{s.candidateBriefing.relationship}</p>
-      </section>
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-          {ts.incidents}
-        </h3>
-        <ul className="space-y-2">
-          {s.candidateBriefing.incidents.map((i, idx) => (
-            <li key={idx} className="text-sm leading-relaxed flex gap-2">
-              <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
-              <span>{i}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-      {s.candidateBriefing.factSheet && s.candidateBriefing.factSheet.length > 0 && (
-        <section>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-            {ts.factSheet}
-          </h3>
-          <ul className="space-y-1 rounded-lg border border-border bg-muted/40 p-3">
-            {s.candidateBriefing.factSheet.map((f, idx) => (
-              <li key={idx} className="text-xs font-mono leading-relaxed">
-                {f}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      <section>
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1 flex items-center gap-1">
-          <Target className="h-4 w-4 text-primary" /> {ts.goals}
-        </h3>
-        <ol className="space-y-2">
-          {s.candidateBriefing.goals.map((g, idx) => (
-            <li key={idx} className="text-sm leading-relaxed flex gap-2">
-              <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
-              <span>{g}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
     </div>
   );
 
@@ -441,23 +613,41 @@ export default function SimulationClient() {
                       onClick={() => void resumeSimulation(r)}
                       className="w-full glass-panel rounded-xl p-3 flex items-center justify-between gap-3 text-left hover:border-primary/40 border border-border transition-colors"
                     >
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium truncate">{s.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(r.createdAt).toLocaleString()} · {r.turnCount}{' '}
-                          {ts.turnsLabel}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <PersonaAvatar name={s.persona.name} size="sm" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium truncate">{s.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {ts.attemptLabel} {r.attempt} · {new Date(r.createdAt).toLocaleString()} · {r.turnCount} {ts.turnsLabel}
+                          </div>
                         </div>
                       </div>
-                      <span
-                        className={cx(
-                          'text-xs px-2 py-0.5 rounded-full border shrink-0',
-                          r.status === 'active'
-                            ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
-                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                      <div className="flex items-center gap-2 shrink-0">
+                        {r.overall != null && (
+                          <span
+                            className={cx(
+                              'text-xs font-bold tabular-nums px-2 py-0.5 rounded-full border',
+                              r.verdict === 'passed'
+                                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                                : r.verdict === 'failed'
+                                  ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                                  : 'bg-muted text-muted-foreground border-border'
+                            )}
+                          >
+                            {r.overall} %
+                          </span>
                         )}
-                      >
-                        {r.status === 'active' ? ts.statusActive : ts.statusFinished}
-                      </span>
+                        <span
+                          className={cx(
+                            'text-xs px-2 py-0.5 rounded-full border',
+                            r.status === 'active'
+                              ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+                              : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          )}
+                        >
+                          {r.status === 'active' ? ts.statusActive : ts.statusFinished}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -472,6 +662,7 @@ export default function SimulationClient() {
                 onClick={() => {
                   setScenario(s);
                   setError(null);
+                  setBriefStep(0);
                   setView('briefing');
                 }}
                 className="glass-panel rounded-2xl p-5 text-left border border-border hover:border-primary/40 transition-colors flex flex-col gap-3"
@@ -491,12 +682,15 @@ export default function SimulationClient() {
                 </div>
                 <h3 className="font-semibold leading-snug">{s.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.teaser}</p>
-                <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5" />
-                  {ts.withLabel} {s.persona.name} — {s.persona.role}
+                <div className="flex items-center gap-2">
+                  <PersonaAvatar name={s.persona.name} size="sm" />
+                  <div className="text-xs text-muted-foreground min-w-0">
+                    <div className="font-medium text-foreground truncate">{s.persona.name}</div>
+                    <div className="truncate">{s.persona.role}</div>
+                  </div>
                 </div>
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
-                  {s.locale === "en" ? ts.englishOnly : ts.germanOnly}
+                  {s.locale === 'en' ? ts.englishOnly : ts.germanOnly}
                 </div>
               </button>
             ))}
@@ -507,6 +701,13 @@ export default function SimulationClient() {
   }
 
   if (view === 'briefing' && scenario) {
+    const b = scenario.candidateBriefing;
+    const steps = [
+      { icon: User, label: ts.stepSituation },
+      { icon: Target, label: ts.stepGoals },
+      { icon: Compass, label: ts.stepApproach },
+    ];
+    const isLast = briefStep === steps.length - 1;
     return (
       <AppShell title={scenario.title} subtitle={levelLabel(scenario.difficulty)}>
         <div className="max-w-3xl space-y-4">
@@ -517,37 +718,205 @@ export default function SimulationClient() {
           >
             <ArrowLeft className="h-4 w-4" /> {ts.backToList}
           </button>
-          <div className="glass-panel rounded-2xl p-6">{briefingBlock(scenario)}</div>
-          <button
-            onClick={() => void startSimulation(scenario)}
-            disabled={starting}
-            className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
-          >
-            {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-            {ts.startCta}
-          </button>
+
+          {/* Persona-Kopf */}
+          <div className="glass-panel rounded-2xl p-5 flex items-center gap-4 border border-border">
+            <PersonaAvatar name={scenario.persona.name} size="lg" />
+            <div className="min-w-0">
+              <div className="text-lg font-semibold leading-tight">{scenario.persona.name}</div>
+              <div className="text-sm text-muted-foreground">{scenario.persona.role}</div>
+              <div className="mt-1 text-xs text-muted-foreground flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" /> ~{scenario.durationMin} {ts.minutesShort}
+                </span>
+                <span>{scenario.locale === 'en' ? ts.englishOnly : ts.germanOnly}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Treppen-Navigation */}
+          <div className="flex items-center gap-2">
+            {steps.map((st, i) => (
+              <button
+                key={i}
+                onClick={() => setBriefStep(i)}
+                className={cx(
+                  'flex-1 flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
+                  i === briefStep
+                    ? 'border-primary/50 bg-primary/10 text-primary'
+                    : i < briefStep
+                      ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <st.icon className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{st.label}</span>
+                <span className="sm:hidden">{i + 1}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="glass-panel rounded-2xl p-6 min-h-[280px]">
+            {briefStep === 0 && (
+              <div className="space-y-4">
+                <section>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                    {ts.yourRole}
+                  </h3>
+                  <p className="text-sm leading-relaxed">{b.yourRole}</p>
+                </section>
+                <section>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                    {ts.relationship}
+                  </h3>
+                  <p className="text-sm leading-relaxed">{b.relationship}</p>
+                </section>
+                <section>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                    {ts.incidents}
+                  </h3>
+                  <ul className="space-y-2">
+                    {b.incidents.map((i, idx) => (
+                      <li key={idx} className="text-sm leading-relaxed flex gap-2">
+                        <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+                        <span>{i}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+                {b.factSheet && b.factSheet.length > 0 && (
+                  <section>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                      {ts.factSheet}
+                    </h3>
+                    <ul className="space-y-1 rounded-lg border border-border bg-muted/40 p-3">
+                      {b.factSheet.map((f, idx) => (
+                        <li key={idx} className="text-xs font-mono leading-relaxed">
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </div>
+            )}
+            {briefStep === 1 && (
+              <section>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-1">
+                  <Target className="h-4 w-4 text-primary" /> {ts.goals}
+                </h3>
+                <ol className="space-y-3">
+                  {b.goals.map((g, idx) => (
+                    <li key={idx} className="text-sm leading-relaxed flex gap-3 rounded-xl border border-border bg-muted/30 p-3">
+                      <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+                      <span>{g}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+            {briefStep === 2 && (
+              <div className="space-y-4">
+                {b.approachHints && b.approachHints.length > 0 && (
+                  <section>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-1">
+                      <Compass className="h-4 w-4 text-primary" /> {ts.stepApproach}
+                    </h3>
+                    <ul className="space-y-2">
+                      {b.approachHints.map((h, idx) => (
+                        <li key={idx} className="text-sm leading-relaxed flex gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span>{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                {b.expectation && (
+                  <section className="rounded-xl border border-accent/30 bg-accent/5 p-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-accent mb-1 flex items-center gap-1">
+                      <Lightbulb className="h-3.5 w-3.5" /> {ts.expectationTitle}
+                    </h3>
+                    <p className="text-sm leading-relaxed">{b.expectation}</p>
+                  </section>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => setBriefStep((s) => Math.max(0, s - 1))}
+              disabled={briefStep === 0}
+              className="rounded-xl px-4 py-2.5 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-40 flex items-center gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" /> {ts.stepBack}
+            </button>
+            {isLast ? (
+              <button
+                onClick={() => void startSimulation(scenario)}
+                disabled={starting}
+                className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
+              >
+                {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+                {ts.startCta}
+              </button>
+            ) : (
+              <button
+                onClick={() => setBriefStep((s) => Math.min(steps.length - 1, s + 1))}
+                className="btn-gradient text-white font-semibold rounded-xl px-6 py-2.5 flex items-center gap-2 shadow-neon"
+              >
+                {ts.stepNext} <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </AppShell>
     );
   }
 
   if (view === 'chat' && scenario) {
+    const timeoutsLeft = Math.max(0, timeoutsMax - coachNotes.length);
     return (
       <AppShell
         title={scenario.title}
         subtitle={`${ts.withLabel} ${scenario.persona.name} — ${scenario.persona.role}`}
         noPadding
         actions={
-          <button
-            onClick={() => setConfirmOpen(true)}
-            disabled={finishing || userTurnCount < 1}
-            className="text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
-          >
-            <Flag className="h-4 w-4" /> {ts.finishCta}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTimeoutOpen(true)}
+              disabled={userTurnCount < 1 || timeoutsLeft === 0}
+              className="text-sm font-semibold rounded-lg px-3 py-2 border border-accent/40 text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              title={ts.timeoutHint}
+            >
+              <Pause className="h-4 w-4" /> {ts.timeoutCta}
+              <span className="text-[10px] tabular-nums opacity-70">{timeoutsLeft}/{timeoutsMax}</span>
+            </button>
+            <button
+              onClick={() => setConfirmOpen(true)}
+              disabled={finishing || userTurnCount < 1}
+              className="text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Flag className="h-4 w-4" /> {ts.finishCta}
+            </button>
+          </div>
         }
       >
         <div className="flex flex-col h-full">
+          {/* Fokus-Banner (D2) */}
+          {focus && (
+            <div className="border-b border-border bg-accent/5">
+              <div className="max-w-3xl mx-auto px-4 py-2 flex items-start gap-2 text-xs">
+                <Sparkles className="h-3.5 w-3.5 text-accent shrink-0 mt-0.5" />
+                <span>
+                  <span className="font-semibold text-accent">{ts.focusBanner}: </span>
+                  {focus}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Briefing-Aufklapper */}
           <div className="border-b border-border">
             <button
@@ -560,8 +929,31 @@ export default function SimulationClient() {
               {briefingOpen ? ts.briefingHide : ts.briefingShow}
             </button>
             {briefingOpen && (
-              <div className="px-4 pb-4 max-h-72 overflow-y-auto custom-scrollbar max-w-3xl mx-auto">
-                {briefingBlock(scenario)}
+              <div className="px-4 pb-4 max-h-72 overflow-y-auto custom-scrollbar max-w-3xl mx-auto space-y-3 text-sm">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.goals}</div>
+                  <ol className="space-y-1">
+                    {scenario.candidateBriefing.goals.map((g, idx) => (
+                      <li key={idx} className="flex gap-2">
+                        <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+                        <span>{g}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                {scenario.candidateBriefing.approachHints && (
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.stepApproach}</div>
+                    <ul className="space-y-1">
+                      {scenario.candidateBriefing.approachHints.map((h, idx) => (
+                        <li key={idx} className="flex gap-2">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                          <span>{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -573,8 +965,9 @@ export default function SimulationClient() {
               {turns.map((turn, idx) => (
                 <div
                   key={idx}
-                  className={cx('flex', turn.role === 'user' ? 'justify-end' : 'justify-start')}
+                  className={cx('flex items-end gap-2', turn.role === 'user' ? 'justify-end' : 'justify-start')}
                 >
+                  {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} size="sm" />}
                   <div
                     className={cx(
                       'rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap',
@@ -583,17 +976,13 @@ export default function SimulationClient() {
                         : 'glass-panel border border-border rounded-bl-sm'
                     )}
                   >
-                    {turn.role === 'persona' && (
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-                        {scenario.persona.name}
-                      </div>
-                    )}
                     {turn.text}
                   </div>
                 </div>
               ))}
               {sending && (
-                <div className="flex justify-start">
+                <div className="flex items-end gap-2 justify-start">
+                  <PersonaAvatar name={scenario.persona.name} size="sm" />
                   <div className="glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     {scenario.persona.name} {ts.personaTyping}
@@ -631,6 +1020,72 @@ export default function SimulationClient() {
             </div>
           </div>
         </div>
+
+        {/* Time-out-Coach (D3) — Szene angehalten */}
+        {timeoutOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="glass-panel rounded-2xl border border-accent/40 p-6 max-w-lg w-full space-y-4 bg-card max-h-[85vh] overflow-y-auto custom-scrollbar">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <Pause className="h-5 w-5 text-accent" /> {ts.timeoutTitle}
+                </h3>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {coachNotes.length}/{timeoutsMax}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{ts.timeoutHint}</p>
+
+              {coachNotes.map((n, idx) => (
+                <div key={idx} className="space-y-2">
+                  {n.question && (
+                    <div className="text-sm rounded-xl bg-primary/10 border border-primary/20 px-3 py-2">
+                      {n.question}
+                    </div>
+                  )}
+                  <div className="text-sm rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 leading-relaxed whitespace-pre-wrap">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-accent mb-1">
+                      Coach
+                    </div>
+                    {n.answer}
+                  </div>
+                </div>
+              ))}
+              {timeoutBusy && (
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> {ts.timeoutThinking}
+                </div>
+              )}
+
+              {coachNotes.length < timeoutsMax && (
+                <div className="flex items-end gap-2">
+                  <textarea
+                    value={timeoutQuestion}
+                    onChange={(e) => setTimeoutQuestion(e.target.value)}
+                    rows={2}
+                    placeholder={ts.timeoutPlaceholder}
+                    className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                  <button
+                    onClick={() => void requestTimeout()}
+                    disabled={timeoutBusy}
+                    className="rounded-xl px-4 py-2.5 text-sm font-semibold border border-accent/40 text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+                  >
+                    {ts.timeoutAsk}
+                  </button>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setTimeoutOpen(false)}
+                  className="btn-gradient text-white font-semibold rounded-xl px-5 py-2.5 text-sm flex items-center gap-2"
+                >
+                  <Play className="h-4 w-4" /> {ts.timeoutResume}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Auswerten-Bestätigung (Kostenhinweis) */}
         {confirmOpen && (
@@ -670,10 +1125,88 @@ export default function SimulationClient() {
   }
 
   if (view === 'feedback' && scenario && feedback) {
+    const deltaByKey = new Map((delta?.anchors ?? []).map((a) => [a.key, a.delta]));
+    const verdict = debrief?.verdict ?? 'unrated';
+    const observedCount = debrief?.anchors.filter((a) => a.pct != null).length ?? 0;
     return (
       <AppShell title={ts.feedbackTitle} subtitle={scenario.title}>
         <div className="max-w-3xl space-y-6">
           {errorBanner}
+
+          {/* ── Debrief-Held: Score, Urteil, größter Hebel ── */}
+          {debrief && (
+            <section className="glass-panel rounded-2xl p-6 border border-border">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <ScoreRing
+                  value={debrief.overall}
+                  verdict={verdict}
+                  passMark={debrief.passMarkPct}
+                  labelUnrated={ts.unrated}
+                />
+                <div className="flex-1 min-w-0 text-center sm:text-left space-y-2">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                    <span
+                      className={cx(
+                        'text-sm font-bold px-3 py-1 rounded-full border',
+                        verdict === 'passed'
+                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          : verdict === 'failed'
+                            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                            : 'bg-muted text-muted-foreground border-border'
+                      )}
+                    >
+                      {verdict === 'passed' ? ts.passed : verdict === 'failed' ? ts.failed : ts.unrated}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {ts.passMark}: {debrief.passMarkPct} %
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      · {ts.attemptLabel} {attempt}
+                    </span>
+                    {delta?.overall != null && (
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        · <DeltaTag delta={delta.overall} /> {ts.deltaVsPrev} {delta.prevAttempt}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {observedCount}/{debrief.anchors.length} {ts.coverageNote} · {debrief.checkpointsHit}/{debrief.checkpointsTotal} {ts.checkpointsTitle}
+                  </p>
+                  <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-left">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-primary mb-1 flex items-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
+                    </div>
+                    <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Fokus-Review (D2) */}
+          {feedback.focusReview && focus && (
+            <section
+              className={cx(
+                'glass-panel rounded-2xl p-4 border flex items-start gap-3',
+                feedback.focusReview.addressed
+                  ? 'border-emerald-500/30 bg-emerald-500/5'
+                  : 'border-amber-500/30 bg-amber-500/5'
+              )}
+            >
+              {feedback.focusReview.addressed ? (
+                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+              ) : (
+                <RotateCcw className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+              )}
+              <div className="min-w-0">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {ts.focusReviewTitle} — {feedback.focusReview.addressed ? ts.focusYes : ts.focusNo}
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 italic">»{focus}«</p>
+                <p className="text-sm leading-relaxed mt-1">{feedback.focusReview.comment}</p>
+              </div>
+            </section>
+          )}
 
           <section className="glass-panel rounded-2xl p-6 space-y-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -682,34 +1215,75 @@ export default function SimulationClient() {
             <p className="text-sm leading-relaxed">{feedback.summary}</p>
           </section>
 
+          {/* Kompetenz-Anker mit Erwartungslabel, Balken, Delta und Belegen */}
           <section className="space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               {ts.rubricTitle}
             </h2>
-            {feedback.rubric.map((r) => (
-              <div key={r.key} className="glass-panel rounded-xl border border-border p-4 space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold">{r.label}</h3>
-                  <ScoreBadge score={r.score} />
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{r.why}</p>
-                {r.evidence.length > 0 && (
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {ts.evidenceLabel}
-                    </div>
-                    {r.evidence.map((e, idx) => (
-                      <blockquote
-                        key={idx}
-                        className="text-xs italic border-l-2 border-primary/40 pl-2 text-muted-foreground"
+            {feedback.rubric.map((r) => {
+              const anchor = debrief?.anchors.find((a) => a.key === r.key);
+              const pct = anchor?.pct ?? null;
+              const exp = anchor?.expectation ?? (r.score == null ? 'not-observable' : 'meets');
+              const anchorDelta = deltaByKey.get(r.key) ?? null;
+              const isOpen = openEvidence[r.key] ?? false;
+              return (
+                <div key={r.key} className="glass-panel rounded-xl border border-border p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <h3 className="text-sm font-semibold">{r.label}</h3>
+                    <div className="flex items-center gap-2">
+                      <DeltaTag delta={anchorDelta} />
+                      <span
+                        className={cx(
+                          'text-xs font-semibold px-2 py-0.5 rounded-full border',
+                          EXPECTATION_STYLES[exp]
+                        )}
                       >
-                        {e}
-                      </blockquote>
-                    ))}
+                        {expectationLabel(exp)}
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+                  {pct != null && (
+                    <div className="h-1.5 rounded-full bg-border overflow-hidden">
+                      <div
+                        className={cx(
+                          'h-full rounded-full transition-all duration-700',
+                          exp === 'exceeds' || exp === 'meets'
+                            ? 'bg-gradient-to-r from-primary to-accent'
+                            : exp === 'approaching'
+                              ? 'bg-amber-400'
+                              : 'bg-rose-400'
+                        )}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  )}
+                  <p className="text-sm text-muted-foreground leading-relaxed">{r.why}</p>
+                  {r.evidence.length > 0 && (
+                    <div>
+                      <button
+                        onClick={() => setOpenEvidence((m) => ({ ...m, [r.key]: !isOpen }))}
+                        className="text-[11px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1"
+                      >
+                        <ChevronDown className={cx('h-3.5 w-3.5 transition-transform', isOpen && 'rotate-180')} />
+                        {isOpen ? ts.hideEvidence : ts.showEvidence} ({r.evidence.length})
+                      </button>
+                      {isOpen && (
+                        <div className="space-y-1.5 mt-2">
+                          {r.evidence.map((e, idx) => (
+                            <blockquote
+                              key={idx}
+                              className="text-xs italic border-l-2 border-primary/40 pl-2.5 py-0.5 text-muted-foreground leading-relaxed"
+                            >
+                              {e}
+                            </blockquote>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </section>
 
           <section className="space-y-3">
@@ -735,13 +1309,6 @@ export default function SimulationClient() {
             </div>
           </section>
 
-          <section className="glass-panel rounded-2xl p-6 border border-primary/30 space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-primary flex items-center gap-1">
-              <Sparkles className="h-4 w-4" /> {ts.nextStepTitle}
-            </h2>
-            <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
-          </section>
-
           {ratings && (
             <section className="space-y-2">
               <button
@@ -762,7 +1329,9 @@ export default function SimulationClient() {
                         <span className="font-mono text-xs text-muted-foreground mr-2">{r.id}</span>
                         {r.name}
                       </span>
-                      <ScoreBadge score={r.score} />
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {r.score == null ? ts.notObservable : `${r.score} / 4`}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -770,12 +1339,23 @@ export default function SimulationClient() {
             </section>
           )}
 
-          <button
-            onClick={backToList}
-            className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon"
-          >
-            <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
-          </button>
+          {/* CTA-Zeile: Fokus-Retry zuerst — die Schleife ist das Produkt. */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => void startSimulation(scenario, feedback.nextStep)}
+              disabled={starting}
+              className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
+            >
+              {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <RotateCcw className="h-5 w-5" />}
+              {ts.retryFocusCta}
+            </button>
+            <button
+              onClick={backToList}
+              className="rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
+            >
+              <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
+            </button>
+          </div>
         </div>
       </AppShell>
     );

@@ -37,6 +37,15 @@ export interface CandidateBriefing {
   /** Genau 3 Ziele: Beziehung + Struktur + EIN konkretes Anliegen (AC-Muster). */
   goals: string[];
   timeboxMin: number;
+  /**
+   * Debrief 2.0 (D3, Kontext-Treppe): »So gelingt es« — 3–4 Autoren-Hinweise
+   * zur Gesprächsführung. Bewusst öffentlich (Synthesia-Muster »So gehen Sie
+   * vor«): Transparenz über die Erwartung ist Teil der Didaktik. KEINE
+   * DNA-Interna (hiddenDrivers/concessionConditions bleiben geheim).
+   */
+  approachHints?: string[];
+  /** Ein Satz »Was dich erwartet« — stimmt aufs Gegenüber ein, ohne zu spoilern. */
+  expectation?: string;
 }
 
 /** Verdeckter Teil — nur System-Prompt, nie im Client. */
@@ -68,6 +77,11 @@ export interface PersonaDna {
 export interface SimulationAssessment {
   competencies: SimRubricCompetency[];
   checkpoints: SimCheckpoint[];
+  /**
+   * Bestehensgrenze 0–1 für den deterministischen Gesamtscore (Debrief 2.0);
+   * ohne Angabe gilt DEFAULT_PASS_THRESHOLD (0.6) aus debrief.ts.
+   */
+  passThreshold?: number;
 }
 
 export interface SimulationScenario {

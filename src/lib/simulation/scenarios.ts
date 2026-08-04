@@ -51,6 +51,14 @@ const morgan: SimulationScenario = {
       "Die Muster dahinter besprechbar machen: Perfektionismus, fehlende Delegation, Konfliktvermeidung (Kim/Lea).",
       "Konkrete Vereinbarungen treffen: Angebot bis Ende der Woche raus, Delegationsplan für die Junior-Experts, klare Regelung der Kim-Patel-Zuarbeit.",
     ],
+    approachHints: [
+      "Wertschätzung zuerst — aber gekoppelt an konkrete Beobachtungen, nicht an Allgemeinlob.",
+      "Sprich Muster an statt Einzelfälle: Was wiederholt sich bei Angebot, Delegation, Konflikten?",
+      "Lass Alex eigene Lösungen entwickeln, bevor du deine anbietest.",
+      "Ohne konkrete Vereinbarung mit Termin verpufft das Gespräch.",
+    ],
+    expectation:
+      "Alex ist warmherzig und leistungsstark — Kritik an der Steuerung wird sie zunächst mit Beziehungs- und Qualitätsargumenten abfedern.",
     timeboxMin: 20,
   },
   personaDna: {
@@ -162,6 +170,14 @@ const lang: SimulationScenario = {
       "Die Zusammenarbeit im UMS-Projekt verbindlich verbessern — du brauchst Langs Erfahrungswissen, und das gemeinsame Audit spart dir dringend benötigte Kapazitäten.",
       "Lang bewegen, dir Sam Novak ab Montag für eine Woche als Trainer zu überlassen.",
     ],
+    approachHints: [
+      "Benenne die Vorgeschichte offen — das nimmt ihr die Sprengkraft.",
+      "Frag nach seinen Interessen: Was braucht Lang, um geben zu können?",
+      "Anerkenne seine Erfahrung ehrlich — sie ist dein größter Hebel.",
+      "Hol dir Zusagen konkret: wer, was, ab wann.",
+    ],
+    expectation:
+      "Viktor Lang fühlt sich übergangen — rechne mit Spitzen und Prüffragen, bevor er dir entgegenkommt.",
     timeboxMin: 25,
   },
   personaDna: {
@@ -289,6 +305,14 @@ const vance: SimulationScenario = {
       "Die Führungsdefizite klar und faktenbasiert ansprechen und konkrete Verhaltensänderungen vereinbaren (Kommunikation ins Team, Systemadministration, Berichtsqualität).",
       "Vance für die aktive Mitarbeit im Sourcing-Analyse-Projekt gewinnen — als verantwortlicher IT-Leiter, nicht als überstimmtes Opfer.",
     ],
+    approachHints: [
+      "Trenne Person und Verhalten: die Expertise steht nicht zur Debatte, die Führungsdefizite schon.",
+      "Fakten statt Wertungen: konkrete Vorfälle und ihre Wirkung benennen.",
+      "Kläre die Vorgeschichte, bevor du Neues forderst.",
+      "Bleib ruhig, wenn es scharf wird — genau das wird getestet.",
+    ],
+    expectation:
+      "Dr. Vance argumentiert brillant und prüft, ob du sachlich bleibst — pauschale Kritik prallt ab.",
     timeboxMin: 30,
   },
   personaDna: {
@@ -423,6 +447,14 @@ const roth: SimulationScenario = {
       "Den Vorfall mit der Lieferantenübersicht sachlich klären: Wirkung beschreiben, seine Sicht hören, eine klare Absprache für künftige gemeinsame Aufgaben treffen.",
       "Eine faire, begründete Einigung zur Projektpräsentation erreichen (wer präsentiert — und warum).",
     ],
+    approachHints: [
+      "Bleib auf Augenhöhe: kein Chef-Ton unter Azubis.",
+      "Beschreibe die Wirkung des Vorfalls, statt Absicht zu unterstellen.",
+      "Eine faire Lösung ist begründet — nicht die bequemste.",
+      "Triff eine klare Absprache für künftige gemeinsame Aufgaben.",
+    ],
+    expectation:
+      "Deniz ist schlagfertig und charmant — er testet, ob du klare Absprachen wirklich einforderst.",
     timeboxMin: 20,
   },
   personaDna: {
@@ -542,6 +574,14 @@ const reed: SimulationScenario = {
       "Verbindliche Veränderung bei den Reaktionszeiten vereinbaren (24-Stunden-Regel einhalten — notfalls mit Zwischenbescheid) und die Priorisierung von Gründlichkeit klären.",
       "Sein Auftreten im Team und gegenüber der Mentee ansprechen und konkrete Verhaltensänderungen für Meetings und Mentoring vereinbaren.",
     ],
+    approachHints: [
+      "Würdige Qualität und Erfahrung ehrlich, bevor du die Reaktionszeiten ansprichst.",
+      "Suche die Lösung hinter dem Dilemma: Gründlichkeit UND Erreichbarkeit zusammenbringen.",
+      "Nimm seine Belastung ernst — sie ist real, nicht vorgeschoben.",
+      "Vereinbare messbar: Was gilt ab morgen, und woran merkt ihr es?",
+    ],
+    expectation:
+      "Sam Reed fühlt sich im Recht — Druck erzeugt Rückzug, ernst gemeintes Zuhören öffnet.",
     timeboxMin: 20,
   },
   personaDna: {
@@ -669,6 +709,14 @@ const brandt: SimulationScenario = {
       "Konkrete, für beide Teams tragfähige Formate für Wissenstransfer und Informationsfluss vereinbaren (statt Entweder-oder der beiden Methodenwelten).",
       "Eine faire Linie für die strittigen Punkte (Meeting-Struktur, Home-Office-Übergang, gemeinsame Team-Aktivitäten) so weit vorklären, dass das große Meeting konstruktiv starten kann.",
     ],
+    approachHints: [
+      "Mach Brandt zum Mitgestalter: Frag nach seiner Erfahrung, bevor du Formate vorschlägst.",
+      "Beide Methodenwelten haben Stärken — such das Sowohl-als-auch statt Entweder-oder.",
+      "Entscheide Strittiges über Kriterien, nicht über Positionen.",
+      "Sichere Vereinbarungen, die beide Teams tragen können.",
+    ],
+    expectation:
+      "Marek Brandt schützt sein Team — Integrationsrhetorik ohne Substanz macht ihn skeptischer.",
     timeboxMin: 30,
   },
   personaDna: {
@@ -802,6 +850,14 @@ const falk: SimulationScenario = {
       "Die gemeinsame Fuhrpark-Aufgabe strukturieren: Falk von einer ergebnisoffenen, faktenbasierten Prüfung überzeugen — mit seinen Anforderungen (Flexibilität, Kundennähe) als harten Kriterien statt als Blockade.",
       "Konkrete nächste Schritte vereinbaren (gemeinsame Datenbasis, Kriterienkatalog, Pilotidee, Umgang mit Einwänden in Meetings), mit denen ihr vor Frau Solberg und Dr. Voss als Doppelspitze auftreten könnt.",
     ],
+    approachHints: [
+      "Kläre die Vorgeschichte, ohne alte Kämpfe neu zu führen.",
+      "Bleib bei einer ergebnisoffenen, faktenbasierten Prüfung — lass dich weder vereinnahmen noch provozieren.",
+      "Prüfe bei Zustimmung, ob sie Substanz hat: Was genau sagt er zu?",
+      "Halte Vereinbarungen fest — Charme ersetzt keine Verbindlichkeit.",
+    ],
+    expectation:
+      "Ruben Falk kann sehr gewinnend sein — entscheidend ist, ob am Ende belastbare Zusagen stehen.",
     timeboxMin: 25,
   },
   personaDna: {
@@ -937,6 +993,14 @@ const stone: SimulationScenario = {
       "Resolve the immediate event crisis: a workable path with Mr Holt for next week's GreenFjord launch.",
       "Win Stone for the interim takeover of Region South — motivated and on sustainable terms, not as a blank cheque.",
     ],
+    approachHints: [
+      "Recognise his results first — genuinely, not as a set-up for the criticism that follows.",
+      "Make the impact concrete: what his behaviour costs colleagues, reps and the launch.",
+      "Convince rather than instruct — he moves for reasons, not orders.",
+      "Agree specifics: the path with Mr Holt, and the terms for Region South.",
+    ],
+    expectation:
+      "Erik Stone is your best performer and knows it — he responds to respect and evidence, not to authority.",
     timeboxMin: 25,
   },
   personaDna: {

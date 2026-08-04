@@ -19,6 +19,8 @@ export const SimulationFeedbackInputSchema = z.object({
   rubricList: z.string(),
   checkpointList: z.string(),
   transcript: z.string(),
+  /** Fokus-Retry (D2): der EINE Vorsatz aus dem letzten Debrief; leer = kein Fokus. */
+  focus: z.string(),
 });
 
 const RubricRatingSchema = z.object({
@@ -56,6 +58,13 @@ export const SimulationFeedbackOutputSchema = z.object({
   nextStep: z
     .string()
     .describe('EIN konkreter, übbarer nächster Schritt für das nächste Gespräch (1–2 Sätze, direkt umsetzbar).'),
+  focusReview: z
+    .object({
+      addressed: z.boolean().describe('true nur, wenn der Fokus-Vorsatz im Gespräch erkennbar umgesetzt wurde.'),
+      comment: z.string().describe('Ein Satz mit Beleg: woran man die Umsetzung sieht — oder was stattdessen passierte.'),
+    })
+    .nullable()
+    .describe('NUR bewerten, wenn ein FOKUS-VORSATZ vorgegeben war; sonst null.'),
 });
 
 export type SimulationFeedbackOutput = z.infer<typeof SimulationFeedbackOutputSchema>;
@@ -93,6 +102,13 @@ Ein sehr kurzes Gespräch mit wenigen Beiträgen kann viele null-Werte haben —
 CHECKPOINTS: hit = true NUR, wenn der Moment nachweislich stattfand. Im comment nenne konkret,
 woran du es festmachst — oder was stattdessen passiert ist. Kein Pauschal-Lob.
 
+{{#if focus}}
+FOKUS-VORSATZ DIESES VERSUCHS (aus dem letzten Debrief): "{{focus}}"
+Bewerte in focusReview, ob der Vorsatz erkennbar umgesetzt wurde — mit Beleg.
+{{else}}
+Kein Fokus-Vorsatz vorgegeben → focusReview = null.
+{{/if}}
+
 summary und nextStep: direkte Ansprache ("Du …"), konkret, auf DIESES Gespräch bezogen.
 Alles auf Deutsch.
 
@@ -106,6 +122,8 @@ Gib ausschließlich JSON gemäß Schema zurück.
 export async function generateSimulationFeedback(args: {
   scenario: SimulationScenario;
   turns: SimulationTurn[];
+  /** Fokus-Retry (D2): Vorsatz aus dem letzten Debrief, optional. */
+  focus?: string;
 }): Promise<SimulationFeedbackOutput> {
   const { scenario, turns } = args;
   const rawTranscript = assembleTranscript(turns, scenario.persona.name);
@@ -127,6 +145,7 @@ export async function generateSimulationFeedback(args: {
       .map((c) => `- id "${c.id}": ${c.description}`)
       .join('\n'),
     transcript: sanitized,
+    focus: (args.focus ?? '').slice(0, 300),
   });
   if (!output) throw new Error('simulation feedback returned empty output');
 
@@ -148,5 +167,12 @@ export async function generateSimulationFeedback(args: {
       : { id: c.id, hit: false, comment: 'Im Gespräch nicht erkennbar.' };
   });
 
-  return { summary: output.summary, rubric, checkpoints, nextStep: output.nextStep };
+  return {
+    summary: output.summary,
+    rubric,
+    checkpoints,
+    nextStep: output.nextStep,
+    // focusReview nur, wenn wirklich ein Fokus vorgegeben war (kein LLM-Eigenleben).
+    focusReview: args.focus ? (output.focusReview ?? null) : null,
+  };
 }

@@ -35,7 +35,25 @@ export interface SimulationDoc {
   workspaceId?: string;
   centralSpendTxId?: string | null;
   finishedAt?: string;
+  // ── Debrief 2.0 (D1/D2/D3) ────────────────────────────────────────────────
+  /** Wievielter Versuch dieses Szenarios für diesen User (1-basiert). */
+  attempt?: number;
+  /** Fokus-Vorsatz aus dem letzten Debrief (Fokus-Retry). */
+  focus?: string | null;
+  /** Deterministische Gesamtwertung (computeDebrief) — beim Finish persistiert. */
+  debriefJson?: unknown | null;
+  /** Vergleich zum Vorversuch (computeDelta) — beim Finish persistiert. */
+  deltaJson?: unknown | null;
+  /**
+   * Time-out-Coach (D3): kurze Coach-Wechsel WÄHREND der Simulation.
+   * Bewusst getrennt von `turns` — die Persona »hört« den Time-out nicht,
+   * und die Auswertung bewertet nur das eigentliche Gespräch.
+   */
+  coachNotes?: Array<{ question: string; answer: string; ts: string }>;
 }
+
+/** Maximal erlaubte Time-outs je Simulation (Kosten- und Didaktik-Kappe). */
+export const SIM_MAX_TIMEOUTS = 3;
 
 export function simPartitionKey(uid: string): string {
   return `sim:${uid}`;
@@ -66,6 +84,8 @@ export async function createSimulation(args: {
   uid: string;
   scenarioId: string;
   openingTurn: SimulationTurn;
+  attempt?: number;
+  focus?: string | null;
 }): Promise<SimulationDoc> {
   const now = new Date().toISOString();
   const doc: SimulationDoc = {
@@ -78,6 +98,8 @@ export async function createSimulation(args: {
     updatedAt: now,
     status: "active",
     turns: [args.openingTurn],
+    attempt: args.attempt ?? 1,
+    focus: args.focus ?? null,
   };
   await upsertItem(runsContainer(), doc);
   return doc;
@@ -108,6 +130,11 @@ export interface SimulationListItem {
   createdAt: string;
   updatedAt: string;
   turnCount: number;
+  /** Versuchs-Nummer (1-basiert); Altbestand ohne Feld → 1. */
+  attempt: number;
+  /** Gesamtscore 0–100 aus dem gespeicherten Debrief; null = keiner. */
+  overall: number | null;
+  verdict: "passed" | "failed" | "unrated" | null;
 }
 
 export async function listSimulations(
@@ -121,10 +148,12 @@ export async function listSimulations(
     createdAt: string;
     updatedAt: string;
     turns?: unknown[];
+    attempt?: number;
+    debriefJson?: { overall?: number | null; verdict?: string } | null;
   }>(
     runsContainer(),
     // Partitions-lokale Query (sessionId = PK) — kein Cross-Partition-Fanout.
-    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, c.turns FROM c WHERE c.sessionId = @pk AND c.docType = @dt ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
+    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, c.turns, c.attempt, c.debriefJson FROM c WHERE c.sessionId = @pk AND c.docType = @dt ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
     [
       { name: "@pk", value: simPartitionKey(uid) },
       { name: "@dt", value: SIM_DOC_TYPE },
@@ -138,5 +167,56 @@ export async function listSimulations(
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
     turnCount: Array.isArray(r.turns) ? r.turns.length : 0,
+    attempt: typeof r.attempt === "number" && r.attempt >= 1 ? r.attempt : 1,
+    overall:
+      typeof r.debriefJson?.overall === "number" ? r.debriefJson.overall : null,
+    verdict:
+      r.debriefJson?.verdict === "passed" ||
+      r.debriefJson?.verdict === "failed" ||
+      r.debriefJson?.verdict === "unrated"
+        ? r.debriefJson.verdict
+        : null,
   }));
+}
+
+/**
+ * Jüngster ABGESCHLOSSENER Versuch desselben Szenarios (für Versuchszählung
+ * und Delta-Vergleich). Partitions-lokal, billig.
+ */
+export async function latestFinishedForScenario(
+  uid: string,
+  scenarioId: string,
+  excludeSimId?: string
+): Promise<SimulationDoc | null> {
+  const rows = await queryItems<SimulationDoc>(
+    runsContainer(),
+    "SELECT TOP 1 * FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.scenarioId = @sc AND c.status = @st AND c.id != @ex ORDER BY c.createdAt DESC",
+    [
+      { name: "@pk", value: simPartitionKey(uid) },
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@sc", value: scenarioId },
+      { name: "@st", value: "finished" },
+      { name: "@ex", value: excludeSimId ?? "" },
+    ]
+  );
+  return rows[0] ?? null;
+}
+
+/** Anzahl abgeschlossener Versuche eines Szenarios (für attempt = n+1). */
+export async function countFinishedForScenario(
+  uid: string,
+  scenarioId: string
+): Promise<number> {
+  const rows = await queryItems<{ n: number }>(
+    runsContainer(),
+    "SELECT VALUE COUNT(1) FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.scenarioId = @sc AND c.status = @st",
+    [
+      { name: "@pk", value: simPartitionKey(uid) },
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@sc", value: scenarioId },
+      { name: "@st", value: "finished" },
+    ]
+  );
+  const n = rows[0] as unknown;
+  return typeof n === "number" ? n : 0;
 }

@@ -5,7 +5,10 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenario } from "@/lib/simulation/scenarios";
-import { createSimulation } from "@/lib/server/simulation-store";
+import {
+  countFinishedForScenario,
+  createSimulation,
+} from "@/lib/server/simulation-store";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -13,6 +16,8 @@ export const dynamic = "force-dynamic";
 
 const requestSchema = z.object({
   scenarioId: z.string().min(1).max(100),
+  /** Fokus-Retry (D2): EIN Vorsatz aus dem letzten Debrief; optional. */
+  focus: z.string().max(300).optional(),
 });
 
 /** POST: neue Simulation anlegen — die Persona eröffnet mit ihrer openingLine. */
@@ -45,11 +50,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Versuchszählung fuer Historie/Delta (D2) — best effort, blockiert nie.
+    let attempt = 1;
+    try {
+      attempt = (await countFinishedForScenario(auth.uid, scenario.id)) + 1;
+    } catch {
+      /* Zählung optional */
+    }
+    const focus = parsed.data.focus?.trim() || null;
+
     const simId = crypto.randomUUID();
     const doc = await createSimulation({
       simId,
       uid: auth.uid,
       scenarioId: scenario.id,
+      attempt,
+      focus,
       openingTurn: {
         role: "persona",
         text: scenario.personaDna.openingLine,
@@ -61,6 +77,7 @@ export async function POST(req: NextRequest) {
       uid: auth.uid,
       simId,
       scenarioId: scenario.id,
+      attempt,
     });
     return NextResponse.json({
       ok: true,
@@ -69,6 +86,8 @@ export async function POST(req: NextRequest) {
         scenarioId: doc.scenarioId,
         status: doc.status,
         turns: doc.turns,
+        attempt,
+        focus,
       },
     });
   } catch (err) {
