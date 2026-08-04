@@ -23,6 +23,8 @@ import {
   Lightbulb,
   Loader2,
   MessagesSquare,
+  Mic,
+  MicOff,
   Pause,
   Play,
   RotateCcw,
@@ -32,11 +34,14 @@ import {
   TrendingDown,
   TrendingUp,
   User,
+  Volume2,
+  VolumeX,
   XCircle,
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
+import { withBasePath } from '@/lib/base-path';
 import { useTranslation } from '@/i18n/useTranslation';
 
 interface PublicScenario {
@@ -137,8 +142,21 @@ const LEVEL_STYLES: Record<number, string> = {
   3: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
 };
 
-/** Initialen-Avatar der Persona — bewusst kein Foto, aber ein Gesicht der Marke. */
-function PersonaAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
+/**
+ * Persona-Avatar — D4: fotorealistisches Porträt (fal, erfundene Person) aus
+ * public/personas/<scenarioId>.jpg mit Initialen-Fallback, falls das Bild
+ * fehlt oder (noch) nicht geladen ist.
+ */
+function PersonaAvatar({
+  name,
+  scenarioId,
+  size = 'md',
+}: {
+  name: string;
+  scenarioId?: string;
+  size?: 'sm' | 'md' | 'lg';
+}) {
+  const [imgFailed, setImgFailed] = useState(false);
   const initials = name
     .split(/\s+/)
     .map((p) => p[0])
@@ -152,16 +170,27 @@ function PersonaAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md'
       : size === 'sm'
         ? 'h-7 w-7 text-[10px]'
         : 'h-10 w-10 text-sm';
+  const showImage = scenarioId && !imgFailed;
   return (
     <span
       className={cx(
         cls,
-        'shrink-0 rounded-full grid place-items-center font-bold text-white',
-        'bg-gradient-to-br from-primary to-accent shadow-neon'
+        'shrink-0 rounded-full grid place-items-center font-bold text-white overflow-hidden',
+        'bg-gradient-to-br from-primary to-accent shadow-neon ring-1 ring-white/20'
       )}
       aria-hidden
     >
-      {initials}
+      {showImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={withBasePath(`/personas/${scenarioId}.jpg`)}
+          alt=""
+          className="h-full w-full object-cover"
+          onError={() => setImgFailed(true)}
+        />
+      ) : (
+        initials
+      )}
     </span>
   );
 }
@@ -280,6 +309,80 @@ export default function SimulationClient() {
   const [timeoutBusy, setTimeoutBusy] = useState(false);
   const [timeoutsMax, setTimeoutsMax] = useState(3);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  // ── D4: Sprach-Schleife (Web Speech API — lokal im Browser, keine Server-Kosten) ──
+  const [micActive, setMicActive] = useState(false);
+  const [speakReplies, setSpeakReplies] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const speechSupported =
+    typeof window !== 'undefined' &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+  const speechLang = scenario?.locale === 'en' ? 'en-GB' : 'de-DE';
+
+  const stopMic = useCallback(() => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      /* schon gestoppt */
+    }
+    recognitionRef.current = null;
+    setMicActive(false);
+  }, []);
+
+  /** Diktat: erkannter Text wird ans Eingabefeld ANGEHÄNGT (nichts überschreiben). */
+  const startMic = useCallback(() => {
+    if (!speechSupported || micActive) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const rec = new Ctor();
+    rec.lang = speechLang;
+    rec.continuous = true;
+    rec.interimResults = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onresult = (e: any) => {
+      let text = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) text += e.results[i][0].transcript;
+      }
+      if (text.trim()) {
+        setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text.trim());
+      }
+    };
+    rec.onend = () => setMicActive(false);
+    rec.onerror = () => setMicActive(false);
+    recognitionRef.current = rec;
+    setMicActive(true);
+    rec.start();
+  }, [speechSupported, micActive, speechLang]);
+
+  /** Persona-Antwort vorlesen (Anruf-Anmutung) — Stimme passend zur Szenario-Sprache. */
+  const speak = useCallback(
+    (text: string) => {
+      if (!ttsSupported) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = speechLang;
+      const voices = window.speechSynthesis.getVoices();
+      const match =
+        voices.find((v) => v.lang === speechLang) ??
+        voices.find((v) => v.lang.startsWith(speechLang.slice(0, 2)));
+      if (match) u.voice = match;
+      u.rate = 1.04;
+      window.speechSynthesis.speak(u);
+    },
+    [ttsSupported, speechLang]
+  );
+
+  // Aufraeumen: beim Verlassen des Chats Mikro und Vorlesen stoppen.
+  useEffect(() => {
+    if (view !== 'chat') {
+      stopMic();
+      if (ttsSupported) window.speechSynthesis.cancel();
+    }
+  }, [view, stopMic, ttsSupported]);
 
   const scenarioById = useMemo(() => {
     const m = new Map<string, PublicScenario>();
@@ -465,6 +568,7 @@ export default function SimulationClient() {
         ...prev,
         { role: 'persona', text: json.reply, ts: new Date().toISOString() },
       ]);
+      if (speakReplies) speak(json.reply);
     } catch {
       setTurns((prev) => prev.filter((x) => x !== optimistic));
       setInput(message);
@@ -617,7 +721,7 @@ export default function SimulationClient() {
                       className="w-full glass-panel rounded-xl p-3 flex items-center justify-between gap-3 text-left hover:border-primary/40 border border-border transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <PersonaAvatar name={s.persona.name} size="sm" />
+                        <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
                         <div className="min-w-0">
                           <div className="text-sm font-medium truncate">{s.title}</div>
                           <div className="text-xs text-muted-foreground">
@@ -686,7 +790,7 @@ export default function SimulationClient() {
                 <h3 className="font-semibold leading-snug">{s.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.teaser}</p>
                 <div className="flex items-center gap-2">
-                  <PersonaAvatar name={s.persona.name} size="sm" />
+                  <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
                   <div className="text-xs text-muted-foreground min-w-0">
                     <div className="font-medium text-foreground truncate">{s.persona.name}</div>
                     <div className="truncate">{s.persona.role}</div>
@@ -724,7 +828,7 @@ export default function SimulationClient() {
 
           {/* Persona-Kopf */}
           <div className="glass-panel rounded-2xl p-5 flex items-center gap-4 border border-border">
-            <PersonaAvatar name={scenario.persona.name} size="lg" />
+            <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="lg" />
             <div className="min-w-0">
               <div className="text-lg font-semibold leading-tight">{scenario.persona.name}</div>
               <div className="text-sm text-muted-foreground">{scenario.persona.role}</div>
@@ -887,6 +991,23 @@ export default function SimulationClient() {
         noPadding
         actions={
           <div className="flex items-center gap-2">
+            {ttsSupported && (
+              <button
+                onClick={() => {
+                  if (speakReplies && ttsSupported) window.speechSynthesis.cancel();
+                  setSpeakReplies((v) => !v);
+                }}
+                className={cx(
+                  'text-sm font-semibold rounded-lg px-3 py-2 border transition-colors flex items-center gap-1.5',
+                  speakReplies
+                    ? 'border-primary/40 text-primary bg-primary/10'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                )}
+                title={speakReplies ? ts.ttsOff : ts.ttsOn}
+              >
+                {speakReplies ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </button>
+            )}
             <button
               onClick={() => setTimeoutOpen(true)}
               disabled={userTurnCount < 1 || timeoutsLeft === 0}
@@ -970,7 +1091,7 @@ export default function SimulationClient() {
                   key={idx}
                   className={cx('flex items-end gap-2', turn.role === 'user' ? 'justify-end' : 'justify-start')}
                 >
-                  {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} size="sm" />}
+                  {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />}
                   <div
                     className={cx(
                       'rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap',
@@ -985,7 +1106,7 @@ export default function SimulationClient() {
               ))}
               {sending && (
                 <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} size="sm" />
+                  <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
                   <div className="glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     {scenario.persona.name} {ts.personaTyping}
@@ -1012,6 +1133,21 @@ export default function SimulationClient() {
                 placeholder={ts.inputPlaceholder}
                 className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
+              {speechSupported && (
+                <button
+                  onClick={() => (micActive ? stopMic() : startMic())}
+                  className={cx(
+                    'rounded-xl p-3 border transition-colors',
+                    micActive
+                      ? 'border-rose-500/50 text-rose-400 bg-rose-500/10 animate-pulse'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                  )}
+                  aria-label={micActive ? ts.micStop : ts.micStart}
+                  title={micActive ? ts.micStop : ts.micStart}
+                >
+                  {micActive ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </button>
+              )}
               <button
                 onClick={() => void sendTurn()}
                 disabled={sending || !input.trim()}

@@ -111,7 +111,11 @@
     "expExceeds": "Oltre le aspettative",
     "showEvidence": "Mostra le prove",
     "hideEvidence": "Nascondi le prove",
-    "retryFocusCta": "Riprova — con focus"
+    "retryFocusCta": "Riprova — con focus",
+    "micStart": "Avvia dettatura",
+    "micStop": "Ferma dettatura",
+    "ttsOn": "Leggi le risposte ad alta voce",
+    "ttsOff": "Disattiva lettura"
   },
   "auth": {
     "signIn": "Accedi",

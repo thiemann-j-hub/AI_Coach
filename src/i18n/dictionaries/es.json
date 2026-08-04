@@ -111,7 +111,11 @@
     "expExceeds": "Supera las expectativas",
     "showEvidence": "Mostrar evidencias",
     "hideEvidence": "Ocultar evidencias",
-    "retryFocusCta": "Practicar de nuevo — con foco"
+    "retryFocusCta": "Practicar de nuevo — con foco",
+    "micStart": "Iniciar dictado",
+    "micStop": "Detener dictado",
+    "ttsOn": "Leer respuestas en voz alta",
+    "ttsOff": "Desactivar lectura"
   },
   "auth": {
     "signIn": "Iniciar sesión",

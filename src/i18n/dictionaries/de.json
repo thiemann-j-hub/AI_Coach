@@ -111,7 +111,11 @@
     "expExceeds": "Übertrifft die Erwartungen",
     "showEvidence": "Belege anzeigen",
     "hideEvidence": "Belege ausblenden",
-    "retryFocusCta": "Nochmal üben — mit Fokus"
+    "retryFocusCta": "Nochmal üben — mit Fokus",
+    "micStart": "Diktat starten",
+    "micStop": "Diktat stoppen",
+    "ttsOn": "Antworten vorlesen",
+    "ttsOff": "Vorlesen aus"
   },
   "auth": {
     "signIn": "Anmelden",

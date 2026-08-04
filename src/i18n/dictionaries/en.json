@@ -111,7 +111,11 @@
     "expExceeds": "Exceeds expectations",
     "showEvidence": "Show evidence",
     "hideEvidence": "Hide evidence",
-    "retryFocusCta": "Practice again — with focus"
+    "retryFocusCta": "Practice again — with focus",
+    "micStart": "Start dictation",
+    "micStop": "Stop dictation",
+    "ttsOn": "Read replies aloud",
+    "ttsOff": "Stop reading aloud"
   },
   "auth": {
     "signIn": "Sign In",
