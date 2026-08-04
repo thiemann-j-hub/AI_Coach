@@ -115,7 +115,8 @@
     "micStart": "Avvia dettatura",
     "micStop": "Ferma dettatura",
     "ttsOn": "Leggi le risposte ad alta voce",
-    "ttsOff": "Disattiva lettura"
+    "ttsOff": "Disattiva lettura",
+    "micLive": "Microfono attivo: parla e il testo apparirà nel campo di input."
   },
   "auth": {
     "signIn": "Accedi",

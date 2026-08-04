@@ -115,7 +115,8 @@
     "micStart": "Rozpocznij dyktowanie",
     "micStop": "Zatrzymaj dyktowanie",
     "ttsOn": "Czytaj odpowiedzi na głos",
-    "ttsOff": "Wyłącz czytanie"
+    "ttsOff": "Wyłącz czytanie",
+    "micLive": "Mikrofon włączony — mów, a tekst pojawi się w polu wpisywania."
   },
   "auth": {
     "signIn": "Zaloguj się",

@@ -24,7 +24,6 @@ import {
   Loader2,
   MessagesSquare,
   Mic,
-  MicOff,
   Pause,
   Play,
   RotateCcw,
@@ -322,7 +321,13 @@ export default function SimulationClient() {
 
   const speechLang = scenario?.locale === 'en' ? 'en-GB' : 'de-DE';
 
+  // Gewollt-an-Merker: Browser beenden die Erkennung nach Stille von selbst —
+  // solange der Nutzer das Mikro nicht ausgeschaltet hat, starten wir neu
+  // (Synthesia-Verhalten: das Mikro bleibt im Gespräch einfach an).
+  const wantMicRef = useRef(false);
+
   const stopMic = useCallback(() => {
+    wantMicRef.current = false;
     try {
       recognitionRef.current?.stop();
     } catch {
@@ -335,6 +340,9 @@ export default function SimulationClient() {
   /** Diktat: erkannter Text wird ans Eingabefeld ANGEHÄNGT (nichts überschreiben). */
   const startMic = useCallback(() => {
     if (!speechSupported || micActive) return;
+    wantMicRef.current = true;
+    // Sprich-Modus: wer ins Mikro spricht, bekommt die Antwort auch zu hören.
+    if (ttsSupported) setSpeakReplies(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const rec = new Ctor();
@@ -351,12 +359,26 @@ export default function SimulationClient() {
         setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text.trim());
       }
     };
-    rec.onend = () => setMicActive(false);
-    rec.onerror = () => setMicActive(false);
+    rec.onend = () => {
+      // Stille-Timeout des Browsers: neu starten, solange das Mikro gewollt an ist.
+      if (wantMicRef.current) {
+        try {
+          rec.start();
+          return;
+        } catch {
+          /* Neustart nicht möglich → sauber aus */
+        }
+      }
+      setMicActive(false);
+    };
+    rec.onerror = () => {
+      wantMicRef.current = false;
+      setMicActive(false);
+    };
     recognitionRef.current = rec;
     setMicActive(true);
     rec.start();
-  }, [speechSupported, micActive, speechLang]);
+  }, [speechSupported, micActive, speechLang, ttsSupported]);
 
   /** Persona-Antwort vorlesen (Anruf-Anmutung) — Stimme passend zur Szenario-Sprache. */
   const speak = useCallback(
@@ -1119,6 +1141,15 @@ export default function SimulationClient() {
 
           {/* Eingabe */}
           <div className="border-t border-border p-3">
+            {micActive && (
+              <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2 text-xs text-primary">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                </span>
+                {ts.micLive}
+              </div>
+            )}
             <div className="max-w-3xl mx-auto flex items-end gap-2">
               <textarea
                 value={input}
@@ -1137,15 +1168,18 @@ export default function SimulationClient() {
                 <button
                   onClick={() => (micActive ? stopMic() : startMic())}
                   className={cx(
-                    'rounded-xl p-3 border transition-colors',
+                    'relative rounded-xl p-3 border transition-colors',
                     micActive
-                      ? 'border-rose-500/50 text-rose-400 bg-rose-500/10 animate-pulse'
-                      : 'border-border text-muted-foreground hover:text-foreground'
+                      ? 'border-primary/60 text-primary bg-primary/15 shadow-neon'
+                      : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
                   )}
                   aria-label={micActive ? ts.micStop : ts.micStart}
                   title={micActive ? ts.micStop : ts.micStart}
                 >
-                  {micActive ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  {micActive && (
+                    <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-ping pointer-events-none" aria-hidden />
+                  )}
+                  <Mic className="h-5 w-5" />
                 </button>
               )}
               <button

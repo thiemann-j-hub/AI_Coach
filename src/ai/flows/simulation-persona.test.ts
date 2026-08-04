@@ -15,6 +15,13 @@ describe("buildPersonaSystemPrompt", () => {
     for (const f of scenario.personaDna.facts) expect(prompt).toContain(f);
   });
 
+  it("verbietet Namens-Platzhalter in der Anrede (Vance-Vorfall 04.08.)", () => {
+    // Das Modell erfand »Herr/Frau [Nachname des CEO]«, weil die Anrede
+    // ungeregelt war — die Regel muss in JEDEM Persona-Prompt stehen.
+    expect(prompt).toContain("kennst den Namen deines Gegenübers NICHT");
+    expect(prompt).toContain("NIE Platzhalter");
+  });
+
   it("trägt die Anti-Leak-Regeln", () => {
     expect(prompt).toContain("NIEMALS OFFENLEGEN");
     expect(prompt).toContain("Verrate NIE, dass du eine KI bist");

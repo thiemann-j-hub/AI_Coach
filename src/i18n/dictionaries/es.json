@@ -115,7 +115,8 @@
     "micStart": "Iniciar dictado",
     "micStop": "Detener dictado",
     "ttsOn": "Leer respuestas en voz alta",
-    "ttsOff": "Desactivar lectura"
+    "ttsOff": "Desactivar lectura",
+    "micLive": "Micrófono activo: habla y tu texto aparecerá en el campo de entrada."
   },
   "auth": {
     "signIn": "Iniciar sesión",

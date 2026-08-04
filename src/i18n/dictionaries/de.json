@@ -115,7 +115,8 @@
     "micStart": "Diktat starten",
     "micStop": "Diktat stoppen",
     "ttsOn": "Antworten vorlesen",
-    "ttsOff": "Vorlesen aus"
+    "ttsOff": "Vorlesen aus",
+    "micLive": "Mikrofon aktiv — sprich einfach; dein Text landet im Eingabefeld."
   },
   "auth": {
     "signIn": "Anmelden",

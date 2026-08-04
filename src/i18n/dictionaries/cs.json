@@ -115,7 +115,8 @@
     "micStart": "Spustit diktování",
     "micStop": "Zastavit diktování",
     "ttsOn": "Číst odpovědi nahlas",
-    "ttsOff": "Vypnout čtení"
+    "ttsOff": "Vypnout čtení",
+    "micLive": "Mikrofon zapnutý — mluvte, text se objeví v poli pro zadání."
   },
   "auth": {
     "signIn": "Přihlásit se",

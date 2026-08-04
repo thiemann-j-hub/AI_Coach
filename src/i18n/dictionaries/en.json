@@ -115,7 +115,8 @@
     "micStart": "Start dictation",
     "micStop": "Stop dictation",
     "ttsOn": "Read replies aloud",
-    "ttsOff": "Stop reading aloud"
+    "ttsOff": "Stop reading aloud",
+    "micLive": "Microphone on — just speak; your words land in the input field."
   },
   "auth": {
     "signIn": "Sign In",

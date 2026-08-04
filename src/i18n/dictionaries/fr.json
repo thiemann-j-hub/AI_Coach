@@ -115,7 +115,8 @@
     "micStart": "Démarrer la dictée",
     "micStop": "Arrêter la dictée",
     "ttsOn": "Lire les réponses à voix haute",
-    "ttsOff": "Désactiver la lecture"
+    "ttsOff": "Désactiver la lecture",
+    "micLive": "Micro actif — parlez, votre texte apparaît dans le champ de saisie."
   },
   "auth": {
     "signIn": "Se connecter",
