@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Coins } from "lucide-react";
 import { authFetch } from "@/lib/api-client";
+import { useTranslation } from "@/i18n/useTranslation";
 import { withBasePath } from "@/lib/base-path";
 
 /**
@@ -20,7 +21,12 @@ type CreditState = { balance: number; topUpUrl: string | null };
  */
 export const CREDITS_REFRESH_EVENT = "pn:credits-refresh";
 
+// Unter dieser Schwelle wird der Chip zum sichtbaren Aufladen-Button
+// (Owner-Vorgabe 04.08., einheitlich in Coach/Jobmap/Studio).
+const LOW_BALANCE_THRESHOLD = 10;
+
 export function CreditBalance() {
+  const { t } = useTranslation();
   const [state, setState] = useState<CreditState | null>(null);
 
   useEffect(() => {
@@ -65,6 +71,26 @@ export function CreditBalance() {
   // offen bleibt (Angleich an Jobmap). Der interne /credits-Fallback bleibt im
   // selben Tab (kein target).
   const external = /^https?:\/\//i.test(href);
+
+  // Unter der Schwelle wird der Chip zum sichtbaren Aufladen-Button (Owner-
+  // Vorgabe 04.08.: der Header regelt die Credits — wird es knapp, muss man
+  // SEHEN, dass man hier klickt und auflaedt).
+  if (state.balance < LOW_BALANCE_THRESHOLD) {
+    return (
+      <a
+        href={href}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        title={t.common.topUp}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-1.5 text-sm font-semibold text-amber-400 transition-colors hover:bg-amber-500/25 hover:border-amber-400/70"
+      >
+        <Coins className="h-4 w-4" />
+        <span className="tabular-nums">{state.balance}</span>
+        <span aria-hidden>·</span>
+        <span>{t.common.topUp}</span>
+      </a>
+    );
+  }
+
   return (
     <a
       href={href}

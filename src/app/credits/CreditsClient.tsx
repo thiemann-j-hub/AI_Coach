@@ -190,8 +190,8 @@ export default function CreditsClient() {
           <h2 className="text-lg font-semibold mb-1">{de ? 'Guthaben aufladen' : 'Top up credits'}</h2>
           <p className="text-sm text-muted-foreground mb-4">
             {de
-              ? 'Credits gelten in allen PulseNorth-Apps (1 Credit = 1 Analyse). Der Kauf läuft über die zentrale Preisseite.'
-              : 'Credits work across all PulseNorth apps (1 credit = 1 analysis). Purchases happen on the central pricing page.'}
+              ? 'Credits gelten in allen PulseNorth-Apps (1 Credit = 1 Analyse).'
+              : 'Credits work across all PulseNorth apps (1 credit = 1 analysis).'}
           </p>
           <button
             className="py-2.5 px-6 rounded-xl btn-gradient text-white font-semibold disabled:opacity-50 disabled:pointer-events-none"

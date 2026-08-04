@@ -7,7 +7,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   BarChart3,
   History,
-  CreditCard,
   MessagesSquare,
   Users,
   PlusCircle,
@@ -87,7 +86,8 @@ export default function AppShell(props: {
           { href: '/analyze', label: t.nav.analyze, icon: BarChart3 },
           { href: '/simulation', label: t.nav.simulation, icon: MessagesSquare },
           { href: '/runs-dashboard', label: t.nav.history, icon: History },
-          { href: '/credits', label: 'Credits', icon: CreditCard },
+          // Kein Credits-Eintrag mehr: der Header-Chip regelt die Credits
+          // (Owner-Vorgabe 04.08. — /credits bleibt als Route erreichbar).
           { href: '/workspace', label: t.nav.workspace, icon: Users },
         ],
       },
