@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
+import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { useTranslation } from '@/i18n/useTranslation';
 
 interface PublicScenario {
@@ -526,6 +527,8 @@ export default function SimulationClient() {
       setConfirmOpen(false);
       setTimeoutOpen(false);
       setView('feedback');
+      // Header-Saldo nachladen — die Auswertung hat gerade 1 Credit gekostet.
+      window.dispatchEvent(new Event(CREDITS_REFRESH_EVENT));
     } catch {
       setError(ts.genericError);
     } finally {
@@ -891,7 +894,7 @@ export default function SimulationClient() {
               title={ts.timeoutHint}
             >
               <Pause className="h-4 w-4" /> {ts.timeoutCta}
-              <span className="text-[10px] tabular-nums opacity-70">{timeoutsLeft}/{timeoutsMax}</span>
+              <span className="text-[10px] tabular-nums opacity-70">{coachNotes.length}/{timeoutsMax}</span>
             </button>
             <button
               onClick={() => setConfirmOpen(true)}
@@ -1342,7 +1345,7 @@ export default function SimulationClient() {
           {/* CTA-Zeile: Fokus-Retry zuerst — die Schleife ist das Produkt. */}
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => void startSimulation(scenario, feedback.nextStep)}
+              onClick={() => void startSimulation(scenario, feedback.nextStep.slice(0, 280))}
               disabled={starting}
               className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
             >

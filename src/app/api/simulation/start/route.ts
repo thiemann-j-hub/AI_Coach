@@ -16,9 +16,17 @@ export const dynamic = "force-dynamic";
 
 const requestSchema = z.object({
   scenarioId: z.string().min(1).max(100),
-  /** Fokus-Retry (D2): EIN Vorsatz aus dem letzten Debrief; optional. */
-  focus: z.string().max(300).optional(),
+  /**
+   * Fokus-Retry (D2): EIN Vorsatz aus dem letzten Debrief; optional.
+   * Grosszuegig annehmen und serverseitig kappen — ein langer nextStep darf
+   * den Retry NIE scheitern lassen (User-Test-Fund 04.08.: 340-Zeichen-Hebel
+   * lief in max(300) → 400 → generischer Fehler beim Nutzer).
+   */
+  focus: z.string().max(2000).optional(),
 });
+
+/** Harte Kappe fuer den gespeicherten Fokus (Prompt-Injektion + Doc-Groesse). */
+const FOCUS_MAX_CHARS = 300;
 
 /** POST: neue Simulation anlegen — die Persona eröffnet mit ihrer openingLine. */
 export async function POST(req: NextRequest) {
@@ -57,7 +65,7 @@ export async function POST(req: NextRequest) {
     } catch {
       /* Zählung optional */
     }
-    const focus = parsed.data.focus?.trim() || null;
+    const focus = parsed.data.focus?.trim().slice(0, FOCUS_MAX_CHARS) || null;
 
     const simId = crypto.randomUUID();
     const doc = await createSimulation({

@@ -13,12 +13,19 @@ import { withBasePath } from "@/lib/base-path";
  */
 type CreditState = { balance: number; topUpUrl: string | null };
 
+/**
+ * Andere Komponenten stossen nach einer Abbuchung einen Refresh an
+ * (User-Test-Fund 04.08.: nach der Simulations-Auswertung stand der alte
+ * Saldo im Header, bis man die Seite neu lud).
+ */
+export const CREDITS_REFRESH_EVENT = "pn:credits-refresh";
+
 export function CreditBalance() {
   const [state, setState] = useState<CreditState | null>(null);
 
   useEffect(() => {
     let active = true;
-    (async () => {
+    const load = async () => {
       try {
         const res = await authFetch("/api/credits", { method: "GET" });
         const j = await res.json().catch(() => null);
@@ -41,9 +48,13 @@ export function CreditBalance() {
       } catch {
         /* inert: nichts anzeigen */
       }
-    })();
+    };
+    void load();
+    const onRefresh = () => void load();
+    window.addEventListener(CREDITS_REFRESH_EVENT, onRefresh);
     return () => {
       active = false;
+      window.removeEventListener(CREDITS_REFRESH_EVENT, onRefresh);
     };
   }, []);
 
