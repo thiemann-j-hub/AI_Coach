@@ -81,10 +81,32 @@ export async function runPersonaTurn(args: {
   const response = await ai.generate({
     system: buildPersonaSystemPrompt(args.scenario),
     messages: [...history, { role: 'user' as const, content: [{ text: sanitized }] }],
-    config: { maxOutputTokens: MAX_OUTPUT_TOKENS },
+    config: {
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      // LEAK-VORFALL 04.08.: Gemini-2.5-flash "denkt" per Default — lief das
+      // Denken ins Token-Limit, landete die ROHE GEDANKENKETTE (inkl. DNA!)
+      // als Antworttext im Chat. Denken für Persona-Turns hart abschalten:
+      // schneller, billiger, und die DNA bleibt, wo sie hingehört.
+      thinkingConfig: { thinkingBudget: 0 },
+    },
   });
 
-  const text = response.text?.trim();
+  // Zweiter Riegel: nur echte Text-Parts verwenden, Reasoning-Parts verwerfen —
+  // und Antworten, die trotzdem wie eine Gedankenkette aussehen, ablehnen
+  // (lieber ein sauberer Retry durch withRetry als ein DNA-Leak beim Kunden).
+  const parts = (response.message?.content ?? []) as Array<{
+    text?: string;
+    reasoning?: string;
+  }>;
+  const clean = parts
+    .filter((p) => typeof p.text === 'string' && !p.reasoning)
+    .map((p) => p.text as string)
+    .join('')
+    .trim();
+  const text = clean || response.text?.trim() || '';
   if (!text) throw new Error('simulation persona returned empty response');
+  if (/Silently, I('|)ll process|VERDECKTE MOTIVE|hiddenDrivers|Underlying motives|Self-image:/i.test(text)) {
+    throw new Error('simulation persona leaked reasoning — rejected');
+  }
   return text;
 }

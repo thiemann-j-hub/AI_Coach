@@ -140,6 +140,20 @@ export default function RunsDashboardClient() {
       setError(null);
       try {
         const res = await authFetch(`/api/runs/list?sessionId=${encodeURIComponent(sid)}&limit=50`);
+        // Fremde oder ungueltige Session (Owner-Fund 04.08.: alter localStorage-
+        // Wert eines anderen Kontos → dauerhaft rote "Zugriff verweigert"-Wand):
+        // still auf eine FRISCHE Session rotieren statt in der Sackgasse zu enden.
+        if (res.status === 403 || res.status === 400) {
+          const fresh = newSessionId();
+          try { localStorage.setItem(STORAGE_KEY, fresh); } catch {}
+          if (!cancelled) {
+            setRuns([]);
+            setHasMore(false);
+            setNextCursor(null);
+            router.replace(`/runs-dashboard?sessionId=${encodeURIComponent(fresh)}`);
+          }
+          return;
+        }
         if (!res.ok) throw new Error(await readErrorText(res));
         const j = await res.json();
         if (!j?.ok) throw new Error(String(j?.error || t.dashboard.errorLoading));
