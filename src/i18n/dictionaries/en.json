@@ -120,7 +120,9 @@
     "micLive": "Microphone on — just speak; your words land in the input field.",
     "languageLabel": "Language",
     "timeUpBanner": "Time is up — your counterpart had to leave for their next appointment. Evaluate the conversation now.",
-    "timeUpPlaceholder": "The conversation has ended."
+    "timeUpPlaceholder": "The conversation has ended.",
+    "deleteSim": "Delete simulation",
+    "deleteConfirm": "Delete permanently?"
   },
   "auth": {
     "signIn": "Sign In",

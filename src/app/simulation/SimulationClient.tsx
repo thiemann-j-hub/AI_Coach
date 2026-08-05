@@ -36,6 +36,8 @@ import {
   Volume2,
   VolumeX,
   XCircle,
+  Trash2,
+  X,
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
@@ -513,6 +515,9 @@ export default function SimulationClient() {
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ──
   /** Gewählte Gesprächssprache (Flaggen-Pills im Briefing). */
   const [convoLocale, setConvoLocale] = useState<ConvoLocale>('de');
+  // Mülleimer in der Simulationsliste (endgültig, inkl. DB): zweistufig.
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   /** Zeit-Regie: Persona hat sich verabschiedet — Eingabe zu, nur noch Auswertung. */
   const [timeUp, setTimeUp] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -699,6 +704,28 @@ export default function SimulationClient() {
       setError(ts.timeoutLimit);
     } else {
       setError(ts.genericError);
+    }
+  }
+
+  async function deleteSim(simId: string) {
+    setDeletingId(simId);
+    setError(null);
+    try {
+      const res = await authFetch('/api/simulation/delete', {
+        method: 'POST',
+        body: JSON.stringify({ simId }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        await handleApiFailure(res);
+        return;
+      }
+      setRecent((prev) => prev.filter((x) => x.id !== simId));
+    } catch {
+      setError(ts.genericError);
+    } finally {
+      setDeletingId(null);
+      setPendingDeleteId(null);
     }
   }
 
@@ -953,13 +980,18 @@ export default function SimulationClient() {
                 {recent.map((r) => {
                   const s = scenarioById.get(r.scenarioId);
                   if (!s) return null;
+                  const confirming = pendingDeleteId === r.id;
                   return (
-                    <button
+                    // Kein <button> im <button>: Zeile ist ein div, der
+                    // Weiter-Bereich und der Mülleimer sind Geschwister.
+                    <div
                       key={r.id}
-                      onClick={() => void resumeSimulation(r)}
-                      className="w-full glass-panel rounded-xl p-3 flex items-center justify-between gap-3 text-left hover:border-primary/40 border border-border transition-colors"
+                      className="w-full glass-panel rounded-xl p-3 flex items-center justify-between gap-3 hover:border-primary/40 border border-border transition-colors"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <button
+                        onClick={() => void resumeSimulation(r)}
+                        className="flex items-center gap-3 min-w-0 flex-1 text-left"
+                      >
                         <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
                         <div className="min-w-0">
                           <div className="text-sm font-medium truncate">{s.title}</div>
@@ -967,7 +999,7 @@ export default function SimulationClient() {
                             {ts.attemptLabel} {r.attempt} · {new Date(r.createdAt).toLocaleString()} · {r.turnCount} {ts.turnsLabel}
                           </div>
                         </div>
-                      </div>
+                      </button>
                       <div className="flex items-center gap-2 shrink-0">
                         {r.overall != null && (
                           <span
@@ -993,8 +1025,46 @@ export default function SimulationClient() {
                         >
                           {r.status === 'active' ? ts.statusActive : ts.statusFinished}
                         </span>
+                        {/* Mülleimer mit zweistufiger Bestätigung (endgültig, inkl. DB) */}
+                        {confirming ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-xs text-rose-400 font-medium hidden sm:inline">
+                              {ts.deleteConfirm}
+                            </span>
+                            <button
+                              onClick={() => void deleteSim(r.id)}
+                              disabled={deletingId === r.id}
+                              title={ts.deleteSim}
+                              aria-label={ts.deleteSim}
+                              className="rounded-lg border border-rose-500/50 bg-rose-500/15 p-1.5 text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
+                            >
+                              {deletingId === r.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setPendingDeleteId(null)}
+                              title={t.common.cancel}
+                              aria-label={t.common.cancel}
+                              className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setPendingDeleteId(r.id)}
+                            title={ts.deleteSim}
+                            aria-label={ts.deleteSim}
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>

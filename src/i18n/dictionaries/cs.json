@@ -120,7 +120,9 @@
     "micLive": "Mikrofon zapnutý — mluvte, text se objeví v poli pro zadání.",
     "languageLabel": "Jazyk",
     "timeUpBanner": "Čas vypršel — protějšek musel odejít na další schůzku. Vyhodnoť nyní rozhovor.",
-    "timeUpPlaceholder": "Rozhovor byl ukončen."
+    "timeUpPlaceholder": "Rozhovor byl ukončen.",
+    "deleteSim": "Smazat simulaci",
+    "deleteConfirm": "Smazat trvale?"
   },
   "auth": {
     "signIn": "Přihlásit se",

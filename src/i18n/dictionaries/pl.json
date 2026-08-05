@@ -120,7 +120,9 @@
     "micLive": "Mikrofon włączony — mów, a tekst pojawi się w polu wpisywania.",
     "languageLabel": "Język",
     "timeUpBanner": "Czas minął — rozmówca musiał udać się na kolejne spotkanie. Oceń teraz rozmowę.",
-    "timeUpPlaceholder": "Rozmowa została zakończona."
+    "timeUpPlaceholder": "Rozmowa została zakończona.",
+    "deleteSim": "Usuń symulację",
+    "deleteConfirm": "Usunąć trwale?"
   },
   "auth": {
     "signIn": "Zaloguj się",

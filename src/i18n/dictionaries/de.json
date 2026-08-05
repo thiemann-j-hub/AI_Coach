@@ -120,7 +120,9 @@
     "micLive": "Mikrofon aktiv — sprich einfach; dein Text landet im Eingabefeld.",
     "languageLabel": "Sprache",
     "timeUpBanner": "Die Zeit ist um — dein Gegenüber musste zum nächsten Termin. Werte das Gespräch jetzt aus.",
-    "timeUpPlaceholder": "Das Gespräch ist beendet."
+    "timeUpPlaceholder": "Das Gespräch ist beendet.",
+    "deleteSim": "Simulation löschen",
+    "deleteConfirm": "Endgültig löschen?"
   },
   "auth": {
     "signIn": "Anmelden",

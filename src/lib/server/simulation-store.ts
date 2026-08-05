@@ -1,6 +1,6 @@
 import "server-only";
 
-import { queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
+import { deleteItem, queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
 import type { SimulationTurn } from "@/lib/simulation/types";
 
 /**
@@ -133,6 +133,18 @@ export async function getSimulation(
 
 export async function saveSimulation(doc: SimulationDoc): Promise<void> {
   await upsertItem(runsContainer(), { ...doc, updatedAt: new Date().toISOString() });
+}
+
+/**
+ * Endgültiges Löschen einer Simulation (Owner-Vorgabe 04.08.: Mülleimer in
+ * der Liste, inkl. Datenbank). Ownership-Check wie beim Lesen — fremde oder
+ * unbekannte Docs melden false (Route antwortet 404, löscht nie blind).
+ */
+export async function deleteSimulation(uid: string, simId: string): Promise<boolean> {
+  const doc = await getSimulation(uid, simId);
+  if (!doc) return false;
+  await deleteItem(runsContainer(), simId, simPartitionKey(uid));
+  return true;
 }
 
 export interface SimulationListItem {

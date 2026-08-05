@@ -120,7 +120,9 @@
     "micLive": "Micrófono activo: habla y tu texto aparecerá en el campo de entrada.",
     "languageLabel": "Idioma",
     "timeUpBanner": "Se acabó el tiempo: tu interlocutor tuvo que irse a su siguiente cita. Evalúa la conversación ahora.",
-    "timeUpPlaceholder": "La conversación ha terminado."
+    "timeUpPlaceholder": "La conversación ha terminado.",
+    "deleteSim": "Eliminar simulación",
+    "deleteConfirm": "¿Eliminar definitivamente?"
   },
   "auth": {
     "signIn": "Iniciar sesión",

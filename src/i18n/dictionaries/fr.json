@@ -120,7 +120,9 @@
     "micLive": "Micro actif — parlez, votre texte apparaît dans le champ de saisie.",
     "languageLabel": "Langue",
     "timeUpBanner": "Le temps est écoulé — votre interlocuteur a dû partir à son prochain rendez-vous. Évaluez la conversation maintenant.",
-    "timeUpPlaceholder": "La conversation est terminée."
+    "timeUpPlaceholder": "La conversation est terminée.",
+    "deleteSim": "Supprimer la simulation",
+    "deleteConfirm": "Supprimer définitivement ?"
   },
   "auth": {
     "signIn": "Se connecter",
