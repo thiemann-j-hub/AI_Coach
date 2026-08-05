@@ -9,6 +9,13 @@
 
 export type SimulationDifficulty = 1 | 2 | 3;
 
+/**
+ * Gesprächssprache einer Simulation (Synthesia-Muster, Owner-Vorgabe 04.08.):
+ * Der Übende wählt im Briefing, in welcher Sprache die Persona spricht —
+ * unabhängig von der Autorensprache des Szenarios (locale bleibt de/en).
+ */
+export type SimConversationLocale = "de" | "en" | "es" | "fr";
+
 export interface SimObjection {
   /** Situation, in der der Einwand typischerweise fällt. */
   trigger: string;

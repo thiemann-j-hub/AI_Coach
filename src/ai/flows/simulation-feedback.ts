@@ -21,6 +21,8 @@ export const SimulationFeedbackInputSchema = z.object({
   transcript: z.string(),
   /** Fokus-Retry (D2): der EINE Vorsatz aus dem letzten Debrief; leer = kein Fokus. */
   focus: z.string(),
+  /** Sprache der Textausgaben (summary/why/comment/nextStep) — folgt der Gesprächssprache. */
+  outputLanguage: z.string(),
 });
 
 const RubricRatingSchema = z.object({
@@ -110,7 +112,7 @@ Kein Fokus-Vorsatz vorgegeben → focusReview = null.
 {{/if}}
 
 summary und nextStep: direkte Ansprache ("Du …"), konkret, auf DIESES Gespräch bezogen.
-Alles auf Deutsch.
+Alle Textausgaben (summary, why, comment, nextStep) auf {{outputLanguage}} — Zitate in der EVIDENCE bleiben wörtlich in der Gesprächssprache.
 
 GESPRÄCH
 {{{transcript}}}
@@ -119,11 +121,21 @@ Gib ausschließlich JSON gemäß Schema zurück.
 `,
 });
 
+/** Deutsch formulierte Sprachnamen fuer die Ausgabesprache des Feedbacks. */
+const FEEDBACK_LANGUAGE: Record<string, string> = {
+  de: 'Deutsch',
+  en: 'Englisch',
+  es: 'Spanisch',
+  fr: 'Französisch',
+};
+
 export async function generateSimulationFeedback(args: {
   scenario: SimulationScenario;
   turns: SimulationTurn[];
   /** Fokus-Retry (D2): Vorsatz aus dem letzten Debrief, optional. */
   focus?: string;
+  /** Gesprächssprache — Feedback-Texte folgen ihr (Default: Szenario-Locale). */
+  convoLocale?: string;
 }): Promise<SimulationFeedbackOutput> {
   const { scenario, turns } = args;
   const rawTranscript = assembleTranscript(turns, scenario.persona.name);
@@ -146,6 +158,8 @@ export async function generateSimulationFeedback(args: {
       .join('\n'),
     transcript: sanitized,
     focus: (args.focus ?? '').slice(0, 300),
+    outputLanguage:
+      FEEDBACK_LANGUAGE[args.convoLocale ?? scenario.locale] ?? 'Deutsch',
   });
   if (!output) throw new Error('simulation feedback returned empty output');
 

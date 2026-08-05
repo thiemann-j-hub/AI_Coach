@@ -50,7 +50,17 @@ export interface SimulationDoc {
    * und die Auswertung bewertet nur das eigentliche Gespräch.
    */
   coachNotes?: Array<{ question: string; answer: string; ts: string }>;
+  // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ─────────────────────────────
+  /** Gewählte Gesprächssprache (Persona spricht diese Sprache); fehlt bei Alt-Docs → Szenario-Locale. */
+  convoLocale?: "de" | "en" | "es" | "fr";
+  /** Zeit-Regie: der beiläufige »muss gleich los«-Hinweis wurde bereits gegeben. */
+  timeWarned?: boolean;
+  /** Zeit-Regie: die Persona hat sich verabschiedet — keine weiteren Turns möglich. */
+  closedByTime?: boolean;
 }
+
+/** Ab diesem Anteil der Szenario-Zeitbox streut die Persona den Zeit-Hinweis ein. */
+export const SIM_TIME_WARN_FRACTION = 0.8;
 
 /** Maximal erlaubte Time-outs je Simulation (Kosten- und Didaktik-Kappe). */
 export const SIM_MAX_TIMEOUTS = 3;
@@ -86,6 +96,7 @@ export async function createSimulation(args: {
   openingTurn: SimulationTurn;
   attempt?: number;
   focus?: string | null;
+  convoLocale?: "de" | "en" | "es" | "fr";
 }): Promise<SimulationDoc> {
   const now = new Date().toISOString();
   const doc: SimulationDoc = {
@@ -100,6 +111,7 @@ export async function createSimulation(args: {
     turns: [args.openingTurn],
     attempt: args.attempt ?? 1,
     focus: args.focus ?? null,
+    ...(args.convoLocale ? { convoLocale: args.convoLocale } : {}),
   };
   await upsertItem(runsContainer(), doc);
   return doc;

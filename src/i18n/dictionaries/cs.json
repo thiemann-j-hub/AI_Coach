@@ -117,7 +117,10 @@
     "micStop": "Zastavit diktování",
     "ttsOn": "Číst odpovědi nahlas",
     "ttsOff": "Vypnout čtení",
-    "micLive": "Mikrofon zapnutý — mluvte, text se objeví v poli pro zadání."
+    "micLive": "Mikrofon zapnutý — mluvte, text se objeví v poli pro zadání.",
+    "languageLabel": "Jazyk",
+    "timeUpBanner": "Čas vypršel — protějšek musel odejít na další schůzku. Vyhodnoť nyní rozhovor.",
+    "timeUpPlaceholder": "Rozhovor byl ukončen."
   },
   "auth": {
     "signIn": "Přihlásit se",

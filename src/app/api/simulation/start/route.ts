@@ -1,10 +1,15 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { runPersonaOpening } from "@/ai/flows/simulation-persona";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenario } from "@/lib/simulation/scenarios";
+import { withRetry, timeoutMs } from "@/lib/with-timeout";
+
+const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
 import {
   countFinishedForScenario,
   createSimulation,
@@ -23,6 +28,12 @@ const requestSchema = z.object({
    * lief in max(300) → 400 → generischer Fehler beim Nutzer).
    */
   focus: z.string().max(2000).optional(),
+  /**
+   * Gesprächssprache (Synthesia-Muster, Owner-Vorgabe 04.08.): EN/ES/FR/DE.
+   * Fehlt sie oder entspricht sie der Autorensprache, eröffnet die statische
+   * openingLine; sonst erzeugt die Persona ihre Eröffnung in der Zielsprache.
+   */
+  locale: z.enum(["de", "en", "es", "fr"]).optional(),
 });
 
 /** Harte Kappe fuer den gespeicherten Fokus (Prompt-Injektion + Doc-Groesse). */
@@ -66,6 +77,23 @@ export async function POST(req: NextRequest) {
       /* Zählung optional */
     }
     const focus = parsed.data.focus?.trim().slice(0, FOCUS_MAX_CHARS) || null;
+    const convoLocale = parsed.data.locale ?? scenario.locale;
+
+    // Eroeffnung: Autorensprache = statisch (kein LLM-Call); abweichende
+    // Gesprächssprache = Persona eröffnet sinngemäß in der Zielsprache.
+    let openingText = scenario.personaDna.openingLine;
+    if (convoLocale !== scenario.locale) {
+      const budget = await checkAndConsumeBudget({
+        uid: auth.uid,
+        email: auth.email,
+        estimatedTokens: estimateTokens(scenario.personaDna.openingLine),
+      });
+      if (!budget.allowed && budget.response) return budget.response;
+      openingText = await withRetry(
+        () => runPersonaOpening({ scenario, convoLocale }),
+        { ms: LLM_TIMEOUT_MS, label: "gemini-sim-opening", retries: 1 }
+      );
+    }
 
     const simId = crypto.randomUUID();
     const doc = await createSimulation({
@@ -74,9 +102,10 @@ export async function POST(req: NextRequest) {
       scenarioId: scenario.id,
       attempt,
       focus,
+      convoLocale,
       openingTurn: {
         role: "persona",
-        text: scenario.personaDna.openingLine,
+        text: openingText,
         ts: new Date().toISOString(),
       },
     });

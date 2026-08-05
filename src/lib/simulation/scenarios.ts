@@ -33,9 +33,9 @@ const morgan: SimulationScenario = {
     "Deine beziehungsorientierte Kundenverantwortliche liefert Qualität, verliert aber die Steuerung: ein Kunde eskaliert, ein Angebot hängt, delegiert wird nichts.",
   conversationType: "mitarbeitergespräch",
   difficulty: 1,
-  durationMin: 20,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Alex Morgan", role: "Kundenverantwortliche, Team NorthBay Foods" },
+  persona: { name: "Alex Morgan", role: "Kundenverantwortliche" },
   candidateBriefing: {
     yourRole:
       "Du bist Führungskraft bei der NorthBay Foods Inc. Alex Morgan ist seit drei Monaten Kundenverantwortliche in deinem Bereich und führt fachlich ein kleines Team mit zwei Junior-Experts. Sie ist ausgesprochen beziehungsorientiert, hat hohe Qualitätsansprüche an sich selbst — und tut sich schwer, zwischen Harmonie und Steuerung die Balance zu finden.",
@@ -152,9 +152,9 @@ const lang: SimulationScenario = {
     "Dein früherer Vorgesetzter blockiert das gemeinsame Projekt, verweigert dir einen Experten und streut eine vertrauliche Präsentation. Du brauchst ihn trotzdem.",
   conversationType: "kollegengespräch",
   difficulty: 2,
-  durationMin: 25,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Viktor Lang", role: "Werksleiter Kingsport 2, NorthBay Foods" },
+  persona: { name: "Viktor Lang", role: "Werksleiter Kingsport 2" },
   candidateBriefing: {
     yourRole:
       "Du bist seit wenigen Monaten Werksleiter:in des Werks Kingsport 1 der NorthBay Foods Inc. (Marke BlueCrest, Tiefkühl-Lebensmittel). Du wurdest berufen, um Auslastung und Prozesse des Werks zu verbessern. Beide Kingsport-Werke sollen im konzernweiten UMS-Projekt (Unified-Management-System für Qualität, Umwelt und Arbeitssicherheit) ihre Prozesse vereinheitlichen; die Projektsteuerung liegt bei Dr. Elias Berger von SystemWorks Consulting.",
@@ -280,9 +280,9 @@ const vance: SimulationScenario = {
     "Dein IT-Leiter ist fachlich herausragend — aber Fluktuation, Projektüberziehungen und Befragungswerte eskalieren. Und du brauchst ihn für ein Projekt, das er ablehnt.",
   conversationType: "mitarbeitergespräch",
   difficulty: 3,
-  durationMin: 30,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Dr. Robin Vance", role: "Leiter IT, NorthBay Foods" },
+  persona: { name: "Dr. Robin Vance", role: "Leiter IT" },
   candidateBriefing: {
     yourRole:
       "Du bist seit zwei Monaten CEO der NorthBay Foods Inc. Dein Auftrag: Strukturen und Prozesse effizienter machen und die Mitarbeitenden für den Wandel gewinnen. Im IT-Bereich, den Dr. Robin Vance leitet, siehst du den größten Veränderungsbedarf.",
@@ -429,9 +429,9 @@ const roth: SimulationScenario = {
     "Dein Mit-Azubi hat dich bei einer dringenden Chef-Aufgabe hängen lassen — und kassiert dafür auch noch das Lob. Gleich müsst ihr zusätzlich klären, wer die Projektpräsentation hält.",
   conversationType: "kollegengespräch",
   difficulty: 1,
-  durationMin: 20,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf, NorthBay Foods" },
+  persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf" },
   candidateBriefing: {
     yourRole:
       "Du bist im zweiten Lehrjahr bei der NorthBay Foods Inc. und seit drei Wochen im Bereich Einkauf der Zentrale eingesetzt. Zu deinen Aufgaben gehören Lagerbestände, Wareneingang — und aktuell eine Sonderaufgabe der Abteilungsleiterin Frau Valente: eine vollständige Übersicht über die rund 90 Lieferanten des Unternehmens, denn NorthBay will die Lieferantenzahl um ein Viertel reduzieren, um Bündelungsvorteile zu nutzen.",
@@ -556,9 +556,9 @@ const reed: SimulationScenario = {
     "Dein erfahrenster Mitarbeiter liefert Qualität wie ein Uhrwerk — aber Antwortzeiten platzen, im Meeting blockt er jede Idee ab, und seine Mentee korrigiert er vor allen. Du willst Veränderung, ohne ihn zu verlieren.",
   conversationType: "mitarbeitergespräch",
   difficulty: 2,
-  durationMin: 20,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Sam Reed", role: "Referent Auftragsabwicklung, NorthBay Foods" },
+  persona: { name: "Sam Reed", role: "Referent Auftragsabwicklung" },
   candidateBriefing: {
     yourRole:
       "Du leitest ein Team in der Auftragsabwicklung der NorthBay Foods Inc. Gemeinsam mit den Nachbarabteilungen läuft ein Projekt zur Schnittstellen-Optimierung: Antwort- und Durchlaufzeiten sollen sinken, denn Benchmarks zeigen deutlichen Rückstand im Wettbewerb. Vereinbart ist eine Reaktionszeit von maximal 24 Stunden auf Anfragen.",
@@ -691,9 +691,9 @@ const brandt: SimulationScenario = {
     "Nach der Übernahme eines Food-Tech-Start-ups sollst du zwei völlig verschiedene Teams verschmelzen. Der erfahrene Teammanager deiner Stammorganisation hält das meiste davon für überflüssig — und hat für alles ein Effizienz-Argument.",
   conversationType: "kollegengespräch",
   difficulty: 3,
-  durationMin: 30,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Marek Brandt", role: "Teammanager Projekte, NorthBay Foods" },
+  persona: { name: "Marek Brandt", role: "Teammanager Projekte" },
   candidateBriefing: {
     yourRole:
       "Du bist seit Kurzem Bereichsleiter:in Digital & Projekte der NorthBay Foods Inc. — zuvor warst du Führungskraft in einem anderen Bereich des Hauses. Vor sechs Monaten hat NorthBay das Food-Tech-Start-up FreshLoop übernommen; vor einem Monat wurden dessen Team (5 Personen inkl. Teammanagerin Lena Iversen) und das NorthBay-Projektteam (6 Personen inkl. Teammanager Marek Brandt) unter deiner Leitung zusammengelegt. In zwei Wochen zieht FreshLoop ins Head Office. Beide Teams leiten vergleichbare Projekte — arbeiten aber völlig unterschiedlich, ohne Synergien, mit ersten Konflikten und wechselseitigem Unverständnis.",
@@ -832,9 +832,9 @@ const falk: SimulationScenario = {
     "Ihr führt als Doppelspitze je eine Produktlinie — er die etablierte, du die neue grüne. Jetzt sollt ihr gemeinsam die Fuhrpark-Frage lösen. Er hat dich schon einmal ausgebremst, im Workshop öffentlich kleingeredet — und sein Netzwerk ist legendär.",
   conversationType: "kollegengespräch",
   difficulty: 3,
-  durationMin: 25,
+  durationMin: 15,
   locale: "de",
-  persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment, NorthBay Foods" },
+  persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment" },
   candidateBriefing: {
     yourRole:
       "Du bist seit zwei Jahren bei der NorthBay Foods Inc., seit vier Monaten Senior Product Lead für die neue pflanzenbasierte Linie GreenFjord — zusätzlich verantwortest du das konzernweite Nachhaltigkeitsmanagement. Die Unternehmensleitung (Frau Solberg) hat eine Nachhaltigkeitsstrategie ausgerufen: CO2-Reduktion im ganzen Konzern, GreenFjord als Wachstumsfokus — und die Logistikkosten samt veralteter eigener Kühlflotte wurden als inakzeptabel eingestuft. Du und Ruben Falk seid GEMEINSAM beauftragt, eine nachhaltige Fuhrpark-Lösung zu erarbeiten. Deine Analyse ist klar: Die eigene Flotte ist überaltert, wird bald Technik- und Sicherheitsstandards reißen, bräuchte massive Investitionen — zertifizierte externe Kühllogistiker wären günstiger UND klimafreundlicher. Für dich steht fest: Outsourcing.",
@@ -975,9 +975,9 @@ const stone: SimulationScenario = {
     "Your best regional manager delivers numbers nobody else matches — while colleagues refuse to work with him, reps feel humiliated, and people resign. Today you must change his behaviour without breaking his drive. And you need him to take over a second region.",
   conversationType: "mitarbeitergespräch",
   difficulty: 3,
-  durationMin: 25,
+  durationMin: 15,
   locale: "en",
-  persona: { name: "Erik Stone", role: "Regional Sales Manager East, NorthBay Foods" },
+  persona: { name: "Erik Stone", role: "Regional Sales Manager East" },
   candidateBriefing: {
     yourRole:
       "You are the Managing Director of the NorthBay Foods frozen-goods division, four months in the role after a highly successful run as a sales lead elsewhere in the group. Every fortnight you meet your three regional sales managers (North, East, South) to review the business.",

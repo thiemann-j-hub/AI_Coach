@@ -117,7 +117,10 @@
     "micStop": "Ferma dettatura",
     "ttsOn": "Leggi le risposte ad alta voce",
     "ttsOff": "Disattiva lettura",
-    "micLive": "Microfono attivo: parla e il testo apparirà nel campo di input."
+    "micLive": "Microfono attivo: parla e il testo apparirà nel campo di input.",
+    "languageLabel": "Lingua",
+    "timeUpBanner": "Il tempo è scaduto — il tuo interlocutore è dovuto andare al prossimo appuntamento. Valuta ora la conversazione.",
+    "timeUpPlaceholder": "La conversazione è terminata."
   },
   "auth": {
     "signIn": "Accedi",

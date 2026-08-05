@@ -117,7 +117,10 @@
     "micStop": "Detener dictado",
     "ttsOn": "Leer respuestas en voz alta",
     "ttsOff": "Desactivar lectura",
-    "micLive": "Micrófono activo: habla y tu texto aparecerá en el campo de entrada."
+    "micLive": "Micrófono activo: habla y tu texto aparecerá en el campo de entrada.",
+    "languageLabel": "Idioma",
+    "timeUpBanner": "Se acabó el tiempo: tu interlocutor tuvo que irse a su siguiente cita. Evalúa la conversación ahora.",
+    "timeUpPlaceholder": "La conversación ha terminado."
   },
   "auth": {
     "signIn": "Iniciar sesión",

@@ -64,6 +64,38 @@ interface PublicScenario {
   competencies: { key: string; label: string }[];
 }
 
+/** Gesprächssprache (Synthesia-Muster): Auswahl per Flaggen-Pills im Briefing. */
+type ConvoLocale = 'de' | 'en' | 'es' | 'fr';
+
+/** Genau die vier Synthesia-Sprachen, in Synthesia-Reihenfolge, mit nativen Namen. */
+const CONVO_LANGS: Array<{ code: ConvoLocale; flag: string; label: string }> = [
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'es', flag: '🇪🇸', label: 'Español' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
+];
+
+const SPEECH_LANG: Record<ConvoLocale, string> = {
+  de: 'de-DE',
+  en: 'en-GB',
+  es: 'es-ES',
+  fr: 'fr-FR',
+};
+
+/**
+ * Titel-Aufteilung (Owner-Vorgabe 04.08.): »Motto — Gesprächstyp mit Name«.
+ * Das Motto gehört in den Text links, der Gesprächstyp aufs Hero-Bild —
+ * und keiner von beiden in die Fenster-Kopfzeile.
+ */
+function splitTitle(title: string): { motto: string; heroTitle: string } {
+  const idx = title.indexOf('—');
+  if (idx < 0) return { motto: title, heroTitle: title };
+  return {
+    motto: title.slice(0, idx).trim(),
+    heroTitle: title.slice(idx + 1).trim(),
+  };
+}
+
 interface Turn {
   role: 'user' | 'persona';
   text: string;
@@ -311,6 +343,11 @@ export default function SimulationClient() {
   // ── D4: Sprach-Schleife (Web Speech API — lokal im Browser, keine Server-Kosten) ──
   const [micActive, setMicActive] = useState(false);
   const [speakReplies, setSpeakReplies] = useState(false);
+  // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ──
+  /** Gewählte Gesprächssprache (Flaggen-Pills im Briefing). */
+  const [convoLocale, setConvoLocale] = useState<ConvoLocale>('de');
+  /** Zeit-Regie: Persona hat sich verabschiedet — Eingabe zu, nur noch Auswertung. */
+  const [timeUp, setTimeUp] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const speechSupported =
@@ -319,7 +356,8 @@ export default function SimulationClient() {
     Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
   const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-  const speechLang = scenario?.locale === 'en' ? 'en-GB' : 'de-DE';
+  // Diktat/Vorlesen folgen der GEWÄHLTEN Gesprächssprache (nicht der Autorensprache).
+  const speechLang = SPEECH_LANG[convoLocale];
 
   // Gewollt-an-Merker: Browser beenden die Erkennung nach Stille von selbst —
   // solange der Nutzer das Mikro nicht ausgeschaltet hat, starten wir neu
@@ -487,6 +525,9 @@ export default function SimulationClient() {
       setError(ts.notEnoughTurns);
     } else if (code === 'TURN_LIMIT') {
       setError(ts.turnLimit);
+    } else if (code === 'TIME_UP') {
+      // Kein Fehler: die Zeit ist um — Banner statt roter Meldung.
+      setTimeUp(true);
     } else if (code === 'TIMEOUT_LIMIT') {
       setError(ts.timeoutLimit);
     } else {
@@ -502,6 +543,7 @@ export default function SimulationClient() {
         method: 'POST',
         body: JSON.stringify({
           scenarioId: s.id,
+          locale: convoLocale,
           ...(withFocus ? { focus: withFocus } : {}),
         }),
       });
@@ -522,6 +564,7 @@ export default function SimulationClient() {
       setCoachNotes([]);
       setBriefingOpen(false);
       setTimeoutOpen(false);
+      setTimeUp(false);
       setView('chat');
     } catch {
       setError(ts.genericError);
@@ -547,6 +590,8 @@ export default function SimulationClient() {
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
       setCoachNotes(json.simulation.coachNotes ?? []);
+      setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
+      setTimeUp(json.simulation.timeUp === true);
       if (json.simulation.status === 'finished' && json.simulation.feedback) {
         setFeedback(json.simulation.feedback);
         setDebrief(json.simulation.debrief ?? null);
@@ -590,6 +635,11 @@ export default function SimulationClient() {
         ...prev,
         { role: 'persona', text: json.reply, ts: new Date().toISOString() },
       ]);
+      // Zeit-Regie: die Persona hat sich verabschiedet → Eingabe schließen.
+      if (json.timeUp === true) {
+        setTimeUp(true);
+        stopMic();
+      }
       if (speakReplies) speak(json.reply);
     } catch {
       setTurns((prev) => prev.filter((x) => x !== optimistic));
@@ -792,6 +842,7 @@ export default function SimulationClient() {
                   setScenario(s);
                   setError(null);
                   setBriefStep(0);
+                  setConvoLocale(s.locale ?? 'de');
                   setView('briefing');
                 }}
                 className="glass-panel rounded-2xl p-5 text-left border border-border hover:border-primary/40 transition-colors flex flex-col gap-3"
@@ -837,9 +888,14 @@ export default function SimulationClient() {
       { icon: Compass, label: ts.stepApproach },
     ];
     const isLast = briefStep === steps.length - 1;
+    const { motto, heroTitle } = splitTitle(scenario.title);
+    const selectedLang = CONVO_LANGS.find((l) => l.code === convoLocale) ?? CONVO_LANGS[3];
     return (
-      <AppShell title={scenario.title} subtitle={levelLabel(scenario.difficulty)}>
-        <div className="max-w-3xl space-y-4">
+      // Synthesia-Angleich (Owner-Vorgabe 04.08.): Szenariotitel NICHT in der
+      // Fenster-Kopfzeile — links Text + Kontext-Treppe, rechts das große
+      // Porträt mit Titel-Overlay und Start-Button.
+      <AppShell title={ts.title} subtitle={ts.subtitle}>
+        <div className="max-w-6xl space-y-4">
           {errorBanner}
           <button
             onClick={backToList}
@@ -848,21 +904,110 @@ export default function SimulationClient() {
             <ArrowLeft className="h-4 w-4" /> {ts.backToList}
           </button>
 
-          {/* Persona-Kopf */}
-          <div className="glass-panel rounded-2xl p-5 flex items-center gap-4 border border-border">
-            <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="lg" />
-            <div className="min-w-0">
-              <div className="text-lg font-semibold leading-tight">{scenario.persona.name}</div>
-              <div className="text-sm text-muted-foreground">{scenario.persona.role}</div>
-              <div className="mt-1 text-xs text-muted-foreground flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" /> ~{scenario.durationMin} {ts.minutesShort}
-                </span>
-                <span>{scenario.locale === 'en' ? ts.englishOnly : ts.germanOnly}</span>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] items-start">
+            {/* ── Linke Spalte: Motto, Teaser, Kontext-Treppe, Sprachwahl ── */}
+            <div className="space-y-4 order-2 lg:order-1">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight">{motto}</h2>
+                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{scenario.teaser}</p>
+              </div>
+
+              {renderBriefSteps()}
+
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  onClick={() => setBriefStep((s) => Math.max(0, s - 1))}
+                  disabled={briefStep === 0}
+                  className="rounded-xl px-4 py-2.5 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-40 flex items-center gap-1"
+                >
+                  <ArrowLeft className="h-4 w-4" /> {ts.stepBack}
+                </button>
+                {!isLast && (
+                  <button
+                    onClick={() => setBriefStep((s) => Math.min(steps.length - 1, s + 1))}
+                    className="btn-gradient text-white font-semibold rounded-xl px-6 py-2.5 flex items-center gap-2 shadow-neon"
+                  >
+                    {ts.stepNext} <ArrowRight className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Sprachwahl (Synthesia-Optik: Flaggen-Pills, genau EN/ES/FR/DE) */}
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                  {ts.languageLabel}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {CONVO_LANGS.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => setConvoLocale(l.code)}
+                      aria-pressed={convoLocale === l.code}
+                      className={cx(
+                        'inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
+                        convoLocale === l.code
+                          ? 'border-primary/60 bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
+                      )}
+                    >
+                      <span aria-hidden>{l.flag}</span>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Rechte Spalte: Hero-Porträt mit Overlay (Synthesia-Muster) ── */}
+            <div className="order-1 lg:order-2 lg:sticky lg:top-4">
+              <div className="relative overflow-hidden rounded-3xl border border-border shadow-neon aspect-[4/5] bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={withBasePath(`/personas/${scenario.id}.jpg`)}
+                  alt={scenario.persona.name}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10" />
+                {/* Badges oben (Stufe + Sprache) */}
+                <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+                    {levelLabel(scenario.difficulty)}
+                  </span>
+                  <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+                    {selectedLang.flag} {selectedLang.label}
+                  </span>
+                </div>
+                {/* Overlay unten: Gesprächstyp + Rolle + Start */}
+                <div className="absolute inset-x-0 bottom-0 p-5 text-center space-y-3">
+                  <div>
+                    <div className="text-2xl font-bold leading-tight text-white drop-shadow">
+                      {heroTitle}
+                    </div>
+                    <div className="mt-1 text-sm text-white/85">{scenario.persona.role}</div>
+                  </div>
+                  <button
+                    onClick={() => void startSimulation(scenario)}
+                    disabled={starting}
+                    className="w-full btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center justify-center gap-2 shadow-neon disabled:opacity-60"
+                  >
+                    {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+                    {ts.startCta}
+                  </button>
+                  <div className="text-xs text-white/75 flex items-center justify-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /> ~{scenario.durationMin} {ts.minutesShort}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </AppShell>
+    );
 
+    /* Kontext-Treppe (Tabs + Inhalt) — unverändert, nur in die linke Spalte gezogen. */
+    function renderBriefSteps() {
+      return (
+        <>
           {/* Treppen-Navigation */}
           <div className="flex items-center gap-2">
             {steps.map((st, i) => (
@@ -973,42 +1118,16 @@ export default function SimulationClient() {
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <button
-              onClick={() => setBriefStep((s) => Math.max(0, s - 1))}
-              disabled={briefStep === 0}
-              className="rounded-xl px-4 py-2.5 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-40 flex items-center gap-1"
-            >
-              <ArrowLeft className="h-4 w-4" /> {ts.stepBack}
-            </button>
-            {isLast ? (
-              <button
-                onClick={() => void startSimulation(scenario)}
-                disabled={starting}
-                className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
-              >
-                {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-                {ts.startCta}
-              </button>
-            ) : (
-              <button
-                onClick={() => setBriefStep((s) => Math.min(steps.length - 1, s + 1))}
-                className="btn-gradient text-white font-semibold rounded-xl px-6 py-2.5 flex items-center gap-2 shadow-neon"
-              >
-                {ts.stepNext} <ArrowRight className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </AppShell>
-    );
+        </>
+      );
+    }
   }
 
   if (view === 'chat' && scenario) {
     const timeoutsLeft = Math.max(0, timeoutsMax - coachNotes.length);
     return (
       <AppShell
-        title={scenario.title}
+        title={splitTitle(scenario.title).heroTitle}
         subtitle={`${ts.withLabel} ${scenario.persona.name} — ${scenario.persona.role}`}
         noPadding
         actions={
@@ -1141,7 +1260,23 @@ export default function SimulationClient() {
 
           {/* Eingabe */}
           <div className="border-t border-border p-3">
-            {micActive && (
+            {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
+                Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
+            {timeUp && (
+              <div className="max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+                <span className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
+                  <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
+                </span>
+                <button
+                  onClick={() => setConfirmOpen(true)}
+                  disabled={finishing}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Sparkles className="h-4 w-4" /> {ts.finishCta}
+                </button>
+              </div>
+            )}
+            {micActive && !timeUp && (
               <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2 text-xs text-primary">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -1161,10 +1296,11 @@ export default function SimulationClient() {
                   }
                 }}
                 rows={2}
-                placeholder={ts.inputPlaceholder}
-                className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder={timeUp ? ts.timeUpPlaceholder : ts.inputPlaceholder}
+                disabled={timeUp}
+                className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
-              {speechSupported && (
+              {speechSupported && !timeUp && (
                 <button
                   onClick={() => (micActive ? stopMic() : startMic())}
                   className={cx(
@@ -1184,7 +1320,7 @@ export default function SimulationClient() {
               )}
               <button
                 onClick={() => void sendTurn()}
-                disabled={sending || !input.trim()}
+                disabled={sending || !input.trim() || timeUp}
                 className="btn-gradient text-white rounded-xl p-3 shadow-neon disabled:opacity-50"
                 aria-label={ts.send}
               >
@@ -1302,7 +1438,7 @@ export default function SimulationClient() {
     const verdict = debrief?.verdict ?? 'unrated';
     const observedCount = debrief?.anchors.filter((a) => a.pct != null).length ?? 0;
     return (
-      <AppShell title={ts.feedbackTitle} subtitle={scenario.title}>
+      <AppShell title={ts.feedbackTitle} subtitle={splitTitle(scenario.title).heroTitle}>
         <div className="max-w-3xl space-y-6">
           {errorBanner}
 

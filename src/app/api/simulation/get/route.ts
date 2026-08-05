@@ -60,6 +60,8 @@ export async function GET(req: NextRequest) {
         attempt: doc.attempt ?? 1,
         focus: doc.focus ?? null,
         coachNotes: doc.coachNotes ?? [],
+        convoLocale: doc.convoLocale ?? null,
+        timeUp: doc.closedByTime === true,
       },
     });
   } catch (err) {

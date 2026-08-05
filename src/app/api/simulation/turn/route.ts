@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { runPersonaTurn } from "@/ai/flows/simulation-persona";
+import { runPersonaTurn, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
@@ -9,6 +9,7 @@ import { getScenario } from "@/lib/simulation/scenarios";
 import {
   SIM_MAX_TURN_CHARS,
   SIM_MAX_USER_TURNS,
+  SIM_TIME_WARN_FRACTION,
   countUserTurns,
   getSimulation,
   saveSimulation,
@@ -62,12 +63,29 @@ export async function POST(req: NextRequest) {
     if (doc.status !== "active") {
       return NextResponse.json({ ok: false, code: "ALREADY_FINISHED" }, { status: 409 });
     }
+    // Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der Persona
+    // ist das Gespräch zu — es bleibt nur noch die Auswertung.
+    if (doc.closedByTime) {
+      return NextResponse.json({ ok: false, code: "TIME_UP" }, { status: 409 });
+    }
     if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) {
       return NextResponse.json({ ok: false, code: "TURN_LIMIT" }, { status: 409 });
     }
     const scenario = getScenario(doc.scenarioId);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
+    }
+
+    // Zeitbox (Synthesia-Muster): ab ~80 % streut die Persona EINMAL beiläufig
+    // ein, dass sie gleich los muss; ist die Zeit um, beantwortet sie den
+    // letzten Beitrag kurz, verabschiedet sich (Folgetermin) — Zwangsende.
+    const elapsedMs = Date.now() - new Date(doc.createdAt).getTime();
+    const limitMs = scenario.durationMin * 60_000;
+    let timeSignal: PersonaTimeSignal | undefined;
+    if (elapsedMs >= limitMs) {
+      timeSignal = "farewell";
+    } else if (elapsedMs >= limitMs * SIM_TIME_WARN_FRACTION && !doc.timeWarned) {
+      timeSignal = "closing";
     }
 
     // Pro-User-Token-Budget: Kontext (System-Prompt + Verlauf) + neue Nachricht.
@@ -85,6 +103,8 @@ export async function POST(req: NextRequest) {
           scenario,
           turns: doc.turns,
           userMessage: d.message,
+          convoLocale: doc.convoLocale,
+          timeSignal,
         }),
       { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn", retries: 1 }
     );
@@ -92,18 +112,22 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     doc.turns.push({ role: "user", text: d.message, ts: now });
     doc.turns.push({ role: "persona", text: reply, ts: new Date().toISOString() });
+    if (timeSignal === "closing") doc.timeWarned = true;
+    if (timeSignal === "farewell") doc.closedByTime = true;
     await saveSimulation(doc);
 
     logger.api("/api/simulation/turn", "ok", {
       uid: auth.uid,
       simId: d.simId,
       turns: doc.turns.length,
+      ...(timeSignal ? { timeSignal } : {}),
     });
     return NextResponse.json({
       ok: true,
       reply,
       turnCount: doc.turns.length,
       userTurnsLeft: SIM_MAX_USER_TURNS - countUserTurns(doc.turns),
+      timeUp: doc.closedByTime === true,
     });
   } catch (err) {
     logger.apiError("/api/simulation/turn", err);

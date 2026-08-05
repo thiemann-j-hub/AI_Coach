@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
             scenario,
             turns: doc.turns,
             focus: doc.focus ?? undefined,
+            convoLocale: doc.convoLocale ?? undefined,
           }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-feedback", retries: 1 }
       ),

@@ -117,7 +117,10 @@
     "micStop": "Diktat stoppen",
     "ttsOn": "Antworten vorlesen",
     "ttsOff": "Vorlesen aus",
-    "micLive": "Mikrofon aktiv — sprich einfach; dein Text landet im Eingabefeld."
+    "micLive": "Mikrofon aktiv — sprich einfach; dein Text landet im Eingabefeld.",
+    "languageLabel": "Sprache",
+    "timeUpBanner": "Die Zeit ist um — dein Gegenüber musste zum nächsten Termin. Werte das Gespräch jetzt aus.",
+    "timeUpPlaceholder": "Das Gespräch ist beendet."
   },
   "auth": {
     "signIn": "Anmelden",
