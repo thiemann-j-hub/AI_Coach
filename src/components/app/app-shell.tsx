@@ -16,14 +16,18 @@ import {
   Moon,
   Menu,
   X,
+  LogOut,
+  Settings,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
+import { signOut } from '@/lib/auth-service';
+import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoginModal } from '@/components/auth/login-modal';
-import { UserNav } from '@/components/auth/user-nav';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { PulscraftProductName, PulscraftWordmark } from '@/components/pulscraft-wordmark';
+import { PulscraftMark } from '@/components/pulscraft-wordmark';
 import { CreditBalance } from '@/components/app/credit-balance';
 import { AppSwitcher } from '@/components/app/app-switcher';
 
@@ -64,6 +68,18 @@ export default function AppShell(props: {
   }, []);
 
   const isDark = mounted && resolvedTheme === 'dark';
+  const { toast } = useToast();
+
+  async function onSignOut() {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: t.auth.signOutFailed,
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  }
 
   function toggleCollapsed() {
     setCollapsed((c) => {
@@ -136,21 +152,38 @@ export default function AppShell(props: {
             >
               <X className="h-5 w-5" />
             </button>
-            {/* Brand-Zeile: ZWEI Geschwister-Links (kein <a> im <a>).
-                Marke+Logo -> Hub: bewusst plain <a href="/"> ROOT-absolut, denn
-                next/link wuerde den basePath (/coach) anhaengen und auf die App
-                selbst zeigen (gleiches Muster wie der root-absolute /api/chat-Call).
-                App-Name -> /analyze via next/link (basePath-aware). */}
-            <div className="flex items-center">
+            {/* Brand-Block (einheitliche Studio-Optik, Owner-Vorgabe 04.08.):
+                eckiges Logo + Wortmarke, App-Name DARUNTER. ZWEI Geschwister-
+                Links (kein <a> im <a>): Marke+Logo -> Hub als plain ROOT-
+                absolutes <a href="/"> (next/link wuerde den basePath /coach
+                anhaengen); App-Name -> /analyze via next/link (basePath-aware).
+                Geometrie wie Studio: Icon h-8 + gap-2.5 => ml-[42px]/-mt-2.5. */}
+            {collapsed ? (
               <a href="/" className="block transition-opacity hover:opacity-80" aria-label="PulseNorth Hub">
-                <PulscraftWordmark product="" iconOnly={collapsed} />
+                <PulscraftMark />
               </a>
-              {!collapsed && (
-                <Link href="/analyze" className="block transition-opacity hover:opacity-80" aria-label="Coach Startseite">
-                  <PulscraftProductName product="Coach" />
+            ) : (
+              <div className="flex flex-col items-start leading-none">
+                <a
+                  href="/"
+                  className="flex items-start gap-2.5 transition-opacity hover:opacity-80"
+                  aria-label="PulseNorth Hub"
+                >
+                  <PulscraftMark />
+                  <span className="text-lg font-bold tracking-tight">
+                    <span className="text-foreground">PulseNorth</span>
+                    <span className="text-primary">.AI</span>
+                  </span>
+                </a>
+                <Link
+                  href="/analyze"
+                  className="-mt-2.5 ml-[42px] text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Coach Startseite"
+                >
+                  Coach
                 </Link>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation (MAIN / …) */}
@@ -224,6 +257,44 @@ export default function AppShell(props: {
               {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
           </div>
+
+          {/* User-Footer (einheitliche Studio-Optik, Owner-Vorgabe 04.08.:
+              Avatar + Name + E-Mail + Abmelden unten in der Sidebar; die
+              Coach-Einzelfunktion Einstellungen wandert als Zahnrad mit). */}
+          {user && (
+            <div className={cx('flex items-center gap-3 border-t border-border p-3', collapsed && 'justify-center')}>
+              <Avatar className="h-9 w-9 shrink-0 border border-border">
+                <AvatarImage src={user.photoURL || ''} alt={user.displayName || t.auth.user} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-sm font-medium text-white">
+                  {(user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">{user.displayName || t.auth.user}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                  <Link
+                    href="/settings"
+                    title="Einstellungen"
+                    aria-label="Einstellungen"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Link>
+                  <button
+                    onClick={onSignOut}
+                    title={t.auth.signOut}
+                    aria-label={t.auth.signOut}
+                    className="text-muted-foreground transition-colors hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </aside>
 
         {/* Main Content */}
@@ -258,9 +329,10 @@ export default function AppShell(props: {
               <AppSwitcher />
               <CreditBalance />
               <LanguageSwitcher compact />
-              {user ? (
-                <UserNav />
-              ) : (
+              {/* User-Anzeige lebt jetzt einheitlich unten in der Sidebar
+                  (Owner-Vorgabe 04.08.) — der Header zeigt nur noch den
+                  Login-Einstieg fuer nicht angemeldete Besucher. */}
+              {!user && (
                 <LoginModal>
                   <button className="w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors">
                     ?
