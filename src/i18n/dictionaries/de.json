@@ -23,14 +23,14 @@
     "topUp": "Credits aufladen"
   },
   "nav": {
-    "analyze": "Analyse",
+    "analyze": "Transkript-Analyse",
     "history": "Verlauf",
     "newAnalysis": "Neue Analyse",
     "workspace": "Team",
-    "simulation": "Simulation"
+    "simulation": "Rollenspiel-Sitzung"
   },
   "simulation": {
-    "title": "Simulation",
+    "title": "Rollenspiel-Sitzung",
     "subtitle": "Schwierige Gespräche im geschützten Raum üben",
     "levelPrefix": "Stufe",
     "level1": "Einstieg",
@@ -138,7 +138,7 @@
     "microsoftHint": "Funktioniert mit privaten Microsoft-Konten (z.B. @outlook.de) und Arbeitskonten."
   },
   "analyze": {
-    "title": "Analyse",
+    "title": "Transkript-Analyse",
     "transcript": "Transkript",
     "transcriptSubtitle": "PDF hochladen oder Text einfügen",
     "pdfImport": "PDF-Import",

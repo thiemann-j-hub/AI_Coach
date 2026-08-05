@@ -23,14 +23,14 @@
     "topUp": "Recharger des crédits"
   },
   "nav": {
-    "analyze": "Analyse",
+    "analyze": "Analyse de transcription",
     "history": "Historique",
     "newAnalysis": "Nouvelle analyse",
     "workspace": "Équipe",
-    "simulation": "Simulation"
+    "simulation": "Session de jeu de rôle"
   },
   "simulation": {
-    "title": "Simulation",
+    "title": "Session de jeu de rôle",
     "subtitle": "Entraînez-vous aux conversations difficiles dans un espace protégé",
     "levelPrefix": "Niveau",
     "level1": "Débutant",
@@ -138,7 +138,7 @@
     "microsoftHint": "Fonctionne avec les comptes Microsoft personnels (p. ex. @outlook.fr) et professionnels."
   },
   "analyze": {
-    "title": "Analyse",
+    "title": "Analyse de transcription",
     "transcript": "Transcription",
     "transcriptSubtitle": "Télécharger un PDF ou coller du texte",
     "pdfImport": "Import PDF",

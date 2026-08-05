@@ -23,14 +23,14 @@
     "topUp": "Recargar créditos"
   },
   "nav": {
-    "analyze": "Análisis",
+    "analyze": "Análisis de transcripción",
     "history": "Historial",
     "newAnalysis": "Nuevo análisis",
     "workspace": "Equipo",
-    "simulation": "Simulación"
+    "simulation": "Sesión de rol"
   },
   "simulation": {
-    "title": "Simulación",
+    "title": "Sesión de rol",
     "subtitle": "Practica conversaciones difíciles en un espacio protegido",
     "levelPrefix": "Nivel",
     "level1": "Inicial",
@@ -138,7 +138,7 @@
     "microsoftHint": "Funciona con cuentas Microsoft personales (p. ej. @outlook.es) y de trabajo."
   },
   "analyze": {
-    "title": "Análisis",
+    "title": "Análisis de transcripción",
     "transcript": "Transcripción",
     "transcriptSubtitle": "Subir PDF o pegar texto",
     "pdfImport": "Importar PDF",

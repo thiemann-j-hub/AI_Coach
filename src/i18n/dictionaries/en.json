@@ -23,14 +23,14 @@
     "topUp": "Top up credits"
   },
   "nav": {
-    "analyze": "Analysis",
+    "analyze": "Transcript Analysis",
     "history": "History",
     "newAnalysis": "New Analysis",
     "workspace": "Team",
-    "simulation": "Simulation"
+    "simulation": "Roleplay Session"
   },
   "simulation": {
-    "title": "Simulation",
+    "title": "Roleplay Session",
     "subtitle": "Practice difficult conversations in a safe space",
     "levelPrefix": "Level",
     "level1": "Starter",
@@ -138,7 +138,7 @@
     "microsoftHint": "Works with personal Microsoft accounts (e.g. @outlook.com) and work accounts."
   },
   "analyze": {
-    "title": "Analysis",
+    "title": "Transcript Analysis",
     "transcript": "Transcript",
     "transcriptSubtitle": "Upload PDF or paste text",
     "pdfImport": "PDF import",
