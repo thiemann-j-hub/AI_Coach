@@ -127,11 +127,29 @@ export async function runPersonaTurn(args: {
     content: [{ text: t.text }],
   }));
 
+  // Zeit-Regie DOPPELT verankern: als Regel im System-Prompt UND als
+  // Regie-Marker HINTER dem (gefencten) Nutzertext — Live-Befund 04.08.:
+  // nur als Regel 7 am Prompt-Ende überging gemini-2.5-flash den Hinweis.
+  // Der Marker steht außerhalb des Nutzer-Fence (kein Injection-Vektor).
+  const stageNote =
+    args.timeSignal === 'closing'
+      ? args.scenario.locale === 'en'
+        ? '\n\n[STAGE NOTE — not part of the conversation: your next appointment is near. In THIS reply, briefly mention you are running out of time.]'
+        : '\n\n[REGIE — nicht Teil des Gesprächs: Dein nächster Termin rückt näher. Erwähne in DIESER Antwort kurz, dass du nicht mehr viel Zeit hast.]'
+      : args.timeSignal === 'farewell'
+        ? args.scenario.locale === 'en'
+          ? '\n\n[STAGE NOTE — not part of the conversation: time is up. Briefly acknowledge the last point, then END the conversation politely — you must leave for your next appointment. Say goodbye.]'
+          : '\n\n[REGIE — nicht Teil des Gesprächs: Die Zeit ist um. Gehe kurz auf den letzten Punkt ein und BEENDE dann das Gespräch höflich — du musst zu deinem nächsten Termin. Verabschiede dich.]'
+        : '';
+
   const response = await ai.generate({
     system:
       buildPersonaSystemPrompt(args.scenario, args.convoLocale) +
       timeDirective(args.scenario, args.timeSignal),
-    messages: [...history, { role: 'user' as const, content: [{ text: sanitized }] }],
+    messages: [
+      ...history,
+      { role: 'user' as const, content: [{ text: sanitized + stageNote }] },
+    ],
     config: {
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       // LEAK-VORFALL 04.08.: Gemini-2.5-flash "denkt" per Default — lief das
