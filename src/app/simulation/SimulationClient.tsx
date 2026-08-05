@@ -68,12 +68,53 @@ interface PublicScenario {
 type ConvoLocale = 'de' | 'en' | 'es' | 'fr';
 
 /** Genau die vier Synthesia-Sprachen, in Synthesia-Reihenfolge, mit nativen Namen. */
-const CONVO_LANGS: Array<{ code: ConvoLocale; flag: string; label: string }> = [
-  { code: 'en', flag: '🇬🇧', label: 'English' },
-  { code: 'es', flag: '🇪🇸', label: 'Español' },
-  { code: 'fr', flag: '🇫🇷', label: 'Français' },
-  { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
+const CONVO_LANGS: Array<{ code: ConvoLocale; label: string }> = [
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' },
 ];
+
+/** Echte Mini-Flaggen als Inline-SVG (Emoji-Flaggen rendert Windows nicht —
+ *  dort erschienen nur Buchstabenkürzel; Owner-Vorgabe: Optik wie Synthesia). */
+function FlagIcon({ code, className }: { code: ConvoLocale; className?: string }) {
+  const common = cx('inline-block h-3.5 w-5 rounded-[3px] shrink-0', className);
+  if (code === 'en') {
+    return (
+      <svg viewBox="0 0 60 40" className={common} aria-hidden preserveAspectRatio="none">
+        <rect width="60" height="40" fill="#012169" />
+        <path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" strokeWidth="8" />
+        <path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" strokeWidth="4" />
+        <path d="M30,0 V40 M0,20 H60" stroke="#fff" strokeWidth="13" />
+        <path d="M30,0 V40 M0,20 H60" stroke="#C8102E" strokeWidth="7" />
+      </svg>
+    );
+  }
+  if (code === 'es') {
+    return (
+      <svg viewBox="0 0 60 40" className={common} aria-hidden preserveAspectRatio="none">
+        <rect width="60" height="40" fill="#AA151B" />
+        <rect y="10" width="60" height="20" fill="#F1BF00" />
+      </svg>
+    );
+  }
+  if (code === 'fr') {
+    return (
+      <svg viewBox="0 0 60 40" className={common} aria-hidden preserveAspectRatio="none">
+        <rect width="20" height="40" fill="#002395" />
+        <rect x="20" width="20" height="40" fill="#fff" />
+        <rect x="40" width="20" height="40" fill="#ED2939" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 60 40" className={common} aria-hidden preserveAspectRatio="none">
+      <rect width="60" height="13.4" fill="#000" />
+      <rect y="13.3" width="60" height="13.4" fill="#DD0000" />
+      <rect y="26.6" width="60" height="13.4" fill="#FFCE00" />
+    </svg>
+  );
+}
 
 const SPEECH_LANG: Record<ConvoLocale, string> = {
   de: 'de-DE',
@@ -950,7 +991,7 @@ export default function SimulationClient() {
                           : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
                       )}
                     >
-                      <span aria-hidden>{l.flag}</span>
+                      <FlagIcon code={l.code} />
                       {l.label}
                     </button>
                   ))}
@@ -973,8 +1014,8 @@ export default function SimulationClient() {
                   <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
                     {levelLabel(scenario.difficulty)}
                   </span>
-                  <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-                    {selectedLang.flag} {selectedLang.label}
+                  <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur inline-flex items-center gap-1.5">
+                    <FlagIcon code={selectedLang.code} /> {selectedLang.label}
                   </span>
                 </div>
                 {/* Overlay unten: Gesprächstyp + Rolle + Start */}
