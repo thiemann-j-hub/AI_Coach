@@ -18,6 +18,7 @@ import {
   X,
   LogOut,
   Settings,
+  Home as HomeIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/providers/auth-provider';
@@ -27,9 +28,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoginModal } from '@/components/auth/login-modal';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { PulscraftMark } from '@/components/pulscraft-wordmark';
+import { BrandSwitcher } from '@/components/app/app-switcher';
 import { CreditBalance } from '@/components/app/credit-balance';
-import { AppSwitcher } from '@/components/app/app-switcher';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
 type NavGroup = { label: string; items: NavItem[] };
@@ -152,42 +152,27 @@ export default function AppShell(props: {
             >
               <X className="h-5 w-5" />
             </button>
-            {/* Brand-Block (einheitliche Studio-Optik, Owner-Vorgabe 04.08.):
-                eckiges Logo + Wortmarke, App-Name DARUNTER. ZWEI Geschwister-
-                Links (kein <a> im <a>): Marke+Logo -> Hub als plain ROOT-
-                absolutes <a href="/"> (next/link wuerde den basePath /coach
-                anhaengen); App-Name -> /analyze via next/link (basePath-aware).
-                Geometrie wie Studio: Icon h-8 + gap-2.5 => ml-[42px]/-mt-2.5. */}
-            {collapsed ? (
-              <a href="/" className="block transition-opacity hover:opacity-80" aria-label="PulseNorth Hub">
-                <PulscraftMark />
-              </a>
-            ) : (
-              <div className="flex flex-col items-start leading-none">
-                <a
-                  href="/"
-                  className="flex items-start gap-2.5 transition-opacity hover:opacity-80"
-                  aria-label="PulseNorth Hub"
-                >
-                  <PulscraftMark />
-                  <span className="text-lg font-bold tracking-tight">
-                    <span className="text-foreground">PulseNorth</span>
-                    <span className="text-primary">.AI</span>
-                  </span>
-                </a>
-                <Link
-                  href="/analyze"
-                  className="-mt-2.5 ml-[42px] text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label="Coach Startseite"
-                >
-                  Coach
-                </Link>
-              </div>
-            )}
+            {/* Brand-Block = App-Umschalter (Synthesia-Stil, Owner-Vorgabe
+                04.08.): Logo + Wortmarke + App-Name mit Dropdown der anderen
+                PulseNorth-Apps — ersetzt das Rastersymbol im Header. */}
+            <BrandSwitcher collapsed={collapsed} />
           </div>
 
           {/* Navigation (MAIN / …) */}
           <nav className="flex-1 space-y-6 p-3 overflow-y-auto custom-scrollbar">
+            {/* Home (Synthesia-Muster): fuehrt zur PulseNorth-Startseite (Hub).
+                ROOT-absolutes <a> — next/link wuerde den basePath /coach anhaengen. */}
+            <a
+              href="/"
+              title={collapsed ? 'Home' : undefined}
+              className={cx(
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors group text-muted-foreground hover:bg-muted hover:text-foreground',
+                collapsed && 'justify-center'
+              )}
+            >
+              <HomeIcon className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
+              {!collapsed && <span className="font-medium">Home</span>}
+            </a>
             {groups.map((group) => (
               <div key={group.label} className="space-y-1">
                 {!collapsed && (
@@ -325,8 +310,7 @@ export default function AppShell(props: {
 
             <div className="flex items-center gap-2 md:gap-3">
               {props.actions}
-              {/* M3-1: aus jeder App in jede App (Plattform-Kohäsion) */}
-              <AppSwitcher />
+              {/* App-Umschalter lebt jetzt links im Brand-Block (Owner-Vorgabe 04.08.) */}
               <CreditBalance />
               <LanguageSwitcher compact />
               {/* User-Anzeige lebt jetzt einheitlich unten in der Sidebar
