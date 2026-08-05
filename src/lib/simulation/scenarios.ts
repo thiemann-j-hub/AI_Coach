@@ -300,6 +300,60 @@ const vance: SimulationScenario = {
       "Mitarbeiterbefragung (Skala 1–4): Zufriedenheit Führung — Systemadministration 1,4 · Anwendungsentwicklung 2,8 · Unternehmensschnitt 3,1",
       "Fachliche Kompetenz laut Befragung: 2,1 / 3,7 (Sysadmin/Entwicklung) — Vance ist fachlich unbestritten",
     ],
+    factVisuals: [
+      {
+        kind: "trend",
+        title: "Fluktuation IT (letzte vier Jahre)",
+        unit: " %",
+        points: [
+          { label: "Vor 3 J.", value: 4 },
+          { label: "Vor 2 J.", value: 5 },
+          { label: "Vorjahr", value: 12 },
+          { label: "Heute", value: 15 },
+        ],
+      },
+      {
+        kind: "kpis",
+        title: "Projekt-Planerfüllung (Überschreitung)",
+        items: [
+          { label: "Zeitlich", value: "+24 %", sub: "Vorjahr +18 %" },
+          { label: "Kosten", value: "+18 %", sub: "Vorjahr +17 %" },
+        ],
+      },
+      {
+        kind: "trend",
+        title: "Ausfallstunden durch Systemstörungen",
+        points: [
+          { label: "Vor 2 J.", value: 3100, approx: true },
+          { label: "Vorjahr", value: 3643 },
+          { label: "Heute", value: 3422 },
+        ],
+        note: "Vor 2 Jahren noch unter 3.100 Stunden.",
+      },
+      {
+        kind: "bars",
+        title: "Mitarbeiterbefragung: Zufriedenheit Führung",
+        min: 1,
+        max: 4,
+        items: [
+          { label: "Systemadministration", value: 1.4 },
+          { label: "Anwendungsentwicklung", value: 2.8 },
+          { label: "Unternehmensschnitt", value: 3.1 },
+        ],
+        note: "Skala 1–4 (4 = beste Bewertung).",
+      },
+      {
+        kind: "bars",
+        title: "Fachliche Kompetenz laut Befragung",
+        min: 1,
+        max: 4,
+        items: [
+          { label: "Urteil Systemadministration", value: 2.1 },
+          { label: "Urteil Anwendungsentwicklung", value: 3.7 },
+        ],
+        note: "Vance ist fachlich unbestritten.",
+      },
+    ],
     goals: [
       "Eine tragfähige Arbeitsbeziehung zu Vance aufbauen — die Vorgeschichte (gebrochene Zusagen, Übergangenwerden) muss auf den Tisch.",
       "Die Führungsdefizite klar und faktenbasiert ansprechen und konkrete Verhaltensänderungen vereinbaren (Kommunikation ins Team, Systemadministration, Berichtsqualität).",

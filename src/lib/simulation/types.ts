@@ -34,6 +34,37 @@ export interface SimRubricCompetency {
   label: string;
 }
 
+/**
+ * Faktenblatt-Visualisierung (Owner-Vorgabe 04.08.: »ansprechend
+ * visualisieren — beschriftete Grafik«). Autoren-strukturiert, damit der
+ * Client beschriftete Mini-Grafiken statt Monospace-Zeilen rendert.
+ */
+export type FactVisual =
+  | {
+      kind: "trend";
+      title: string;
+      /** Einheiten-Suffix an den Wertlabels, z. B. "%". */
+      unit?: string;
+      note?: string;
+      points: Array<{ label: string; value: number; approx?: boolean }>;
+    }
+  | {
+      kind: "bars";
+      title: string;
+      /** Skala, z. B. 1–4 (min default 0). */
+      min?: number;
+      max: number;
+      unit?: string;
+      note?: string;
+      items: Array<{ label: string; value: number }>;
+    }
+  | {
+      kind: "kpis";
+      title: string;
+      note?: string;
+      items: Array<{ label: string; value: string; sub?: string }>;
+    };
+
 /** Sichtbarer Teil — entspricht der AC-Teilnehmerinstruktion. */
 export interface CandidateBriefing {
   yourRole: string;
@@ -41,6 +72,8 @@ export interface CandidateBriefing {
   incidents: string[];
   /** Optionales Faktenblatt (Kennzahlen etc.), zeilenweise. */
   factSheet?: string[];
+  /** Beschriftete Grafiken zum Faktenblatt — ersetzen die Zeilenliste im UI. */
+  factVisuals?: FactVisual[];
   /** Genau 3 Ziele: Beziehung + Struktur + EIN konkretes Anliegen (AC-Muster). */
   goals: string[];
   timeboxMin: number;

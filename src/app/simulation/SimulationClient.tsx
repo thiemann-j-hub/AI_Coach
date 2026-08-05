@@ -42,6 +42,7 @@ import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { withBasePath } from '@/lib/base-path';
 import { useTranslation } from '@/i18n/useTranslation';
+import type { FactVisual } from '@/lib/simulation/types';
 
 interface PublicScenario {
   id: string;
@@ -60,6 +61,7 @@ interface PublicScenario {
     timeboxMin: number;
     approachHints?: string[];
     expectation?: string;
+    factVisuals?: FactVisual[];
   };
   competencies: { key: string; label: string }[];
 }
@@ -141,6 +143,130 @@ interface Turn {
   role: 'user' | 'persona';
   text: string;
   ts: string;
+}
+
+/* ── Faktenblatt-Visualisierung (Owner-Vorgabe 04.08.: beschriftete Grafiken) ──
+   Ein-Farb-Magnitude (primary), Werte/Labels in Text-Tokens, jede Zahl direkt
+   beschriftet — Mini-Datengrafiken, keine Analyse-Charts (keine Legende nötig,
+   Einzelserie). */
+
+function fmtDe(n: number): string {
+  return n.toLocaleString('de-DE');
+}
+
+function TrendChart({ v }: { v: Extract<FactVisual, { kind: 'trend' }> }) {
+  const W = 300;
+  const H = 116;
+  const padX = 30;
+  const padTop = 28;
+  const padBottom = 24;
+  const vals = v.points.map((p) => p.value);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const span = max - min || 1;
+  const x = (i: number) => padX + (i * (W - 2 * padX)) / Math.max(1, v.points.length - 1);
+  const y = (val: number) => padTop + (1 - (val - min) / span) * (H - padTop - padBottom);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={v.title}>
+      <line
+        x1={padX - 8}
+        x2={W - padX + 8}
+        y1={H - padBottom}
+        y2={H - padBottom}
+        stroke="currentColor"
+        className="text-border"
+        strokeWidth="1"
+      />
+      <polyline
+        points={v.points.map((p, i) => `${x(i)},${y(p.value)}`).join(' ')}
+        fill="none"
+        stroke="currentColor"
+        className="text-primary"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {v.points.map((p, i) => (
+        <g key={i}>
+          <circle cx={x(i)} cy={y(p.value)} r="4" fill="currentColor" className="text-primary" />
+          <text
+            x={x(i)}
+            y={y(p.value) - 9}
+            textAnchor="middle"
+            fontSize="10.5"
+            fontWeight="600"
+            fill="currentColor"
+            className="text-foreground tabular-nums"
+          >
+            {p.approx ? '~' : ''}
+            {fmtDe(p.value)}
+            {v.unit ?? ''}
+          </text>
+          <text
+            x={x(i)}
+            y={H - 7}
+            textAnchor="middle"
+            fontSize="9"
+            fill="currentColor"
+            className="text-muted-foreground"
+          >
+            {p.label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function ScaleBars({ v }: { v: Extract<FactVisual, { kind: 'bars' }> }) {
+  const min = v.min ?? 0;
+  return (
+    <div className="space-y-2.5">
+      {v.items.map((it, i) => {
+        const pct = Math.max(0, Math.min(100, ((it.value - min) / (v.max - min)) * 100));
+        return (
+          <div key={i}>
+            <div className="mb-1 flex items-baseline justify-between gap-2 text-[11px]">
+              <span className="truncate text-muted-foreground">{it.label}</span>
+              <span className="shrink-0 font-semibold tabular-nums text-foreground">
+                {fmtDe(it.value)}
+                {v.unit ?? ''}
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-muted/70">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function KpiTiles({ v }: { v: Extract<FactVisual, { kind: 'kpis' }> }) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {v.items.map((it, i) => (
+        <div key={i} className="min-w-[110px] flex-1 rounded-lg border border-border bg-background/40 px-3 py-2.5">
+          <div className="text-xl font-bold tabular-nums leading-tight">{it.value}</div>
+          <div className="mt-0.5 text-[11px] text-muted-foreground">{it.label}</div>
+          {it.sub && <div className="text-[10px] text-muted-foreground/70">{it.sub}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FactChart({ v }: { v: FactVisual }) {
+  return (
+    <div className="rounded-xl border border-border bg-muted/30 p-4">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {v.title}
+      </div>
+      {v.kind === 'trend' ? <TrendChart v={v} /> : v.kind === 'bars' ? <ScaleBars v={v} /> : <KpiTiles v={v} />}
+      {v.note && <div className="mt-2 text-[10px] leading-snug text-muted-foreground">{v.note}</div>}
+    </div>
+  );
 }
 
 interface CoachNote {
@@ -1099,7 +1225,18 @@ export default function SimulationClient() {
                     ))}
                   </ul>
                 </section>
-                {b.factSheet && b.factSheet.length > 0 && (
+                {b.factVisuals && b.factVisuals.length > 0 ? (
+                  <section>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                      {ts.factSheet}
+                    </h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {b.factVisuals.map((v, idx) => (
+                        <FactChart key={idx} v={v} />
+                      ))}
+                    </div>
+                  </section>
+                ) : b.factSheet && b.factSheet.length > 0 ? (
                   <section>
                     <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                       {ts.factSheet}
@@ -1112,7 +1249,7 @@ export default function SimulationClient() {
                       ))}
                     </ul>
                   </section>
-                )}
+                ) : null}
               </div>
             )}
             {briefStep === 1 && (
