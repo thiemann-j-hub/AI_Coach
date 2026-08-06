@@ -40,6 +40,7 @@ import {
   X,
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
+import { ExplainerVideoButton } from '@/components/app/explainer-video';
 import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { withBasePath } from '@/lib/base-path';
@@ -971,6 +972,8 @@ export default function SimulationClient() {
       <AppShell title={ts.title} subtitle={ts.subtitle}>
         <div className="space-y-6 max-w-5xl">
           {errorBanner}
+          {/* Erklärvideo (Synthesia-Muster »Watch preview«) */}
+          <ExplainerVideoButton />
           {recent.length > 0 && (
             <section className="space-y-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
