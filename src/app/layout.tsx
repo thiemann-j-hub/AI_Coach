@@ -12,8 +12,8 @@ import { getDictionary } from "@/i18n/dictionaries";
 // ruft /api/chat root-absolut = Hub-Catch-all
 import ChatWidget from "@/components/chatbot/ChatWidget";
 
-const sans = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+const sans = Inter({ subsets: ["latin", "latin-ext", "cyrillic", "greek"], variable: "--font-geist-sans" });
+const mono = JetBrains_Mono({ subsets: ["latin", "latin-ext", "cyrillic", "greek"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   title: "PulseNorth.AI · Coach",
@@ -62,7 +62,7 @@ export default async function RootLayout({
         >
           <AuthProvider>
             {children}
-            <ChatWidget surface="coach" lang="de" />
+            <ChatWidget surface="coach" lang={locale === "de" ? "de" : "en"} />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
