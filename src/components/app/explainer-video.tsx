@@ -2,17 +2,28 @@
 
 // Erklärvideo-Button + Modal (Owner-Vorgabe 04.08., Synthesia-Muster
 // »Watch preview«): Pill-Button mit Play-Symbol, Klick öffnet ein Fenster
-// mit dem Video. Aktuell ein selbst erstelltes Platzhalter-Video unter
-// public/videos/erklaervideo.mp4 — das fertige Synthesia-Video ersetzt
-// später NUR die Datei, Button und Fenster bleiben unverändert.
+// mit dem Video.
+//
+// Sprachfassungen (Fix 08.08.): Vorher war hier das deutsche Video fest
+// verdrahtet — die App hat die 21 übersetzten Videos im Blob nie angefordert,
+// jede Sprache sah Deutsch. Jetzt wie in pulscraft-hub/src/i18n/videos.ts:
+// DE same-origin aus public/, alle anderen Sprachen aus dem Blob
+// (Container "videos", Konvention <app>/erklaervideo-<locale>.mp4).
+// Fehlt eine Blob-Datei, fällt das <video> per onError auf DE zurück.
 import { useEffect, useState } from 'react';
 import { Play, X } from 'lucide-react';
 import { withBasePath } from '@/lib/base-path';
 import { useTranslation } from '@/i18n/useTranslation';
 
+const VIDEO_BLOB_BASE = 'https://pulsenorthassets.blob.core.windows.net/videos';
+
 export function ExplainerVideoButton() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [open, setOpen] = useState(false);
+
+  const deSrc = withBasePath('/videos/erklaervideo.mp4');
+  const src =
+    locale === 'de' ? deSrc : `${VIDEO_BLOB_BASE}/coach/erklaervideo-${locale}.mp4`;
 
   useEffect(() => {
     if (!open) return;
@@ -53,13 +64,19 @@ export function ExplainerVideoButton() {
             >
               <X className="h-5 w-5" />
             </button>
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption -- Platzhalter ohne Ton */}
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption -- Sprecherstimme im Video */}
             <video
-              src={withBasePath('/videos/erklaervideo.mp4')}
+              key={src}
+              src={src}
               controls
               autoPlay
               playsInline
               className="aspect-video w-full"
+              onError={(e) => {
+                // Blob-Datei fehlt oder nicht erreichbar -> deutsche Fassung
+                const el = e.currentTarget;
+                if (!el.src.endsWith(deSrc)) el.src = deSrc;
+              }}
             />
           </div>
         </div>
