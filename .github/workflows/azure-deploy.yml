@@ -1,0 +1,68 @@
+name: Deploy to Azure App Service
+
+# CI-Umstellung 09.08.2026 (Vorbild: ai-elearning-studio/azure-deploy.yml).
+# Grund: lokale Builds scheitern regelmäßig am 7,3-GB-RAM-Engpass des Laptops
+# (OOM-Exit 3221226505 am 08.08.); das Studio deployt seit W19 fehlerfrei über
+# diesen Weg. Auth per Publish-Profile (Secret AZURE_WEBAPP_PUBLISH_PROFILE).
+# basePath /coach ist der Default in next.config.ts — wird hier trotzdem
+# explizit gebacken (NEXT_PUBLIC_* = build-time-inlined, W19-PC-1-Lehre).
+
+on:
+  push:
+    branches: [feat/scoring-observability]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: azure-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Next.js standalone)
+        env:
+          NEXT_PUBLIC_BASE_PATH: /coach
+          NODE_OPTIONS: "--max-old-space-size=6144"
+        run: npm run build
+
+      - name: Assemble standalone bundle
+        run: |
+          # Next standalone enthält .next/static + public NICHT — reinkopieren.
+          cp -r .next/static .next/standalone/.next/static
+          if [ -d public ]; then cp -r public .next/standalone/public; fi
+          printf '{"sha":"%s","branch":"%s","builtAt":"%s"}' \
+            "${GITHUB_SHA::7}" "${GITHUB_REF_NAME}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            > .next/standalone/build-info.json
+          cat .next/standalone/build-info.json
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: pulsecraft-coach
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .next/standalone
+
+      - name: Post-Deploy Smoke — /coach-Seite muss laden
+        run: |
+          BASE="https://pulsecraft-coach.azurewebsites.net"
+          for i in $(seq 1 15); do
+            sleep 10
+            page=$(curl -s -o /dev/null -w "%{http_code}" -L "$BASE/coach" || echo 000)
+            echo "try $i: /coach=$page"
+            if [ "$page" = "200" ]; then echo "✓ Coach live"; exit 0; fi
+          done
+          echo "✗ Smoke fehlgeschlagen (zuletzt $page)"; exit 1
