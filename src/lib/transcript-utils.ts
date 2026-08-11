@@ -3,6 +3,17 @@
  * Pure functions – no React dependencies, fully testable.
  */
 
+import {
+  applyCityPii,
+  applyOrgPii,
+  applyPersonPii,
+  applyStructuredPii,
+  createNumberer,
+  type PiiFinding,
+} from './pii/pii';
+
+export type { PiiFinding } from './pii/pii';
+
 /* ------------------------------------------------------------------ */
 /*  String helpers                                                     */
 /* ------------------------------------------------------------------ */
@@ -101,20 +112,51 @@ export interface SanitizeOptions {
   extraTerms: string[];
 }
 
-export function sanitizeTranscript(text: string, opts: SanitizeOptions): string {
+export interface SanitizeResult {
+  text: string;
+  /**
+   * Alles, was ersetzt wurde (Klartext → Platzhalter). Bleibt im Browser —
+   * das ist das »Mapping« aus dem Presidio-Konzept. Steckdose fürs spätere
+   * zweite Netz (EU-NER-Service hängt hier einfach weitere Findings an).
+   */
+  findings: PiiFinding[];
+}
+
+/**
+ * Browser-Anonymisierung, Netz 1 (N1+, PRESIDIO-ANONYMISIERUNG-BLUEPRINT).
+ * Reihenfolge ist tragend:
+ *  1. strukturierte PII (E-Mail/URL/Tel/IBAN/Karte/Nummern/Geburtsdatum/…)
+ *  2. Firmen (Rechtsform + Trigger)
+ *  3. zitierte Projekt-/Kundennamen (Bestand)
+ *  4. Sprecher → Führungskraft / Mitarbeiter:in / Person n (Bestand)
+ *  5. Dritte im Fließtext (Anrede/Titel + Vornamen-Wörterbuch, konsolidiert)
+ *  6. Orte (Städteliste hinter lokativen Präpositionen)
+ *  7. Zusatzbegriffe des Nutzers
+ */
+export function sanitizeTranscriptWithFindings(
+  text: string,
+  opts: SanitizeOptions
+): SanitizeResult {
   let out = String(text ?? '');
+  const findings: PiiFinding[] = [];
+  const numberFor = createNumberer();
 
-  // PII patterns
-  out = out.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[EMAIL]');
-  out = out.replace(/\bhttps?:\/\/\S+/gi, '[URL]');
-  out = out.replace(/\bwww\.\S+/gi, '[URL]');
-  out = out.replace(/(\+?\d[\d\s().-]{7,}\d)/g, '[TEL]');
+  // 1) Strukturierte PII (Prüfsummen + Kontext — von Presidio gelernt)
+  const structured = applyStructuredPii(out);
+  out = structured.text;
+  findings.push(...structured.findings);
 
-  // Project / Customer names in quotes
+  // 2) Firmen (Rechtsform/Trigger) — vor den Personen, damit »Meier GmbH«
+  //    nicht fälschlich als Person endet.
+  const orgs = applyOrgPii(out, numberFor);
+  out = orgs.text;
+  findings.push(...orgs.findings);
+
+  // 3) Projekt-/Kundennamen in Anführungszeichen (Bestand)
   out = out.replace(/\bProjekt\s*[""„']([^"""„'\n]{1,120})["""„']/giu, 'Projekt [PROJEKT]');
   out = out.replace(/\b(Kunde|Kunden|Customer)\s*[""„']([^"""„'\n]{1,120})["""„']/giu, '$1 [KUNDE]');
 
-  // Map speakers to generic labels
+  // 4) Sprecher → generische Labels (Bestand; Zuordnung bleibt intakt)
   const leader = (opts.leaderLabel ?? '').trim();
   const employee = (opts.employeeLabel ?? '').trim();
 
@@ -137,7 +179,17 @@ export function sanitizeTranscript(text: string, opts: SanitizeOptions): string 
     for (const p of parts) out = replaceToken(out, p, rep);
   }
 
-  // Extra terms
+  // 5) Dritte im Fließtext — Nummerierung führt die Sprecher-Zählung fort.
+  const persons = applyPersonPii(out, personIdx);
+  out = persons.text;
+  findings.push(...persons.findings);
+
+  // 6) Orte
+  const cities = applyCityPii(out, numberFor);
+  out = cities.text;
+  findings.push(...cities.findings);
+
+  // 7) Zusatzbegriffe des Nutzers (Denylist — wie Presidio, gab es schon)
   const extras = (opts.extraTerms ?? []).map((t) => t.trim()).filter((t) => t.length >= 2);
   const uniqueExtras = Array.from(new Set(extras)).sort((a, b) => b.length - a.length);
   uniqueExtras.forEach((term, i) => {
@@ -146,5 +198,10 @@ export function sanitizeTranscript(text: string, opts: SanitizeOptions): string 
 
   // Whitespace cleanup
   out = out.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-  return out;
+  return { text: out, findings };
+}
+
+/** Bestands-API: liefert nur den Text (Client-Aufrufer unverändert). */
+export function sanitizeTranscript(text: string, opts: SanitizeOptions): string {
+  return sanitizeTranscriptWithFindings(text, opts).text;
 }
