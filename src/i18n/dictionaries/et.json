@@ -21,14 +21,20 @@
     "skipToContent": "Liigu põhisisu juurde",
     "selectLanguage": "Vali keel",
     "topUp": "Lae krediite juurde",
-    "watchVideo": "Vaata videot"
+    "watchVideo": "Vaata videot",
+    "expandSidebar": "Laienda külgriba",
+    "collapseSidebar": "Ahenda külgriba"
   },
   "nav": {
     "analyze": "Transkriptsioonianalüüs",
     "history": "Ajalugu",
     "newAnalysis": "Uus analüüs",
     "workspace": "Meeskond",
-    "simulation": "Rollimänguseanss"
+    "simulation": "Rollimänguseanss",
+    "practice": "Harjuta",
+    "mainGroup": "MAIN",
+    "home": "Avaleht",
+    "settings": "Seaded"
   },
   "simulation": {
     "title": "Rollimänguseanss",
@@ -217,7 +223,12 @@
     "noSummary": "Kokkuvõte pole saadaval.",
     "openAnalysis": "Ava analüüs",
     "loadMore": "Laadi veel",
-    "loadingMore": "Laaditakse veel…"
+    "loadingMore": "Laaditakse veel…",
+    "typeAnalysis": "Analüüs",
+    "typeSim": "Rollimäng",
+    "bindingTooltipRun": "Analüüsid on seotud brauserisessiooniga — „Uus sessioon” alustab värsket loendit.",
+    "bindingTooltipSim": "Rollimängud on seotud sinu kontoga ja jäävad sessioonide üleselt nähtavaks.",
+    "openSim": "Ava hinnang"
   },
   "report": {
     "type": "Tüüp",
@@ -268,7 +279,16 @@
     "followUpCta": "Planeeri järelmõõtmine (~4 nädalat)",
     "followUpHint": "Laadib sulle alla kalendrikirje – sina otsustad, millal uuesti mõõdad.",
     "followUpSummary": "Järelmõõtmine: vestlusanalüüs (PulseNorth Coach)",
-    "followUpDescription": "Aeg järgmiseks mõõtmiseks: analüüsi värsket vestlust PulseNorth Coachis ja vaata, kuidas sinu kompetentsid on pärast viimast mõõtmist arenenud."
+    "followUpDescription": "Aeg järgmiseks mõõtmiseks: analüüsi värsket vestlust PulseNorth Coachis ja vaata, kuidas sinu kompetentsid on pärast viimast mõõtmist arenenud.",
+    "scoreTitleVeryStrong": "Väga tugev vestluse juhtimine",
+    "scoreTitleStrong": "Hea vestluse juhtimine",
+    "scoreTitleSolid": "Kindel alus",
+    "scoreTitleNeedsWork": "Arenguruumi",
+    "scoreTitleReady": "Analüüs valmis",
+    "badgeVeryStrong": "Väga tugev",
+    "badgeStrong": "Tugev",
+    "badgeSolid": "Kindel",
+    "badgeNeedsWork": "Vajab fookust"
   },
   "linkedin": {
     "title": "Jaga LinkedInis",
@@ -302,5 +322,37 @@
     "notFound": "Ei leitud",
     "internalError": "Serveri sisemine viga",
     "rateLimited": "Liiga palju päringuid. Palun proovi hiljem uuesti."
+  },
+  "entry": {
+    "title": "Harjuta",
+    "h1": "Mida sa täna harjutada tahad, {name}?",
+    "h1NoName": "Mida sa täna harjutada tahad?",
+    "sub": "Harjuta otse AI-persoonaga — või too kaasa päris vestlus. Mõlemad teed viivad sama hinnanguni.",
+    "resumeTitle": "Jätka",
+    "dropTitle": "Kas päris vestlus on juba peetud? Lohista transkriptsioon siia",
+    "dropMeta": "Teamsi PDF või tekst · anonüümimine sisse ehitatud",
+    "dropCta": "Analüüsi transkriptsiooni",
+    "recoTitle": "Sulle soovitatud",
+    "recoReason": "Soovitus: sinu viimane tulemus näitab suurimat lünka kompetentsis {c}.",
+    "coldStartFrame": "Alusta sissejuhatava stsenaariumiga — hinnang näitab sulle pärast, millega tööd teha.",
+    "filterAll": "Kõik",
+    "catMitarbeiterfuehrung": "Inimeste juhtimine",
+    "catZusammenarbeit": "Koostöö",
+    "catVertrieb": "Müük",
+    "catStakeholder": "Huvirühmad",
+    "priceNote": "Hindamine maksab 1 krediidi · coach'i pausid on tasuta",
+    "ghostTitle": "Kas sinu stsenaariumi pole veel?",
+    "ghostBody": "Kirjelda lühidalt olukorda, mida harjutada tahad — sinu soov läheb otse uute stsenaariumide prioriseerimisse.",
+    "ghostCta": "Soovi stsenaariumi",
+    "wishTitle": "Milline stsenaarium sul puudu on?",
+    "wishPlaceholder": "nt palgavestlus tipptegijaga, kes võib lahkuda",
+    "wishSend": "Saada soov",
+    "wishThanks": "Aitäh! Sinu soov on kohal ja läheb uute stsenaariumide prioriseerimisse."
+  },
+  "evaluation": {
+    "sourceSim": "rollimängust",
+    "sourceRun": "transkriptsioonist",
+    "notFound": "Seda hinnangut ei leitud.",
+    "backHome": "Tagasi algusesse"
   }
 }

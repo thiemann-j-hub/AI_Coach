@@ -21,14 +21,20 @@
     "skipToContent": "Hopp til hovedinnholdet",
     "selectLanguage": "Velg språk",
     "topUp": "Fyll på kreditter",
-    "watchVideo": "Se video"
+    "watchVideo": "Se video",
+    "expandSidebar": "Utvid sidefeltet",
+    "collapseSidebar": "Skjul sidefeltet"
   },
   "nav": {
     "analyze": "Transkripsjonsanalyse",
     "history": "Historikk",
     "newAnalysis": "Ny analyse",
     "workspace": "Team",
-    "simulation": "Rollespilløkt"
+    "simulation": "Rollespilløkt",
+    "practice": "Øv",
+    "mainGroup": "MAIN",
+    "home": "Hjem",
+    "settings": "Innstillinger"
   },
   "simulation": {
     "title": "Rollespilløkt",
@@ -217,7 +223,12 @@
     "noSummary": "Ingen oppsummering tilgjengelig.",
     "openAnalysis": "Åpne analyse",
     "loadMore": "Last inn flere",
-    "loadingMore": "Laster flere…"
+    "loadingMore": "Laster flere…",
+    "typeAnalysis": "Analyse",
+    "typeSim": "Rollespill",
+    "bindingTooltipRun": "Analyser er knyttet til nettlesersesjonen — «Ny økt» starter en fersk liste.",
+    "bindingTooltipSim": "Rollespill er knyttet til kontoen din og forblir synlige på tvers av økter.",
+    "openSim": "Åpne evaluering"
   },
   "report": {
     "type": "Type",
@@ -268,7 +279,16 @@
     "followUpCta": "Planlegg oppfølgingsmåling (~4 uker)",
     "followUpHint": "Laster ned en kalenderoppføring til deg – du bestemmer når du måler igjen.",
     "followUpSummary": "Oppfølgingsmåling: samtaleanalyse (PulseNorth Coach)",
-    "followUpDescription": "På tide med neste måling: Analyser en fersk samtale i PulseNorth Coach, og se hvordan kompetansene dine har utviklet seg siden forrige måling."
+    "followUpDescription": "På tide med neste måling: Analyser en fersk samtale i PulseNorth Coach, og se hvordan kompetansene dine har utviklet seg siden forrige måling.",
+    "scoreTitleVeryStrong": "Svært sterk samtaleledelse",
+    "scoreTitleStrong": "God samtaleledelse",
+    "scoreTitleSolid": "Solid grunnlag",
+    "scoreTitleNeedsWork": "Rom for utvikling",
+    "scoreTitleReady": "Analyse klar",
+    "badgeVeryStrong": "Svært sterk",
+    "badgeStrong": "Sterk",
+    "badgeSolid": "Solid",
+    "badgeNeedsWork": "Trenger fokus"
   },
   "linkedin": {
     "title": "Del på LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Ikke funnet",
     "internalError": "Intern serverfeil",
     "rateLimited": "For mange forespørsler. Prøv igjen senere."
+  },
+  "entry": {
+    "title": "Øv",
+    "h1": "Hva vil du øve på i dag, {name}?",
+    "h1NoName": "Hva vil du øve på i dag?",
+    "sub": "Øv live med en AI-persona — eller ta med en ekte samtale. Begge veier fører til samme evaluering.",
+    "resumeTitle": "Fortsett",
+    "dropTitle": "Har du allerede hatt en ekte samtale? Dra transkripsjonen hit",
+    "dropMeta": "Teams-PDF eller tekst · anonymisering innebygd",
+    "dropCta": "Analyser transkripsjon",
+    "recoTitle": "Anbefalt for deg",
+    "recoReason": "Anbefalt: det siste resultatet ditt viser det største gapet i {c}.",
+    "coldStartFrame": "Start med et introduksjonsscenario — evalueringen viser deg etterpå hva du bør jobbe med.",
+    "filterAll": "Alle",
+    "catMitarbeiterfuehrung": "Medarbeiderledelse",
+    "catZusammenarbeit": "Samarbeid",
+    "catVertrieb": "Salg",
+    "catStakeholder": "Interessenter",
+    "priceNote": "Evaluering koster 1 kreditt · coachpauser er gratis",
+    "ghostTitle": "Er ikke scenarioet ditt her ennå?",
+    "ghostBody": "Beskriv kort situasjonen du vil øve på — ønsket ditt går rett inn i prioriteringen av nye scenarioer.",
+    "ghostCta": "Ønsk et scenario",
+    "wishTitle": "Hvilket scenario savner du?",
+    "wishPlaceholder": "f.eks. en lønnssamtale med en toppmedarbeider som kan si opp",
+    "wishSend": "Send ønske",
+    "wishThanks": "Takk! Ønsket ditt er mottatt og går inn i prioriteringen av nye scenarioer."
+  },
+  "evaluation": {
+    "sourceSim": "fra rollespill",
+    "sourceRun": "fra transkripsjon",
+    "notFound": "Fant ikke denne evalueringen.",
+    "backHome": "Til startsiden"
   }
 }

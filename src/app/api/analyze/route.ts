@@ -18,7 +18,7 @@ import {
   compensateEntitlement,
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
-import { runQualityChecks } from "@/lib/server/quality-checks";
+import { qualityMode, runQualityChecks } from "@/lib/server/quality-checks";
 import {
   defaultCompetencyRatings,
   normalizeCompetencyRatings,
@@ -188,7 +188,13 @@ export async function POST(req: NextRequest) {
       );
       quality_notes = qc.notes;
       if (qc.notes.length) {
-        logger.api("/api/analyze", "quality-notes", { uid: authResult.uid, count: qc.notes.length });
+        // P3: Modus + Fehlerzahl mitloggen — Datenbasis für den E2-Entscheid.
+        logger.api("/api/analyze", "quality-notes", {
+          uid: authResult.uid,
+          mode: qualityMode(),
+          count: qc.notes.length,
+          errors: qc.notes.filter((n) => n.severity === "error").length,
+        });
       }
       // §2.2 enforce: fabrizierte Belegketten NICHT ausliefern. Gezielt nur die
       // betroffene Kompetenz degradieren (Score zurückhalten, Fabrikat-Zitate

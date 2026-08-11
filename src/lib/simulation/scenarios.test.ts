@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
 import {
@@ -164,5 +164,67 @@ describe("publicScenario — Anti-Leak", () => {
   it("getScenario findet per id und liefert null für Unbekanntes", () => {
     expect(getScenario("sim-peer-lang")?.persona.name).toBe("Viktor Lang");
     expect(getScenario("nope")).toBeNull();
+  });
+
+  it("reicht category + competencyFocus durch (W1, §2.1/§2.2) — DNA bleibt draußen", () => {
+    for (const s of SIMULATION_SCENARIOS) {
+      const pub = publicScenario(s);
+      expect(pub.category).toBe(s.category);
+      expect(pub.competencyFocus).toEqual(s.competencyFocus);
+      expect((pub as unknown as Record<string, unknown>).personaDna).toBeUndefined();
+    }
+  });
+});
+
+describe("Szenario-Kategorien + Kompetenz-Fokus (§2.1/§2.2)", () => {
+  const VALID_CATEGORIES = [
+    "mitarbeiterfuehrung",
+    "zusammenarbeit",
+    "vertrieb",
+    "stakeholder",
+  ] as const;
+
+  it("jedes Szenario hat eine gültige Kategorie, 1:1 aus conversationType", () => {
+    for (const s of SIMULATION_SCENARIOS) {
+      expect(VALID_CATEGORIES).toContain(s.category);
+      // Bestandszuordnung (Blueprint §2.1): mitarbeitergespräch →
+      // mitarbeiterfuehrung, kollegengespräch → zusammenarbeit.
+      if (s.conversationType === "mitarbeitergespräch") {
+        expect(s.category).toBe("mitarbeiterfuehrung");
+      } else {
+        expect(s.category).toBe("zusammenarbeit");
+      }
+    }
+  });
+
+  it("competencyFocus: 1–3 gültige C-Keys je Szenario (E3-Provisorium)", () => {
+    for (const s of SIMULATION_SCENARIOS) {
+      const focus = s.competencyFocus ?? [];
+      expect(focus.length).toBeGreaterThanOrEqual(1);
+      expect(focus.length).toBeLessThanOrEqual(3);
+      for (const c of focus) {
+        expect(c).toMatch(/^C(10|[1-9])$/);
+      }
+    }
+  });
+
+  it("jede Kategorie-Konstante hat ein i18n-Label in allen Dictionaries", () => {
+    const dictDir = join(__dirname, "..", "..", "i18n", "dictionaries");
+    const catKey: Record<(typeof VALID_CATEGORIES)[number], string> = {
+      mitarbeiterfuehrung: "catMitarbeiterfuehrung",
+      zusammenarbeit: "catZusammenarbeit",
+      vertrieb: "catVertrieb",
+      stakeholder: "catStakeholder",
+    };
+    const files = readdirSync(dictDir).filter((f) => f.endsWith(".json"));
+    expect(files.length).toBe(22);
+    for (const f of files) {
+      const dict = JSON.parse(readFileSync(join(dictDir, f), "utf8"));
+      for (const cat of VALID_CATEGORIES) {
+        const label = dict?.entry?.[catKey[cat]];
+        expect(typeof label, `${f}: entry.${catKey[cat]}`).toBe("string");
+        expect(String(label).length).toBeGreaterThan(0);
+      }
+    }
   });
 });

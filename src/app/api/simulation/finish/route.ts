@@ -17,6 +17,11 @@ import {
   defaultCompetencyRatings,
   normalizeCompetencyRatings,
 } from "@/lib/competency-model";
+import {
+  qualityMode,
+  runQualityChecks,
+  type QualityNote,
+} from "@/lib/server/quality-checks";
 import { emitCoachMeasurement } from "@/lib/server/radar-emit";
 import {
   simulationEnabled,
@@ -176,6 +181,63 @@ export async function POST(req: NextRequest) {
       logger.apiError("/api/simulation/finish/competencies", e);
     }
 
+    // P2 (COACH-UX-BLUEPRINT §6): Grounding auch im Rollenspiel — derselbe
+    // deterministische Zitat-Check wie /api/analyze, gegen das zusammengebaute
+    // Gesprächsprotokoll, für die C1–C10-Ratings UND die S1–S5-Evidence.
+    // Läuft VOR computeDebrief, damit die Gesamtwertung nie auf fabrizierten
+    // Belegen aufbaut. quality-core ist pure — direkt nutzbar.
+    let qualityNotes: QualityNote[] = [];
+    try {
+      const rubricForCheck = feedback.rubric.map((r) => ({
+        id: r.key,
+        score: r.score,
+        evidence: r.evidence ?? [],
+      }));
+      const qc = runQualityChecks(
+        {
+          summary: feedback.summary,
+          competency_ratings: [
+            ...(competencyRatings as Array<{ id: string; score: number | null; evidence?: string[] }>),
+            ...rubricForCheck,
+          ],
+        },
+        transcript
+      );
+      qualityNotes = qc.notes;
+      if (qc.notes.length) {
+        // P3: Zählung je Modus sichtbar machen (App Insights) — Datenbasis
+        // für den E2-Entscheid (enforce), analog /api/analyze.
+        logger.api("/api/simulation/finish", "quality-notes", {
+          uid: auth.uid,
+          mode: qualityMode(),
+          count: qc.notes.length,
+          errors: qc.notes.filter((n) => n.severity === "error").length,
+        });
+      }
+      if (qc.blocked) {
+        const fabricated = new Set(
+          qc.notes.filter((n) => n.severity === "error" && n.field).map((n) => n.field as string)
+        );
+        // Gleicher heldWhy-Text wie analyze/route (Muster §2.2 enforce).
+        const heldWhy =
+          doc.convoLocale === "en"
+            ? "evidence not verifiable in transcript — score withheld (quality gate)"
+            : "Belege nicht im Transkript verifizierbar — Score zurückgehalten (Qualitäts-Gate)";
+        competencyRatings = (competencyRatings as any[]).map((c: any) =>
+          fabricated.has(c.id) ? { ...c, score: null, evidence: [], why: heldWhy } : c
+        ) as typeof competencyRatings;
+        feedback.rubric = feedback.rubric.map((r) =>
+          fabricated.has(r.key) ? { ...r, score: null, evidence: [], why: heldWhy } : r
+        );
+        logger.api("/api/simulation/finish", "quality-enforce-degraded", {
+          uid: auth.uid,
+          fields: [...fabricated],
+        });
+      }
+    } catch (e) {
+      logger.apiError("/api/simulation/finish/quality", e);
+    }
+
     // Debrief 2.0 (D1): deterministische Gesamtwertung in Code — das LLM
     // liefert nur Einzel-Scores. Plus Delta zum Vorversuch (D2), best effort.
     const debrief = computeDebrief({
@@ -214,6 +276,7 @@ export async function POST(req: NextRequest) {
     doc.competencyError = competencyError;
     doc.debriefJson = debrief;
     doc.deltaJson = delta;
+    doc.qualityNotes = qualityNotes;
     if (grant) {
       doc.workspaceId = grant.workspaceId;
       doc.centralSpendTxId = grant.centralTxId ?? null;

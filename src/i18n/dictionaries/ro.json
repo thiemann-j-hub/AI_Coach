@@ -21,14 +21,20 @@
     "skipToContent": "Sari la conținutul principal",
     "selectLanguage": "Selectează limba",
     "topUp": "Încarcă credite",
-    "watchVideo": "Vezi videoclipul"
+    "watchVideo": "Vezi videoclipul",
+    "expandSidebar": "Extinde bara laterală",
+    "collapseSidebar": "Restrânge bara laterală"
   },
   "nav": {
     "analyze": "Analiza transcriptului",
     "history": "Istoric",
     "newAnalysis": "Analiză nouă",
     "workspace": "Echipă",
-    "simulation": "Sesiune de joc de rol"
+    "simulation": "Sesiune de joc de rol",
+    "practice": "Exersează",
+    "mainGroup": "MAIN",
+    "home": "Acasă",
+    "settings": "Setări"
   },
   "simulation": {
     "title": "Sesiune de joc de rol",
@@ -217,7 +223,12 @@
     "noSummary": "Niciun rezumat disponibil.",
     "openAnalysis": "Deschide analiza",
     "loadMore": "Încarcă mai multe",
-    "loadingMore": "Se încarcă mai multe…"
+    "loadingMore": "Se încarcă mai multe…",
+    "typeAnalysis": "Analiză",
+    "typeSim": "Joc de rol",
+    "bindingTooltipRun": "Analizele sunt legate de sesiunea browserului — „Sesiune nouă” începe o listă proaspătă.",
+    "bindingTooltipSim": "Jocurile de rol sunt legate de contul tău și rămân vizibile între sesiuni.",
+    "openSim": "Deschide evaluarea"
   },
   "report": {
     "type": "Tip",
@@ -268,7 +279,16 @@
     "followUpCta": "Programează o măsurare de urmărire (~4 săptămâni)",
     "followUpHint": "Descarcă o intrare de calendar pentru tine – tu decizi când măsori din nou.",
     "followUpSummary": "Măsurare de urmărire: analiză de conversație (PulseNorth Coach)",
-    "followUpDescription": "E timpul pentru următoarea măsurare: analizează o conversație recentă în PulseNorth Coach și vezi cum au evoluat competențele tale de la ultima măsurare."
+    "followUpDescription": "E timpul pentru următoarea măsurare: analizează o conversație recentă în PulseNorth Coach și vezi cum au evoluat competențele tale de la ultima măsurare.",
+    "scoreTitleVeryStrong": "Conducere a conversației foarte puternică",
+    "scoreTitleStrong": "Conducere bună a conversației",
+    "scoreTitleSolid": "Bază solidă",
+    "scoreTitleNeedsWork": "De dezvoltat",
+    "scoreTitleReady": "Analiză pregătită",
+    "badgeVeryStrong": "Foarte puternic",
+    "badgeStrong": "Puternic",
+    "badgeSolid": "Solid",
+    "badgeNeedsWork": "Necesită focus"
   },
   "linkedin": {
     "title": "Distribuie pe LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Nu a fost găsit",
     "internalError": "Eroare internă de server",
     "rateLimited": "Prea multe cereri. Încearcă din nou mai târziu."
+  },
+  "entry": {
+    "title": "Exersează",
+    "h1": "Ce vrei să exersezi azi, {name}?",
+    "h1NoName": "Ce vrei să exersezi azi?",
+    "sub": "Exersează live cu o persona AI — sau adu o conversație reală. Ambele căi duc la aceeași evaluare.",
+    "resumeTitle": "Continuă",
+    "dropTitle": "Ai avut deja o conversație reală? Trage transcrierea aici",
+    "dropMeta": "PDF din Teams sau text · anonimizare integrată",
+    "dropCta": "Analizează transcrierea",
+    "recoTitle": "Recomandat pentru tine",
+    "recoReason": "Recomandat: ultimul tău rezultat arată cel mai mare decalaj la {c}.",
+    "coldStartFrame": "Începe cu un scenariu introductiv — evaluarea îți va arăta apoi la ce să lucrezi.",
+    "filterAll": "Toate",
+    "catMitarbeiterfuehrung": "Conducerea oamenilor",
+    "catZusammenarbeit": "Colaborare",
+    "catVertrieb": "Vânzări",
+    "catStakeholder": "Părți interesate",
+    "priceNote": "Evaluarea costă 1 credit · pauzele cu coachul sunt gratuite",
+    "ghostTitle": "Scenariul tău nu e încă aici?",
+    "ghostBody": "Descrie pe scurt situația pe care vrei să o exersezi — dorința ta intră direct în prioritizarea noilor scenarii.",
+    "ghostCta": "Cere un scenariu",
+    "wishTitle": "Ce scenariu îți lipsește?",
+    "wishPlaceholder": "de ex. o discuție salarială cu un top performer care ar putea pleca",
+    "wishSend": "Trimite dorința",
+    "wishThanks": "Mulțumim! Dorința ta a ajuns și intră în prioritizarea noilor scenarii."
+  },
+  "evaluation": {
+    "sourceSim": "din joc de rol",
+    "sourceRun": "din transcriere",
+    "notFound": "Această evaluare nu a fost găsită.",
+    "backHome": "Înapoi la început"
   }
 }

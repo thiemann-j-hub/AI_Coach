@@ -21,14 +21,20 @@
     "skipToContent": "Skip to main content",
     "selectLanguage": "Select language",
     "topUp": "Top up credits",
-    "watchVideo": "Watch video"
+    "watchVideo": "Watch video",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
   },
   "nav": {
     "analyze": "Transcript Analysis",
     "history": "History",
     "newAnalysis": "New Analysis",
     "workspace": "Team",
-    "simulation": "Roleplay Session"
+    "simulation": "Roleplay Session",
+    "practice": "Practice",
+    "mainGroup": "MAIN",
+    "home": "Home",
+    "settings": "Settings"
   },
   "simulation": {
     "title": "Roleplay Session",
@@ -217,7 +223,12 @@
     "noSummary": "No summary available.",
     "openAnalysis": "Open analysis",
     "loadMore": "Load more",
-    "loadingMore": "Loading more…"
+    "loadingMore": "Loading more…",
+    "typeAnalysis": "Analysis",
+    "typeSim": "Role-play",
+    "bindingTooltipRun": "Analyses are tied to the browser session — “New session” starts a fresh list.",
+    "bindingTooltipSim": "Role-plays are tied to your account and stay visible across sessions.",
+    "openSim": "Open evaluation"
   },
   "report": {
     "type": "Type",
@@ -268,7 +279,16 @@
     "followUpCta": "Schedule follow-up measurement (~4 weeks)",
     "followUpHint": "Downloads a calendar entry for you – you decide when to measure again.",
     "followUpSummary": "Follow-up measurement: conversation analysis (PulseNorth Coach)",
-    "followUpDescription": "Time for your next measurement: analyze a recent conversation in PulseNorth Coach and see how your competencies have developed since the last measurement."
+    "followUpDescription": "Time for your next measurement: analyze a recent conversation in PulseNorth Coach and see how your competencies have developed since the last measurement.",
+    "scoreTitleVeryStrong": "Very strong conversation leadership",
+    "scoreTitleStrong": "Good conversation leadership",
+    "scoreTitleSolid": "Solid foundation",
+    "scoreTitleNeedsWork": "Room to grow",
+    "scoreTitleReady": "Analysis ready",
+    "badgeVeryStrong": "Very strong",
+    "badgeStrong": "Strong",
+    "badgeSolid": "Solid",
+    "badgeNeedsWork": "Needs focus"
   },
   "linkedin": {
     "title": "Share on LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Not found",
     "internalError": "Internal server error",
     "rateLimited": "Too many requests. Please try again later."
+  },
+  "entry": {
+    "title": "Practice",
+    "h1": "What do you want to practice today, {name}?",
+    "h1NoName": "What do you want to practice today?",
+    "sub": "Practice live with an AI persona — or bring a real conversation. Both paths lead to the same evaluation.",
+    "resumeTitle": "Continue",
+    "dropTitle": "Already had a real conversation? Drop the transcript here",
+    "dropMeta": "Teams PDF or text · anonymisation built in",
+    "dropCta": "Analyse transcript",
+    "recoTitle": "Recommended for you",
+    "recoReason": "Recommended: your last result shows the biggest gap in {c}.",
+    "coldStartFrame": "Start with an entry-level scenario — the evaluation will then show you what to work on.",
+    "filterAll": "All",
+    "catMitarbeiterfuehrung": "People leadership",
+    "catZusammenarbeit": "Collaboration",
+    "catVertrieb": "Sales",
+    "catStakeholder": "Stakeholders",
+    "priceNote": "Evaluation costs 1 credit · coach breaks are free",
+    "ghostTitle": "Your scenario isn't here yet?",
+    "ghostBody": "Briefly describe the situation you want to practice — your request feeds straight into the prioritisation of new scenarios.",
+    "ghostCta": "Request a scenario",
+    "wishTitle": "Which scenario are you missing?",
+    "wishPlaceholder": "e.g. a salary conversation with a top performer who might quit",
+    "wishSend": "Send request",
+    "wishThanks": "Thanks! Your request has been received and feeds into the prioritisation of new scenarios."
+  },
+  "evaluation": {
+    "sourceSim": "from role-play",
+    "sourceRun": "from transcript",
+    "notFound": "This evaluation was not found.",
+    "backHome": "Back to start"
   }
 }

@@ -21,14 +21,20 @@
     "skipToContent": "Přejít na hlavní obsah",
     "selectLanguage": "Vybrat jazyk",
     "topUp": "Dobít kredity",
-    "watchVideo": "Přehrát video"
+    "watchVideo": "Přehrát video",
+    "expandSidebar": "Rozbalit boční panel",
+    "collapseSidebar": "Sbalit boční panel"
   },
   "nav": {
     "analyze": "Analýza přepisu",
     "history": "Historie",
     "newAnalysis": "Nová analýza",
     "workspace": "Tým",
-    "simulation": "Hraní rolí"
+    "simulation": "Hraní rolí",
+    "practice": "Trénovat",
+    "mainGroup": "MAIN",
+    "home": "Domů",
+    "settings": "Nastavení"
   },
   "simulation": {
     "title": "Hraní rolí",
@@ -217,7 +223,12 @@
     "noSummary": "Žádné shrnutí k dispozici.",
     "openAnalysis": "Otevřít analýzu",
     "loadMore": "Načíst další",
-    "loadingMore": "Načítání dalších…"
+    "loadingMore": "Načítání dalších…",
+    "typeAnalysis": "Analýza",
+    "typeSim": "Hraní rolí",
+    "bindingTooltipRun": "Analýzy jsou vázané na relaci prohlížeče — „Nová relace“ začíná čerstvý seznam.",
+    "bindingTooltipSim": "Hraní rolí je vázané na tvůj účet a zůstává viditelné napříč relacemi.",
+    "openSim": "Otevřít vyhodnocení"
   },
   "report": {
     "type": "Typ",
@@ -268,7 +279,16 @@
     "followUpCta": "Naplánovat další měření (~4 týdny)",
     "followUpHint": "Stáhne pro vás položku kalendáře – kdy měřit znovu, rozhodujete vy.",
     "followUpSummary": "Kontrolní měření: analýza rozhovoru (PulseNorth Coach)",
-    "followUpDescription": "Je čas na další měření: analyzujte aktuální rozhovor v PulseNorth Coach a podívejte se, jak se vaše kompetence od posledního měření vyvinuly."
+    "followUpDescription": "Je čas na další měření: analyzujte aktuální rozhovor v PulseNorth Coach a podívejte se, jak se vaše kompetence od posledního měření vyvinuly.",
+    "scoreTitleVeryStrong": "Velmi silné vedení rozhovoru",
+    "scoreTitleStrong": "Dobré vedení rozhovoru",
+    "scoreTitleSolid": "Solidní základ",
+    "scoreTitleNeedsWork": "Prostor pro rozvoj",
+    "scoreTitleReady": "Analýza připravena",
+    "badgeVeryStrong": "Velmi silné",
+    "badgeStrong": "Silné",
+    "badgeSolid": "Solidní",
+    "badgeNeedsWork": "Chce to fokus"
   },
   "linkedin": {
     "title": "Sdílet na LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Nenalezeno",
     "internalError": "Interní chyba serveru",
     "rateLimited": "Příliš mnoho požadavků. Zkuste to prosím později."
+  },
+  "entry": {
+    "title": "Trénovat",
+    "h1": "Co chceš dnes trénovat, {name}?",
+    "h1NoName": "Co chceš dnes trénovat?",
+    "sub": "Trénuj naživo s AI personou — nebo přines skutečný rozhovor. Obě cesty vedou ke stejnému vyhodnocení.",
+    "resumeTitle": "Pokračovat",
+    "dropTitle": "Už máš za sebou skutečný rozhovor? Přetáhni přepis sem",
+    "dropMeta": "PDF z Teams nebo text · anonymizace vestavěná",
+    "dropCta": "Analyzovat přepis",
+    "recoTitle": "Doporučeno pro tebe",
+    "recoReason": "Doporučeno: tvůj poslední výsledek ukazuje největší mezeru v {c}.",
+    "coldStartFrame": "Začni úvodním scénářem — vyhodnocení ti pak ukáže, na čem pracovat.",
+    "filterAll": "Vše",
+    "catMitarbeiterfuehrung": "Vedení lidí",
+    "catZusammenarbeit": "Spolupráce",
+    "catVertrieb": "Prodej",
+    "catStakeholder": "Stakeholdeři",
+    "priceNote": "Vyhodnocení stojí 1 kredit · pauzy s koučem jsou zdarma",
+    "ghostTitle": "Tvůj scénář tu ještě není?",
+    "ghostBody": "Popiš krátce situaci, kterou chceš trénovat — tvé přání jde přímo do prioritizace nových scénářů.",
+    "ghostCta": "Přát si scénář",
+    "wishTitle": "Který scénář ti chybí?",
+    "wishPlaceholder": "např. platový rozhovor se špičkovým člověkem, který může odejít",
+    "wishSend": "Odeslat přání",
+    "wishThanks": "Díky! Tvé přání dorazilo a jde do prioritizace nových scénářů."
+  },
+  "evaluation": {
+    "sourceSim": "z hraní rolí",
+    "sourceRun": "z přepisu",
+    "notFound": "Toto vyhodnocení nebylo nalezeno.",
+    "backHome": "Zpět na začátek"
   }
 }

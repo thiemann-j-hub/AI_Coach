@@ -21,14 +21,20 @@
     "skipToContent": "Siirry pääsisältöön",
     "selectLanguage": "Valitse kieli",
     "topUp": "Lataa krediittejä",
-    "watchVideo": "Katso video"
+    "watchVideo": "Katso video",
+    "expandSidebar": "Laajenna sivupalkki",
+    "collapseSidebar": "Pienennä sivupalkki"
   },
   "nav": {
     "analyze": "Transkriptioanalyysi",
     "history": "Historia",
     "newAnalysis": "Uusi analyysi",
     "workspace": "Tiimi",
-    "simulation": "Roolipeli-istunto"
+    "simulation": "Roolipeli-istunto",
+    "practice": "Harjoittele",
+    "mainGroup": "MAIN",
+    "home": "Etusivu",
+    "settings": "Asetukset"
   },
   "simulation": {
     "title": "Roolipeli-istunto",
@@ -217,7 +223,12 @@
     "noSummary": "Yhteenvetoa ei ole saatavilla.",
     "openAnalysis": "Avaa analyysi",
     "loadMore": "Lataa lisää",
-    "loadingMore": "Ladataan lisää…"
+    "loadingMore": "Ladataan lisää…",
+    "typeAnalysis": "Analyysi",
+    "typeSim": "Roolipeli",
+    "bindingTooltipRun": "Analyysit on sidottu selainistuntoon — ”Uusi istunto” aloittaa tuoreen listan.",
+    "bindingTooltipSim": "Roolipelit on sidottu tiliisi ja näkyvät istuntojen yli.",
+    "openSim": "Avaa arviointi"
   },
   "report": {
     "type": "Tyyppi",
@@ -268,7 +279,16 @@
     "followUpCta": "Suunnittele seurantamittaus (~4 viikkoa)",
     "followUpHint": "Lataa sinulle kalenterimerkinnän – sinä päätät, milloin mittaat uudelleen.",
     "followUpSummary": "Seurantamittaus: keskusteluanalyysi (PulseNorth Coach)",
-    "followUpDescription": "Aika seuraavalle mittaukselle: analysoi tuore keskustelu PulseNorth Coachissa ja katso, miten kompetenssisi ovat kehittyneet edellisen mittauksen jälkeen."
+    "followUpDescription": "Aika seuraavalle mittaukselle: analysoi tuore keskustelu PulseNorth Coachissa ja katso, miten kompetenssisi ovat kehittyneet edellisen mittauksen jälkeen.",
+    "scoreTitleVeryStrong": "Erittäin vahva keskustelunjohtaminen",
+    "scoreTitleStrong": "Hyvä keskustelunjohtaminen",
+    "scoreTitleSolid": "Vankka perusta",
+    "scoreTitleNeedsWork": "Kehitettävää",
+    "scoreTitleReady": "Analyysi valmis",
+    "badgeVeryStrong": "Erittäin vahva",
+    "badgeStrong": "Vahva",
+    "badgeSolid": "Vankka",
+    "badgeNeedsWork": "Vaatii fokusta"
   },
   "linkedin": {
     "title": "Jaa LinkedInissä",
@@ -302,5 +322,37 @@
     "notFound": "Ei löytynyt",
     "internalError": "Sisäinen palvelinvirhe",
     "rateLimited": "Liian monta pyyntöä. Yritä myöhemmin uudelleen."
+  },
+  "entry": {
+    "title": "Harjoittele",
+    "h1": "Mitä haluat harjoitella tänään, {name}?",
+    "h1NoName": "Mitä haluat harjoitella tänään?",
+    "sub": "Harjoittele livenä tekoälypersoonan kanssa — tai tuo mukanasi oikea keskustelu. Molemmat polut johtavat samaan arviointiin.",
+    "resumeTitle": "Jatka",
+    "dropTitle": "Kävitkö jo oikean keskustelun? Vedä litterointi tähän",
+    "dropMeta": "Teams-PDF tai teksti · anonymisointi sisäänrakennettu",
+    "dropCta": "Analysoi litterointi",
+    "recoTitle": "Sinulle suositeltua",
+    "recoReason": "Suositus: viimeisin tuloksesi näyttää suurimman aukon kohdassa {c}.",
+    "coldStartFrame": "Aloita aloitustason skenaariolla — arviointi näyttää sen jälkeen, mitä kannattaa harjoitella.",
+    "filterAll": "Kaikki",
+    "catMitarbeiterfuehrung": "Ihmisten johtaminen",
+    "catZusammenarbeit": "Yhteistyö",
+    "catVertrieb": "Myynti",
+    "catStakeholder": "Sidosryhmät",
+    "priceNote": "Arviointi maksaa 1 krediitin · coach-tauot ovat ilmaisia",
+    "ghostTitle": "Eikö skenaariotasi vielä ole?",
+    "ghostBody": "Kuvaile lyhyesti tilanne, jota haluat harjoitella — toiveesi vaikuttaa suoraan uusien skenaarioiden priorisointiin.",
+    "ghostCta": "Toivo skenaariota",
+    "wishTitle": "Mikä skenaario sinulta puuttuu?",
+    "wishPlaceholder": "esim. palkkakeskustelu huippusuoriutujan kanssa, joka saattaa irtisanoutua",
+    "wishSend": "Lähetä toive",
+    "wishThanks": "Kiitos! Toiveesi on vastaanotettu ja vaikuttaa uusien skenaarioiden priorisointiin."
+  },
+  "evaluation": {
+    "sourceSim": "roolipelistä",
+    "sourceRun": "litteroinnista",
+    "notFound": "Arviointia ei löytynyt.",
+    "backHome": "Takaisin alkuun"
   }
 }

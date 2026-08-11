@@ -21,14 +21,20 @@
     "skipToContent": "Téigh díreach chuig an bpríomhábhar",
     "selectLanguage": "Roghnaigh teanga",
     "topUp": "Breisigh creidmheasanna",
-    "watchVideo": "Féach ar an bhfíseán"
+    "watchVideo": "Féach ar an bhfíseán",
+    "expandSidebar": "Leathnaigh an barra taoibh",
+    "collapseSidebar": "Laghdaigh an barra taoibh"
   },
   "nav": {
     "analyze": "Anailís tras-scríbhinne",
     "history": "Stair",
     "newAnalysis": "Anailís nua",
     "workspace": "Foireann",
-    "simulation": "Seisiún rólghlactha"
+    "simulation": "Seisiún rólghlactha",
+    "practice": "Cleachtadh",
+    "mainGroup": "MAIN",
+    "home": "Baile",
+    "settings": "Socruithe"
   },
   "simulation": {
     "title": "Seisiún rólghlactha",
@@ -217,7 +223,12 @@
     "noSummary": "Níl achoimre ar fáil.",
     "openAnalysis": "Oscail an anailís",
     "loadMore": "Lódáil tuilleadh",
-    "loadingMore": "Tuilleadh á lódáil…"
+    "loadingMore": "Tuilleadh á lódáil…",
+    "typeAnalysis": "Anailís",
+    "typeSim": "Rólimirt",
+    "bindingTooltipRun": "Tá anailísí ceangailte le seisiún an bhrabhsálaí — tosaíonn “Seisiún nua” liosta úr.",
+    "bindingTooltipSim": "Tá rólimirtí ceangailte le do chuntas agus fanann siad le feiceáil thar sheisiúin.",
+    "openSim": "Oscail an mheastóireacht"
   },
   "report": {
     "type": "Cineál",
@@ -268,7 +279,16 @@
     "followUpCta": "Pleanáil tomhas leantach (~4 seachtaine)",
     "followUpHint": "Íoslódálann sé iontráil féilire duit – is fút féin atá sé cathain a thomhaisfidh tú arís.",
     "followUpSummary": "Tomhas leantach: anailís chomhrá (PulseNorth Coach)",
-    "followUpDescription": "Tá sé in am don chéad tomhas eile: déan anailís ar chomhrá le déanaí in PulseNorth Coach agus féach conas atá d'inniúlachtaí tar éis forbairt ón tomhas deireanach."
+    "followUpDescription": "Tá sé in am don chéad tomhas eile: déan anailís ar chomhrá le déanaí in PulseNorth Coach agus féach conas atá d'inniúlachtaí tar éis forbairt ón tomhas deireanach.",
+    "scoreTitleVeryStrong": "Stiúradh comhrá an-láidir",
+    "scoreTitleStrong": "Stiúradh comhrá maith",
+    "scoreTitleSolid": "Bonn daingean",
+    "scoreTitleNeedsWork": "Le forbairt",
+    "scoreTitleReady": "Anailís réidh",
+    "badgeVeryStrong": "An-láidir",
+    "badgeStrong": "Láidir",
+    "badgeSolid": "Daingean",
+    "badgeNeedsWork": "Fócas de dhíth"
   },
   "linkedin": {
     "title": "Comhroinn ar LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Níor aimsíodh é",
     "internalError": "Earráid inmheánach freastalaí",
     "rateLimited": "An iomarca iarratas. Bain triail eile as ar ball, le do thoil."
+  },
+  "entry": {
+    "title": "Cleachtadh",
+    "h1": "Cad ba mhaith leat a chleachtadh inniu, {name}?",
+    "h1NoName": "Cad ba mhaith leat a chleachtadh inniu?",
+    "sub": "Cleacht beo le persona IS — nó tabhair leat fíorchomhrá. Téann an dá bhealach chuig an meastóireacht chéanna.",
+    "resumeTitle": "Lean ar aghaidh",
+    "dropTitle": "An raibh fíorchomhrá agat cheana? Tarraing an tras-scríbhinn anseo",
+    "dropMeta": "PDF Teams nó téacs · anaithnidiú ionsuite",
+    "dropCta": "Déan anailís ar an tras-scríbhinn",
+    "recoTitle": "Molta duitse",
+    "recoReason": "Molta: léiríonn do thoradh deireanach an bhearna is mó in {c}.",
+    "coldStartFrame": "Tosaigh le cás tosaigh — taispeánfaidh an mheastóireacht duit ina dhiaidh sin cad air a n-oibreoidh tú.",
+    "filterAll": "Uile",
+    "catMitarbeiterfuehrung": "Ceannaireacht daoine",
+    "catZusammenarbeit": "Comhoibriú",
+    "catVertrieb": "Díolacháin",
+    "catStakeholder": "Páirtithe leasmhara",
+    "priceNote": "Cosnaíonn an mheastóireacht 1 chreidmheas · tá sosanna cóitseála saor in aisce",
+    "ghostTitle": "Nach bhfuil do chás-sa anseo fós?",
+    "ghostBody": "Déan cur síos gairid ar an staid ba mhaith leat a chleachtadh — téann d'iarratas díreach isteach i dtosaíochtú cásanna nua.",
+    "ghostCta": "Iarr cás",
+    "wishTitle": "Cén cás atá in easnamh ort?",
+    "wishPlaceholder": "m.sh. comhrá tuarastail le sárfheidhmeoir a d'fhéadfadh imeacht",
+    "wishSend": "Seol an t-iarratas",
+    "wishThanks": "Go raibh maith agat! Tháinig d'iarratas isteach agus téann sé i dtosaíochtú cásanna nua."
+  },
+  "evaluation": {
+    "sourceSim": "ó rólimirt",
+    "sourceRun": "ó thras-scríbhinn",
+    "notFound": "Níor aimsíodh an mheastóireacht seo.",
+    "backHome": "Ar ais go dtí an tús"
   }
 }

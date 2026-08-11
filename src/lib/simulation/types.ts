@@ -124,6 +124,29 @@ export interface SimulationAssessment {
   passThreshold?: number;
 }
 
+/**
+ * Wirkungsrichtung des Szenarios (COACH-UX-BLUEPRINT §2.1, Owner 11.08.).
+ * Vier feste Kategorien; die Einstiegs-Filterzeile blendet leere aus —
+ * `vertrieb`/`stakeholder` warten auf Content, sind aber ab Tag 1 im Vertrag.
+ */
+export type ScenarioCategory =
+  | "mitarbeiterfuehrung"
+  | "zusammenarbeit"
+  | "vertrieb"
+  | "stakeholder";
+
+export const SCENARIO_CATEGORIES: ScenarioCategory[] = [
+  "mitarbeiterfuehrung",
+  "zusammenarbeit",
+  "vertrieb",
+  "stakeholder",
+];
+
+/** Plattform-Kompetenz-Keys (C1–C10) — nur Sortier-Metadatum, kein Prompt-Einfluss. */
+export type CompetencyKey =
+  | "C1" | "C2" | "C3" | "C4" | "C5"
+  | "C6" | "C7" | "C8" | "C9" | "C10";
+
 export interface SimulationScenario {
   id: string;
   title: string;
@@ -133,6 +156,14 @@ export interface SimulationScenario {
   durationMin: number;
   /** V1: Szenario-Inhalte bewusst Deutsch (Materialtreue); UI-Chrome ist ×7 lokalisiert. */
   locale: "de" | "en";
+  /** Wirkungsrichtung fürs Einstiegs-Raster (Blueprint §2.1). */
+  category: ScenarioCategory;
+  /**
+   * Welche C-Kompetenzen dieses Szenario primär trainiert (1–3 Einträge).
+   * PROVISORISCH aus goals/checkpoints abgeleitet (Blueprint §2.2, E3):
+   * falsche Werte verschlechtern nur die Empfehlungs-Sortierung, nie Daten.
+   */
+  competencyFocus?: CompetencyKey[];
   /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). */
   persona: { name: string; role: string };
   candidateBriefing: CandidateBriefing;
@@ -149,6 +180,8 @@ export interface PublicSimulationScenario {
   difficulty: SimulationDifficulty;
   durationMin: number;
   locale: "de" | "en";
+  category: ScenarioCategory;
+  competencyFocus?: CompetencyKey[];
   persona: { name: string; role: string };
   candidateBriefing: CandidateBriefing;
   competencies: SimRubricCompetency[];

@@ -21,14 +21,20 @@
     "skipToContent": "Zum Hauptinhalt springen",
     "selectLanguage": "Sprache wählen",
     "topUp": "Credits aufladen",
-    "watchVideo": "Video ansehen"
+    "watchVideo": "Video ansehen",
+    "expandSidebar": "Seitenleiste ausklappen",
+    "collapseSidebar": "Seitenleiste einklappen"
   },
   "nav": {
     "analyze": "Transkript-Analyse",
     "history": "Verlauf",
     "newAnalysis": "Neue Analyse",
     "workspace": "Team",
-    "simulation": "Rollenspiel-Sitzung"
+    "simulation": "Rollenspiel-Sitzung",
+    "practice": "Üben",
+    "mainGroup": "MAIN",
+    "home": "Home",
+    "settings": "Einstellungen"
   },
   "simulation": {
     "title": "Rollenspiel-Sitzung",
@@ -217,7 +223,12 @@
     "noSummary": "Keine Zusammenfassung verfügbar.",
     "openAnalysis": "Analyse öffnen",
     "loadMore": "Mehr laden",
-    "loadingMore": "Lade weitere…"
+    "loadingMore": "Lade weitere…",
+    "typeAnalysis": "Analyse",
+    "typeSim": "Rollenspiel",
+    "bindingTooltipRun": "Analysen hängen an der Browser-Session — »Neue Sitzung« beginnt eine frische Liste.",
+    "bindingTooltipSim": "Rollenspiele hängen an deinem Konto und bleiben über Sitzungen hinweg sichtbar.",
+    "openSim": "Auswertung öffnen"
   },
   "report": {
     "type": "Typ",
@@ -268,7 +279,16 @@
     "followUpCta": "Folgemessung planen (~4 Wochen)",
     "followUpHint": "Lädt einen Kalendereintrag für dich herunter – du entscheidest, wann du wieder misst.",
     "followUpSummary": "Folgemessung: Gesprächs-Analyse (PulseNorth Coach)",
-    "followUpDescription": "Zeit für die nächste Messung: Analysiere ein aktuelles Gespräch im PulseNorth Coach und sieh, wie sich deine Kompetenzen seit der letzten Messung entwickelt haben."
+    "followUpDescription": "Zeit für die nächste Messung: Analysiere ein aktuelles Gespräch im PulseNorth Coach und sieh, wie sich deine Kompetenzen seit der letzten Messung entwickelt haben.",
+    "scoreTitleVeryStrong": "Sehr starke Gesprächsführung",
+    "scoreTitleStrong": "Gute Gesprächsführung",
+    "scoreTitleSolid": "Solide Basis",
+    "scoreTitleNeedsWork": "Ausbaufähig",
+    "scoreTitleReady": "Analyse bereit",
+    "badgeVeryStrong": "Sehr stark",
+    "badgeStrong": "Stark",
+    "badgeSolid": "Solide",
+    "badgeNeedsWork": "Fokus nötig"
   },
   "linkedin": {
     "title": "Auf LinkedIn teilen",
@@ -302,5 +322,37 @@
     "notFound": "Nicht gefunden",
     "internalError": "Interner Serverfehler",
     "rateLimited": "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
+  },
+  "entry": {
+    "title": "Üben",
+    "h1": "Was möchtest du heute üben, {name}?",
+    "h1NoName": "Was möchtest du heute üben?",
+    "sub": "Übe live mit einer KI-Persona — oder bring ein echtes Gespräch mit. Beide Wege führen zur selben Auswertung.",
+    "resumeTitle": "Fortsetzen",
+    "dropTitle": "Echtes Gespräch schon geführt? Transkript hierher ziehen",
+    "dropMeta": "Teams-PDF oder Text · Anonymisierung eingebaut",
+    "dropCta": "Transkript analysieren",
+    "recoTitle": "Für dich empfohlen",
+    "recoReason": "Empfohlen: dein letztes Ergebnis zeigt die größte Lücke bei {c}.",
+    "coldStartFrame": "Starte mit einem Einstiegs-Szenario — die Auswertung zeigt dir danach, woran du arbeitest.",
+    "filterAll": "Alle",
+    "catMitarbeiterfuehrung": "Mitarbeiterführung",
+    "catZusammenarbeit": "Zusammenarbeit",
+    "catVertrieb": "Vertrieb",
+    "catStakeholder": "Stakeholder",
+    "priceNote": "Auswertung kostet 1 Credit · Coach-Pausen kostenlos",
+    "ghostTitle": "Dein Szenario ist noch nicht dabei?",
+    "ghostBody": "Beschreib kurz die Situation, die du üben willst — dein Wunsch fließt direkt in die Priorisierung neuer Szenarien ein.",
+    "ghostCta": "Szenario wünschen",
+    "wishTitle": "Welches Szenario fehlt dir?",
+    "wishPlaceholder": "z. B. Gehaltsgespräch mit einem Top-Performer, der kündigen könnte",
+    "wishSend": "Wunsch senden",
+    "wishThanks": "Danke! Dein Wunsch ist angekommen und fließt in die Priorisierung neuer Szenarien ein."
+  },
+  "evaluation": {
+    "sourceSim": "aus Rollenspiel",
+    "sourceRun": "aus Transkript",
+    "notFound": "Diese Auswertung wurde nicht gefunden.",
+    "backHome": "Zum Einstieg"
   }
 }

@@ -2,14 +2,12 @@
 
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  BarChart3,
   History,
   MessagesSquare,
   Users,
-  PlusCircle,
   ChevronLeft,
   ChevronRight,
   Sun,
@@ -49,7 +47,6 @@ export default function AppShell(props: {
   noPadding?: boolean;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuth();
@@ -94,13 +91,14 @@ export default function AppShell(props: {
   }
 
   // MAIN-Gruppe (Coach hat keine ADMIN-Routen — Struktur bleibt erweiterbar).
+  // W1-3 (COACH-UX-BLUEPRINT): EIN Punkt »Üben« ersetzt die zwei Punkte
+  // Transkript-Analyse + Rollenspiel-Sitzung — beide Wege leben am Einstieg.
   const groups: NavGroup[] = useMemo(
     () => [
       {
-        label: 'MAIN',
+        label: t.nav.mainGroup,
         items: [
-          { href: '/analyze', label: t.nav.analyze, icon: BarChart3 },
-          { href: '/simulation', label: t.nav.simulation, icon: MessagesSquare },
+          { href: '/', label: t.nav.practice, icon: MessagesSquare },
           { href: '/runs-dashboard', label: t.nav.history, icon: History },
           // Kein Credits-Eintrag mehr: der Header-Chip regelt die Credits
           // (Owner-Vorgabe 04.08. — /credits bleibt als Route erreichbar).
@@ -116,8 +114,16 @@ export default function AppShell(props: {
   }, [pathname]);
 
   const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    if (href === '/analyze' && pathname.startsWith('/runs/')) return true;
+    // »Üben« ist der Einstieg — aktiv auch für beide Zuflüsse (W1-3).
+    if (href === '/') {
+      return (
+        pathname === '/' ||
+        pathname.startsWith('/analyze') ||
+        pathname.startsWith('/simulation')
+      );
+    }
+    // »Verlauf« deckt auch die Ergebnis-Detailseiten der Analysen ab.
+    if (href === '/runs-dashboard' && pathname.startsWith('/runs/')) return true;
     return pathname === href || pathname.startsWith(href + '/');
   };
 
@@ -164,14 +170,14 @@ export default function AppShell(props: {
                 ROOT-absolutes <a> — next/link wuerde den basePath /coach anhaengen. */}
             <a
               href="/"
-              title={collapsed ? 'Home' : undefined}
+              title={collapsed ? t.nav.home : undefined}
               className={cx(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors group text-muted-foreground hover:bg-muted hover:text-foreground',
                 collapsed && 'justify-center'
               )}
             >
               <HomeIcon className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
-              {!collapsed && <span className="font-medium">Home</span>}
+              {!collapsed && <span className="font-medium">{t.nav.home}</span>}
             </a>
             {groups.map((group) => (
               <div key={group.label} className="space-y-1">
@@ -205,20 +211,9 @@ export default function AppShell(props: {
             ))}
           </nav>
 
-          {/* New Analysis Button */}
-          <div className="p-3 border-t border-border">
-            <button
-              className={cx(
-                'w-full btn-gradient text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-neon active:scale-[0.98] transition-transform',
-                collapsed ? 'py-2.5 px-0' : 'py-3 px-4'
-              )}
-              onClick={() => router.push('/analyze')}
-              title={collapsed ? t.nav.newAnalysis : undefined}
-            >
-              <PlusCircle className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{t.nav.newAnalysis}</span>}
-            </button>
-          </div>
+          {/* Der Gradient-CTA »Neue Analyse« entfällt ersatzlos (W1-3):
+              der Einstieg IST die Startaktion — sein permanentes Heraus-
+              Navigieren aus laufenden Rollenspielen war Bruch 10. */}
 
           {/* Footer: Theme toggle + Collapse toggle */}
           <div className="px-3 pb-3 space-y-1 border-t border-border pt-3">
@@ -236,7 +231,7 @@ export default function AppShell(props: {
             {/* Collapse-Toggle (Desktop) */}
             <button
               onClick={toggleCollapsed}
-              aria-label={collapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen'}
+              aria-label={collapsed ? t.common.expandSidebar : t.common.collapseSidebar}
               className="hidden md:flex w-full items-center justify-center rounded-lg border border-border bg-muted py-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -262,8 +257,8 @@ export default function AppShell(props: {
                   </div>
                   <Link
                     href="/settings"
-                    title="Einstellungen"
-                    aria-label="Einstellungen"
+                    title={t.nav.settings}
+                    aria-label={t.nav.settings}
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <Settings className="h-4 w-4" />

@@ -21,14 +21,20 @@
     "skipToContent": "Ga naar de hoofdinhoud",
     "selectLanguage": "Taal selecteren",
     "topUp": "Credits opwaarderen",
-    "watchVideo": "Video bekijken"
+    "watchVideo": "Video bekijken",
+    "expandSidebar": "Zijbalk uitklappen",
+    "collapseSidebar": "Zijbalk inklappen"
   },
   "nav": {
     "analyze": "Transcriptanalyse",
     "history": "Geschiedenis",
     "newAnalysis": "Nieuwe analyse",
     "workspace": "Team",
-    "simulation": "Rollenspelsessie"
+    "simulation": "Rollenspelsessie",
+    "practice": "Oefenen",
+    "mainGroup": "MAIN",
+    "home": "Home",
+    "settings": "Instellingen"
   },
   "simulation": {
     "title": "Rollenspelsessie",
@@ -217,7 +223,12 @@
     "noSummary": "Geen samenvatting beschikbaar.",
     "openAnalysis": "Analyse openen",
     "loadMore": "Meer laden",
-    "loadingMore": "Meer wordt geladen…"
+    "loadingMore": "Meer wordt geladen…",
+    "typeAnalysis": "Analyse",
+    "typeSim": "Rollenspel",
+    "bindingTooltipRun": "Analyses zijn gekoppeld aan de browsersessie — “Nieuwe sessie” begint een verse lijst.",
+    "bindingTooltipSim": "Rollenspellen zijn gekoppeld aan je account en blijven zichtbaar over sessies heen.",
+    "openSim": "Evaluatie openen"
   },
   "report": {
     "type": "Type",
@@ -268,7 +279,16 @@
     "followUpCta": "Vervolgmeting plannen (~4 weken)",
     "followUpHint": "Downloadt een agenda-item voor je – jij bepaalt wanneer je opnieuw meet.",
     "followUpSummary": "Vervolgmeting: gespreksanalyse (PulseNorth Coach)",
-    "followUpDescription": "Tijd voor je volgende meting: analyseer een recent gesprek in PulseNorth Coach en zie hoe je competenties zich sinds de laatste meting hebben ontwikkeld."
+    "followUpDescription": "Tijd voor je volgende meting: analyseer een recent gesprek in PulseNorth Coach en zie hoe je competenties zich sinds de laatste meting hebben ontwikkeld.",
+    "scoreTitleVeryStrong": "Zeer sterke gespreksvoering",
+    "scoreTitleStrong": "Goede gespreksvoering",
+    "scoreTitleSolid": "Solide basis",
+    "scoreTitleNeedsWork": "Voor verbetering vatbaar",
+    "scoreTitleReady": "Analyse klaar",
+    "badgeVeryStrong": "Zeer sterk",
+    "badgeStrong": "Sterk",
+    "badgeSolid": "Solide",
+    "badgeNeedsWork": "Focus nodig"
   },
   "linkedin": {
     "title": "Delen op LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Niet gevonden",
     "internalError": "Interne serverfout",
     "rateLimited": "Te veel verzoeken. Probeer het later opnieuw."
+  },
+  "entry": {
+    "title": "Oefenen",
+    "h1": "Wat wil je vandaag oefenen, {name}?",
+    "h1NoName": "Wat wil je vandaag oefenen?",
+    "sub": "Oefen live met een AI-persona — of breng een echt gesprek mee. Beide wegen leiden naar dezelfde evaluatie.",
+    "resumeTitle": "Verdergaan",
+    "dropTitle": "Al een echt gesprek gevoerd? Sleep het transcript hierheen",
+    "dropMeta": "Teams-pdf of tekst · anonimisering ingebouwd",
+    "dropCta": "Transcript analyseren",
+    "recoTitle": "Aanbevolen voor jou",
+    "recoReason": "Aanbevolen: je laatste resultaat toont de grootste kloof bij {c}.",
+    "coldStartFrame": "Begin met een instapscenario — de evaluatie laat je daarna zien waaraan je werkt.",
+    "filterAll": "Alle",
+    "catMitarbeiterfuehrung": "Leidinggeven aan medewerkers",
+    "catZusammenarbeit": "Samenwerking",
+    "catVertrieb": "Sales",
+    "catStakeholder": "Stakeholders",
+    "priceNote": "Evaluatie kost 1 credit · coachpauzes zijn gratis",
+    "ghostTitle": "Staat jouw scenario er nog niet bij?",
+    "ghostBody": "Beschrijf kort de situatie die je wilt oefenen — je wens telt direct mee in de prioritering van nieuwe scenario's.",
+    "ghostCta": "Scenario aanvragen",
+    "wishTitle": "Welk scenario mis je?",
+    "wishPlaceholder": "bijv. een salarisgesprek met een topper die zou kunnen vertrekken",
+    "wishSend": "Wens versturen",
+    "wishThanks": "Bedankt! Je wens is ontvangen en telt mee in de prioritering van nieuwe scenario's."
+  },
+  "evaluation": {
+    "sourceSim": "uit rollenspel",
+    "sourceRun": "uit transcript",
+    "notFound": "Deze evaluatie is niet gevonden.",
+    "backHome": "Terug naar start"
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Star, AlertTriangle, Download, AlarmClock, Check, Copy, CalendarPlus, GraduationCap, ArrowRight } from 'lucide-react';
+import { Star, AlertTriangle, BarChart3, Download, AlarmClock, Check, Copy, CalendarPlus, GraduationCap, ArrowRight } from 'lucide-react';
 import { ScoreRing } from './score-ring';
 import { InsightCard } from './insight-card';
 import { DeltaCard, type PreviousComparison } from './delta-card';
@@ -11,8 +11,8 @@ import { authFetch } from '@/lib/api-client';
 import {
   unwrapRunResult,
   overallToPercent,
-  scoreTitle,
-  scoreBadge,
+  scoreTier,
+  SCORE_BADGE_CLS,
   asStringArray,
   pickPractice,
   parseRewrite,
@@ -275,8 +275,31 @@ export default function ReportDashboard({
   result = unwrapRunResult(result as AnyObj);
 
   const pct = useMemo(() => overallToPercent(result), [result]);
-  const title = useMemo(() => scoreTitle(pct), [pct]);
-  const badge = useMemo(() => scoreBadge(pct), [pct]);
+  // W1-8: Stufen-Key aus report-utils, Texte aus dem Dictionary (×22).
+  const tier = useMemo(() => scoreTier(pct), [pct]);
+  const title =
+    tier === 'veryStrong'
+      ? t.report.scoreTitleVeryStrong
+      : tier === 'strong'
+        ? t.report.scoreTitleStrong
+        : tier === 'solid'
+          ? t.report.scoreTitleSolid
+          : tier === 'needsWork'
+            ? t.report.scoreTitleNeedsWork
+            : t.report.scoreTitleReady;
+  const badge = {
+    cls: SCORE_BADGE_CLS[tier],
+    label:
+      tier === 'veryStrong'
+        ? t.report.badgeVeryStrong
+        : tier === 'strong'
+          ? t.report.badgeStrong
+          : tier === 'solid'
+            ? t.report.badgeSolid
+            : tier === 'needsWork'
+              ? t.report.badgeNeedsWork
+              : '—',
+  };
 
   const summary = String(result?.summary ?? '').trim();
   const strengths = asStringArray(result?.strengths);
@@ -424,6 +447,11 @@ export default function ReportDashboard({
       <div className="xl:col-span-8 space-y-6">
         {/* HERO */}
         <div className="glass-panel rounded-2xl p-6 md:p-8">
+          {/* Herkunfts-Pill (W1-8): woher diese Messung stammt */}
+          <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <BarChart3 className="h-3.5 w-3.5" />
+            {t.evaluation.sourceRun}
+          </span>
           <div className="flex flex-col md:flex-row items-center gap-8">
             <ScoreRing value={pct} label={t.report.overall} />
             <div className="flex-1 text-center md:text-left">

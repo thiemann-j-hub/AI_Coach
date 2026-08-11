@@ -11,6 +11,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -22,30 +23,37 @@ import {
   Flag,
   Lightbulb,
   Loader2,
-  MessagesSquare,
   Mic,
   Pause,
   Play,
-  RotateCcw,
   Send,
   Sparkles,
   Target,
-  TrendingDown,
-  TrendingUp,
   User,
   Volume2,
   VolumeX,
-  XCircle,
   Trash2,
   X,
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { ExplainerVideoButton } from '@/components/app/explainer-video';
+import { TranscriptDropBar } from '@/components/app/transcript-drop-bar';
 import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { withBasePath } from '@/lib/base-path';
+import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
 import type { FactVisual } from '@/lib/simulation/types';
+import { recommendScenarios } from '@/lib/simulation/empfehlung';
+
+/** Wirkungsrichtungen in fester Anzeige-Reihenfolge (Blueprint §2.1). */
+const CATEGORY_ORDER = [
+  'mitarbeiterfuehrung',
+  'zusammenarbeit',
+  'vertrieb',
+  'stakeholder',
+] as const;
+type ScenarioCategory = (typeof CATEGORY_ORDER)[number];
 
 interface PublicScenario {
   id: string;
@@ -54,6 +62,8 @@ interface PublicScenario {
   difficulty: 1 | 2 | 3;
   durationMin: number;
   locale?: 'de' | 'en';
+  category: ScenarioCategory;
+  competencyFocus?: string[];
   persona: { name: string; role: string };
   candidateBriefing: {
     yourRole: string;
@@ -290,48 +300,14 @@ interface RecentSim {
   verdict: 'passed' | 'failed' | 'unrated' | null;
 }
 
-interface Feedback {
-  summary: string;
-  rubric: { key: string; label: string; evidence: string[]; why: string; score: number | null }[];
-  checkpoints: { id: string; hit: boolean; comment: string }[];
-  nextStep: string;
-  focusReview?: { addressed: boolean; comment: string } | null;
+/** Einstiegs-Insight des Katalog-Endpunkts (W1-4): schwächste beobachtete C. */
+interface EntryInsight {
+  weakestC: string;
+  weakestName: string | null;
+  source: 'sim' | 'run';
 }
 
-interface DebriefAnchor {
-  key: string;
-  label: string;
-  score: number | null;
-  pct: number | null;
-  expectation: 'not-observable' | 'below' | 'approaching' | 'meets' | 'exceeds';
-}
-
-interface Debrief {
-  overall: number | null;
-  verdict: 'passed' | 'failed' | 'unrated';
-  passMarkPct: number;
-  coverage: number;
-  anchors: DebriefAnchor[];
-  checkpointsHit: number;
-  checkpointsTotal: number;
-}
-
-interface Delta {
-  overall: number | null;
-  anchors: Array<{ key: string; delta: number | null }>;
-  prevOverall: number | null;
-  prevAttempt: number;
-}
-
-interface CompetencyRating {
-  id: string;
-  name: string;
-  score: number | null;
-  why: string;
-  evidence: string[];
-}
-
-type View = 'loading' | 'disabled' | 'list' | 'briefing' | 'chat' | 'feedback';
+type View = 'loading' | 'disabled' | 'list' | 'briefing' | 'chat';
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
@@ -396,89 +372,12 @@ function PersonaAvatar({
   );
 }
 
-/** Animierter Gesamtscore-Ring (Debrief-Held). */
-function ScoreRing({
-  value,
-  verdict,
-  passMark,
-  labelUnrated,
-}: {
-  value: number | null;
-  verdict: Debrief['verdict'];
-  passMark: number;
-  labelUnrated: string;
-}) {
-  const [animated, setAnimated] = useState(0);
-  useEffect(() => {
-    const target = value ?? 0;
-    const id = requestAnimationFrame(() => setAnimated(target));
-    return () => cancelAnimationFrame(id);
-  }, [value]);
-
-  const R = 52;
-  const C = 2 * Math.PI * R;
-  const pct = Math.min(100, Math.max(0, animated));
-  const stroke =
-    verdict === 'passed' ? '#34d399' : verdict === 'failed' ? '#fb7185' : '#94a3b8';
-  // Bestehensmarke als kleiner Punkt auf dem Ring.
-  const markAngle = (passMark / 100) * 2 * Math.PI - Math.PI / 2;
-  const markX = 60 + R * Math.cos(markAngle);
-  const markY = 60 + R * Math.sin(markAngle);
-
-  return (
-    <div className="relative h-[120px] w-[120px] shrink-0" role="img" aria-label={value != null ? `${value} %` : labelUnrated}>
-      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-        <circle cx="60" cy="60" r={R} fill="none" strokeWidth="10" className="stroke-border" />
-        <circle
-          cx="60"
-          cy="60"
-          r={R}
-          fill="none"
-          strokeWidth="10"
-          strokeLinecap="round"
-          stroke={stroke}
-          strokeDasharray={C}
-          strokeDashoffset={C - (pct / 100) * C}
-          style={{ transition: 'stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)' }}
-        />
-      </svg>
-      <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full pointer-events-none">
-        <circle cx={markX} cy={markY} r="3.5" className="fill-foreground/60" />
-      </svg>
-      <div className="absolute inset-0 grid place-items-center">
-        {value != null ? (
-          <div className="text-center leading-none">
-            <div className="text-3xl font-bold tabular-nums">{value}</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">%</div>
-          </div>
-        ) : (
-          <div className="text-[11px] text-muted-foreground text-center px-3 leading-tight">{labelUnrated}</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function DeltaTag({ delta }: { delta: number | null }) {
-  if (delta == null || delta === 0) return null;
-  const up = delta > 0;
-  return (
-    <span
-      className={cx(
-        'inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded-full',
-        up ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'
-      )}
-    >
-      {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-      {up ? '+' : ''}
-      {delta}
-    </span>
-  );
-}
-
 export default function SimulationClient() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const ts = t.simulation;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [view, setView] = useState<View>('loading');
   const [scenarios, setScenarios] = useState<PublicScenario[]>([]);
@@ -493,15 +392,21 @@ export default function SimulationClient() {
   const [finishing, setFinishing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [briefingOpen, setBriefingOpen] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [debrief, setDebrief] = useState<Debrief | null>(null);
-  const [delta, setDelta] = useState<Delta | null>(null);
   const [attempt, setAttempt] = useState(1);
   const [focus, setFocus] = useState<string | null>(null);
-  const [ratings, setRatings] = useState<CompetencyRating[] | null>(null);
-  const [showC10, setShowC10] = useState(false);
-  const [openEvidence, setOpenEvidence] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  // ── Einstieg (COACH-UX-BLUEPRINT §1) ──
+  /** Empfehlungs-Insight des Katalogs (W1-4); null = Cold Start. */
+  const [insight, setInsight] = useState<EntryInsight | null>(null);
+  /** Filterzeile: »Alle« oder eine nicht-leere Kategorie (W1-5). */
+  const [categoryFilter, setCategoryFilter] = useState<'all' | ScenarioCategory>('all');
+  // Geister-Karte → Szenario-Wunsch (W1-5)
+  const [wishOpen, setWishOpen] = useState(false);
+  const [wishText, setWishText] = useState('');
+  const [wishBusy, setWishBusy] = useState(false);
+  const [wishDone, setWishDone] = useState(false);
+  /** Fokus aus dem Deep-Link (?szenario=&fokus= — Retry von der Auswertungsseite). */
+  const pendingFocusRef = useRef<string | null>(null);
   const [topUpUrl, setTopUpUrl] = useState<string | null>(null);
   // Time-out-Coach (D3)
   const [timeoutOpen, setTimeoutOpen] = useState(false);
@@ -629,28 +534,6 @@ export default function SimulationClient() {
     [ts]
   );
 
-  const expectationLabel = useCallback(
-    (e: DebriefAnchor['expectation']) =>
-      e === 'exceeds'
-        ? ts.expExceeds
-        : e === 'meets'
-          ? ts.expMeets
-          : e === 'approaching'
-            ? ts.expApproaching
-            : e === 'below'
-              ? ts.expBelow
-              : ts.notObservable,
-    [ts]
-  );
-
-  const EXPECTATION_STYLES: Record<DebriefAnchor['expectation'], string> = {
-    exceeds: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-    meets: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-    approaching: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    below: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-    'not-observable': 'bg-muted text-muted-foreground border-border',
-  };
-
   const loadCatalog = useCallback(async () => {
     try {
       const res = await authFetch('/api/simulation/scenarios');
@@ -662,6 +545,7 @@ export default function SimulationClient() {
       if (!res.ok || !json.ok) throw new Error('catalog');
       setScenarios(json.scenarios ?? []);
       setRecent(json.recent ?? []);
+      setInsight(json.insight ?? null);
       setView('list');
     } catch {
       setError(ts.genericError);
@@ -673,6 +557,25 @@ export default function SimulationClient() {
     void loadCatalog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Deep-Link von der Auswertungsseite (W1-7): /?szenario=<id>&fokus=<text>
+  // öffnet direkt das Briefing des Szenarios; der Fokus geht beim Start mit.
+  useEffect(() => {
+    if (view !== 'list' || scenarios.length === 0) return;
+    const wanted = searchParams.get('szenario');
+    if (!wanted) return;
+    const s = scenarios.find((x) => x.id === wanted);
+    if (!s) return;
+    pendingFocusRef.current = searchParams.get('fokus');
+    setScenario(s);
+    setError(null);
+    setBriefStep(0);
+    setConvoLocale(s.locale ?? 'de');
+    setView('briefing');
+    // Query-Parameter verbrauchen — Reload soll wieder am Einstieg landen.
+    router.replace('/', { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, scenarios]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -733,13 +636,16 @@ export default function SimulationClient() {
   async function startSimulation(s: PublicScenario, withFocus?: string | null) {
     setStarting(true);
     setError(null);
+    // Deep-Link-Fokus (Retry von der Auswertungsseite) — einmalig verbrauchen.
+    const focusToSend = withFocus ?? pendingFocusRef.current ?? undefined;
+    pendingFocusRef.current = null;
     try {
       const res = await authFetch('/api/simulation/start', {
         method: 'POST',
         body: JSON.stringify({
           scenarioId: s.id,
           locale: convoLocale,
-          ...(withFocus ? { focus: withFocus } : {}),
+          ...(focusToSend ? { focus: focusToSend } : {}),
         }),
       });
       const json = await res.json();
@@ -752,10 +658,6 @@ export default function SimulationClient() {
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
-      setFeedback(null);
-      setDebrief(null);
-      setDelta(null);
-      setRatings(null);
       setCoachNotes([]);
       setBriefingOpen(false);
       setTimeoutOpen(false);
@@ -769,6 +671,11 @@ export default function SimulationClient() {
   }
 
   async function resumeSimulation(item: RecentSim) {
+    // Fertige Auswertungen haben eine eigene Adresse (W1-7).
+    if (item.status === 'finished') {
+      router.push(`/simulation/${encodeURIComponent(item.id)}`);
+      return;
+    }
     const s = scenarioById.get(item.scenarioId);
     if (!s) return;
     setError(null);
@@ -779,6 +686,10 @@ export default function SimulationClient() {
         await handleApiFailure(res);
         return;
       }
+      if (json.simulation.status === 'finished') {
+        router.push(`/simulation/${encodeURIComponent(item.id)}`);
+        return;
+      }
       setScenario(s);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
@@ -787,20 +698,8 @@ export default function SimulationClient() {
       setCoachNotes(json.simulation.coachNotes ?? []);
       setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
       setTimeUp(json.simulation.timeUp === true);
-      if (json.simulation.status === 'finished' && json.simulation.feedback) {
-        setFeedback(json.simulation.feedback);
-        setDebrief(json.simulation.debrief ?? null);
-        setDelta(json.simulation.delta ?? null);
-        setRatings(json.simulation.competencyRatings ?? null);
-        setView('feedback');
-      } else {
-        setFeedback(null);
-        setDebrief(null);
-        setDelta(null);
-        setRatings(null);
-        setBriefingOpen(false);
-        setView('chat');
-      }
+      setBriefingOpen(false);
+      setView('chat');
     } catch {
       setError(ts.genericError);
     }
@@ -889,17 +788,10 @@ export default function SimulationClient() {
         await handleApiFailure(res);
         return;
       }
-      setFeedback(json.feedback);
-      setDebrief(json.debrief ?? null);
-      setDelta(json.delta ?? null);
-      setAttempt(json.attempt ?? 1);
-      setFocus(json.focus ?? null);
-      setRatings(json.competencyRatings ?? null);
-      setConfirmOpen(false);
-      setTimeoutOpen(false);
-      setView('feedback');
       // Header-Saldo nachladen — die Auswertung hat gerade 1 Credit gekostet.
       window.dispatchEvent(new Event(CREDITS_REFRESH_EVENT));
+      // W1-7: Auswertung hat eine eigene Adresse — Reload-fest, verlinkbar.
+      router.push(`/simulation/${encodeURIComponent(simId)}`);
     } catch {
       setError(ts.genericError);
     } finally {
@@ -911,10 +803,6 @@ export default function SimulationClient() {
     setScenario(null);
     setSimId(null);
     setTurns([]);
-    setFeedback(null);
-    setDebrief(null);
-    setDelta(null);
-    setRatings(null);
     setFocus(null);
     setAttempt(1);
     setCoachNotes([]);
@@ -922,7 +810,6 @@ export default function SimulationClient() {
     setConfirmOpen(false);
     setTimeoutOpen(false);
     setBriefStep(0);
-    setOpenEvidence({});
     setView('loading');
     void loadCatalog();
   }
@@ -968,19 +855,126 @@ export default function SimulationClient() {
   }
 
   if (view === 'list') {
+    const firstName = (user?.displayName ?? '').trim().split(/\s+/)[0] || '';
+    const activeSims = recent.filter((r) => r.status === 'active');
+    const nonEmptyCategories = CATEGORY_ORDER.filter((c) =>
+      scenarios.some((s) => s.category === c)
+    );
+    const visibleScenarios =
+      categoryFilter === 'all'
+        ? scenarios
+        : scenarios.filter((s) => s.category === categoryFilter);
+    const recommended = recommendScenarios(scenarios, insight?.weakestC ?? null, 3);
+    const catLabel = (c: ScenarioCategory) =>
+      c === 'mitarbeiterfuehrung'
+        ? t.entry.catMitarbeiterfuehrung
+        : c === 'zusammenarbeit'
+          ? t.entry.catZusammenarbeit
+          : c === 'vertrieb'
+            ? t.entry.catVertrieb
+            : t.entry.catStakeholder;
+
+    const openBriefing = (s: PublicScenario) => {
+      setScenario(s);
+      setError(null);
+      setBriefStep(0);
+      setConvoLocale(s.locale ?? 'de');
+      setView('briefing');
+    };
+
+    const scenarioCard = (s: PublicScenario, highlighted = false) => (
+      <button
+        key={s.id}
+        onClick={() => openBriefing(s)}
+        className={cx(
+          'glass-panel rounded-2xl p-5 text-left border transition-colors flex flex-col gap-3',
+          highlighted
+            ? 'border-primary/40 hover:border-primary/70'
+            : 'border-border hover:border-primary/40'
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className={cx(
+              'text-xs font-semibold px-2 py-0.5 rounded-full border',
+              LEVEL_STYLES[s.difficulty]
+            )}
+          >
+            {levelLabel(s.difficulty)}
+          </span>
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" /> ~{s.durationMin} {ts.minutesShort}
+          </span>
+        </div>
+        <h3 className="font-semibold leading-snug">{s.title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.teaser}</p>
+        <div className="flex items-center gap-2">
+          <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
+          <div className="text-xs text-muted-foreground min-w-0">
+            <div className="font-medium text-foreground truncate">{s.persona.name}</div>
+            <div className="truncate">{s.persona.role}</div>
+          </div>
+        </div>
+        <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
+          {s.locale === 'en' ? ts.englishOnly : ts.germanOnly}
+        </div>
+      </button>
+    );
+
+    async function submitWish() {
+      const text = wishText.trim();
+      if (text.length < 3 || wishBusy) return;
+      setWishBusy(true);
+      setError(null);
+      try {
+        const res = await authFetch('/api/scenario-wish', {
+          method: 'POST',
+          body: JSON.stringify({
+            wishText: text.slice(0, 500),
+            category: categoryFilter === 'all' ? null : categoryFilter,
+            weakestC: insight?.weakestC ?? null,
+            locale,
+          }),
+        });
+        const json = await res.json().catch(() => null);
+        if (!res.ok || !json?.ok) throw new Error('wish');
+        setWishDone(true);
+        setWishText('');
+      } catch {
+        setError(ts.genericError);
+        setWishOpen(false);
+      } finally {
+        setWishBusy(false);
+      }
+    }
+
     return (
-      <AppShell title={ts.title} subtitle={ts.subtitle}>
-        <div className="space-y-6 max-w-5xl">
+      <AppShell title={t.entry.title}>
+        <div className="space-y-6 max-w-6xl">
           {errorBanner}
-          {/* Erklärvideo (Synthesia-Muster »Watch preview«) */}
-          <ExplainerVideoButton />
-          {recent.length > 0 && (
+
+          {/* ── Kopf: EIN Einstieg, zwei Zuflüsse (§1) ── */}
+          <section className="space-y-1.5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">
+                {firstName ? t.entry.h1.replace('{name}', firstName) : t.entry.h1NoName}
+              </h1>
+              {/* Erklärvideo (Synthesia-Muster »Watch preview«) */}
+              <ExplainerVideoButton />
+            </div>
+            <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+              {t.entry.sub}
+            </p>
+          </section>
+
+          {/* ── Fortsetzen-Streifen: nur bei offener Simulation ── */}
+          {activeSims.length > 0 && (
             <section className="space-y-2">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {ts.resumeTitle}
+                {t.entry.resumeTitle}
               </h2>
               <div className="space-y-2">
-                {recent.map((r) => {
+                {activeSims.map((r) => {
                   const s = scenarioById.get(r.scenarioId);
                   if (!s) return null;
                   const confirming = pendingDeleteId === r.id;
@@ -1004,29 +998,8 @@ export default function SimulationClient() {
                         </div>
                       </button>
                       <div className="flex items-center gap-2 shrink-0">
-                        {r.overall != null && (
-                          <span
-                            className={cx(
-                              'text-xs font-bold tabular-nums px-2 py-0.5 rounded-full border',
-                              r.verdict === 'passed'
-                                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                                : r.verdict === 'failed'
-                                  ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-                                  : 'bg-muted text-muted-foreground border-border'
-                            )}
-                          >
-                            {r.overall} %
-                          </span>
-                        )}
-                        <span
-                          className={cx(
-                            'text-xs px-2 py-0.5 rounded-full border',
-                            r.status === 'active'
-                              ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
-                              : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                          )}
-                        >
-                          {r.status === 'active' ? ts.statusActive : ts.statusFinished}
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-sky-500/15 text-sky-400 border-sky-500/30">
+                          {ts.statusActive}
                         </span>
                         {/* Mülleimer mit zweistufiger Bestätigung (endgültig, inkl. DB) */}
                         {confirming ? (
@@ -1074,48 +1047,145 @@ export default function SimulationClient() {
             </section>
           )}
 
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {scenarios.map((s) => (
+          {/* ── Ablage-Leiste: der zweite Zufluss, einzeilig (W1-2) ── */}
+          <TranscriptDropBar />
+
+          {/* ── Empfehlungs-Streifen (W1-4) — mit Begründung oder Cold Start ── */}
+          {recommended.length > 0 && (
+            <section className="space-y-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> {t.entry.recoTitle}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {insight
+                  ? t.entry.recoReason.replace(
+                      '{c}',
+                      insight.weakestName ?? insight.weakestC
+                    )
+                  : t.entry.coldStartFrame}
+              </p>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {recommended.map((s) => scenarioCard(s, true))}
+              </div>
+            </section>
+          )}
+
+          {/* ── Filterzeile: Alle · nicht-leere Kategorien (W1-5) ── */}
+          {nonEmptyCategories.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
               <button
-                key={s.id}
-                onClick={() => {
-                  setScenario(s);
-                  setError(null);
-                  setBriefStep(0);
-                  setConvoLocale(s.locale ?? 'de');
-                  setView('briefing');
-                }}
-                className="glass-panel rounded-2xl p-5 text-left border border-border hover:border-primary/40 transition-colors flex flex-col gap-3"
+                onClick={() => setCategoryFilter('all')}
+                aria-pressed={categoryFilter === 'all'}
+                className={cx(
+                  'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  categoryFilter === 'all'
+                    ? 'border-primary/60 bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                )}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={cx(
-                      'text-xs font-semibold px-2 py-0.5 rounded-full border',
-                      LEVEL_STYLES[s.difficulty]
-                    )}
-                  >
-                    {levelLabel(s.difficulty)}
-                  </span>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" /> ~{s.durationMin} {ts.minutesShort}
-                  </span>
-                </div>
-                <h3 className="font-semibold leading-snug">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.teaser}</p>
-                <div className="flex items-center gap-2">
-                  <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
-                  <div className="text-xs text-muted-foreground min-w-0">
-                    <div className="font-medium text-foreground truncate">{s.persona.name}</div>
-                    <div className="truncate">{s.persona.role}</div>
-                  </div>
-                </div>
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
-                  {s.locale === 'en' ? ts.englishOnly : ts.germanOnly}
-                </div>
+                {t.entry.filterAll}
               </button>
-            ))}
+              {nonEmptyCategories.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCategoryFilter(c)}
+                  aria-pressed={categoryFilter === c}
+                  className={cx(
+                    'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                    categoryFilter === c
+                      ? 'border-primary/60 bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {catLabel(c)}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── Szenario-Raster + Geister-Karte ── */}
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {visibleScenarios.map((s) => scenarioCard(s))}
+            {/* Geister-Karte (W1-5): der Wunsch wird Nachfrage-Statistik. */}
+            <button
+              onClick={() => {
+                setWishDone(false);
+                setWishOpen(true);
+              }}
+              className="rounded-2xl p-5 text-left border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
+            >
+              <Lightbulb className="h-6 w-6 text-primary" />
+              <h3 className="font-semibold leading-snug text-foreground">
+                {t.entry.ghostTitle}
+              </h3>
+              <p className="text-sm leading-relaxed">{t.entry.ghostBody}</p>
+              <span className="mt-1 text-xs font-semibold text-primary">
+                {t.entry.ghostCta} →
+              </span>
+            </button>
           </section>
+
+          {/* Preiszeile — EINMAL unter dem Raster, nicht je Karte (W2-4-Vorgriff). */}
+          <p className="text-xs text-muted-foreground text-center">{t.entry.priceNote}</p>
         </div>
+
+        {/* ── Wunsch-Dialog (Geister-Karte) ── */}
+        {wishOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-primary" /> {t.entry.wishTitle}
+              </h3>
+              {wishDone ? (
+                <>
+                  <p className="text-sm leading-relaxed flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                    {t.entry.wishThanks}
+                  </p>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setWishOpen(false)}
+                      className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
+                    >
+                      {t.common.close}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <textarea
+                    value={wishText}
+                    onChange={(e) => setWishText(e.target.value)}
+                    rows={4}
+                    maxLength={500}
+                    placeholder={t.entry.wishPlaceholder}
+                    className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => setWishOpen(false)}
+                      className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                    >
+                      {t.common.cancel}
+                    </button>
+                    <button
+                      onClick={() => void submitWish()}
+                      disabled={wishBusy || wishText.trim().length < 3}
+                      className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {wishBusy ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                      {t.entry.wishSend}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </AppShell>
     );
   }
@@ -1680,243 +1750,6 @@ export default function SimulationClient() {
             </div>
           </div>
         )}
-      </AppShell>
-    );
-  }
-
-  if (view === 'feedback' && scenario && feedback) {
-    const deltaByKey = new Map((delta?.anchors ?? []).map((a) => [a.key, a.delta]));
-    const verdict = debrief?.verdict ?? 'unrated';
-    const observedCount = debrief?.anchors.filter((a) => a.pct != null).length ?? 0;
-    return (
-      <AppShell title={ts.feedbackTitle} subtitle={splitTitle(scenario.title).heroTitle}>
-        <div className="max-w-3xl space-y-6">
-          {errorBanner}
-
-          {/* ── Debrief-Held: Score, Urteil, größter Hebel ── */}
-          {debrief && (
-            <section className="glass-panel rounded-2xl p-6 border border-border">
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <ScoreRing
-                  value={debrief.overall}
-                  verdict={verdict}
-                  passMark={debrief.passMarkPct}
-                  labelUnrated={ts.unrated}
-                />
-                <div className="flex-1 min-w-0 text-center sm:text-left space-y-2">
-                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                    <span
-                      className={cx(
-                        'text-sm font-bold px-3 py-1 rounded-full border',
-                        verdict === 'passed'
-                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                          : verdict === 'failed'
-                            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-                            : 'bg-muted text-muted-foreground border-border'
-                      )}
-                    >
-                      {verdict === 'passed' ? ts.passed : verdict === 'failed' ? ts.failed : ts.unrated}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {ts.passMark}: {debrief.passMarkPct} %
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      · {ts.attemptLabel} {attempt}
-                    </span>
-                    {delta?.overall != null && (
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        · <DeltaTag delta={delta.overall} /> {ts.deltaVsPrev} {delta.prevAttempt}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {observedCount}/{debrief.anchors.length} {ts.coverageNote} · {debrief.checkpointsHit}/{debrief.checkpointsTotal} {ts.checkpointsTitle}
-                  </p>
-                  <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-left">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-primary mb-1 flex items-center gap-1">
-                      <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
-                    </div>
-                    <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Fokus-Review (D2) */}
-          {feedback.focusReview && focus && (
-            <section
-              className={cx(
-                'glass-panel rounded-2xl p-4 border flex items-start gap-3',
-                feedback.focusReview.addressed
-                  ? 'border-emerald-500/30 bg-emerald-500/5'
-                  : 'border-amber-500/30 bg-amber-500/5'
-              )}
-            >
-              {feedback.focusReview.addressed ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-              ) : (
-                <RotateCcw className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-              )}
-              <div className="min-w-0">
-                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {ts.focusReviewTitle} — {feedback.focusReview.addressed ? ts.focusYes : ts.focusNo}
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5 italic">»{focus}«</p>
-                <p className="text-sm leading-relaxed mt-1">{feedback.focusReview.comment}</p>
-              </div>
-            </section>
-          )}
-
-          <section className="glass-panel rounded-2xl p-6 space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {ts.summaryTitle}
-            </h2>
-            <p className="text-sm leading-relaxed">{feedback.summary}</p>
-          </section>
-
-          {/* Kompetenz-Anker mit Erwartungslabel, Balken, Delta und Belegen */}
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {ts.rubricTitle}
-            </h2>
-            {feedback.rubric.map((r) => {
-              const anchor = debrief?.anchors.find((a) => a.key === r.key);
-              const pct = anchor?.pct ?? null;
-              const exp = anchor?.expectation ?? (r.score == null ? 'not-observable' : 'meets');
-              const anchorDelta = deltaByKey.get(r.key) ?? null;
-              const isOpen = openEvidence[r.key] ?? false;
-              return (
-                <div key={r.key} className="glass-panel rounded-xl border border-border p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <h3 className="text-sm font-semibold">{r.label}</h3>
-                    <div className="flex items-center gap-2">
-                      <DeltaTag delta={anchorDelta} />
-                      <span
-                        className={cx(
-                          'text-xs font-semibold px-2 py-0.5 rounded-full border',
-                          EXPECTATION_STYLES[exp]
-                        )}
-                      >
-                        {expectationLabel(exp)}
-                      </span>
-                    </div>
-                  </div>
-                  {pct != null && (
-                    <div className="h-1.5 rounded-full bg-border overflow-hidden">
-                      <div
-                        className={cx(
-                          'h-full rounded-full transition-all duration-700',
-                          exp === 'exceeds' || exp === 'meets'
-                            ? 'bg-gradient-to-r from-primary to-accent'
-                            : exp === 'approaching'
-                              ? 'bg-amber-400'
-                              : 'bg-rose-400'
-                        )}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  )}
-                  <p className="text-sm text-muted-foreground leading-relaxed">{r.why}</p>
-                  {r.evidence.length > 0 && (
-                    <div>
-                      <button
-                        onClick={() => setOpenEvidence((m) => ({ ...m, [r.key]: !isOpen }))}
-                        className="text-[11px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1"
-                      >
-                        <ChevronDown className={cx('h-3.5 w-3.5 transition-transform', isOpen && 'rotate-180')} />
-                        {isOpen ? ts.hideEvidence : ts.showEvidence} ({r.evidence.length})
-                      </button>
-                      {isOpen && (
-                        <div className="space-y-1.5 mt-2">
-                          {r.evidence.map((e, idx) => (
-                            <blockquote
-                              key={idx}
-                              className="text-xs italic border-l-2 border-primary/40 pl-2.5 py-0.5 text-muted-foreground leading-relaxed"
-                            >
-                              {e}
-                            </blockquote>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {ts.checkpointsTitle}
-            </h2>
-            <div className="space-y-2">
-              {feedback.checkpoints.map((c) => (
-                <div key={c.id} className="glass-panel rounded-xl border border-border p-3 flex gap-3">
-                  {c.hit ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
-                  )}
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {c.hit ? ts.hit : ts.missed}
-                    </div>
-                    <p className="text-sm leading-relaxed">{c.comment}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {ratings && (
-            <section className="space-y-2">
-              <button
-                onClick={() => setShowC10((v) => !v)}
-                className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
-              >
-                <ChevronDown
-                  className={cx('h-4 w-4 transition-transform', showC10 && 'rotate-180')}
-                />
-                {ts.c10Title}
-              </button>
-              {showC10 && (
-                <div className="glass-panel rounded-xl border border-border p-4 space-y-2">
-                  <p className="text-xs text-muted-foreground">{ts.c10Hint}</p>
-                  {ratings.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between gap-3 py-1 border-b border-border/50 last:border-0">
-                      <span className="text-sm">
-                        <span className="font-mono text-xs text-muted-foreground mr-2">{r.id}</span>
-                        {r.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {r.score == null ? ts.notObservable : `${r.score} / 4`}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* CTA-Zeile: Fokus-Retry zuerst — die Schleife ist das Produkt. */}
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => void startSimulation(scenario, feedback.nextStep.slice(0, 280))}
-              disabled={starting}
-              className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
-            >
-              {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <RotateCcw className="h-5 w-5" />}
-              {ts.retryFocusCta}
-            </button>
-            <button
-              onClick={backToList}
-              className="rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
-            >
-              <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
-            </button>
-          </div>
-        </div>
       </AppShell>
     );
   }

@@ -21,14 +21,20 @@
     "skipToContent": "Przejdź do treści głównej",
     "selectLanguage": "Wybierz język",
     "topUp": "Doładuj kredyty",
-    "watchVideo": "Obejrzyj wideo"
+    "watchVideo": "Obejrzyj wideo",
+    "expandSidebar": "Rozwiń pasek boczny",
+    "collapseSidebar": "Zwiń pasek boczny"
   },
   "nav": {
     "analyze": "Analiza transkryptu",
     "history": "Historia",
     "newAnalysis": "Nowa analiza",
     "workspace": "Zespół",
-    "simulation": "Sesja odgrywania ról"
+    "simulation": "Sesja odgrywania ról",
+    "practice": "Ćwicz",
+    "mainGroup": "MAIN",
+    "home": "Strona główna",
+    "settings": "Ustawienia"
   },
   "simulation": {
     "title": "Sesja odgrywania ról",
@@ -217,7 +223,12 @@
     "noSummary": "Brak podsumowania.",
     "openAnalysis": "Otwórz analizę",
     "loadMore": "Załaduj więcej",
-    "loadingMore": "Ładowanie kolejnych…"
+    "loadingMore": "Ładowanie kolejnych…",
+    "typeAnalysis": "Analiza",
+    "typeSim": "Odgrywanie ról",
+    "bindingTooltipRun": "Analizy są powiązane z sesją przeglądarki — „Nowa sesja” zaczyna świeżą listę.",
+    "bindingTooltipSim": "Odgrywanie ról jest powiązane z twoim kontem i pozostaje widoczne między sesjami.",
+    "openSim": "Otwórz ocenę"
   },
   "report": {
     "type": "Typ",
@@ -268,7 +279,16 @@
     "followUpCta": "Zaplanuj kolejny pomiar (~4 tygodnie)",
     "followUpHint": "Pobiera wpis do kalendarza – Ty decydujesz, kiedy zmierzyć ponownie.",
     "followUpSummary": "Pomiar kontrolny: analiza rozmowy (PulseNorth Coach)",
-    "followUpDescription": "Czas na kolejny pomiar: przeanalizuj aktualną rozmowę w PulseNorth Coach i zobacz, jak rozwinęły się Twoje kompetencje od ostatniego pomiaru."
+    "followUpDescription": "Czas na kolejny pomiar: przeanalizuj aktualną rozmowę w PulseNorth Coach i zobacz, jak rozwinęły się Twoje kompetencje od ostatniego pomiaru.",
+    "scoreTitleVeryStrong": "Bardzo mocne prowadzenie rozmowy",
+    "scoreTitleStrong": "Dobre prowadzenie rozmowy",
+    "scoreTitleSolid": "Solidna baza",
+    "scoreTitleNeedsWork": "Do rozwinięcia",
+    "scoreTitleReady": "Analiza gotowa",
+    "badgeVeryStrong": "Bardzo mocno",
+    "badgeStrong": "Mocno",
+    "badgeSolid": "Solidnie",
+    "badgeNeedsWork": "Wymaga uwagi"
   },
   "linkedin": {
     "title": "Udostępnij na LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Nie znaleziono",
     "internalError": "Wewnętrzny błąd serwera",
     "rateLimited": "Zbyt wiele żądań. Spróbuj ponownie później."
+  },
+  "entry": {
+    "title": "Ćwicz",
+    "h1": "Co chcesz dziś poćwiczyć, {name}?",
+    "h1NoName": "Co chcesz dziś poćwiczyć?",
+    "sub": "Ćwicz na żywo z personą AI — albo przynieś prawdziwą rozmowę. Obie drogi prowadzą do tej samej oceny.",
+    "resumeTitle": "Kontynuuj",
+    "dropTitle": "Masz już za sobą prawdziwą rozmowę? Przeciągnij transkrypcję tutaj",
+    "dropMeta": "PDF z Teams lub tekst · anonimizacja wbudowana",
+    "dropCta": "Analizuj transkrypcję",
+    "recoTitle": "Polecane dla ciebie",
+    "recoReason": "Polecane: twój ostatni wynik pokazuje największą lukę w {c}.",
+    "coldStartFrame": "Zacznij od scenariusza wprowadzającego — ocena pokaże ci potem, nad czym pracować.",
+    "filterAll": "Wszystkie",
+    "catMitarbeiterfuehrung": "Kierowanie ludźmi",
+    "catZusammenarbeit": "Współpraca",
+    "catVertrieb": "Sprzedaż",
+    "catStakeholder": "Interesariusze",
+    "priceNote": "Ocena kosztuje 1 kredyt · przerwy z coachem są bezpłatne",
+    "ghostTitle": "Nie ma jeszcze twojego scenariusza?",
+    "ghostBody": "Opisz krótko sytuację, którą chcesz poćwiczyć — twoja prośba trafia prosto do priorytetyzacji nowych scenariuszy.",
+    "ghostCta": "Poproś o scenariusz",
+    "wishTitle": "Jakiego scenariusza ci brakuje?",
+    "wishPlaceholder": "np. rozmowa o podwyżce z top performerem, który może odejść",
+    "wishSend": "Wyślij prośbę",
+    "wishThanks": "Dziękujemy! Twoja prośba dotarła i trafia do priorytetyzacji nowych scenariuszy."
+  },
+  "evaluation": {
+    "sourceSim": "z odgrywania ról",
+    "sourceRun": "z transkrypcji",
+    "notFound": "Nie znaleziono tej oceny.",
+    "backHome": "Wróć na start"
   }
 }

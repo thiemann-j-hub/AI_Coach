@@ -1,37 +1,98 @@
 'use client';
 
-import React from 'react';
+/**
+ * EIN Score-Ring für beide Ergebnis-Ansichten (COACH-UX-BLUEPRINT §3/W1-8) —
+ * ersetzt die zwei gleichnamigen, unterschiedlichen Implementierungen
+ * (report-dashboard-Variante + lokale Debrief-Variante der Simulation).
+ * Ohne verdict: Primärfarbe. Mit verdict: Urteilsfarbe + Bestehensmarke.
+ */
+import React, { useEffect, useState } from 'react';
 
-function clamp(n: number, a: number, b: number) {
-  return Math.max(a, Math.min(b, n));
-}
+export function ScoreRing({
+  value,
+  label,
+  verdict,
+  passMark,
+  unratedLabel,
+}: {
+  /** Prozentwert 0–100; null = nicht bewertbar. */
+  value: number | null;
+  /** Kleines Label unter der Zahl (z. B. „GESAMT"). */
+  label?: string;
+  /** Färbt den Ring nach Urteil; ohne Angabe Primärfarbe. */
+  verdict?: 'passed' | 'failed' | 'unrated';
+  /** Bestehensgrenze 0–100 — rendert eine Marke auf dem Ring. */
+  passMark?: number;
+  /** Text im Ring, wenn value null ist. */
+  unratedLabel?: string;
+}) {
+  const [animated, setAnimated] = useState(0);
+  useEffect(() => {
+    const target = value ?? 0;
+    const id = requestAnimationFrame(() => setAnimated(target));
+    return () => cancelAnimationFrame(id);
+  }, [value]);
 
-export function ScoreRing({ value, label }: { value: number | null; label?: string }) {
-  const pct = value === null ? 0 : clamp(value, 0, 100);
-  const r = 40;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - pct / 100);
+  const R = 52;
+  const C = 2 * Math.PI * R;
+  const pct = Math.min(100, Math.max(0, animated));
+  const stroke =
+    verdict === 'passed'
+      ? '#34d399'
+      : verdict === 'failed'
+        ? '#fb7185'
+        : verdict === 'unrated'
+          ? '#94a3b8'
+          : '#0091ff';
+  const markAngle = passMark != null ? (passMark / 100) * 2 * Math.PI - Math.PI / 2 : null;
 
   return (
-    <div className="relative w-32 h-32 shrink-0">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100" aria-label="Score">
+    <div
+      className="relative h-[120px] w-[120px] shrink-0"
+      role="img"
+      aria-label={value != null ? `${Math.round(value)} %` : (unratedLabel ?? '—')}
+    >
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+        <circle cx="60" cy="60" r={R} fill="none" strokeWidth="10" className="stroke-border" />
         <circle
-          className="text-foreground/5"
-          cx="50" cy="50" r={r}
-          fill="transparent" stroke="currentColor" strokeWidth="8"
-        />
-        <circle
-          cx="50" cy="50" r={r}
-          fill="transparent" stroke="#0091ff" strokeWidth="8"
-          strokeLinecap="round" strokeDasharray={c} strokeDashoffset={offset}
-          style={{ filter: 'drop-shadow(0 0 10px rgba(0,145,255,0.30))' }}
+          cx="60"
+          cy="60"
+          r={R}
+          fill="none"
+          strokeWidth="10"
+          strokeLinecap="round"
+          stroke={stroke}
+          strokeDasharray={C}
+          strokeDashoffset={C - (pct / 100) * C}
+          style={{
+            transition: 'stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)',
+            filter: verdict ? undefined : 'drop-shadow(0 0 10px rgba(0,145,255,0.30))',
+          }}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center flex-col">
-        <span className="text-3xl font-bold text-foreground tabular-nums">
-          {value === null ? '—' : Math.round(pct)}
-        </span>
-        <span className="text-xs font-bold text-muted-foreground tracking-wider">{label ?? 'GESAMT'}</span>
+      {markAngle != null && (
+        <svg viewBox="0 0 120 120" className="absolute inset-0 h-full w-full pointer-events-none">
+          <circle
+            cx={60 + R * Math.cos(markAngle)}
+            cy={60 + R * Math.sin(markAngle)}
+            r="3.5"
+            className="fill-foreground/60"
+          />
+        </svg>
+      )}
+      <div className="absolute inset-0 grid place-items-center">
+        {value != null ? (
+          <div className="text-center leading-none">
+            <div className="text-3xl font-bold tabular-nums">{Math.round(value)}</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">
+              %{label ? ` · ${label}` : ''}
+            </div>
+          </div>
+        ) : (
+          <div className="text-[11px] text-muted-foreground text-center px-3 leading-tight">
+            {unratedLabel ?? '—'}
+          </div>
+        )}
       </div>
     </div>
   );

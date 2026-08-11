@@ -1,15 +1,10 @@
-import { Suspense } from "react";
-import SimulationClient from "./SimulationClient";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+/**
+ * Alte Adresse des Rollenspiel-Katalogs — der Einstieg lebt jetzt auf `/`
+ * (COACH-UX-BLUEPRINT §1/W1-3). Lesezeichen bleiben gültig.
+ * /simulation/[simId] (Auswertung) bleibt eine eigene Route.
+ */
 export default function SimulationPage() {
-  return (
-    <AuthGuard>
-      <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-        <SimulationClient />
-      </Suspense>
-    </AuthGuard>
-  );
+  redirect("/");
 }

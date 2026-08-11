@@ -21,14 +21,20 @@
     "skipToContent": "Pāriet uz galveno saturu",
     "selectLanguage": "Izvēlēties valodu",
     "topUp": "Papildināt kredītus",
-    "watchVideo": "Skatīties video"
+    "watchVideo": "Skatīties video",
+    "expandSidebar": "Izvērst sānjoslu",
+    "collapseSidebar": "Sakļaut sānjoslu"
   },
   "nav": {
     "analyze": "Transkripta analīze",
     "history": "Vēsture",
     "newAnalysis": "Jauna analīze",
     "workspace": "Komanda",
-    "simulation": "Lomu spēles sesija"
+    "simulation": "Lomu spēles sesija",
+    "practice": "Trenējies",
+    "mainGroup": "MAIN",
+    "home": "Sākums",
+    "settings": "Iestatījumi"
   },
   "simulation": {
     "title": "Lomu spēles sesija",
@@ -217,7 +223,12 @@
     "noSummary": "Kopsavilkums nav pieejams.",
     "openAnalysis": "Atvērt analīzi",
     "loadMore": "Ielādēt vairāk",
-    "loadingMore": "Notiek ielāde…"
+    "loadingMore": "Notiek ielāde…",
+    "typeAnalysis": "Analīze",
+    "typeSim": "Lomu spēle",
+    "bindingTooltipRun": "Analīzes ir piesaistītas pārlūka sesijai — “Jauna sesija” sāk jaunu sarakstu.",
+    "bindingTooltipSim": "Lomu spēles ir piesaistītas tavam kontam un paliek redzamas starp sesijām.",
+    "openSim": "Atvērt izvērtējumu"
   },
   "report": {
     "type": "Tips",
@@ -268,7 +279,16 @@
     "followUpCta": "Ieplānot atkārtotu mērījumu (~4 nedēļas)",
     "followUpHint": "Lejupielādē tev kalendāra ierakstu – tu izlem, kad mērīt atkal.",
     "followUpSummary": "Atkārtots mērījums: sarunas analīze (PulseNorth Coach)",
-    "followUpDescription": "Laiks nākamajam mērījumam: analizē nesenu sarunu lietotnē PulseNorth Coach un apskati, kā tavas kompetences ir attīstījušās kopš pēdējā mērījuma."
+    "followUpDescription": "Laiks nākamajam mērījumam: analizē nesenu sarunu lietotnē PulseNorth Coach un apskati, kā tavas kompetences ir attīstījušās kopš pēdējā mērījuma.",
+    "scoreTitleVeryStrong": "Ļoti spēcīga sarunas vadīšana",
+    "scoreTitleStrong": "Laba sarunas vadīšana",
+    "scoreTitleSolid": "Stabils pamats",
+    "scoreTitleNeedsWork": "Ir kur augt",
+    "scoreTitleReady": "Analīze gatava",
+    "badgeVeryStrong": "Ļoti spēcīgs",
+    "badgeStrong": "Spēcīgs",
+    "badgeSolid": "Stabils",
+    "badgeNeedsWork": "Vajag fokusu"
   },
   "linkedin": {
     "title": "Dalīties LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Nav atrasts",
     "internalError": "Iekšēja servera kļūda",
     "rateLimited": "Pārāk daudz pieprasījumu. Lūdzu, mēģini vēlāk."
+  },
+  "entry": {
+    "title": "Trenējies",
+    "h1": "Ko tu šodien gribi trenēt, {name}?",
+    "h1NoName": "Ko tu šodien gribi trenēt?",
+    "sub": "Trenējies tiešraidē ar MI personu — vai atnes īstu sarunu. Abi ceļi ved pie vienas un tās pašas izvērtēšanas.",
+    "resumeTitle": "Turpināt",
+    "dropTitle": "Īsta saruna jau notikusi? Ievelc transkripciju šeit",
+    "dropMeta": "Teams PDF vai teksts · anonimizācija iebūvēta",
+    "dropCta": "Analizēt transkripciju",
+    "recoTitle": "Ieteikts tev",
+    "recoReason": "Ieteikts: tavs pēdējais rezultāts rāda lielāko robu kompetencē {c}.",
+    "coldStartFrame": "Sāc ar ievada scenāriju — izvērtējums pēc tam parādīs, pie kā strādāt.",
+    "filterAll": "Visi",
+    "catMitarbeiterfuehrung": "Darbinieku vadīšana",
+    "catZusammenarbeit": "Sadarbība",
+    "catVertrieb": "Pārdošana",
+    "catStakeholder": "Ieinteresētās puses",
+    "priceNote": "Izvērtēšana maksā 1 kredītu · trenera pauzes ir bez maksas",
+    "ghostTitle": "Tava scenārija vēl nav?",
+    "ghostBody": "Īsi apraksti situāciju, ko gribi trenēt — tava vēlme tieši ietekmē jaunu scenāriju prioritātes.",
+    "ghostCta": "Pieprasīt scenāriju",
+    "wishTitle": "Kāda scenārija tev trūkst?",
+    "wishPlaceholder": "piem., algas saruna ar izcilnieku, kurš varētu aiziet",
+    "wishSend": "Nosūtīt vēlmi",
+    "wishThanks": "Paldies! Tava vēlme ir saņemta un ietekmē jaunu scenāriju prioritātes."
+  },
+  "evaluation": {
+    "sourceSim": "no lomu spēles",
+    "sourceRun": "no transkripcijas",
+    "notFound": "Šis izvērtējums netika atrasts.",
+    "backHome": "Atpakaļ uz sākumu"
   }
 }

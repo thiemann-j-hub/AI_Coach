@@ -14,6 +14,8 @@ import {
   sanitizeTranscript,
   parseExtraTerms,
 } from '@/lib/transcript-utils';
+import { buildAnalyzeRoleLabels } from '@/lib/analyze-payload';
+import { takePendingFile } from '@/lib/pending-file';
 import { useTranslation } from '@/i18n/useTranslation';
 import Link from 'next/link';
 import {
@@ -146,6 +148,14 @@ export default function AnalyzeClient() {
     e.target.value = '';
   }
 
+  // W1-2: Datei-Übergabe der Einstiegs-Ablageleiste — eine dort abgelegte PDF
+  // wird hier direkt eingelesen (consume-once, Modul-Scope überlebt router.push).
+  useEffect(() => {
+    const f = takePendingFile();
+    if (f) void handleFile(f);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -198,6 +208,14 @@ export default function AnalyzeClient() {
           })
         : transcriptText;
 
+      // P1: bei aktivem privacyMode gehen die generischen Labels ins Payload —
+      // die Klarnamen verlassen den Browser nicht (Versprechen der UI).
+      const roleLabels = buildAnalyzeRoleLabels({
+        privacyMode,
+        leaderLabel: l,
+        employeeLabel: e,
+      });
+
       const payload = {
         conversationType: 'feedback',
         conversationSubType: 'mitarbeitendengespräch',
@@ -205,8 +223,8 @@ export default function AnalyzeClient() {
         transcriptText: transcriptToSend,
         lang,
         jurisdiction: lang === 'de' ? 'de_eu' : 'en_us',
-        leaderLabel: l,
-        employeeLabel: e,
+        leaderLabel: roleLabels.leaderLabel,
+        employeeLabel: roleLabels.employeeLabel,
       };
 
       const res = await authFetch('/api/analyze', {

@@ -21,14 +21,20 @@
     "skipToContent": "Spring til hovedindholdet",
     "selectLanguage": "Vælg sprog",
     "topUp": "Optank kreditter",
-    "watchVideo": "Se video"
+    "watchVideo": "Se video",
+    "expandSidebar": "Udvid sidepanelet",
+    "collapseSidebar": "Skjul sidepanelet"
   },
   "nav": {
     "analyze": "Transskriptionsanalyse",
     "history": "Historik",
     "newAnalysis": "Ny analyse",
     "workspace": "Team",
-    "simulation": "Rollespilssession"
+    "simulation": "Rollespilssession",
+    "practice": "Øv",
+    "mainGroup": "MAIN",
+    "home": "Hjem",
+    "settings": "Indstillinger"
   },
   "simulation": {
     "title": "Rollespilssession",
@@ -217,7 +223,12 @@
     "noSummary": "Ingen opsummering tilgængelig.",
     "openAnalysis": "Åbn analyse",
     "loadMore": "Indlæs flere",
-    "loadingMore": "Indlæser flere…"
+    "loadingMore": "Indlæser flere…",
+    "typeAnalysis": "Analyse",
+    "typeSim": "Rollespil",
+    "bindingTooltipRun": "Analyser er knyttet til browsersessionen — ”Ny session” starter en frisk liste.",
+    "bindingTooltipSim": "Rollespil er knyttet til din konto og forbliver synlige på tværs af sessioner.",
+    "openSim": "Åbn evaluering"
   },
   "report": {
     "type": "Type",
@@ -268,7 +279,16 @@
     "followUpCta": "Planlæg opfølgningsmåling (~4 uger)",
     "followUpHint": "Downloader en kalenderaftale til dig – du bestemmer, hvornår du måler igen.",
     "followUpSummary": "Opfølgningsmåling: samtaleanalyse (PulseNorth Coach)",
-    "followUpDescription": "Tid til din næste måling: Analysér en aktuel samtale i PulseNorth Coach, og se, hvordan dine kompetencer har udviklet sig siden sidste måling."
+    "followUpDescription": "Tid til din næste måling: Analysér en aktuel samtale i PulseNorth Coach, og se, hvordan dine kompetencer har udviklet sig siden sidste måling.",
+    "scoreTitleVeryStrong": "Meget stærk samtaleledelse",
+    "scoreTitleStrong": "God samtaleledelse",
+    "scoreTitleSolid": "Solidt fundament",
+    "scoreTitleNeedsWork": "Plads til udvikling",
+    "scoreTitleReady": "Analyse klar",
+    "badgeVeryStrong": "Meget stærk",
+    "badgeStrong": "Stærk",
+    "badgeSolid": "Solid",
+    "badgeNeedsWork": "Kræver fokus"
   },
   "linkedin": {
     "title": "Del på LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Ikke fundet",
     "internalError": "Intern serverfejl",
     "rateLimited": "For mange forespørgsler. Prøv igen senere."
+  },
+  "entry": {
+    "title": "Øv",
+    "h1": "Hvad vil du øve i dag, {name}?",
+    "h1NoName": "Hvad vil du øve i dag?",
+    "sub": "Øv live med en AI-persona — eller tag en rigtig samtale med. Begge veje fører til den samme evaluering.",
+    "resumeTitle": "Fortsæt",
+    "dropTitle": "Har du allerede haft en rigtig samtale? Træk transskriptionen herhen",
+    "dropMeta": "Teams-PDF eller tekst · anonymisering indbygget",
+    "dropCta": "Analysér transskription",
+    "recoTitle": "Anbefalet til dig",
+    "recoReason": "Anbefalet: dit seneste resultat viser det største hul i {c}.",
+    "coldStartFrame": "Start med et begynderscenarie — evalueringen viser dig bagefter, hvad du skal arbejde med.",
+    "filterAll": "Alle",
+    "catMitarbeiterfuehrung": "Medarbejderledelse",
+    "catZusammenarbeit": "Samarbejde",
+    "catVertrieb": "Salg",
+    "catStakeholder": "Interessenter",
+    "priceNote": "Evaluering koster 1 kredit · coachpauser er gratis",
+    "ghostTitle": "Er dit scenarie der ikke endnu?",
+    "ghostBody": "Beskriv kort den situation, du vil øve — dit ønske indgår direkte i prioriteringen af nye scenarier.",
+    "ghostCta": "Ønsk et scenarie",
+    "wishTitle": "Hvilket scenarie mangler du?",
+    "wishPlaceholder": "f.eks. en lønsamtale med en topmedarbejder, der måske siger op",
+    "wishSend": "Send ønske",
+    "wishThanks": "Tak! Dit ønske er modtaget og indgår i prioriteringen af nye scenarier."
+  },
+  "evaluation": {
+    "sourceSim": "fra rollespil",
+    "sourceRun": "fra transskription",
+    "notFound": "Evalueringen blev ikke fundet.",
+    "backHome": "Til startsiden"
   }
 }

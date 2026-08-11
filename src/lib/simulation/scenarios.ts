@@ -33,6 +33,9 @@ const morgan: SimulationScenario = {
     "Deine beziehungsorientierte Kundenverantwortliche liefert Qualität, verliert aber die Steuerung: ein Kunde eskaliert, ein Angebot hängt, delegiert wird nichts.",
   conversationType: "mitarbeitergespräch",
   difficulty: 1,
+  category: "mitarbeiterfuehrung",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C3", "C2"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Alex Morgan", role: "Kundenverantwortliche" },
@@ -152,6 +155,9 @@ const lang: SimulationScenario = {
     "Dein früherer Vorgesetzter blockiert das gemeinsame Projekt, verweigert dir einen Experten und streut eine vertrauliche Präsentation. Du brauchst ihn trotzdem.",
   conversationType: "kollegengespräch",
   difficulty: 2,
+  category: "zusammenarbeit",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C1", "C5"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Viktor Lang", role: "Werksleiter Kingsport 2" },
@@ -280,6 +286,9 @@ const vance: SimulationScenario = {
     "Dein IT-Leiter ist fachlich herausragend — aber Fluktuation, Projektüberziehungen und Befragungswerte eskalieren. Und du brauchst ihn für ein Projekt, das er ablehnt.",
   conversationType: "mitarbeitergespräch",
   difficulty: 3,
+  category: "mitarbeiterfuehrung",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C5", "C2"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Dr. Robin Vance", role: "Leiter IT" },
@@ -483,6 +492,9 @@ const roth: SimulationScenario = {
     "Dein Mit-Azubi hat dich bei einer dringenden Chef-Aufgabe hängen lassen — und kassiert dafür auch noch das Lob. Gleich müsst ihr zusätzlich klären, wer die Projektpräsentation hält.",
   conversationType: "kollegengespräch",
   difficulty: 1,
+  category: "zusammenarbeit",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C5", "C4"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf" },
@@ -610,6 +622,9 @@ const reed: SimulationScenario = {
     "Dein erfahrenster Mitarbeiter liefert Qualität wie ein Uhrwerk — aber Antwortzeiten platzen, im Meeting blockt er jede Idee ab, und seine Mentee korrigiert er vor allen. Du willst Veränderung, ohne ihn zu verlieren.",
   conversationType: "mitarbeitergespräch",
   difficulty: 2,
+  category: "mitarbeiterfuehrung",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C2", "C6"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Sam Reed", role: "Referent Auftragsabwicklung" },
@@ -745,6 +760,9 @@ const brandt: SimulationScenario = {
     "Nach der Übernahme eines Food-Tech-Start-ups sollst du zwei völlig verschiedene Teams verschmelzen. Der erfahrene Teammanager deiner Stammorganisation hält das meiste davon für überflüssig — und hat für alles ein Effizienz-Argument.",
   conversationType: "kollegengespräch",
   difficulty: 3,
+  category: "zusammenarbeit",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C1", "C7"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Marek Brandt", role: "Teammanager Projekte" },
@@ -886,6 +904,9 @@ const falk: SimulationScenario = {
     "Ihr führt als Doppelspitze je eine Produktlinie — er die etablierte, du die neue grüne. Jetzt sollt ihr gemeinsam die Fuhrpark-Frage lösen. Er hat dich schon einmal ausgebremst, im Workshop öffentlich kleingeredet — und sein Netzwerk ist legendär.",
   conversationType: "kollegengespräch",
   difficulty: 3,
+  category: "zusammenarbeit",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C1", "C9"],
   durationMin: 15,
   locale: "de",
   persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment" },
@@ -1029,6 +1050,9 @@ const stone: SimulationScenario = {
     "Your best regional manager delivers numbers nobody else matches — while colleagues refuse to work with him, reps feel humiliated, and people resign. Today you must change his behaviour without breaking his drive. And you need him to take over a second region.",
   conversationType: "mitarbeitergespräch",
   difficulty: 3,
+  category: "mitarbeiterfuehrung",
+  // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
+  competencyFocus: ["C3", "C5"],
   durationMin: 15,
   locale: "en",
   persona: { name: "Erik Stone", role: "Regional Sales Manager East" },
@@ -1174,6 +1198,8 @@ export function publicScenario(s: SimulationScenario): PublicSimulationScenario 
     difficulty: s.difficulty,
     durationMin: s.durationMin,
     locale: s.locale,
+    category: s.category,
+    ...(s.competencyFocus ? { competencyFocus: s.competencyFocus } : {}),
     persona: s.persona,
     candidateBriefing: s.candidateBriefing,
     competencies: s.assessment.competencies,

@@ -3,6 +3,7 @@ import type { SimulationTurn } from "@/lib/simulation/types";
 import {
   SIM_MAX_TURN_CHARS,
   SIM_MAX_USER_TURNS,
+  abortDecision,
   assembleTranscript,
   countUserTurns,
   simPartitionKey,
@@ -36,5 +37,13 @@ describe("simulation-store (pure)", () => {
   it("Kappen sind gesetzt (Kosten-/Doc-Schutz)", () => {
     expect(SIM_MAX_USER_TURNS).toBeGreaterThanOrEqual(20);
     expect(SIM_MAX_TURN_CHARS).toBeGreaterThanOrEqual(500);
+  });
+
+  it("abortDecision (§2.4): idempotent aus aborted, Konflikt aus finished", () => {
+    expect(abortDecision("active")).toBe("abort");
+    // Idempotenz: ein erneuter Abort ist ok (kein Fehler, kein Statuswechsel).
+    expect(abortDecision("aborted")).toBe("already");
+    // Bezahlte Auswertung wird NIE abgebrochen.
+    expect(abortDecision("finished")).toBe("conflict");
   });
 });

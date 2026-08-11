@@ -5,6 +5,31 @@ const TRANSCRIPT =
   "Führungskraft: Ich möchte heute über die Projektziele sprechen. " +
   "Mitarbeiter:in: Das finde ich gut, ich habe dazu drei konkrete Vorschläge vorbereitet.";
 
+describe("checkEvidenceGrounding — P2: Rollenspiel-Rubrik (S-Keys) über denselben Check", () => {
+  const SIM_TRANSCRIPT =
+    "Teilnehmer:in: Ich schlage vor, wir vereinbaren einen konkreten nächsten Schritt bis Freitag. " +
+    "Dr. Robin Vance: Von mir aus — aber nur, wenn das Audit-Thema zuerst geklärt wird.";
+
+  it("S1–S5-Evidence läuft als id durch — fabrizierte Rubrik-Kette wird error", () => {
+    const notes = checkEvidenceGrounding(
+      [
+        { id: "S5", score: 3, evidence: ["Dieses Rubrik-Zitat wurde nie gesagt im Gespräch"] },
+        // Sprecher-Prefix im Zitat wird gestrippt (evidenceNeedle) — grounded.
+        {
+          id: "S1",
+          score: 4,
+          evidence: ["Führungskraft: Ich schlage vor, wir vereinbaren einen konkreten nächsten Schritt bis Freitag."],
+        },
+      ],
+      SIM_TRANSCRIPT
+    );
+    const err = notes.filter((n) => n.severity === "error");
+    expect(err).toHaveLength(1);
+    expect(err[0].field).toBe("S5");
+    expect(notes.filter((n) => n.field === "S1")).toHaveLength(0);
+  });
+});
+
 describe("checkEvidenceGrounding — §2.2 error-Eskalation", () => {
   it("GESAMTE Evidenz fabriziert + Score gesetzt → error EVIDENCE_ALL_UNGROUNDED", () => {
     const notes = checkEvidenceGrounding(

@@ -21,14 +21,20 @@
     "skipToContent": "Saltar para o conteúdo principal",
     "selectLanguage": "Selecionar idioma",
     "topUp": "Carregar créditos",
-    "watchVideo": "Ver o vídeo"
+    "watchVideo": "Ver o vídeo",
+    "expandSidebar": "Expandir a barra lateral",
+    "collapseSidebar": "Recolher a barra lateral"
   },
   "nav": {
     "analyze": "Análise de transcrição",
     "history": "Histórico",
     "newAnalysis": "Nova análise",
     "workspace": "Equipa",
-    "simulation": "Sessão de role-play"
+    "simulation": "Sessão de role-play",
+    "practice": "Praticar",
+    "mainGroup": "MAIN",
+    "home": "Início",
+    "settings": "Definições"
   },
   "simulation": {
     "title": "Sessão de role-play",
@@ -217,7 +223,12 @@
     "noSummary": "Nenhum resumo disponível.",
     "openAnalysis": "Abrir análise",
     "loadMore": "Carregar mais",
-    "loadingMore": "A carregar mais…"
+    "loadingMore": "A carregar mais…",
+    "typeAnalysis": "Análise",
+    "typeSim": "Role-play",
+    "bindingTooltipRun": "As análises estão ligadas à sessão do navegador — «Nova sessão» começa uma lista nova.",
+    "bindingTooltipSim": "Os role-plays estão ligados à tua conta e ficam visíveis entre sessões.",
+    "openSim": "Abrir avaliação"
   },
   "report": {
     "type": "Tipo",
@@ -268,7 +279,16 @@
     "followUpCta": "Agendar medição de seguimento (~4 semanas)",
     "followUpHint": "Transfere uma entrada de calendário para ti – tu decides quando voltar a medir.",
     "followUpSummary": "Medição de seguimento: análise de conversa (PulseNorth Coach)",
-    "followUpDescription": "Está na hora da próxima medição: analisa uma conversa recente no PulseNorth Coach e vê como as tuas competências evoluíram desde a última medição."
+    "followUpDescription": "Está na hora da próxima medição: analisa uma conversa recente no PulseNorth Coach e vê como as tuas competências evoluíram desde a última medição.",
+    "scoreTitleVeryStrong": "Condução de conversa muito sólida",
+    "scoreTitleStrong": "Boa condução de conversa",
+    "scoreTitleSolid": "Base sólida",
+    "scoreTitleNeedsWork": "A desenvolver",
+    "scoreTitleReady": "Análise pronta",
+    "badgeVeryStrong": "Muito forte",
+    "badgeStrong": "Forte",
+    "badgeSolid": "Sólido",
+    "badgeNeedsWork": "Precisa de foco"
   },
   "linkedin": {
     "title": "Partilhar no LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Não encontrado",
     "internalError": "Erro interno do servidor",
     "rateLimited": "Demasiados pedidos. Tenta novamente mais tarde."
+  },
+  "entry": {
+    "title": "Praticar",
+    "h1": "O que queres praticar hoje, {name}?",
+    "h1NoName": "O que queres praticar hoje?",
+    "sub": "Pratica ao vivo com uma persona de IA — ou traz uma conversa real. Os dois caminhos levam à mesma avaliação.",
+    "resumeTitle": "Continuar",
+    "dropTitle": "Já tiveste uma conversa real? Arrasta a transcrição para aqui",
+    "dropMeta": "PDF do Teams ou texto · anonimização integrada",
+    "dropCta": "Analisar transcrição",
+    "recoTitle": "Recomendado para ti",
+    "recoReason": "Recomendado: o teu último resultado mostra a maior lacuna em {c}.",
+    "coldStartFrame": "Começa com um cenário de iniciação — a avaliação mostra-te depois em que trabalhar.",
+    "filterAll": "Todos",
+    "catMitarbeiterfuehrung": "Liderança de pessoas",
+    "catZusammenarbeit": "Colaboração",
+    "catVertrieb": "Vendas",
+    "catStakeholder": "Stakeholders",
+    "priceNote": "A avaliação custa 1 crédito · as pausas de coach são gratuitas",
+    "ghostTitle": "O teu cenário ainda não existe?",
+    "ghostBody": "Descreve brevemente a situação que queres praticar — o teu pedido entra diretamente na priorização de novos cenários.",
+    "ghostCta": "Pedir um cenário",
+    "wishTitle": "Que cenário te falta?",
+    "wishPlaceholder": "p. ex. uma conversa salarial com um top performer que pode sair",
+    "wishSend": "Enviar pedido",
+    "wishThanks": "Obrigado! O teu pedido chegou e entra na priorização de novos cenários."
+  },
+  "evaluation": {
+    "sourceSim": "de role-play",
+    "sourceRun": "de transcrição",
+    "notFound": "Esta avaliação não foi encontrada.",
+    "backHome": "Voltar ao início"
   }
 }

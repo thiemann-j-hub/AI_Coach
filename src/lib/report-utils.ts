@@ -21,21 +21,28 @@ export function overallToPercent(result: AnyObj): number | null {
   return clamp(raw, 0, 100);
 }
 
-export function scoreTitle(pct: number | null): string {
-  if (pct === null) return 'Analyse bereit';
-  if (pct >= 85) return 'Sehr starke Gesprächsführung';
-  if (pct >= 70) return 'Gute Gesprächsführung';
-  if (pct >= 55) return 'Solide Basis';
-  return 'Ausbaufähig';
+/**
+ * Score-Stufe (W1-8): die Funktion liefert nur den KEY — die Texte kommen aus
+ * den 22 Dictionaries (vorher hart deutsch, brach in 21 Sprachen).
+ */
+export type ScoreTier = 'veryStrong' | 'strong' | 'solid' | 'needsWork' | 'ready';
+
+export function scoreTier(pct: number | null): ScoreTier {
+  if (pct === null) return 'ready';
+  if (pct >= 85) return 'veryStrong';
+  if (pct >= 70) return 'strong';
+  if (pct >= 55) return 'solid';
+  return 'needsWork';
 }
 
-export function scoreBadge(pct: number | null): { label: string; cls: string } {
-  if (pct === null) return { label: '—', cls: 'bg-foreground/5 text-muted-foreground' };
-  if (pct >= 85) return { label: 'Sehr stark', cls: 'bg-emerald-500/15 text-emerald-400' };
-  if (pct >= 70) return { label: 'Stark', cls: 'bg-primary/15 text-primary' };
-  if (pct >= 55) return { label: 'Solide', cls: 'bg-amber-500/15 text-amber-400' };
-  return { label: 'Fokus nötig', cls: 'bg-red-500/15 text-red-400' };
-}
+/** Badge-Optik je Stufe (Text kommt aus dem Dictionary). */
+export const SCORE_BADGE_CLS: Record<ScoreTier, string> = {
+  veryStrong: 'bg-emerald-500/15 text-emerald-400',
+  strong: 'bg-primary/15 text-primary',
+  solid: 'bg-amber-500/15 text-amber-400',
+  needsWork: 'bg-red-500/15 text-red-400',
+  ready: 'bg-foreground/5 text-muted-foreground',
+};
 
 export function asStringArray(v: any): string[] {
   return Array.isArray(v)

@@ -1,8 +1,20 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import SimulationClient from "./simulation/SimulationClient";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
-// Die frühere Legacy-Startseite (CommsCoach-AI-Parallel-Flow) wurde entfernt:
-// ihr Server-Action-Pfad schrieb in eine von firestore.rules gesperrte
-// Collection und konnte nie funktionieren. /analyze ist der kanonische Flow.
+export const dynamic = "force-dynamic";
+
+/**
+ * DER Einstieg (COACH-UX-BLUEPRINT §1): ein Einstieg mit zwei Zuflüssen in
+ * dieselbe Messung — Szenario-Raster (Rollenspiel) + Ablage-Leiste (Transkript).
+ * Kein Redirect mehr: die Startseite IST die Seite.
+ */
 export default function Home() {
-  redirect("/analyze");
+  return (
+    <AuthGuard>
+      <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
+        <SimulationClient />
+      </Suspense>
+    </AuthGuard>
+  );
 }

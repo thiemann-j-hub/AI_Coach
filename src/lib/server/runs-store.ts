@@ -333,3 +333,25 @@ export async function findPreviousMeasuredRun(
   }
   return null;
 }
+
+/**
+ * Jüngste Transkript-Analyse eines Users (Einstiegs-Empfehlung, Blueprint
+ * §3/W1-4). Cross-Partition, aber TOP 1 mit Index auf createdAt — und nur
+ * die zwei Felder, die die Empfehlung braucht. Simulations-Docs (docType)
+ * und Soft-Deletes werden ausgefiltert.
+ */
+export async function latestRunForUid(
+  uid: string
+): Promise<{ createdAt: string; competencyRatings: unknown } | null> {
+  const rows = await queryItems<{ createdAt: string; analysisJson?: any }>(
+    runsContainer(),
+    "SELECT TOP 1 c.createdAt, c.analysisJson FROM c WHERE c.uid = @uid AND NOT IS_DEFINED(c.docType) AND (NOT IS_DEFINED(c.deleted) OR c.deleted = false) AND IS_DEFINED(c.analysisJson) ORDER BY c.createdAt DESC",
+    [{ name: "@uid", value: uid }]
+  );
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    createdAt: r.createdAt,
+    competencyRatings: r.analysisJson?.competency_ratings ?? null,
+  };
+}

@@ -27,7 +27,12 @@ export interface SimulationDoc {
   scenarioId: string;
   createdAt: string;
   updatedAt: string;
-  status: "active" | "finished";
+  /**
+   * `aborted` (COACH-UX-BLUEPRINT §2.4): nur via POST /api/simulation/abort,
+   * nur aus `active`, kein Credit/LLM/Radar. Wird aus allen Listen gefiltert —
+   * die Historie bleibt sauber (kein Karteileichen-Eintrag).
+   */
+  status: "active" | "finished" | "aborted";
   turns: SimulationTurn[];
   feedbackJson?: unknown | null;
   competencyRatings?: unknown | null;
@@ -44,6 +49,8 @@ export interface SimulationDoc {
   debriefJson?: unknown | null;
   /** Vergleich zum Vorversuch (computeDelta) — beim Finish persistiert. */
   deltaJson?: unknown | null;
+  /** P2: deterministische Grounding-Notizen des Finish-Laufs (additiv). */
+  qualityNotes?: unknown[];
   /**
    * Time-out-Coach (D3): kurze Coach-Wechsel WÄHREND der Simulation.
    * Bewusst getrennt von `turns` — die Persona »hört« den Time-out nicht,
@@ -67,6 +74,19 @@ export const SIM_MAX_TIMEOUTS = 3;
 
 export function simPartitionKey(uid: string): string {
   return `sim:${uid}`;
+}
+
+/**
+ * Abort-Entscheidung (§2.4, pure + getestet): idempotent aus `aborted`,
+ * Konflikt aus `finished` (die Auswertung ist bezahlt — sie bleibt),
+ * Übergang nur aus `active`.
+ */
+export function abortDecision(
+  status: SimulationDoc["status"]
+): "already" | "conflict" | "abort" {
+  if (status === "aborted") return "already";
+  if (status === "finished") return "conflict";
+  return "abort";
 }
 
 /** Anzahl der User-Beiträge (Persona-Turns zählen nicht gegen die Kappe). */
@@ -151,6 +171,7 @@ export interface SimulationListItem {
   id: string;
   scenarioId: string;
   status: "active" | "finished";
+  // `aborted` taucht hier nie auf — die List-Query filtert es (§2.4).
   createdAt: string;
   updatedAt: string;
   turnCount: number;
@@ -177,7 +198,8 @@ export async function listSimulations(
   }>(
     runsContainer(),
     // Partitions-lokale Query (sessionId = PK) — kein Cross-Partition-Fanout.
-    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, c.turns, c.attempt, c.debriefJson FROM c WHERE c.sessionId = @pk AND c.docType = @dt ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
+    // `aborted` wird ausgefiltert (§2.4): abgebrochene Läufe sind keine Historie.
+    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, c.turns, c.attempt, c.debriefJson FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status != 'aborted' ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
     [
       { name: "@pk", value: simPartitionKey(uid) },
       { name: "@dt", value: SIM_DOC_TYPE },
@@ -243,4 +265,32 @@ export async function countFinishedForScenario(
   );
   const n = rows[0] as unknown;
   return typeof n === "number" ? n : 0;
+}
+
+/**
+ * Jüngste ABGESCHLOSSENE Simulation (szenario-unabhängig) — Datenquelle der
+ * Einstiegs-Empfehlung (COACH-UX-BLUEPRINT §3/W1-4). Partitions-lokal, billig.
+ */
+export async function latestFinishedAny(
+  uid: string
+): Promise<{ finishedAt: string; competencyRatings: unknown } | null> {
+  const rows = await queryItems<{
+    finishedAt?: string;
+    createdAt: string;
+    competencyRatings?: unknown;
+  }>(
+    runsContainer(),
+    "SELECT TOP 1 c.finishedAt, c.createdAt, c.competencyRatings FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status = @st ORDER BY c.createdAt DESC",
+    [
+      { name: "@pk", value: simPartitionKey(uid) },
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@st", value: "finished" },
+    ]
+  );
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    finishedAt: r.finishedAt ?? r.createdAt,
+    competencyRatings: r.competencyRatings ?? null,
+  };
 }

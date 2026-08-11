@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getSimulation } from "@/lib/server/simulation-store";
-import { getScenario } from "@/lib/simulation/scenarios";
+import { getScenario, publicScenario } from "@/lib/simulation/scenarios";
 import { computeDebrief } from "@/lib/simulation/debrief";
 import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
 import { logger } from "@/lib/logger";
@@ -45,8 +45,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // W1-7: Szenario-Projektion mitliefern — die eigenständige Auswertungs-
+    // Seite (/simulation/[simId]) braucht Titel/Persona ohne Katalog-Fetch.
+    const scenarioFull = getScenario(doc.scenarioId);
+
     return NextResponse.json({
       ok: true,
+      scenario: scenarioFull ? publicScenario(scenarioFull) : null,
       simulation: {
         id: doc.id,
         scenarioId: doc.scenarioId,

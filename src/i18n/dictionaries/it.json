@@ -21,14 +21,20 @@
     "skipToContent": "Vai al contenuto principale",
     "selectLanguage": "Seleziona la lingua",
     "topUp": "Ricarica crediti",
-    "watchVideo": "Guarda il video"
+    "watchVideo": "Guarda il video",
+    "expandSidebar": "Espandi la barra laterale",
+    "collapseSidebar": "Comprimi la barra laterale"
   },
   "nav": {
     "analyze": "Analisi della trascrizione",
     "history": "Cronologia",
     "newAnalysis": "Nuova analisi",
     "workspace": "Team",
-    "simulation": "Sessione di role play"
+    "simulation": "Sessione di role play",
+    "practice": "Allenati",
+    "mainGroup": "MAIN",
+    "home": "Home",
+    "settings": "Impostazioni"
   },
   "simulation": {
     "title": "Sessione di role play",
@@ -217,7 +223,12 @@
     "noSummary": "Nessun riepilogo disponibile.",
     "openAnalysis": "Apri analisi",
     "loadMore": "Carica altri",
-    "loadingMore": "Caricamento di altri…"
+    "loadingMore": "Caricamento di altri…",
+    "typeAnalysis": "Analisi",
+    "typeSim": "Gioco di ruolo",
+    "bindingTooltipRun": "Le analisi sono legate alla sessione del browser — «Nuova sessione» avvia una lista nuova.",
+    "bindingTooltipSim": "I giochi di ruolo sono legati al tuo account e restano visibili tra le sessioni.",
+    "openSim": "Apri valutazione"
   },
   "report": {
     "type": "Tipo",
@@ -268,7 +279,16 @@
     "followUpCta": "Pianifica la prossima misurazione (~4 settimane)",
     "followUpHint": "Scarica una voce di calendario per te – decidi tu quando misurare di nuovo.",
     "followUpSummary": "Misurazione di follow-up: analisi del colloquio (PulseNorth Coach)",
-    "followUpDescription": "È ora della prossima misurazione: analizza un colloquio recente in PulseNorth Coach e osserva come si sono sviluppate le tue competenze dall’ultima misurazione."
+    "followUpDescription": "È ora della prossima misurazione: analizza un colloquio recente in PulseNorth Coach e osserva come si sono sviluppate le tue competenze dall’ultima misurazione.",
+    "scoreTitleVeryStrong": "Conduzione del colloquio molto solida",
+    "scoreTitleStrong": "Buona conduzione del colloquio",
+    "scoreTitleSolid": "Base solida",
+    "scoreTitleNeedsWork": "Da sviluppare",
+    "scoreTitleReady": "Analisi pronta",
+    "badgeVeryStrong": "Molto forte",
+    "badgeStrong": "Forte",
+    "badgeSolid": "Solido",
+    "badgeNeedsWork": "Serve focus"
   },
   "linkedin": {
     "title": "Condividi su LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Non trovato",
     "internalError": "Errore interno del server",
     "rateLimited": "Troppe richieste. Riprova più tardi."
+  },
+  "entry": {
+    "title": "Allenati",
+    "h1": "Cosa vuoi allenare oggi, {name}?",
+    "h1NoName": "Cosa vuoi allenare oggi?",
+    "sub": "Allenati dal vivo con un personaggio IA — oppure porta una conversazione reale. Entrambe le strade portano alla stessa valutazione.",
+    "resumeTitle": "Riprendi",
+    "dropTitle": "Hai già avuto una conversazione reale? Trascina qui la trascrizione",
+    "dropMeta": "PDF di Teams o testo · anonimizzazione integrata",
+    "dropCta": "Analizza trascrizione",
+    "recoTitle": "Consigliato per te",
+    "recoReason": "Consigliato: il tuo ultimo risultato mostra il divario maggiore in {c}.",
+    "coldStartFrame": "Inizia con uno scenario introduttivo — la valutazione ti mostrerà poi su cosa lavorare.",
+    "filterAll": "Tutti",
+    "catMitarbeiterfuehrung": "Guida dei collaboratori",
+    "catZusammenarbeit": "Collaborazione",
+    "catVertrieb": "Vendite",
+    "catStakeholder": "Stakeholder",
+    "priceNote": "La valutazione costa 1 credito · le pause coach sono gratuite",
+    "ghostTitle": "Il tuo scenario non c'è ancora?",
+    "ghostBody": "Descrivi brevemente la situazione che vuoi allenare — la tua richiesta alimenta direttamente la priorità dei nuovi scenari.",
+    "ghostCta": "Richiedi uno scenario",
+    "wishTitle": "Quale scenario ti manca?",
+    "wishPlaceholder": "es. un colloquio salariale con un top performer che potrebbe dimettersi",
+    "wishSend": "Invia richiesta",
+    "wishThanks": "Grazie! La tua richiesta è arrivata e alimenta la priorità dei nuovi scenari."
+  },
+  "evaluation": {
+    "sourceSim": "da gioco di ruolo",
+    "sourceRun": "da trascrizione",
+    "notFound": "Questa valutazione non è stata trovata.",
+    "backHome": "Torna all'inizio"
   }
 }

@@ -21,14 +21,20 @@
     "skipToContent": "Hoppa till huvudinnehållet",
     "selectLanguage": "Välj språk",
     "topUp": "Fyll på krediter",
-    "watchVideo": "Se video"
+    "watchVideo": "Se video",
+    "expandSidebar": "Fäll ut sidofältet",
+    "collapseSidebar": "Fäll ihop sidofältet"
   },
   "nav": {
     "analyze": "Transkriptanalys",
     "history": "Historik",
     "newAnalysis": "Ny analys",
     "workspace": "Team",
-    "simulation": "Rollspelssession"
+    "simulation": "Rollspelssession",
+    "practice": "Öva",
+    "mainGroup": "MAIN",
+    "home": "Hem",
+    "settings": "Inställningar"
   },
   "simulation": {
     "title": "Rollspelssession",
@@ -217,7 +223,12 @@
     "noSummary": "Ingen sammanfattning tillgänglig.",
     "openAnalysis": "Öppna analys",
     "loadMore": "Ladda fler",
-    "loadingMore": "Laddar fler…"
+    "loadingMore": "Laddar fler…",
+    "typeAnalysis": "Analys",
+    "typeSim": "Rollspel",
+    "bindingTooltipRun": "Analyser är knutna till webbläsarsessionen — ”Ny session” börjar en ny lista.",
+    "bindingTooltipSim": "Rollspel är knutna till ditt konto och syns över sessioner.",
+    "openSim": "Öppna utvärdering"
   },
   "report": {
     "type": "Typ",
@@ -268,7 +279,16 @@
     "followUpCta": "Planera uppföljningsmätning (~4 veckor)",
     "followUpHint": "Laddar ner en kalenderpost åt dig – du bestämmer när du mäter igen.",
     "followUpSummary": "Uppföljningsmätning: samtalsanalys (PulseNorth Coach)",
-    "followUpDescription": "Dags för nästa mätning: analysera ett aktuellt samtal i PulseNorth Coach och se hur dina kompetenser har utvecklats sedan den senaste mätningen."
+    "followUpDescription": "Dags för nästa mätning: analysera ett aktuellt samtal i PulseNorth Coach och se hur dina kompetenser har utvecklats sedan den senaste mätningen.",
+    "scoreTitleVeryStrong": "Mycket stark samtalsledning",
+    "scoreTitleStrong": "God samtalsledning",
+    "scoreTitleSolid": "Solid grund",
+    "scoreTitleNeedsWork": "Utrymme att växa",
+    "scoreTitleReady": "Analys redo",
+    "badgeVeryStrong": "Mycket stark",
+    "badgeStrong": "Stark",
+    "badgeSolid": "Solid",
+    "badgeNeedsWork": "Behöver fokus"
   },
   "linkedin": {
     "title": "Dela på LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Hittades inte",
     "internalError": "Internt serverfel",
     "rateLimited": "För många förfrågningar. Försök igen senare."
+  },
+  "entry": {
+    "title": "Öva",
+    "h1": "Vad vill du öva på i dag, {name}?",
+    "h1NoName": "Vad vill du öva på i dag?",
+    "sub": "Öva live med en AI-persona — eller ta med ett riktigt samtal. Båda vägarna leder till samma utvärdering.",
+    "resumeTitle": "Fortsätt",
+    "dropTitle": "Har du redan haft ett riktigt samtal? Dra transkriptet hit",
+    "dropMeta": "Teams-PDF eller text · anonymisering inbyggd",
+    "dropCta": "Analysera transkript",
+    "recoTitle": "Rekommenderat för dig",
+    "recoReason": "Rekommenderat: ditt senaste resultat visar den största luckan i {c}.",
+    "coldStartFrame": "Börja med ett introduktionsscenario — utvärderingen visar dig sedan vad du ska jobba med.",
+    "filterAll": "Alla",
+    "catMitarbeiterfuehrung": "Medarbetarledarskap",
+    "catZusammenarbeit": "Samarbete",
+    "catVertrieb": "Försäljning",
+    "catStakeholder": "Intressenter",
+    "priceNote": "Utvärderingen kostar 1 kredit · coachpauser är gratis",
+    "ghostTitle": "Finns ditt scenario inte med än?",
+    "ghostBody": "Beskriv kort situationen du vill öva på — din önskan går direkt in i prioriteringen av nya scenarier.",
+    "ghostCta": "Önska ett scenario",
+    "wishTitle": "Vilket scenario saknar du?",
+    "wishPlaceholder": "t.ex. ett lönesamtal med en toppresterare som kan säga upp sig",
+    "wishSend": "Skicka önskemål",
+    "wishThanks": "Tack! Ditt önskemål har tagits emot och går in i prioriteringen av nya scenarier."
+  },
+  "evaluation": {
+    "sourceSim": "från rollspel",
+    "sourceRun": "från transkript",
+    "notFound": "Utvärderingen hittades inte.",
+    "backHome": "Till startsidan"
   }
 }

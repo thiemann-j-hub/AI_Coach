@@ -21,14 +21,20 @@
     "skipToContent": "Vés al contingut principal",
     "selectLanguage": "Selecciona l'idioma",
     "topUp": "Recarrega crèdits",
-    "watchVideo": "Mira el vídeo"
+    "watchVideo": "Mira el vídeo",
+    "expandSidebar": "Desplega la barra lateral",
+    "collapseSidebar": "Replega la barra lateral"
   },
   "nav": {
     "analyze": "Anàlisi de transcripció",
     "history": "Historial",
     "newAnalysis": "Nova anàlisi",
     "workspace": "Equip",
-    "simulation": "Sessió de rol"
+    "simulation": "Sessió de rol",
+    "practice": "Practicar",
+    "mainGroup": "MAIN",
+    "home": "Inici",
+    "settings": "Configuració"
   },
   "simulation": {
     "title": "Sessió de rol",
@@ -217,7 +223,12 @@
     "noSummary": "No hi ha cap resum disponible.",
     "openAnalysis": "Obre l'anàlisi",
     "loadMore": "Carrega'n més",
-    "loadingMore": "S'està carregant més…"
+    "loadingMore": "S'està carregant més…",
+    "typeAnalysis": "Anàlisi",
+    "typeSim": "Joc de rol",
+    "bindingTooltipRun": "Les anàlisis estan lligades a la sessió del navegador — «Nova sessió» comença una llista nova.",
+    "bindingTooltipSim": "Els jocs de rol estan lligats al teu compte i queden visibles entre sessions.",
+    "openSim": "Obrir avaluació"
   },
   "report": {
     "type": "Tipus",
@@ -268,7 +279,16 @@
     "followUpCta": "Planifica el proper mesurament (~4 setmanes)",
     "followUpHint": "Baixa una entrada de calendari per a tu – tu decideixes quan tornar a mesurar.",
     "followUpSummary": "Mesurament de seguiment: anàlisi de conversa (PulseNorth Coach)",
-    "followUpDescription": "És hora del proper mesurament: analitza una conversa recent al PulseNorth Coach i mira com han evolucionat les teves competències des de l'últim mesurament."
+    "followUpDescription": "És hora del proper mesurament: analitza una conversa recent al PulseNorth Coach i mira com han evolucionat les teves competències des de l'últim mesurament.",
+    "scoreTitleVeryStrong": "Conducció de converses molt sòlida",
+    "scoreTitleStrong": "Bona conducció de converses",
+    "scoreTitleSolid": "Base sòlida",
+    "scoreTitleNeedsWork": "Per desenvolupar",
+    "scoreTitleReady": "Anàlisi a punt",
+    "badgeVeryStrong": "Molt fort",
+    "badgeStrong": "Fort",
+    "badgeSolid": "Sòlid",
+    "badgeNeedsWork": "Cal focus"
   },
   "linkedin": {
     "title": "Comparteix a LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "No s'ha trobat",
     "internalError": "Error intern del servidor",
     "rateLimited": "Massa sol·licituds. Torneu-ho a provar més tard."
+  },
+  "entry": {
+    "title": "Practicar",
+    "h1": "Què vols practicar avui, {name}?",
+    "h1NoName": "Què vols practicar avui?",
+    "sub": "Practica en directe amb un personatge d'IA — o porta una conversa real. Tots dos camins porten a la mateixa avaluació.",
+    "resumeTitle": "Continuar",
+    "dropTitle": "Ja has tingut una conversa real? Arrossega la transcripció aquí",
+    "dropMeta": "PDF de Teams o text · anonimització integrada",
+    "dropCta": "Analitzar la transcripció",
+    "recoTitle": "Recomanat per a tu",
+    "recoReason": "Recomanat: el teu últim resultat mostra la bretxa més gran en {c}.",
+    "coldStartFrame": "Comença amb un escenari d'iniciació — l'avaluació et mostrarà després en què treballar.",
+    "filterAll": "Tots",
+    "catMitarbeiterfuehrung": "Lideratge de persones",
+    "catZusammenarbeit": "Col·laboració",
+    "catVertrieb": "Vendes",
+    "catStakeholder": "Stakeholders",
+    "priceNote": "L'avaluació costa 1 crèdit · les pauses de coach són gratuïtes",
+    "ghostTitle": "El teu escenari encara no hi és?",
+    "ghostBody": "Descriu breument la situació que vols practicar — la teva petició alimenta directament la priorització de nous escenaris.",
+    "ghostCta": "Demanar un escenari",
+    "wishTitle": "Quin escenari et falta?",
+    "wishPlaceholder": "p. ex. una conversa salarial amb un top performer que podria marxar",
+    "wishSend": "Enviar petició",
+    "wishThanks": "Gràcies! La teva petició ha arribat i alimenta la priorització de nous escenaris."
+  },
+  "evaluation": {
+    "sourceSim": "de joc de rol",
+    "sourceRun": "de transcripció",
+    "notFound": "No s'ha trobat aquesta avaluació.",
+    "backHome": "Tornar a l'inici"
   }
 }

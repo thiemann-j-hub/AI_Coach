@@ -21,14 +21,20 @@
     "skipToContent": "Ugrás a fő tartalomra",
     "selectLanguage": "Nyelv kiválasztása",
     "topUp": "Kredit feltöltése",
-    "watchVideo": "Videó megtekintése"
+    "watchVideo": "Videó megtekintése",
+    "expandSidebar": "Oldalsáv kinyitása",
+    "collapseSidebar": "Oldalsáv összecsukása"
   },
   "nav": {
     "analyze": "Átirat-elemzés",
     "history": "Előzmények",
     "newAnalysis": "Új elemzés",
     "workspace": "Csapat",
-    "simulation": "Szerepjáték-ülés"
+    "simulation": "Szerepjáték-ülés",
+    "practice": "Gyakorlás",
+    "mainGroup": "MAIN",
+    "home": "Kezdőlap",
+    "settings": "Beállítások"
   },
   "simulation": {
     "title": "Szerepjáték-ülés",
@@ -217,7 +223,12 @@
     "noSummary": "Nincs elérhető összefoglaló.",
     "openAnalysis": "Elemzés megnyitása",
     "loadMore": "Továbbiak betöltése",
-    "loadingMore": "További elemek betöltése…"
+    "loadingMore": "További elemek betöltése…",
+    "typeAnalysis": "Elemzés",
+    "typeSim": "Szerepjáték",
+    "bindingTooltipRun": "Az elemzések a böngésző-munkamenethez kötődnek — az „Új munkamenet” friss listát kezd.",
+    "bindingTooltipSim": "A szerepjátékok a fiókodhoz kötődnek, és munkameneteken át láthatók maradnak.",
+    "openSim": "Értékelés megnyitása"
   },
   "report": {
     "type": "Típus",
@@ -268,7 +279,16 @@
     "followUpCta": "Utánkövető mérés ütemezése (~4 hét)",
     "followUpHint": "Letölt egy naptárbejegyzést – te döntöd el, mikor mérsz újra.",
     "followUpSummary": "Utánkövető mérés: beszélgetéselemzés (PulseNorth Coach)",
-    "followUpDescription": "Itt az idő a következő mérésre: elemezz egy friss beszélgetést a PulseNorth Coach felületén, és nézd meg, hogyan fejlődtek a kompetenciáid az utolsó mérés óta."
+    "followUpDescription": "Itt az idő a következő mérésre: elemezz egy friss beszélgetést a PulseNorth Coach felületén, és nézd meg, hogyan fejlődtek a kompetenciáid az utolsó mérés óta.",
+    "scoreTitleVeryStrong": "Nagyon erős beszélgetésvezetés",
+    "scoreTitleStrong": "Jó beszélgetésvezetés",
+    "scoreTitleSolid": "Szilárd alap",
+    "scoreTitleNeedsWork": "Fejleszthető",
+    "scoreTitleReady": "Elemzés kész",
+    "badgeVeryStrong": "Nagyon erős",
+    "badgeStrong": "Erős",
+    "badgeSolid": "Szilárd",
+    "badgeNeedsWork": "Fókusz kell"
   },
   "linkedin": {
     "title": "Megosztás a LinkedIn-en",
@@ -302,5 +322,37 @@
     "notFound": "Nem található",
     "internalError": "Belső szerverhiba",
     "rateLimited": "Túl sok kérés. Próbáld újra később."
+  },
+  "entry": {
+    "title": "Gyakorlás",
+    "h1": "Mit szeretnél ma gyakorolni, {name}?",
+    "h1NoName": "Mit szeretnél ma gyakorolni?",
+    "sub": "Gyakorolj élőben egy MI-personával — vagy hozz egy valódi beszélgetést. Mindkét út ugyanahhoz az értékeléshez vezet.",
+    "resumeTitle": "Folytatás",
+    "dropTitle": "Volt már valódi beszélgetésed? Húzd ide az átiratot",
+    "dropMeta": "Teams-PDF vagy szöveg · beépített anonimizálás",
+    "dropCta": "Átirat elemzése",
+    "recoTitle": "Neked ajánlott",
+    "recoReason": "Ajánlott: a legutóbbi eredményed a legnagyobb hiányt a(z) {c} területén mutatja.",
+    "coldStartFrame": "Kezdd egy bevezető forgatókönyvvel — az értékelés utána megmutatja, min dolgozz.",
+    "filterAll": "Mind",
+    "catMitarbeiterfuehrung": "Munkatársak vezetése",
+    "catZusammenarbeit": "Együttműködés",
+    "catVertrieb": "Értékesítés",
+    "catStakeholder": "Érintettek",
+    "priceNote": "Az értékelés 1 kreditbe kerül · a coach-szünetek ingyenesek",
+    "ghostTitle": "A te forgatókönyved még nincs itt?",
+    "ghostBody": "Írd le röviden a helyzetet, amit gyakorolni szeretnél — kérésed közvetlenül beszámít az új forgatókönyvek priorizálásába.",
+    "ghostCta": "Forgatókönyv kérése",
+    "wishTitle": "Melyik forgatókönyv hiányzik neked?",
+    "wishPlaceholder": "pl. bértárgyalás egy top teljesítővel, aki felmondhat",
+    "wishSend": "Kérés elküldése",
+    "wishThanks": "Köszönjük! Kérésed megérkezett, és beszámít az új forgatókönyvek priorizálásába."
+  },
+  "evaluation": {
+    "sourceSim": "szerepjátékból",
+    "sourceRun": "átiratból",
+    "notFound": "Ez az értékelés nem található.",
+    "backHome": "Vissza a kezdéshez"
   }
 }

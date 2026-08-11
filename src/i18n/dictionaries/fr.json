@@ -21,14 +21,20 @@
     "skipToContent": "Aller au contenu principal",
     "selectLanguage": "Choisir la langue",
     "topUp": "Recharger des crédits",
-    "watchVideo": "Voir la vidéo"
+    "watchVideo": "Voir la vidéo",
+    "expandSidebar": "Déplier la barre latérale",
+    "collapseSidebar": "Replier la barre latérale"
   },
   "nav": {
     "analyze": "Analyse de transcription",
     "history": "Historique",
     "newAnalysis": "Nouvelle analyse",
     "workspace": "Équipe",
-    "simulation": "Session de jeu de rôle"
+    "simulation": "Session de jeu de rôle",
+    "practice": "S'entraîner",
+    "mainGroup": "MAIN",
+    "home": "Accueil",
+    "settings": "Paramètres"
   },
   "simulation": {
     "title": "Session de jeu de rôle",
@@ -217,7 +223,12 @@
     "noSummary": "Aucun résumé disponible.",
     "openAnalysis": "Ouvrir l'analyse",
     "loadMore": "Charger plus",
-    "loadingMore": "Chargement…"
+    "loadingMore": "Chargement…",
+    "typeAnalysis": "Analyse",
+    "typeSim": "Jeu de rôle",
+    "bindingTooltipRun": "Les analyses sont liées à la session du navigateur — « Nouvelle session » démarre une liste vierge.",
+    "bindingTooltipSim": "Les jeux de rôle sont liés à votre compte et restent visibles d'une session à l'autre.",
+    "openSim": "Ouvrir l'évaluation"
   },
   "report": {
     "type": "Type",
@@ -268,7 +279,16 @@
     "followUpCta": "Planifier la prochaine mesure (~4 semaines)",
     "followUpHint": "Télécharge une entrée de calendrier pour vous – vous décidez quand mesurer à nouveau.",
     "followUpSummary": "Mesure de suivi : analyse d’entretien (PulseNorth Coach)",
-    "followUpDescription": "C’est le moment de la prochaine mesure : analysez un entretien récent dans PulseNorth Coach et voyez comment vos compétences ont évolué depuis la dernière mesure."
+    "followUpDescription": "C’est le moment de la prochaine mesure : analysez un entretien récent dans PulseNorth Coach et voyez comment vos compétences ont évolué depuis la dernière mesure.",
+    "scoreTitleVeryStrong": "Conduite d'entretien très solide",
+    "scoreTitleStrong": "Bonne conduite d'entretien",
+    "scoreTitleSolid": "Base solide",
+    "scoreTitleNeedsWork": "À développer",
+    "scoreTitleReady": "Analyse prête",
+    "badgeVeryStrong": "Très solide",
+    "badgeStrong": "Solide",
+    "badgeSolid": "Correct",
+    "badgeNeedsWork": "Focus requis"
   },
   "linkedin": {
     "title": "Partager sur LinkedIn",
@@ -302,5 +322,37 @@
     "notFound": "Introuvable",
     "internalError": "Erreur interne du serveur",
     "rateLimited": "Trop de requêtes. Veuillez réessayer plus tard."
+  },
+  "entry": {
+    "title": "S'entraîner",
+    "h1": "Que voulez-vous travailler aujourd'hui, {name} ?",
+    "h1NoName": "Que voulez-vous travailler aujourd'hui ?",
+    "sub": "Entraînez-vous en direct avec un persona IA — ou apportez une vraie conversation. Les deux chemins mènent à la même évaluation.",
+    "resumeTitle": "Reprendre",
+    "dropTitle": "Vous avez déjà mené un vrai entretien ? Déposez la transcription ici",
+    "dropMeta": "PDF Teams ou texte · anonymisation intégrée",
+    "dropCta": "Analyser la transcription",
+    "recoTitle": "Recommandé pour vous",
+    "recoReason": "Recommandé : votre dernier résultat montre le plus grand écart sur {c}.",
+    "coldStartFrame": "Commencez par un scénario d'initiation — l'évaluation vous montrera ensuite sur quoi travailler.",
+    "filterAll": "Tous",
+    "catMitarbeiterfuehrung": "Management d'équipe",
+    "catZusammenarbeit": "Collaboration",
+    "catVertrieb": "Vente",
+    "catStakeholder": "Parties prenantes",
+    "priceNote": "L'évaluation coûte 1 crédit · les pauses coach sont gratuites",
+    "ghostTitle": "Votre scénario n'existe pas encore ?",
+    "ghostBody": "Décrivez brièvement la situation que vous voulez travailler — votre demande alimente directement la priorisation des nouveaux scénarios.",
+    "ghostCta": "Demander un scénario",
+    "wishTitle": "Quel scénario vous manque-t-il ?",
+    "wishPlaceholder": "p. ex. un entretien salarial avec un top performer qui pourrait démissionner",
+    "wishSend": "Envoyer la demande",
+    "wishThanks": "Merci ! Votre demande a bien été reçue et alimente la priorisation des nouveaux scénarios."
+  },
+  "evaluation": {
+    "sourceSim": "issu du jeu de rôle",
+    "sourceRun": "issu de la transcription",
+    "notFound": "Cette évaluation est introuvable.",
+    "backHome": "Retour à l'accueil"
   }
 }
