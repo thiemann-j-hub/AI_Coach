@@ -125,6 +125,8 @@ export async function POST(req: NextRequest) {
         turns: doc.turns,
         attempt,
         focus,
+        // W2-1: Client-Uhr rechnet ab createdAt (Server bleibt die Wahrheit).
+        createdAt: doc.createdAt,
       },
     });
   } catch (err) {

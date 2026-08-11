@@ -56,6 +56,8 @@ export async function GET(req: NextRequest) {
         id: doc.id,
         scenarioId: doc.scenarioId,
         status: doc.status,
+        // W2-1: Client-Uhr rechnet ab createdAt (Server bleibt die Wahrheit).
+        createdAt: doc.createdAt,
         turns: doc.turns,
         feedback: doc.feedbackJson ?? null,
         competencyRatings: doc.competencyRatings ?? null,

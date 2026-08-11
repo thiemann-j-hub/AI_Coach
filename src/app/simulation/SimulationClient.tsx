@@ -426,6 +426,14 @@ export default function SimulationClient() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   /** Zeit-Regie: Persona hat sich verabschiedet — Eingabe zu, nur noch Auswertung. */
   const [timeUp, setTimeUp] = useState(false);
+  // ── W2-1 sichtbare Uhr: Client-Anzeige ab createdAt; Server bleibt Wahrheit. ──
+  const [simStartedAt, setSimStartedAt] = useState<string | null>(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
+  // ── W2-3: Verlassen-Dialog (Lauf bleibt offen) ──
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [aborting, setAborting] = useState(false);
+  // ── W2-5: Ziel-Streifen (mobil einklappbar, Zustand gemerkt) ──
+  const [goalsOpen, setGoalsOpen] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const speechSupported =
@@ -521,6 +529,32 @@ export default function SimulationClient() {
       if (ttsSupported) window.speechSynthesis.cancel();
     }
   }, [view, stopMic, ttsSupported]);
+
+  // W2-1: Uhr tickt nur im Chat (1 s Auflösung genügt für mm:ss).
+  useEffect(() => {
+    if (view !== 'chat' || !simStartedAt || timeUp) return;
+    const id = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [view, simStartedAt, timeUp]);
+
+  // W2-5: Einklapp-Zustand des Ziel-Streifens merken (mobil relevant).
+  useEffect(() => {
+    try {
+      setGoalsOpen(localStorage.getItem('coach_sim-goals-open') !== '0');
+    } catch {
+      /* localStorage optional */
+    }
+  }, []);
+  function toggleGoals() {
+    setGoalsOpen((v) => {
+      try {
+        localStorage.setItem('coach_sim-goals-open', v ? '0' : '1');
+      } catch {
+        /* ignore */
+      }
+      return !v;
+    });
+  }
 
   const scenarioById = useMemo(() => {
     const m = new Map<string, PublicScenario>();
@@ -658,6 +692,7 @@ export default function SimulationClient() {
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
+      setSimStartedAt(json.simulation.createdAt ?? new Date().toISOString());
       setCoachNotes([]);
       setBriefingOpen(false);
       setTimeoutOpen(false);
@@ -695,6 +730,7 @@ export default function SimulationClient() {
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
+      setSimStartedAt(json.simulation.createdAt ?? item.createdAt);
       setCoachNotes(json.simulation.coachNotes ?? []);
       setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
       setTimeUp(json.simulation.timeUp === true);
@@ -809,9 +845,31 @@ export default function SimulationClient() {
     setError(null);
     setConfirmOpen(false);
     setTimeoutOpen(false);
+    setLeaveOpen(false);
+    setSimStartedAt(null);
     setBriefStep(0);
     setView('loading');
     void loadCatalog();
+  }
+
+  /**
+   * W2-2 (§2.4): Lauf abbrechen — kein Credit, kein Debrief-Dokument, keine
+   * Karteileiche in der Historie. Idempotent; Fehler degradieren auf backToList.
+   */
+  async function abortSimulation() {
+    if (!simId || aborting) return;
+    setAborting(true);
+    try {
+      await authFetch('/api/simulation/abort', {
+        method: 'POST',
+        body: JSON.stringify({ simId }),
+      });
+    } catch {
+      /* Abort ist best effort — die Übersicht ist nie blockiert. */
+    } finally {
+      setAborting(false);
+      backToList();
+    }
   }
 
   const userTurnCount = turns.filter((x) => x.role === 'user').length;
@@ -978,6 +1036,11 @@ export default function SimulationClient() {
                   const s = scenarioById.get(r.scenarioId);
                   if (!s) return null;
                   const confirming = pendingDeleteId === r.id;
+                  // W2-1: Restzeit im Fortsetzen-Streifen — die Zeitbox läuft
+                  // ab Start in Echtzeit, auch außerhalb der Seite.
+                  const remainMs =
+                    new Date(r.createdAt).getTime() + s.durationMin * 60_000 - Date.now();
+                  const remainMin = Math.max(0, Math.ceil(remainMs / 60_000));
                   return (
                     // Kein <button> im <button>: Zeile ist ein div, der
                     // Weiter-Bereich und der Mülleimer sind Geschwister.
@@ -998,8 +1061,17 @@ export default function SimulationClient() {
                         </div>
                       </button>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-sky-500/15 text-sky-400 border-sky-500/30">
-                          {ts.statusActive}
+                        <span
+                          className={cx(
+                            'text-xs px-2 py-0.5 rounded-full border tabular-nums',
+                            remainMs > 0
+                              ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+                              : 'bg-amber-500/15 text-amber-500 border-amber-500/30'
+                          )}
+                        >
+                          {remainMs > 0
+                            ? t.entry.resumeTimeLeft.replace('{min}', String(remainMin))
+                            : t.entry.resumeTimeUp}
                         </span>
                         {/* Mülleimer mit zweistufiger Bestätigung (endgültig, inkl. DB) */}
                         {confirming ? (
@@ -1303,9 +1375,15 @@ export default function SimulationClient() {
                     {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
                     {ts.startCta}
                   </button>
-                  <div className="text-xs text-white/75 flex items-center justify-center gap-1">
-                    <Clock className="h-3.5 w-3.5" /> ~{scenario.durationMin} {ts.minutesShort}
+                  {/* W2-1: ehrliche Zeitbox — die Uhr läuft ab Start in Echtzeit. */}
+                  <div className="text-xs text-white/80 leading-snug">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
+                    </span>
                   </div>
+                  {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog. */}
+                  <div className="text-[11px] text-white/65">{t.entry.priceNote}</div>
                 </div>
               </div>
             </div>
@@ -1446,6 +1524,21 @@ export default function SimulationClient() {
 
   if (view === 'chat' && scenario) {
     const timeoutsLeft = Math.max(0, timeoutsMax - coachNotes.length);
+    // ── W2-1: sichtbare Uhr (Client-Anzeige; Server-Zeitregie bleibt Wahrheit) ──
+    const limitMs = scenario.durationMin * 60_000;
+    const startedMs = simStartedAt ? new Date(simStartedAt).getTime() : null;
+    const elapsedMs = startedMs != null ? Math.max(0, nowTs - startedMs) : 0;
+    const remainingMs = startedMs != null ? Math.max(0, limitMs - elapsedMs) : null;
+    // Amber ab 80 % — deckungsgleich mit SIM_TIME_WARN_FRACTION der Turn-Route.
+    const clockWarn = startedMs != null && elapsedMs >= limitMs * 0.8;
+    const clockText =
+      remainingMs != null
+        ? `${Math.floor(remainingMs / 60_000)}:${String(Math.floor((remainingMs % 60_000) / 1000)).padStart(2, '0')}`
+        : null;
+    const remainingMin = remainingMs != null ? Math.ceil(remainingMs / 60_000) : null;
+    // ── W2-2: Totsackgasse — Zeit um, aber kein auswertbares Gespräch ──
+    const deadEnd = timeUp && userTurnCount < 3;
+    const b = scenario.candidateBriefing;
     return (
       <AppShell
         title={splitTitle(scenario.title).heroTitle}
@@ -1453,6 +1546,31 @@ export default function SimulationClient() {
         noPadding
         actions={
           <div className="flex items-center gap-2">
+            {/* W2-3: Ausgang aus dem Chat — der Lauf bleibt offen. */}
+            <button
+              onClick={() => setLeaveOpen(true)}
+              className="text-sm font-semibold rounded-lg px-3 py-2 border border-border text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+              title={ts.backToList}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">{ts.backToList}</span>
+            </button>
+            {/* W2-1: Countdown — passiv, keine Bewertung. */}
+            {clockText && (
+              <span
+                className={cx(
+                  'text-sm font-semibold rounded-lg px-3 py-2 border tabular-nums flex items-center gap-1.5',
+                  timeUp || remainingMs === 0
+                    ? 'border-rose-500/40 text-rose-400 bg-rose-500/10'
+                    : clockWarn
+                      ? 'border-amber-500/40 text-amber-500 bg-amber-500/10'
+                      : 'border-border text-muted-foreground'
+                )}
+                title={ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
+              >
+                <Clock className="h-4 w-4" /> {timeUp ? '0:00' : clockText}
+              </span>
+            )}
             {ttsSupported && (
               <button
                 onClick={() => {
@@ -1477,15 +1595,24 @@ export default function SimulationClient() {
               title={ts.timeoutHint}
             >
               <Pause className="h-4 w-4" /> {ts.timeoutCta}
-              <span className="text-[10px] tabular-nums opacity-70">{coachNotes.length}/{timeoutsMax}</span>
+              {/* W2-4: Zähler mit Legende statt nacktem 0/3 */}
+              <span className="text-[10px] tabular-nums opacity-70" title={ts.timeoutCounterLegend}>
+                {coachNotes.length}/{timeoutsMax}
+              </span>
             </button>
-            <button
-              onClick={() => setConfirmOpen(true)}
-              disabled={finishing || userTurnCount < 1}
-              className="text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
-            >
-              <Flag className="h-4 w-4" /> {ts.finishCta}
-            </button>
+            {/* W2-3: erst ab 3 eigenen Beiträgen aktiv (Dialog verlangte es
+                schon immer — jetzt sagt es auch der Button). Nach Zeitablauf
+                übernimmt das Banner/Modal — kein doppelter Auswerten-Knopf. */}
+            {!timeUp && (
+              <button
+                onClick={() => setConfirmOpen(true)}
+                disabled={finishing || userTurnCount < 3}
+                className="text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                title={userTurnCount < 3 ? ts.finishNeedsTurns : undefined}
+              >
+                <Flag className="h-4 w-4" /> {ts.finishCta}
+              </button>
+            )}
           </div>
         }
       >
@@ -1503,43 +1630,106 @@ export default function SimulationClient() {
             </div>
           )}
 
-          {/* Briefing-Aufklapper */}
-          <div className="border-b border-border">
-            <button
-              onClick={() => setBriefingOpen((o) => !o)}
-              className="w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
-            >
-              <ChevronDown
-                className={cx('h-4 w-4 transition-transform', briefingOpen && 'rotate-180')}
-              />
-              {briefingOpen ? ts.briefingHide : ts.briefingShow}
-            </button>
+          {/* W2-5: passive Ziel-Erinnerung — die drei Ziele DAUERHAFT sichtbar
+              als schlanker Streifen (KEINE Häkchen, KEIN Fortschritt, KEINE
+              Bewertung — Sparring-Entscheid). Mobil einklappbar, Zustand
+              gemerkt. Dahinter aufklappbar: das VOLLSTÄNDIGE Briefing inkl.
+              Faktenblatt (fehlte bisher im Chat, Systembericht 3.3). */}
+          <div className="border-b border-border bg-muted/20">
+            <div className="max-w-3xl mx-auto px-4 py-2">
+              <div className="flex items-start justify-between gap-2">
+                <button
+                  onClick={toggleGoals}
+                  className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground sm:pointer-events-none"
+                  aria-expanded={goalsOpen}
+                >
+                  <Target className="h-3.5 w-3.5 text-primary" /> {ts.goalsStripTitle}
+                  <ChevronDown
+                    className={cx('h-3.5 w-3.5 transition-transform sm:hidden', goalsOpen && 'rotate-180')}
+                  />
+                </button>
+                <button
+                  onClick={() => setBriefingOpen((o) => !o)}
+                  className="text-[10px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1"
+                >
+                  <ChevronDown
+                    className={cx('h-3.5 w-3.5 transition-transform', briefingOpen && 'rotate-180')}
+                  />
+                  {briefingOpen ? ts.briefingHide : ts.briefingShow}
+                </button>
+              </div>
+              <ol className={cx('mt-1 space-y-0.5 text-xs leading-snug', !goalsOpen && 'hidden sm:block')}>
+                {b.goals.map((g, idx) => (
+                  <li key={idx} className="flex gap-1.5">
+                    <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+                    <span>{g}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
             {briefingOpen && (
-              <div className="px-4 pb-4 max-h-72 overflow-y-auto custom-scrollbar max-w-3xl mx-auto space-y-3 text-sm">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.goals}</div>
-                  <ol className="space-y-1">
-                    {scenario.candidateBriefing.goals.map((g, idx) => (
-                      <li key={idx} className="flex gap-2">
-                        <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
-                        <span>{g}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                {scenario.candidateBriefing.approachHints && (
+              <div className="border-t border-border/60 px-4 py-3 max-h-80 overflow-y-auto custom-scrollbar">
+                <div className="max-w-3xl mx-auto space-y-3 text-sm">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.stepApproach}</div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.yourRole}</div>
+                    <p className="leading-relaxed">{b.yourRole}</p>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.relationship}</div>
+                    <p className="leading-relaxed">{b.relationship}</p>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.incidents}</div>
                     <ul className="space-y-1">
-                      {scenario.candidateBriefing.approachHints.map((h, idx) => (
+                      {b.incidents.map((i, idx) => (
                         <li key={idx} className="flex gap-2">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                          <span>{h}</span>
+                          <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+                          <span>{i}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                )}
+                  {b.factVisuals && b.factVisuals.length > 0 ? (
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{ts.factSheet}</div>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {b.factVisuals.map((v, idx) => (
+                          <FactChart key={idx} v={v} />
+                        ))}
+                      </div>
+                    </div>
+                  ) : b.factSheet && b.factSheet.length > 0 ? (
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.factSheet}</div>
+                      <ul className="space-y-1 rounded-lg border border-border bg-muted/40 p-3">
+                        {b.factSheet.map((f, idx) => (
+                          <li key={idx} className="text-xs font-mono leading-relaxed">
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {b.approachHints && b.approachHints.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.stepApproach}</div>
+                      <ul className="space-y-1">
+                        {b.approachHints.map((h, idx) => (
+                          <li key={idx} className="flex gap-2">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {b.expectation && (
+                    <div className="rounded-xl border border-accent/30 bg-accent/5 p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-accent mb-1">{ts.expectationTitle}</div>
+                      <p className="leading-relaxed">{b.expectation}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1547,7 +1737,8 @@ export default function SimulationClient() {
           {/* Nachrichten */}
           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4">
             <div className="max-w-3xl mx-auto space-y-3">
-              {error && errorBanner}
+              {/* W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog. */}
+              {error && !confirmOpen && errorBanner}
               {turns.map((turn, idx) => (
                 <div
                   key={idx}
@@ -1583,7 +1774,7 @@ export default function SimulationClient() {
           <div className="border-t border-border p-3">
             {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
                 Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
-            {timeUp && (
+            {timeUp && !deadEnd && (
               <div className="max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
                   <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
@@ -1650,6 +1841,84 @@ export default function SimulationClient() {
             </div>
           </div>
         </div>
+
+        {/* W2-2: Totsackgasse auflösen — Zeit um, unter 3 Beiträgen: weder
+            weiterreden noch auswerten. Neustart-Angebot ist Pflicht (Owner),
+            keine Historien-Karteileiche (Abort statt Debrief). */}
+        {deadEnd && !leaveOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="glass-panel rounded-2xl border border-amber-500/40 p-6 max-w-md w-full space-y-4 bg-card">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5 text-amber-500" /> {ts.deadEndTitle}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{ts.deadEndBody}</p>
+              {error && errorBanner}
+              <div className="flex flex-wrap gap-2 justify-end">
+                <button
+                  onClick={() => void abortSimulation()}
+                  disabled={aborting || starting}
+                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {aborting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
+                  {ts.deadEndToList}
+                </button>
+                <button
+                  onClick={() => {
+                    // Direkter Neustart: gleiches Szenario, gleicher Fokus.
+                    const held = focus;
+                    void (async () => {
+                      if (simId) {
+                        try {
+                          await authFetch('/api/simulation/abort', {
+                            method: 'POST',
+                            body: JSON.stringify({ simId }),
+                          });
+                        } catch {
+                          /* Abort best effort — der Neustart zählt. */
+                        }
+                      }
+                      await startSimulation(scenario, held);
+                    })();
+                  }}
+                  disabled={starting || aborting}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+                >
+                  {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+                  {ts.deadEndRestart}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* W2-3: Verlassen-Dialog — der Lauf bleibt offen, die Uhr läuft weiter. */}
+        {leaveOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+              <h3 className="font-semibold text-lg">{ts.leaveTitle}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {ts.leaveBody}
+                {!timeUp && remainingMin != null && (
+                  <> {ts.leaveTimeLeft.replace('{min}', String(remainingMin))}</>
+                )}
+              </p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setLeaveOpen(false)}
+                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                >
+                  {ts.leaveStay}
+                </button>
+                <button
+                  onClick={backToList}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" /> {ts.leaveGo}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Time-out-Coach (D3) — Szene angehalten */}
         {timeoutOpen && (
