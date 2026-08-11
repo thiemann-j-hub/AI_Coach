@@ -16,25 +16,35 @@ export function TranscriptDropBar() {
   const router = useRouter();
   const { t } = useTranslation();
   const [over, setOver] = useState(false);
+  const [rejected, setRejected] = useState(false);
 
   function go() {
     router.push('/analyze');
   }
 
   return (
+    <div className="space-y-1.5">
     <button
       type="button"
       onClick={go}
       onDragOver={(e) => {
         e.preventDefault();
         setOver(true);
+        setRejected(false);
       }}
       onDragLeave={() => setOver(false)}
       onDrop={(e) => {
         e.preventDefault();
         setOver(false);
         const f = e.dataTransfer.files?.[0];
-        if (f && f.type === 'application/pdf') setPendingFile(f);
+        // Nur PDF wird übernommen. Bei anderem Format NICHT still
+        // weiternavigieren — sonst steht der Nutzer ohne Erklärung vor
+        // einem leeren Formular (Test-Fund 11.08.).
+        if (f && f.type !== 'application/pdf') {
+          setRejected(true);
+          return;
+        }
+        if (f) setPendingFile(f);
         go();
       }}
       className={[
@@ -55,5 +65,11 @@ export function TranscriptDropBar() {
         {t.entry.dropCta}
       </span>
     </button>
+    {rejected && (
+      <p className="px-1 text-xs text-amber-500" role="status">
+        {t.entry.dropWrongType}
+      </p>
+    )}
+    </div>
   );
 }

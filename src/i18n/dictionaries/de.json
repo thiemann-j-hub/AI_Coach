@@ -362,7 +362,8 @@
     "wishSend": "Wunsch senden",
     "wishThanks": "Danke! Dein Wunsch ist angekommen und fließt in die Priorisierung neuer Szenarien ein.",
     "resumeTimeLeft": "noch ~{min} Min.",
-    "resumeTimeUp": "Zeit abgelaufen"
+    "resumeTimeUp": "Zeit abgelaufen",
+    "dropWrongType": "Nur PDF wird hier angenommen — nutze für Text die Analyse-Seite."
   },
   "evaluation": {
     "sourceSim": "aus Rollenspiel",

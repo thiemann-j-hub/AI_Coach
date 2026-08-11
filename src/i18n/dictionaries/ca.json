@@ -362,7 +362,8 @@
     "wishSend": "Enviar petició",
     "wishThanks": "Gràcies! La teva petició ha arribat i alimenta la priorització de nous escenaris.",
     "resumeTimeLeft": "queden ~{min} min",
-    "resumeTimeUp": "Temps esgotat"
+    "resumeTimeUp": "Temps esgotat",
+    "dropWrongType": "Aquí només s'accepta PDF — fes servir la pàgina d'anàlisi per a text."
   },
   "evaluation": {
     "sourceSim": "de joc de rol",

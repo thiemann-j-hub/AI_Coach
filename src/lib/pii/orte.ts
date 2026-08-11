@@ -51,8 +51,12 @@ export const CITY_NAMES: readonly string[] = [
   'Sankt Gallen', 'St. Gallen', 'Lugano', 'Biel', 'Thun', 'Zug', 'Schaffhausen',
 ];
 
-/** Lokative Präpositionen, hinter denen ein Stadtname als Ort gewertet wird. */
+/**
+ * Lokative Präpositionen, hinter denen ein Stadtname als Ort gewertet wird —
+ * deutsch UND englisch (der Transkript-Weg unterstützt de/en).
+ */
 export const CITY_PREPOSITIONS: readonly string[] = [
   'in', 'aus', 'nach', 'bei', 'von', 'um', 'über', 'ab', 'per', 'via',
   'Richtung', 'Standort', 'Werk', 'Filiale', 'Niederlassung', 'Büro',
+  'from', 'to', 'at', 'near', 'site', 'office', 'plant', 'branch',
 ];

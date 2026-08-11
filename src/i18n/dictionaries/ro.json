@@ -362,7 +362,8 @@
     "wishSend": "Trimite dorința",
     "wishThanks": "Mulțumim! Dorința ta a ajuns și intră în prioritizarea noilor scenarii.",
     "resumeTimeLeft": "încă ~{min} min",
-    "resumeTimeUp": "Timp expirat"
+    "resumeTimeUp": "Timp expirat",
+    "dropWrongType": "Aici se acceptă doar PDF — pentru text folosește pagina de analiză."
   },
   "evaluation": {
     "sourceSim": "din joc de rol",

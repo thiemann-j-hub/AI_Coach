@@ -362,7 +362,8 @@
     "wishSend": "Lähetä toive",
     "wishThanks": "Kiitos! Toiveesi on vastaanotettu ja vaikuttaa uusien skenaarioiden priorisointiin.",
     "resumeTimeLeft": "~{min} min jäljellä",
-    "resumeTimeUp": "Aika loppui"
+    "resumeTimeUp": "Aika loppui",
+    "dropWrongType": "Tässä hyväksytään vain PDF — käytä tekstille analyysisivua."
   },
   "evaluation": {
     "sourceSim": "roolipelistä",

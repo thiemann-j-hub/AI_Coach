@@ -362,7 +362,8 @@
     "wishSend": "Nosūtīt vēlmi",
     "wishThanks": "Paldies! Tava vēlme ir saņemta un ietekmē jaunu scenāriju prioritātes.",
     "resumeTimeLeft": "atlicis ~{min} min",
-    "resumeTimeUp": "Laiks beidzies"
+    "resumeTimeUp": "Laiks beidzies",
+    "dropWrongType": "Šeit tiek pieņemts tikai PDF — tekstam izmanto analīzes lapu."
   },
   "evaluation": {
     "sourceSim": "no lomu spēles",

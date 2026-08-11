@@ -362,7 +362,8 @@
     "wishSend": "Seol an t-iarratas",
     "wishThanks": "Go raibh maith agat! Tháinig d'iarratas isteach agus téann sé i dtosaíochtú cásanna nua.",
     "resumeTimeLeft": "~{min} nóim. fágtha",
-    "resumeTimeUp": "Tá an t-am istigh"
+    "resumeTimeUp": "Tá an t-am istigh",
+    "dropWrongType": "Ní ghlactar ach le PDF anseo — bain úsáid as an leathanach anailíse le haghaidh téacs."
   },
   "evaluation": {
     "sourceSim": "ó rólimirt",

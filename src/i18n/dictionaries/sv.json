@@ -362,7 +362,8 @@
     "wishSend": "Skicka önskemål",
     "wishThanks": "Tack! Ditt önskemål har tagits emot och går in i prioriteringen av nya scenarier.",
     "resumeTimeLeft": "~{min} min kvar",
-    "resumeTimeUp": "Tiden är ute"
+    "resumeTimeUp": "Tiden är ute",
+    "dropWrongType": "Endast PDF accepteras här — använd analyssidan för text."
   },
   "evaluation": {
     "sourceSim": "från rollspel",

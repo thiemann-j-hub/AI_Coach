@@ -362,7 +362,8 @@
     "wishSend": "Invia richiesta",
     "wishThanks": "Grazie! La tua richiesta è arrivata e alimenta la priorità dei nuovi scenari.",
     "resumeTimeLeft": "ancora ~{min} min",
-    "resumeTimeUp": "Tempo scaduto"
+    "resumeTimeUp": "Tempo scaduto",
+    "dropWrongType": "Qui si accetta solo PDF — per il testo usa la pagina di analisi."
   },
   "evaluation": {
     "sourceSim": "da gioco di ruolo",

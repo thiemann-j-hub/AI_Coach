@@ -362,7 +362,8 @@
     "wishSend": "Odeslat přání",
     "wishThanks": "Díky! Tvé přání dorazilo a jde do prioritizace nových scénářů.",
     "resumeTimeLeft": "zbývá ~{min} min",
-    "resumeTimeUp": "Čas vypršel"
+    "resumeTimeUp": "Čas vypršel",
+    "dropWrongType": "Zde se přijímá pouze PDF — pro text použij stránku analýzy."
   },
   "evaluation": {
     "sourceSim": "z hraní rolí",

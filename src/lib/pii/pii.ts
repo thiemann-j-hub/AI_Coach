@@ -85,6 +85,18 @@ const COMMON_CAPITALIZED: ReadonlySet<string> = new Set([
 
 const FIRST_NAME_SET: ReadonlySet<string> = new Set(FIRST_NAMES);
 
+/**
+ * Einheiten/Währungen hinter einer 5-stelligen Zahl — dann ist es KEINE
+ * Postleitzahl, sondern eine Geschäftszahl (»45000 Euro«, »12000 Stück«).
+ */
+const UNIT_WORDS: ReadonlySet<string> = new Set([
+  "Euro", "EUR", "Franken", "CHF", "Dollar", "USD", "Cent",
+  "Stück", "Stk", "Teile", "Paletten", "Tonnen", "Kilo", "Kilogramm",
+  "Liter", "Meter", "Kilometer", "Quadratmeter", "Einheiten", "Exemplare",
+  "Kunden", "Mitarbeiter", "Mitarbeitende", "Nutzer", "Besucher", "Aufträge",
+  "Bestellungen", "Positionen", "Datensätze", "Zeilen", "Punkte", "Prozent",
+]);
+
 /* ------------------------------------------------------------------ */
 /*  Prüfsummen (von Presidio gelernt: validieren statt nur mustern)     */
 /* ------------------------------------------------------------------ */
@@ -161,26 +173,56 @@ export function applyStructuredPii(input: string): PiiResult {
   );
 
   // Interne Nummern über Kontextwort (Label bleibt stehen, Wert wird maskiert).
-  // Wert = bis zu 3 Tokens; behalten wird ein Token nur, wenn es eine Ziffer
-  // enthält oder ein kurzes GROSS-Kürzel ist (»AZ 12-333«) — sonst frisst
-  // der Wert Folgewörter (»… und das Aktenzeichen«).
-  const numRe = new RegExp(
-    `\\b(${NUMBER_CONTEXT})(\\s*[:#]?\\s*)((?:[A-Za-z0-9\\/.\\-]+ ?){1,3})`,
-    "gi"
-  );
-  text = text.replace(numRe, (m, label: string, sep: string, raw: string) => {
-    const tokens = raw.trim().split(/\s+/);
-    const kept: string[] = [];
-    for (const tok of tokens) {
-      if (/\d/.test(tok) || (/^[A-Z]{1,4}$/.test(tok) && kept.length === 0)) kept.push(tok);
-      else break;
+  // Zwischen Label und Wert darf ein »Nr.«-Zusatz stehen (»Police Nr. AB-99«).
+  // Der Wert läuft über bis zu 6 Tokens: Ziffern-Tokens immer, einzelne
+  // Buchstaben-Kürzel (»65 170839 J 003«) nur INNERHALB eines Laufs — sonst
+  // frisst der Wert Folgewörter (»… und das Aktenzeichen«).
+  // Manuelles Vorwärts-Scannen statt einer verschlingenden Regex: sonst
+  // frisst der erste Treffer den nächsten Kontext (»… und das Aktenzeichen«)
+  // mit auf und der zweite Wert bliebe unmaskiert.
+  {
+    const ctxRe = new RegExp(`\\b(${NUMBER_CONTEXT})((?:\\s*(?:Nr\\.?|Nummer|No\\.?))?\\s*[:#]?\\s*)`, "gi");
+    const tokenRe = /^([A-Za-z0-9][A-Za-z0-9\/.\-]*)(\s*)/;
+    let out = "";
+    let cursor = 0;
+    for (const m of [...text.matchAll(ctxRe)]) {
+      const start = m.index ?? 0;
+      if (start < cursor) continue; // Überlappung: bereits verarbeitet
+      const headEnd = start + m[0].length;
+      let scan = headEnd;
+      const kept: string[] = [];
+      // Tokens einsammeln, solange sie Ziffern enthalten oder ein Kürzel
+      // sind, dem noch ein Ziffern-Token folgt (»65 170839 J 003«).
+      for (let guard = 0; guard < 6; guard++) {
+        const rest = text.slice(scan);
+        const tm = rest.match(tokenRe);
+        if (!tm) break;
+        const tok = tm[1];
+        const hasDigit = /\d/.test(tok);
+        const isCode = /^[A-Za-z]{1,4}$/.test(tok);
+        if (!hasDigit && !isCode) break;
+        if (!hasDigit) {
+          // Kürzel nur behalten, wenn danach wirklich noch eine Zahl kommt.
+          const ahead = rest.slice(tm[0].length).match(tokenRe);
+          if (!ahead || !/\d/.test(ahead[1])) break;
+        }
+        kept.push(tok);
+        scan += tm[0].length;
+      }
+      while (kept.length && !/\d/.test(kept[kept.length - 1])) {
+        const dropped = kept.pop()!;
+        scan -= dropped.length;
+      }
+      if (!kept.some((t) => /\d/.test(t))) continue;
+      // Satzzeichen am Ende gehören zum Satz, nicht zur Nummer.
+      const value = text.slice(headEnd, scan).trimEnd().replace(/[.,;:]+$/, "");
+      if (!value) continue;
+      record("nummer", value, "[NUMMER]");
+      out += text.slice(cursor, headEnd) + "[NUMMER]";
+      cursor = headEnd + value.length;
     }
-    if (!kept.some((t) => /\d/.test(t))) return m; // kein echter Nummern-Wert
-    const value = kept.join(" ");
-    record("nummer", value, "[NUMMER]");
-    const rest = raw.slice(raw.indexOf(value) + value.length);
-    return `${label}${sep}[NUMMER]${rest}`;
-  });
+    text = out + text.slice(cursor);
+  }
 
   // Geburtsdaten NUR im Geburts-Kontext — Termindaten bleiben lesbar
   // (die Analyse braucht »am 05.08. besprochen«; sie braucht kein Geburtsdatum).
@@ -211,9 +253,11 @@ export function applyStructuredPii(input: string): PiiResult {
     /\b\p{Lu}[\p{L}.-]*(?:straße|strasse|str\.|weg|allee|platz|gasse|ring|damm|ufer)\s+\d+\s?[a-z]?\b/giu,
     (m) => record("adresse", m, "[ADRESSE]")
   );
-  // PLZ + Ort (5 Ziffern + großgeschriebenes Wort)
-  text = text.replace(/\b\d{5}\s+\p{Lu}[\p{L}-]+\b/gu, (m) =>
-    record("plz_ort", m, "[PLZ_ORT]")
+  // PLZ + Ort (5 Ziffern + großgeschriebenes Wort). Einheiten/Währungen
+  // hinter der Zahl sind KEINE Orte — »45000 Euro« ist eine Geschäftszahl
+  // und muss lesbar bleiben (sonst zerstört die Maskierung die Analyse).
+  text = text.replace(/\b\d{5}\s+(\p{Lu}[\p{L}-]+)\b/gu, (m, word: string) =>
+    UNIT_WORDS.has(word) ? m : record("plz_ort", m, "[PLZ_ORT]")
   );
 
   // Telefon: strenger als bisher — muss mit 0/+ beginnen und ≥8 Ziffern
@@ -305,7 +349,9 @@ interface PersonEntity {
 }
 
 const TITLE_RE = "(?:Dr\\.|Prof\\.|Professorin?|Doktorin?)";
-const SALUT_RE = "(?:Herrn?|Frau|Hr\\.|Fr\\.)";
+// Deutsch UND Englisch: der Transkript-Weg unterstützt de/en, englische
+// Anreden (»Mr Wagner«) müssen genauso greifen.
+const SALUT_RE = "(?:Herrn?|Frau|Hr\\.|Fr\\.|Mr\\.?|Mrs\\.?|Ms\\.?|Miss)";
 
 /**
  * Erkennung Dritter im Fließtext. Läuft NACH der Sprecher-Ersetzung —
@@ -388,29 +434,16 @@ export function applyPersonPii(input: string, startIndex: number): PiiResult {
     entityFor(asFirst ? name : undefined, asFirst ? undefined : name);
   }
 
-  // Pass C: alleinstehende Wörterbuch-Vornamen (»dann hat Katrin gesagt«).
-  // Ambige Namen (Ernst, Mai …) zählen hier NIE; Satzanfänge nur, wenn
-  // derselbe Name auch mitten im Satz vorkommt (sonst wäre jedes
-  // großgeschriebene Satzanfangswort ein Kandidat).
+  // Pass C: alleinstehende Wörterbuch-Vornamen (»dann hat Katrin gesagt«,
+  // »Sebastian hat das übernommen«). Ambige Namen (Ernst, Mai, Deniz …)
+  // zählen hier NIE — sie brauchen die Anrede aus Pass A. Alle anderen
+  // Wörterbuch-Namen sind eindeutig genug, auch am Satzanfang: das
+  // Wörterbuch enthält bewusst keine deutschen Substantive.
   const nameAlt = [...FIRST_NAME_SET].map(escapeRe).join("|");
   const soloRe = new RegExp(`\\b(${nameAlt})\\b`, "gu");
-  const soloSeen = new Map<string, { midSentence: boolean }>();
   for (const m of [...text.matchAll(soloRe)]) {
     const name = m[1];
     if (AMBIGUOUS_FIRSTNAMES.has(name)) continue;
-    const before = text.slice(0, m.index ?? 0);
-    const trailingWs = before.match(/\s*$/)?.[0] ?? "";
-    const lastChar = before.trimEnd().slice(-1);
-    const atSentenceStart =
-      before.trimEnd() === "" ||
-      trailingWs.includes("\n") ||
-      /[.!?:»«"]/.test(lastChar);
-    const cur = soloSeen.get(name) ?? { midSentence: false };
-    cur.midSentence = cur.midSentence || !atSentenceStart;
-    soloSeen.set(name, cur);
-  }
-  for (const [name, info] of soloSeen) {
-    if (!info.midSentence) continue;
     entityFor(name, undefined);
   }
 

@@ -362,7 +362,8 @@
     "wishSend": "Saada soov",
     "wishThanks": "Aitäh! Sinu soov on kohal ja läheb uute stsenaariumide prioriseerimisse.",
     "resumeTimeLeft": "~{min} min jäänud",
-    "resumeTimeUp": "Aeg läbi"
+    "resumeTimeUp": "Aeg läbi",
+    "dropWrongType": "Siin võetakse vastu ainult PDF — teksti jaoks kasuta analüüsilehte."
   },
   "evaluation": {
     "sourceSim": "rollimängust",

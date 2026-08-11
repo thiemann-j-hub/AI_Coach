@@ -362,7 +362,8 @@
     "wishSend": "Wyślij prośbę",
     "wishThanks": "Dziękujemy! Twoja prośba dotarła i trafia do priorytetyzacji nowych scenariuszy.",
     "resumeTimeLeft": "jeszcze ~{min} min",
-    "resumeTimeUp": "Czas minął"
+    "resumeTimeUp": "Czas minął",
+    "dropWrongType": "Tutaj przyjmowany jest tylko PDF — dla tekstu użyj strony analizy."
   },
   "evaluation": {
     "sourceSim": "z odgrywania ról",

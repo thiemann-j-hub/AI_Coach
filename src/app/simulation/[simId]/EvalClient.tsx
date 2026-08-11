@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
@@ -116,6 +116,63 @@ export default function EvalClient() {
   const ts = t.simulation;
   const subtitle = sim?.scenarioTitle ? splitTitle(sim.scenarioTitle).heroTitle : undefined;
 
+  // Löschrecht (Owner-Vorgabe 04.08.): Nach W1 zeigt der Einstieg nur noch
+  // OFFENE Läufe — ohne diesen Knopf wäre eine abgeschlossene Simulation
+  // nirgends mehr löschbar. Zweistufig wie in der Liste, endgültig inkl. DB.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  async function deleteSim() {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const res = await authFetch('/api/simulation/delete', {
+        method: 'POST',
+        body: JSON.stringify({ simId }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) throw new Error('delete');
+      router.push('/runs-dashboard');
+    } catch {
+      setDeleting(false);
+      setConfirmDelete(false);
+      setState('error');
+    }
+  }
+
+  const deleteAction = (
+    <div className="flex items-center gap-2">
+      {confirmDelete ? (
+        <>
+          <span className="hidden text-xs text-muted-foreground sm:inline">{ts.deleteConfirm}</span>
+          <button
+            onClick={() => void deleteSim()}
+            disabled={deleting}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-1.5 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
+          >
+            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {ts.deleteSim}
+          </button>
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            {t.common.cancel}
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => setConfirmDelete(true)}
+          title={ts.deleteSim}
+          aria-label={ts.deleteSim}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-rose-500/30 hover:text-rose-400"
+        >
+          <Trash2 className="h-4 w-4" />
+          <span className="hidden sm:inline">{ts.deleteSim}</span>
+        </button>
+      )}
+    </div>
+  );
+
   if (state === 'loading') {
     return (
       <AppShell title={ts.feedbackTitle}>
@@ -143,7 +200,7 @@ export default function EvalClient() {
   }
 
   return (
-    <AppShell title={ts.feedbackTitle} subtitle={subtitle}>
+    <AppShell title={ts.feedbackTitle} subtitle={subtitle} actions={deleteAction}>
       <SimulationEvaluation
         personaName={sim.personaName}
         feedback={sim.feedback}

@@ -362,7 +362,8 @@
     "wishSend": "Kérés elküldése",
     "wishThanks": "Köszönjük! Kérésed megérkezett, és beszámít az új forgatókönyvek priorizálásába.",
     "resumeTimeLeft": "még ~{min} perc",
-    "resumeTimeUp": "Lejárt az idő"
+    "resumeTimeUp": "Lejárt az idő",
+    "dropWrongType": "Itt csak PDF fogadható el — szöveghez használd az elemzés oldalt."
   },
   "evaluation": {
     "sourceSim": "szerepjátékból",

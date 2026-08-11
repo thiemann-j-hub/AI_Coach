@@ -362,7 +362,8 @@
     "wishSend": "Wens versturen",
     "wishThanks": "Bedankt! Je wens is ontvangen en telt mee in de prioritering van nieuwe scenario's.",
     "resumeTimeLeft": "nog ~{min} min",
-    "resumeTimeUp": "Tijd verstreken"
+    "resumeTimeUp": "Tijd verstreken",
+    "dropWrongType": "Hier wordt alleen pdf geaccepteerd — gebruik voor tekst de analysepagina."
   },
   "evaluation": {
     "sourceSim": "uit rollenspel",

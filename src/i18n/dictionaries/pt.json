@@ -362,7 +362,8 @@
     "wishSend": "Enviar pedido",
     "wishThanks": "Obrigado! O teu pedido chegou e entra na priorização de novos cenários.",
     "resumeTimeLeft": "faltam ~{min} min",
-    "resumeTimeUp": "Tempo esgotado"
+    "resumeTimeUp": "Tempo esgotado",
+    "dropWrongType": "Aqui só se aceita PDF — usa a página de análise para texto."
   },
   "evaluation": {
     "sourceSim": "de role-play",

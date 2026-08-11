@@ -362,7 +362,8 @@
     "wishSend": "Send ønske",
     "wishThanks": "Takk! Ønsket ditt er mottatt og går inn i prioriteringen av nye scenarioer.",
     "resumeTimeLeft": "~{min} min igjen",
-    "resumeTimeUp": "Tiden er ute"
+    "resumeTimeUp": "Tiden er ute",
+    "dropWrongType": "Bare PDF godtas her — bruk analysesiden for tekst."
   },
   "evaluation": {
     "sourceSim": "fra rollespill",

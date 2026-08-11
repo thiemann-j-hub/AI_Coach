@@ -362,7 +362,8 @@
     "wishSend": "Send request",
     "wishThanks": "Thanks! Your request has been received and feeds into the prioritisation of new scenarios.",
     "resumeTimeLeft": "~{min} min left",
-    "resumeTimeUp": "Time is up"
+    "resumeTimeUp": "Time is up",
+    "dropWrongType": "Only PDF is accepted here — use the analysis page for text."
   },
   "evaluation": {
     "sourceSim": "from role-play",

@@ -75,6 +75,48 @@ describe("applyStructuredPii", () => {
 /*  Firmen                                                              */
 /* ------------------------------------------------------------------ */
 
+describe("Regressionen aus dem Härtefall-Korpus (Test-Runde 11.08.)", () => {
+  it("BUG-1: »45000 Euro« ist eine Geschäftszahl, keine PLZ", () => {
+    const r = applyStructuredPii("Das Budget von 45000 Euro steht, 12000 Stück sind bestellt.");
+    expect(r.text).toContain("45000 Euro");
+    expect(r.text).toContain("12000 Stück");
+    // Echte PLZ+Ort wird weiterhin maskiert.
+    expect(applyStructuredPii("Sitz ist 40213 Düsseldorf.").text).toContain("[PLZ_ORT]");
+  });
+
+  it("BUG-2: mehrgliedrige IDs vollständig (Steuer-ID, SV-Nummer mit Buchstabe)", () => {
+    const r = applyStructuredPii("Steuer-ID 12 345 678 901, SV-Nummer 65 170839 J 003.");
+    expect(r.text).toBe("Steuer-ID [NUMMER], SV-Nummer [NUMMER].");
+  });
+
+  it("BUG-3: »Police Nr. AB-9912/22« — Nr.-Zusatz zwischen Label und Wert", () => {
+    expect(applyStructuredPii("Police Nr. AB-9912/22 läuft aus.").text).toBe(
+      "Police Nr. [NUMMER] läuft aus."
+    );
+  });
+
+  it("BUG-3b: zwei Kontext-Nummern im selben Satz — die zweite wird nicht verschluckt", () => {
+    expect(
+      applyStructuredPii("Ihre Personalnummer: 88-1234/56 und das Aktenzeichen AZ 12-333.").text
+    ).toBe("Ihre Personalnummer: [NUMMER] und das Aktenzeichen [NUMMER].");
+  });
+
+  it("BUG-4: Vorname am SATZANFANG wird erkannt (»Sebastian hat …«)", () => {
+    const r = applyPersonPii("Sebastian hat das übernommen. Melanie unterstützt ihn.", 1);
+    expect(r.text).not.toContain("Sebastian");
+    expect(r.text).not.toContain("Melanie");
+    // Ambige Namen bleiben ohne Anrede unangetastet.
+    expect(applyPersonPii("Ernst gemeint war das nicht.", 1).text).toContain("Ernst gemeint");
+  });
+
+  it("BUG-5: englische Anrede + Ortspräposition (Coach kann de/en)", () => {
+    const p = applyPersonPii("I spoke to Mr Wagner yesterday.", 1);
+    expect(p.text).toContain("Mr Person 1");
+    const c = applyCityPii("Erik will call from Bochum today.", createNumberer());
+    expect(c.text).toContain("from Ort 1");
+  });
+});
+
 describe("applyOrgPii", () => {
   it("Rechtsform-Firmen werden pseudonymisiert, spätere Nennung folgt", () => {
     const r = applyOrgPii(
