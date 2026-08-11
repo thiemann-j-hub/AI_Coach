@@ -42,6 +42,35 @@ export default function EvalClient() {
 
   const [state, setState] = useState<'loading' | 'ready' | 'notfound' | 'error'>('loading');
   const [sim, setSim] = useState<LoadedSim | null>(null);
+  // W3-1: Katalog-Projektion für den Delta-CTA (best effort — ohne Katalog
+  // erscheint der Satz ohne Szenario-Button).
+  const [scenarios, setScenarios] = useState<
+    Array<{ id: string; title: string; competencyFocus?: string[] }>
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch('/api/simulation/scenarios');
+        const json = await res.json().catch(() => null);
+        if (!cancelled && res.ok && json?.ok && Array.isArray(json.scenarios)) {
+          setScenarios(
+            json.scenarios.map((s: { id: string; title: string; competencyFocus?: string[] }) => ({
+              id: s.id,
+              title: s.title,
+              competencyFocus: s.competencyFocus,
+            }))
+          );
+        }
+      } catch {
+        /* CTA degradiert ohne Katalog */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!simId) return;
@@ -123,6 +152,11 @@ export default function EvalClient() {
         attempt={sim.attempt}
         focus={sim.focus}
         ratings={sim.ratings}
+        currentScenarioId={sim.scenarioId}
+        scenarios={scenarios}
+        onOpenScenario={(scenarioId) =>
+          router.push(`/?szenario=${encodeURIComponent(scenarioId)}`)
+        }
         onRetry={(focusText) =>
           router.push(
             `/?szenario=${encodeURIComponent(sim.scenarioId)}&fokus=${encodeURIComponent(focusText)}`

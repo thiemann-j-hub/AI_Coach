@@ -40,6 +40,7 @@ import {
   computeDelta,
   type Debrief,
 } from "@/lib/simulation/debrief";
+import { computeMeasurementDelta } from "@/lib/measurement-delta";
 import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
 import { withRetry, withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
@@ -155,7 +156,10 @@ export async function POST(req: NextRequest) {
       withTimeout(
         scoreCompetencies({
           transcriptText: transcript,
-          lang: "de",
+          // W3-4: why-Begründungen folgen der GESPRÄCHSSPRACHE (vorher hart
+          // "de" — englische Läufe bekamen deutsche Begründungen). Zitate
+          // bleiben per Prompt im Originalwortlaut.
+          lang: doc.convoLocale ?? "de",
           leaderLabel: "Teilnehmer:in",
           employeeLabel: scenario.persona.name,
         }),
@@ -172,7 +176,7 @@ export async function POST(req: NextRequest) {
     try {
       if (compSettled.status === "rejected") throw compSettled.reason;
       competencyRatings = normalizeCompetencyRatings(compSettled.value, {
-        lang: "de",
+        lang: doc.convoLocale ?? "de",
         leaderLabel: "Teilnehmer:in",
         employeeLabel: scenario.persona.name,
       });
@@ -245,7 +249,9 @@ export async function POST(req: NextRequest) {
       checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
       passThreshold: scenario.assessment.passThreshold,
     });
-    let delta = null;
+    let delta: (ReturnType<typeof computeDelta> & {
+      competencies?: Record<string, number | null>;
+    }) | null = null;
     try {
       const prev = await latestFinishedForScenario(auth.uid, doc.scenarioId, doc.id);
       const prevFb = prev?.feedbackJson as SimulationFeedbackOutput | undefined;
@@ -262,6 +268,19 @@ export async function POST(req: NextRequest) {
           previous: prevDebrief,
           prevAttempt: prev.attempt ?? 1,
         });
+        // W3-1: zusätzlich das C1–C10-Delta (measurement-delta, dieselbe
+        // Rechnung wie die Delta-Card der Analyse) — Datenbasis des
+        // Endscreen-CTAs »Erkenntnis → Handlung«. Additiv, best effort.
+        if (prev.competencyRatings) {
+          try {
+            delta.competencies = computeMeasurementDelta(
+              competencyRatings,
+              prev.competencyRatings
+            ).deltas;
+          } catch {
+            /* C-Delta ist Komfort — Anker-Delta bleibt. */
+          }
+        }
       }
     } catch (e) {
       logger.apiError("/api/simulation/finish/delta", e, { simId: doc.id });

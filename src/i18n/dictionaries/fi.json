@@ -102,7 +102,7 @@
     "timeoutThinking": "Valmentaja miettii …",
     "timeoutLimit": "Tämän simulaation kaikki coach-tauot on käytetty.",
     "attemptLabel": "Yritys",
-    "focusBanner": "Fokuksesi",
+    "focusBanner": "Sinun aikomuksesi",
     "focusReviewTitle": "Fokus",
     "focusYes": "toteutettu",
     "focusNo": "ei vielä toteutettu",
@@ -368,6 +368,14 @@
     "sourceSim": "roolipelistä",
     "sourceRun": "litteroinnista",
     "notFound": "Arviointia ei löytynyt.",
-    "backHome": "Takaisin alkuun"
+    "backHome": "Takaisin alkuun",
+    "deltaDroppedSentence": "{c} jäi tällä kertaa jälkeen.",
+    "deltaWeakestSentence": "{c} näyttää tällä hetkellä suurimman aukkosi.",
+    "deltaScenarioAims": "”{s}” tähtää juuri siihen.",
+    "deltaCtaButton": "Avaa briiffi",
+    "commitmentQuestion": "Mitä teet ensi kerralla konkreettisesti toisin?",
+    "studioBridgeTitle": "Käsittele aihetta perusteellisemmin?",
+    "studioBridgeBody": "Luo kurssi Learning Studiossa — räätälöity kohteelle {c}.",
+    "studioBridgeCta": "Luo kurssi Studiossa"
   }
 }

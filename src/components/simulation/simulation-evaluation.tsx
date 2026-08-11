@@ -7,10 +7,12 @@
  * W1-8: einheitlicher ScoreRing, Herkunfts-Pill, C1–C10-Block offen.
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
+  ArrowRight,
   CheckCircle2,
   ChevronDown,
+  GraduationCap,
   Loader2,
   MessagesSquare,
   RotateCcw,
@@ -20,6 +22,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ScoreRing } from '@/components/app/score-ring';
+import { computeDeltaCta, computeStudioBridge } from '@/lib/simulation/endscreen';
 import { useTranslation } from '@/i18n/useTranslation';
 
 /* ── Typen (Vertrag der /api/simulation/get- bzw. finish-Antwort) ── */
@@ -55,6 +58,8 @@ export interface SimEvalDelta {
   anchors: Array<{ key: string; delta: number | null }>;
   prevOverall: number | null;
   prevAttempt: number;
+  /** W3-1: C1–C10-Delta ggü. Vorversuch (measurement-delta, additiv). */
+  competencies?: Record<string, number | null> | null;
 }
 
 export interface SimEvalRating {
@@ -109,7 +114,13 @@ export function SimulationEvaluation(props: {
   attempt: number;
   focus: string | null;
   ratings: SimEvalRating[] | null;
-  /** Fokus-Retry: startet dasselbe Szenario mit diesem Fokus. */
+  /** Szenario dieser Auswertung (für den Delta-CTA: Abwechslung schlägt Wiederholung). */
+  currentScenarioId?: string | null;
+  /** Katalog-Projektion für den Delta-CTA (W3-1); leer = kein CTA-Szenario. */
+  scenarios?: Array<{ id: string; title: string; competencyFocus?: string[] }>;
+  /** W3-1: öffnet das Briefing eines empfohlenen Szenarios. */
+  onOpenScenario?: (scenarioId: string) => void;
+  /** Fokus-Retry: startet dasselbe Szenario mit diesem Fokus (W3-2: selbst geschrieben). */
   onRetry: (focusText: string) => void;
   retryBusy?: boolean;
   /** Zurück zum Einstieg. */
@@ -120,6 +131,23 @@ export function SimulationEvaluation(props: {
   const { feedback, debrief, delta, attempt, focus, ratings } = props;
 
   const [openEvidence, setOpenEvidence] = useState<Record<string, boolean>>({});
+  // W3-2: der Vorsatz ist SELBST geschrieben — vorbefüllt mit dem
+  // nextStep-Vorschlag, frei editierbar (kein stummes slice mehr).
+  const [commitment, setCommitment] = useState(() => feedback.nextStep.slice(0, 280));
+
+  // W3-1: Erkenntnis → Handlung (pure, getestet).
+  const deltaCta = useMemo(
+    () =>
+      computeDeltaCta({
+        ratings,
+        deltaCompetencies: delta?.competencies ?? null,
+        scenarios: props.scenarios ?? [],
+        currentScenarioId: props.currentScenarioId ?? null,
+      }),
+    [ratings, delta, props.scenarios, props.currentScenarioId]
+  );
+  // W3-3: Studio-Brücke nur bei echter Schwäche (≤ 2).
+  const studioBridge = useMemo(() => computeStudioBridge(ratings), [ratings]);
 
   const deltaByKey = new Map((delta?.anchors ?? []).map((a) => [a.key, a.delta]));
   const verdict = debrief?.verdict ?? 'unrated';
@@ -347,23 +375,95 @@ export function SimulationEvaluation(props: {
         </section>
       )}
 
-      {/* CTA-Zeile: Fokus-Retry zuerst — die Schleife ist das Produkt. */}
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => props.onRetry(feedback.nextStep.slice(0, 280))}
-          disabled={props.retryBusy}
-          className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
+      {/* ── W3: Endscreen-Mechaniken — Reihenfolge Delta → Commitment → Brücke ── */}
+
+      {/* W3-1: Delta als Auslöser — Satz + Handlung statt stummem Tag. */}
+      {deltaCta && (
+        <section className="glass-panel rounded-2xl p-5 border border-primary/30 bg-primary/5">
+          <p className="text-sm leading-relaxed">
+            <span className="font-semibold">
+              {(deltaCta.mode === 'dropped'
+                ? t.evaluation.deltaDroppedSentence
+                : t.evaluation.deltaWeakestSentence
+              ).replace('{c}', deltaCta.cName ?? deltaCta.cKey)}
+            </span>
+            {deltaCta.scenarioTitle && (
+              <> {t.evaluation.deltaScenarioAims.replace('{s}', splitTitle(deltaCta.scenarioTitle).motto)}</>
+            )}
+          </p>
+          {deltaCta.scenarioId && props.onOpenScenario && (
+            <button
+              onClick={() => props.onOpenScenario!(deltaCta.scenarioId!)}
+              className="mt-3 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+            >
+              {t.evaluation.deltaCtaButton} <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
+        </section>
+      )}
+
+      {/* W3-2: selbstgeschriebenes Commitment — kein stummes nextStep.slice mehr. */}
+      <section className="glass-panel rounded-2xl p-5 border border-border space-y-3">
+        <label
+          htmlFor="commitment"
+          className="text-sm font-semibold flex items-center gap-1.5"
         >
-          {props.retryBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <RotateCcw className="h-5 w-5" />}
-          {ts.retryFocusCta}
-        </button>
-        <button
-          onClick={props.onNew}
-          className="rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
-        >
-          <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
-        </button>
-      </div>
+          <Sparkles className="h-4 w-4 text-primary" /> {t.evaluation.commitmentQuestion}
+        </label>
+        <textarea
+          id="commitment"
+          value={commitment}
+          onChange={(e) => setCommitment(e.target.value)}
+          rows={3}
+          maxLength={300}
+          className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => props.onRetry(commitment.trim().slice(0, 300))}
+            disabled={props.retryBusy || commitment.trim().length === 0}
+            className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
+          >
+            {props.retryBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <RotateCcw className="h-5 w-5" />}
+            {ts.retryFocusCta}
+          </button>
+          <button
+            onClick={props.onNew}
+            className="rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
+          >
+            <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
+          </button>
+        </div>
+      </section>
+
+      {/* W3-3: Studio-Brücke — nur bei echter Schwäche (≤ 2), neuer Tab. */}
+      {studioBridge && (
+        <section className="glass-panel rounded-2xl p-5 border border-accent/30 bg-accent/5">
+          <div className="flex items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
+              <GraduationCap className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold">{t.evaluation.studioBridgeTitle}</h3>
+              <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
+                {t.evaluation.studioBridgeBody.replace(
+                  '{c}',
+                  studioBridge.cName ?? studioBridge.cKey
+                )}
+              </p>
+              <a
+                href={studioBridge.href}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-2 rounded-lg border border-accent/40 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors"
+              >
+                <GraduationCap className="h-4 w-4" /> {t.evaluation.studioBridgeCta}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

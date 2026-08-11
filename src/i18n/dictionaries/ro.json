@@ -102,7 +102,7 @@
     "timeoutThinking": "Coachul se gândește …",
     "timeoutLimit": "Toate pauzele de coach din această simulare sunt epuizate.",
     "attemptLabel": "Încercare",
-    "focusBanner": "Focusul tău",
+    "focusBanner": "Angajamentul tău",
     "focusReviewTitle": "Focus",
     "focusYes": "abordat",
     "focusNo": "încă neabordat",
@@ -368,6 +368,14 @@
     "sourceSim": "din joc de rol",
     "sourceRun": "din transcriere",
     "notFound": "Această evaluare nu a fost găsită.",
-    "backHome": "Înapoi la început"
+    "backHome": "Înapoi la început",
+    "deltaDroppedSentence": "{c} a rămas în urmă de data aceasta.",
+    "deltaWeakestSentence": "{c} arată acum cel mai mare decalaj al tău.",
+    "deltaScenarioAims": "„{s}” țintește exact acolo.",
+    "deltaCtaButton": "Deschide briefingul",
+    "commitmentQuestion": "Ce vei face concret altfel data viitoare?",
+    "studioBridgeTitle": "Abordezi tema mai în profunzime?",
+    "studioBridgeBody": "Creează un curs în Learning Studio — croit pe {c}.",
+    "studioBridgeCta": "Creează curs în Studio"
   }
 }

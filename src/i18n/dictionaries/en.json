@@ -102,7 +102,7 @@
     "timeoutThinking": "The coach is thinking …",
     "timeoutLimit": "All coach breaks of this simulation are used up.",
     "attemptLabel": "Attempt",
-    "focusBanner": "Your focus",
+    "focusBanner": "Your commitment",
     "focusReviewTitle": "Focus",
     "focusYes": "addressed",
     "focusNo": "not yet addressed",
@@ -368,6 +368,14 @@
     "sourceSim": "from role-play",
     "sourceRun": "from transcript",
     "notFound": "This evaluation was not found.",
-    "backHome": "Back to start"
+    "backHome": "Back to start",
+    "deltaDroppedSentence": "{c} slipped this time.",
+    "deltaWeakestSentence": "{c} currently shows your biggest gap.",
+    "deltaScenarioAims": "“{s}” targets exactly that.",
+    "deltaCtaButton": "Open briefing",
+    "commitmentQuestion": "What will you concretely do differently next time?",
+    "studioBridgeTitle": "Tackle this topic more fundamentally?",
+    "studioBridgeBody": "Create a course in the Learning Studio — tailored to {c}.",
+    "studioBridgeCta": "Create course in Studio"
   }
 }

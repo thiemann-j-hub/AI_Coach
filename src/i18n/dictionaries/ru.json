@@ -102,7 +102,7 @@
     "timeoutThinking": "Коуч думает …",
     "timeoutLimit": "Все паузы с коучем в этой симуляции израсходованы.",
     "attemptLabel": "Попытка",
-    "focusBanner": "Твой фокус",
+    "focusBanner": "Твоё намерение",
     "focusReviewTitle": "Фокус",
     "focusYes": "реализовано",
     "focusNo": "ещё не реализовано",
@@ -368,6 +368,14 @@
     "sourceSim": "из ролевой игры",
     "sourceRun": "из транскрипта",
     "notFound": "Эта оценка не найдена.",
-    "backHome": "К началу"
+    "backHome": "К началу",
+    "deltaDroppedSentence": "{c} на этот раз просело.",
+    "deltaWeakestSentence": "{c} сейчас показывает твой самый большой пробел.",
+    "deltaScenarioAims": "«{s}» целит именно туда.",
+    "deltaCtaButton": "Открыть брифинг",
+    "commitmentQuestion": "Что ты в следующий раз сделаешь конкретно иначе?",
+    "studioBridgeTitle": "Взяться за тему основательнее?",
+    "studioBridgeBody": "Создай курс в Learning Studio — под {c}.",
+    "studioBridgeCta": "Создать курс в Studio"
   }
 }

@@ -102,7 +102,7 @@
     "timeoutThinking": "Tá an cóitseálaí ag machnamh …",
     "timeoutLimit": "Tá gach sos cóitseála den ionsamhlú seo ídithe.",
     "attemptLabel": "Iarracht",
-    "focusBanner": "D'fhócas",
+    "focusBanner": "Do rún",
     "focusReviewTitle": "Fócas",
     "focusYes": "curtha i bhfeidhm",
     "focusNo": "gan cur i bhfeidhm fós",
@@ -368,6 +368,14 @@
     "sourceSim": "ó rólimirt",
     "sourceRun": "ó thras-scríbhinn",
     "notFound": "Níor aimsíodh an mheastóireacht seo.",
-    "backHome": "Ar ais go dtí an tús"
+    "backHome": "Ar ais go dtí an tús",
+    "deltaDroppedSentence": "D'fhan {c} siar an uair seo.",
+    "deltaWeakestSentence": "Léiríonn {c} an bhearna is mó agat faoi láthair.",
+    "deltaScenarioAims": "Díríonn “{s}” go díreach air sin.",
+    "deltaCtaButton": "Oscail an faisnéisiú",
+    "commitmentQuestion": "Cad a dhéanfaidh tú go nithiúil ar bhealach difriúil an chéad uair eile?",
+    "studioBridgeTitle": "An téama seo a láimhseáil níos bunúsaí?",
+    "studioBridgeBody": "Cruthaigh cúrsa sa Learning Studio — saincheaptha do {c}.",
+    "studioBridgeCta": "Cruthaigh cúrsa sa Studio"
   }
 }

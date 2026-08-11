@@ -102,7 +102,7 @@
     "timeoutThinking": "A coach gondolkodik …",
     "timeoutLimit": "Ebben a szimulációban az összes coach-szünet elfogyott.",
     "attemptLabel": "Próbálkozás",
-    "focusBanner": "A fókuszod",
+    "focusBanner": "A fogadalmad",
     "focusReviewTitle": "Fókusz",
     "focusYes": "megvalósítva",
     "focusNo": "még nincs megvalósítva",
@@ -368,6 +368,14 @@
     "sourceSim": "szerepjátékból",
     "sourceRun": "átiratból",
     "notFound": "Ez az értékelés nem található.",
-    "backHome": "Vissza a kezdéshez"
+    "backHome": "Vissza a kezdéshez",
+    "deltaDroppedSentence": "A(z) {c} ezúttal elmaradt.",
+    "deltaWeakestSentence": "A(z) {c} mutatja most a legnagyobb hiányod.",
+    "deltaScenarioAims": "A(z) „{s}” pontosan erre céloz.",
+    "deltaCtaButton": "Briefing megnyitása",
+    "commitmentQuestion": "Mit csinálsz legközelebb konkrétan másképp?",
+    "studioBridgeTitle": "Alaposabban nekimennél ennek a témának?",
+    "studioBridgeBody": "Készíts kurzust a Learning Studióban — a(z) {c} területre szabva.",
+    "studioBridgeCta": "Kurzus létrehozása a Studióban"
   }
 }

@@ -102,7 +102,7 @@
     "timeoutThinking": "Der Coach überlegt …",
     "timeoutLimit": "Alle Coach-Pausen dieser Simulation sind aufgebraucht.",
     "attemptLabel": "Versuch",
-    "focusBanner": "Dein Fokus",
+    "focusBanner": "Dein Vorsatz",
     "focusReviewTitle": "Fokus",
     "focusYes": "umgesetzt",
     "focusNo": "noch nicht umgesetzt",
@@ -368,6 +368,14 @@
     "sourceSim": "aus Rollenspiel",
     "sourceRun": "aus Transkript",
     "notFound": "Diese Auswertung wurde nicht gefunden.",
-    "backHome": "Zum Einstieg"
+    "backHome": "Zum Einstieg",
+    "deltaDroppedSentence": "{c} hast du diesmal liegen gelassen.",
+    "deltaWeakestSentence": "{c} zeigt aktuell deine größte Lücke.",
+    "deltaScenarioAims": "»{s}« zielt genau darauf.",
+    "deltaCtaButton": "Briefing öffnen",
+    "commitmentQuestion": "Was machst du beim nächsten Mal konkret anders?",
+    "studioBridgeTitle": "Dieses Thema grundlegender angehen?",
+    "studioBridgeBody": "Erstelle einen Kurs im Learning Studio — zugeschnitten auf {c}.",
+    "studioBridgeCta": "Kurs im Studio erstellen"
   }
 }

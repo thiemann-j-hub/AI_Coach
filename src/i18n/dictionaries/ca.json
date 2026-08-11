@@ -102,7 +102,7 @@
     "timeoutThinking": "El coach està pensant…",
     "timeoutLimit": "Totes les pauses de coach d'aquesta simulació s'han esgotat.",
     "attemptLabel": "Intent",
-    "focusBanner": "El teu focus",
+    "focusBanner": "El teu propòsit",
     "focusReviewTitle": "Focus",
     "focusYes": "aplicat",
     "focusNo": "encara no aplicat",
@@ -368,6 +368,14 @@
     "sourceSim": "de joc de rol",
     "sourceRun": "de transcripció",
     "notFound": "No s'ha trobat aquesta avaluació.",
-    "backHome": "Tornar a l'inici"
+    "backHome": "Tornar a l'inici",
+    "deltaDroppedSentence": "{c} se t'ha quedat enrere aquesta vegada.",
+    "deltaWeakestSentence": "{c} mostra actualment la teva bretxa més gran.",
+    "deltaScenarioAims": "«{s}» apunta exactament a això.",
+    "deltaCtaButton": "Obrir el briefing",
+    "commitmentQuestion": "Què faràs de manera concreta diferent la propera vegada?",
+    "studioBridgeTitle": "Abordar aquest tema més a fons?",
+    "studioBridgeBody": "Crea un curs al Learning Studio — a mida de {c}.",
+    "studioBridgeCta": "Crear curs a l'Studio"
   }
 }

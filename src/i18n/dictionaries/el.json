@@ -102,7 +102,7 @@
     "timeoutThinking": "Ο coach σκέφτεται …",
     "timeoutLimit": "Όλες οι παύσεις coach αυτής της προσομοίωσης έχουν εξαντληθεί.",
     "attemptLabel": "Προσπάθεια",
-    "focusBanner": "Η εστίασή σου",
+    "focusBanner": "Η δέσμευσή σου",
     "focusReviewTitle": "Εστίαση",
     "focusYes": "εφαρμόστηκε",
     "focusNo": "δεν έχει εφαρμοστεί ακόμη",
@@ -368,6 +368,14 @@
     "sourceSim": "από παιχνίδι ρόλων",
     "sourceRun": "από απομαγνητοφώνηση",
     "notFound": "Η αξιολόγηση δεν βρέθηκε.",
-    "backHome": "Πίσω στην αρχή"
+    "backHome": "Πίσω στην αρχή",
+    "deltaDroppedSentence": "Το {c} έμεινε πίσω αυτή τη φορά.",
+    "deltaWeakestSentence": "Το {c} δείχνει αυτή τη στιγμή το μεγαλύτερο κενό σου.",
+    "deltaScenarioAims": "Το «{s}» στοχεύει ακριβώς εκεί.",
+    "deltaCtaButton": "Άνοιγμα briefing",
+    "commitmentQuestion": "Τι θα κάνεις συγκεκριμένα διαφορετικά την επόμενη φορά;",
+    "studioBridgeTitle": "Να πιάσεις το θέμα πιο θεμελιωδώς;",
+    "studioBridgeBody": "Δημιούργησε ένα μάθημα στο Learning Studio — κομμένο και ραμμένο στο {c}.",
+    "studioBridgeCta": "Δημιουργία μαθήματος στο Studio"
   }
 }

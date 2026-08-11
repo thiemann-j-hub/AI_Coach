@@ -102,7 +102,7 @@
     "timeoutThinking": "Le coach réfléchit…",
     "timeoutLimit": "Toutes les pauses coach de cette simulation sont épuisées.",
     "attemptLabel": "Essai",
-    "focusBanner": "Votre focus",
+    "focusBanner": "Votre engagement",
     "focusReviewTitle": "Focus",
     "focusYes": "appliqué",
     "focusNo": "pas encore appliqué",
@@ -368,6 +368,14 @@
     "sourceSim": "issu du jeu de rôle",
     "sourceRun": "issu de la transcription",
     "notFound": "Cette évaluation est introuvable.",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "deltaDroppedSentence": "{c} a reculé cette fois-ci.",
+    "deltaWeakestSentence": "{c} montre actuellement votre plus grand écart.",
+    "deltaScenarioAims": "« {s} » vise exactement cela.",
+    "deltaCtaButton": "Ouvrir le briefing",
+    "commitmentQuestion": "Que ferez-vous concrètement différemment la prochaine fois ?",
+    "studioBridgeTitle": "Aborder ce sujet plus en profondeur ?",
+    "studioBridgeBody": "Créez un cours dans le Learning Studio — taillé pour {c}.",
+    "studioBridgeCta": "Créer un cours dans le Studio"
   }
 }

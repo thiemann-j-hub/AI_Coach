@@ -102,7 +102,7 @@
     "timeoutThinking": "De coach denkt na …",
     "timeoutLimit": "Alle coachpauzes van deze simulatie zijn opgebruikt.",
     "attemptLabel": "Poging",
-    "focusBanner": "Jouw focus",
+    "focusBanner": "Jouw voornemen",
     "focusReviewTitle": "Focus",
     "focusYes": "toegepast",
     "focusNo": "nog niet toegepast",
@@ -368,6 +368,14 @@
     "sourceSim": "uit rollenspel",
     "sourceRun": "uit transcript",
     "notFound": "Deze evaluatie is niet gevonden.",
-    "backHome": "Terug naar start"
+    "backHome": "Terug naar start",
+    "deltaDroppedSentence": "{c} bleef deze keer liggen.",
+    "deltaWeakestSentence": "{c} toont momenteel je grootste kloof.",
+    "deltaScenarioAims": "“{s}” mikt daar precies op.",
+    "deltaCtaButton": "Briefing openen",
+    "commitmentQuestion": "Wat doe je de volgende keer concreet anders?",
+    "studioBridgeTitle": "Dit thema grondiger aanpakken?",
+    "studioBridgeBody": "Maak een cursus in de Learning Studio — op maat van {c}.",
+    "studioBridgeCta": "Cursus in Studio maken"
   }
 }

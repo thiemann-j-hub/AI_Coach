@@ -102,7 +102,7 @@
     "timeoutThinking": "Kouč přemýšlí…",
     "timeoutLimit": "Všechny pauzy s koučem v této simulaci jsou vyčerpány.",
     "attemptLabel": "Pokus",
-    "focusBanner": "Váš fokus",
+    "focusBanner": "Tvé předsevzetí",
     "focusReviewTitle": "Fokus",
     "focusYes": "uplatněn",
     "focusNo": "zatím neuplatněn",
@@ -368,6 +368,14 @@
     "sourceSim": "z hraní rolí",
     "sourceRun": "z přepisu",
     "notFound": "Toto vyhodnocení nebylo nalezeno.",
-    "backHome": "Zpět na začátek"
+    "backHome": "Zpět na začátek",
+    "deltaDroppedSentence": "{c} tentokrát zůstalo ležet.",
+    "deltaWeakestSentence": "{c} teď ukazuje tvou největší mezeru.",
+    "deltaScenarioAims": "„{s}“ míří přesně na to.",
+    "deltaCtaButton": "Otevřít briefing",
+    "commitmentQuestion": "Co příště uděláš konkrétně jinak?",
+    "studioBridgeTitle": "Vzít téma důkladněji?",
+    "studioBridgeBody": "Vytvoř kurz v Learning Studiu — na míru {c}.",
+    "studioBridgeCta": "Vytvořit kurz ve Studiu"
   }
 }

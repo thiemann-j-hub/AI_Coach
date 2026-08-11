@@ -102,7 +102,7 @@
     "timeoutThinking": "Coachen tenker …",
     "timeoutLimit": "Alle coachpauser i denne simuleringen er brukt opp.",
     "attemptLabel": "Forsøk",
-    "focusBanner": "Ditt fokus",
+    "focusBanner": "Ditt forsett",
     "focusReviewTitle": "Fokus",
     "focusYes": "gjennomført",
     "focusNo": "ennå ikke gjennomført",
@@ -368,6 +368,14 @@
     "sourceSim": "fra rollespill",
     "sourceRun": "fra transkripsjon",
     "notFound": "Fant ikke denne evalueringen.",
-    "backHome": "Til startsiden"
+    "backHome": "Til startsiden",
+    "deltaDroppedSentence": "{c} ble hengende etter denne gangen.",
+    "deltaWeakestSentence": "{c} viser akkurat nå det største gapet ditt.",
+    "deltaScenarioAims": "«{s}» sikter nøyaktig på det.",
+    "deltaCtaButton": "Åpne briefing",
+    "commitmentQuestion": "Hva gjør du konkret annerledes neste gang?",
+    "studioBridgeTitle": "Ta tak i temaet mer grunnleggende?",
+    "studioBridgeBody": "Lag et kurs i Learning Studio — skreddersydd for {c}.",
+    "studioBridgeCta": "Lag kurs i Studio"
   }
 }

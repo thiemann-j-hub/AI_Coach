@@ -102,7 +102,7 @@
     "timeoutThinking": "Treener mõtleb …",
     "timeoutLimit": "Selle simulatsiooni kõik coach'i pausid on kasutatud.",
     "attemptLabel": "Katse",
-    "focusBanner": "Sinu fookus",
+    "focusBanner": "Sinu eesmärk",
     "focusReviewTitle": "Fookus",
     "focusYes": "rakendatud",
     "focusNo": "veel rakendamata",
@@ -368,6 +368,14 @@
     "sourceSim": "rollimängust",
     "sourceRun": "transkriptsioonist",
     "notFound": "Seda hinnangut ei leitud.",
-    "backHome": "Tagasi algusesse"
+    "backHome": "Tagasi algusesse",
+    "deltaDroppedSentence": "{c} jäi seekord maha.",
+    "deltaWeakestSentence": "{c} näitab praegu sinu suurimat lünka.",
+    "deltaScenarioAims": "„{s}” sihib täpselt seda.",
+    "deltaCtaButton": "Ava briifing",
+    "commitmentQuestion": "Mida teed järgmisel korral konkreetselt teisiti?",
+    "studioBridgeTitle": "Käsitle seda teemat põhjalikumalt?",
+    "studioBridgeBody": "Loo kursus Learning Studios — rätsepatööna kompetentsile {c}.",
+    "studioBridgeCta": "Loo kursus Studios"
   }
 }

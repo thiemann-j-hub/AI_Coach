@@ -102,7 +102,7 @@
     "timeoutThinking": "Koučs domā …",
     "timeoutLimit": "Visas šīs simulācijas trenera pauzes ir izmantotas.",
     "attemptLabel": "Mēģinājums",
-    "focusBanner": "Tavs fokuss",
+    "focusBanner": "Tavs nodoms",
     "focusReviewTitle": "Fokuss",
     "focusYes": "īstenots",
     "focusNo": "vēl nav īstenots",
@@ -368,6 +368,14 @@
     "sourceSim": "no lomu spēles",
     "sourceRun": "no transkripcijas",
     "notFound": "Šis izvērtējums netika atrasts.",
-    "backHome": "Atpakaļ uz sākumu"
+    "backHome": "Atpakaļ uz sākumu",
+    "deltaDroppedSentence": "{c} šoreiz palika novārtā.",
+    "deltaWeakestSentence": "{c} šobrīd rāda tavu lielāko robu.",
+    "deltaScenarioAims": "“{s}” mērķē tieši uz to.",
+    "deltaCtaButton": "Atvērt instruktāžu",
+    "commitmentQuestion": "Ko nākamreiz konkrēti darīsi citādi?",
+    "studioBridgeTitle": "Ķerties pie šīs tēmas pamatīgāk?",
+    "studioBridgeBody": "Izveido kursu Learning Studio — pielāgotu {c}.",
+    "studioBridgeCta": "Izveidot kursu Studio"
   }
 }
