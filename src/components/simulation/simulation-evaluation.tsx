@@ -81,6 +81,22 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
 }
 
+/**
+ * Kürzt an der letzten Wort-/Satzgrenze vor `max` (statt mitten im Wort).
+ * Exportiert, damit die Regel getestet ist — sie steht im Eingabefeld des
+ * Nutzers und ist damit sichtbarer Text, kein Detail.
+ */
+export function truncateAtWord(input: string, max: number): string {
+  const s = String(input ?? '').trim();
+  if (s.length <= max) return s;
+  const head = s.slice(0, max);
+  // Bevorzugt am Satzende schneiden, sonst am letzten Leerzeichen.
+  const sentence = Math.max(head.lastIndexOf('. '), head.lastIndexOf('! '), head.lastIndexOf('? '));
+  if (sentence > max * 0.5) return head.slice(0, sentence + 1).trim();
+  const space = head.lastIndexOf(' ');
+  return (space > 0 ? head.slice(0, space) : head).trim();
+}
+
 function DeltaTag({ delta }: { delta: number | null }) {
   if (delta == null || delta === 0) return null;
   const up = delta > 0;
@@ -133,7 +149,9 @@ export function SimulationEvaluation(props: {
   const [openEvidence, setOpenEvidence] = useState<Record<string, boolean>>({});
   // W3-2: der Vorsatz ist SELBST geschrieben — vorbefüllt mit dem
   // nextStep-Vorschlag, frei editierbar (kein stummes slice mehr).
-  const [commitment, setCommitment] = useState(() => feedback.nextStep.slice(0, 280));
+  // An der WORTGRENZE kürzen (Test-Fund 11.08.: der harte 280-Schnitt endete
+  // mitten im Wort — »… statt alles zu bündeln« wurde zu »… sta«).
+  const [commitment, setCommitment] = useState(() => truncateAtWord(feedback.nextStep, 280));
 
   // W3-1: Erkenntnis → Handlung (pure, getestet).
   const deltaCta = useMemo(
@@ -164,8 +182,10 @@ export function SimulationEvaluation(props: {
             ? ts.expBelow
             : ts.notObservable;
 
+    // mx-auto: die Auswertung klebte auf breiten Bildschirmen am linken Rand
+    // (Test-Fund 11.08.) — Chat und Verlauf zentrieren bereits.
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       {/* Herkunfts-Pill (W1-8): woher diese Messung stammt */}
       <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
         <MessagesSquare className="h-3.5 w-3.5" />

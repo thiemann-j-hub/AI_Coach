@@ -1008,7 +1008,9 @@ export default function SimulationClient() {
 
     return (
       <AppShell title={t.entry.title}>
-        <div className="space-y-6 max-w-6xl">
+        {/* mx-auto: der Einstieg klebte auf breiten Bildschirmen am linken
+            Rand (Test-Fund 11.08.) — Verlauf/Chat zentrieren bereits. */}
+        <div className="space-y-6 max-w-6xl mx-auto">
           {errorBanner}
 
           {/* ── Kopf: EIN Einstieg, zwei Zuflüsse (§1) ── */}
@@ -1536,8 +1538,17 @@ export default function SimulationClient() {
         ? `${Math.floor(remainingMs / 60_000)}:${String(Math.floor((remainingMs % 60_000) / 1000)).padStart(2, '0')}`
         : null;
     const remainingMin = remainingMs != null ? Math.ceil(remainingMs / 60_000) : null;
+    /**
+     * Zeit ist um — ODER die sichtbare Uhr steht auf 0:00 (Test-Fund 11.08.):
+     * Das Server-Flag entsteht erst beim NÄCHSTEN Beitrag. Ohne diese Zeile
+     * zeigt ein zwischenzeitlich abgelaufener Lauf eine rote 0:00 UND eine
+     * offene Eingabe — der Nutzer tippt ins Leere und bekommt erst danach die
+     * Verabschiedung. Der Server bleibt die Wahrheit, der Client läuft ihm
+     * nur nicht mehr hinterher.
+     */
+    const effTimeUp = timeUp || (startedMs != null && remainingMs === 0);
     // ── W2-2: Totsackgasse — Zeit um, aber kein auswertbares Gespräch ──
-    const deadEnd = timeUp && userTurnCount < 3;
+    const deadEnd = effTimeUp && userTurnCount < 3;
     const b = scenario.candidateBriefing;
     return (
       <AppShell
@@ -1568,7 +1579,7 @@ export default function SimulationClient() {
                 )}
                 title={ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
               >
-                <Clock className="h-4 w-4" /> {timeUp ? '0:00' : clockText}
+                <Clock className="h-4 w-4" /> {effTimeUp ? '0:00' : clockText}
               </span>
             )}
             {ttsSupported && (
@@ -1603,7 +1614,7 @@ export default function SimulationClient() {
             {/* W2-3: erst ab 3 eigenen Beiträgen aktiv (Dialog verlangte es
                 schon immer — jetzt sagt es auch der Button). Nach Zeitablauf
                 übernimmt das Banner/Modal — kein doppelter Auswerten-Knopf. */}
-            {!timeUp && (
+            {!effTimeUp && (
               <button
                 onClick={() => setConfirmOpen(true)}
                 disabled={finishing || userTurnCount < 3}
@@ -1774,7 +1785,7 @@ export default function SimulationClient() {
           <div className="border-t border-border p-3">
             {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
                 Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
-            {timeUp && !deadEnd && (
+            {effTimeUp && !deadEnd && (
               <div className="max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
                   <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
@@ -1788,7 +1799,7 @@ export default function SimulationClient() {
                 </button>
               </div>
             )}
-            {micActive && !timeUp && (
+            {micActive && !effTimeUp && (
               <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2 text-xs text-primary">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -1808,11 +1819,11 @@ export default function SimulationClient() {
                   }
                 }}
                 rows={2}
-                placeholder={timeUp ? ts.timeUpPlaceholder : ts.inputPlaceholder}
-                disabled={timeUp}
+                placeholder={effTimeUp ? ts.timeUpPlaceholder : ts.inputPlaceholder}
+                disabled={effTimeUp}
                 className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
-              {speechSupported && !timeUp && (
+              {speechSupported && !effTimeUp && (
                 <button
                   onClick={() => (micActive ? stopMic() : startMic())}
                   className={cx(
@@ -1832,7 +1843,7 @@ export default function SimulationClient() {
               )}
               <button
                 onClick={() => void sendTurn()}
-                disabled={sending || !input.trim() || timeUp}
+                disabled={sending || !input.trim() || effTimeUp}
                 className="btn-gradient text-white rounded-xl p-3 shadow-neon disabled:opacity-50"
                 aria-label={ts.send}
               >
@@ -1898,9 +1909,11 @@ export default function SimulationClient() {
               <h3 className="font-semibold text-lg">{ts.leaveTitle}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {ts.leaveBody}
-                {!timeUp && remainingMin != null && (
+                {effTimeUp ? (
+                  <> {t.entry.resumeTimeUp}</>
+                ) : remainingMin != null ? (
                   <> {ts.leaveTimeLeft.replace('{min}', String(remainingMin))}</>
-                )}
+                ) : null}
               </p>
               <div className="flex gap-2 justify-end">
                 <button
