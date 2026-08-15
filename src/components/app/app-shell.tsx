@@ -100,9 +100,9 @@ export default function AppShell(props: {
         items: [
           { href: '/', label: t.nav.practice, icon: MessagesSquare },
           { href: '/runs-dashboard', label: t.nav.history, icon: History },
-          // Kein Credits-Eintrag mehr: der Header-Chip regelt die Credits
-          // (Owner-Vorgabe 04.08. — /credits bleibt als Route erreichbar).
-          { href: '/workspace', label: t.nav.workspace, icon: Users },
+          // Kein Credits-Eintrag mehr: der Header-Chip regelt die Credits.
+          // Welle D (IA-Masterplan 15.08.): /workspace ist ABGERISSEN — Team-
+          // Verwaltung lebt ausschliesslich zentral in Team & Zugaenge (Hub).
         ],
       },
     ],

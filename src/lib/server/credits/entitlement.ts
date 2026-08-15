@@ -44,7 +44,9 @@ export type EntitlementResult =
   | { ok: false; response: NextResponse };
 
 function topUpUrl(): string | undefined {
-  return process.env.CREDIT_TOPUP_URL || undefined;
+  // Welle D (IA-Masterplan 15.08.): fester Fallback auf DIE eine Kasse —
+  // ohne Env fiel der Chip vorher still auf die interne /credits-Sackgasse.
+  return process.env.CREDIT_TOPUP_URL || "https://pulsenorth.ai/preise";
 }
 
 function paywall(workspaceId: string): NextResponse {
