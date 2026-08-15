@@ -24,6 +24,13 @@ import { useTranslation } from '@/i18n/useTranslation';
 import { signOut } from '@/lib/auth-service';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { LoginModal } from '@/components/auth/login-modal';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { BrandSwitcher } from '@/components/app/app-switcher';
@@ -303,15 +310,54 @@ export default function AppShell(props: {
               </div>
             </div>
 
+            {/* L3 Look-and-Feel (Owner-Auftrag 15.08., Standard = Studio):
+                Reihenfolge IMMER Credits → Sprache (Flagge + Wort) → rundes
+                Avatar mit Menü. Verbindlich: pulsenorth-ops/
+                SHELL-STANDARD-LOOK-AND-FEEL.md */}
             <div className="flex items-center gap-2 md:gap-3">
               {props.actions}
-              {/* App-Umschalter lebt jetzt links im Brand-Block (Owner-Vorgabe 04.08.) */}
               <CreditBalance />
-              <LanguageSwitcher compact />
-              {/* User-Anzeige lebt jetzt einheitlich unten in der Sidebar
-                  (Owner-Vorgabe 04.08.) — der Header zeigt nur noch den
-                  Login-Einstieg fuer nicht angemeldete Besucher. */}
-              {!user && (
+              <LanguageSwitcher />
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center rounded-full transition-opacity hover:opacity-85"
+                      aria-label={user.displayName || t.auth.user}
+                    >
+                      <Avatar className="h-8 w-8 border border-border">
+                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || t.auth.user} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-xs font-semibold text-white">
+                          {(user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-1.5">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {user.displayName || t.auth.user}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="gap-2 cursor-pointer">
+                        <Settings className="h-4 w-4" />
+                        {t.nav.settings}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={onSignOut}
+                      className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t.auth.signOut}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
                 <LoginModal>
                   <button className="w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors">
                     ?
