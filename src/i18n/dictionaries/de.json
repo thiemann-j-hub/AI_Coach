@@ -23,7 +23,8 @@
     "topUp": "Credits aufladen",
     "watchVideo": "Video ansehen",
     "expandSidebar": "Seitenleiste ausklappen",
-    "collapseSidebar": "Seitenleiste einklappen"
+    "collapseSidebar": "Seitenleiste einklappen",
+    "balanceEmptyMember": "Das Kontingent deines Unternehmens ist aufgebraucht — dein Admin ist informiert."
   },
   "nav": {
     "analyze": "Transkript-Analyse",

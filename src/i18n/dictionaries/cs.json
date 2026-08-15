@@ -23,7 +23,8 @@
     "topUp": "Dobít kredity",
     "watchVideo": "Přehrát video",
     "expandSidebar": "Rozbalit boční panel",
-    "collapseSidebar": "Sbalit boční panel"
+    "collapseSidebar": "Sbalit boční panel",
+    "balanceEmptyMember": "Kvóta vaší firmy je vyčerpaná — váš admin byl informován."
   },
   "nav": {
     "analyze": "Analýza přepisu",

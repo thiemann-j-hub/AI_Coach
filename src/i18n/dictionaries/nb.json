@@ -23,7 +23,8 @@
     "topUp": "Fyll på kreditter",
     "watchVideo": "Se video",
     "expandSidebar": "Utvid sidefeltet",
-    "collapseSidebar": "Skjul sidefeltet"
+    "collapseSidebar": "Skjul sidefeltet",
+    "balanceEmptyMember": "Bedriftens kvote er brukt opp — administratoren din er informert."
   },
   "nav": {
     "analyze": "Transkripsjonsanalyse",

@@ -23,7 +23,8 @@
     "topUp": "Top up credits",
     "watchVideo": "Watch video",
     "expandSidebar": "Expand sidebar",
-    "collapseSidebar": "Collapse sidebar"
+    "collapseSidebar": "Collapse sidebar",
+    "balanceEmptyMember": "Your company's quota is used up — your admin has been notified."
   },
   "nav": {
     "analyze": "Transcript Analysis",

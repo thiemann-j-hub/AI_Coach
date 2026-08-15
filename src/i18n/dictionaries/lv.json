@@ -23,7 +23,8 @@
     "topUp": "Papildināt kredītus",
     "watchVideo": "Skatīties video",
     "expandSidebar": "Izvērst sānjoslu",
-    "collapseSidebar": "Sakļaut sānjoslu"
+    "collapseSidebar": "Sakļaut sānjoslu",
+    "balanceEmptyMember": "Jūsu uzņēmuma kvota ir iztērēta — administrators ir informēts."
   },
   "nav": {
     "analyze": "Transkripta analīze",

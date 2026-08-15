@@ -23,7 +23,8 @@
     "topUp": "Încarcă credite",
     "watchVideo": "Vezi videoclipul",
     "expandSidebar": "Extinde bara laterală",
-    "collapseSidebar": "Restrânge bara laterală"
+    "collapseSidebar": "Restrânge bara laterală",
+    "balanceEmptyMember": "Cota companiei tale s-a epuizat — adminul tău a fost informat."
   },
   "nav": {
     "analyze": "Analiza transcriptului",

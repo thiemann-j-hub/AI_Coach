@@ -66,16 +66,27 @@ export function CreditBalance() {
 
   if (!state) return null;
 
+  // Welle F (IA-Masterplan 15.08.): OHNE topUpUrl (zentrale Rolle member) gibt
+  // es KEINE Kauf-Handlung — der Chip wird rein informativ; bei knappem
+  // Guthaben traegt er die neutrale "Admin ist informiert"-Botschaft.
+  const canTopUp = !!state.topUpUrl;
   const href = state.topUpUrl || withBasePath("/credits");
-  // Externe Top-up-Seite (pulscraft-ai…/preise) in NEUEM Tab oeffnen, damit Coach
-  // offen bleibt (Angleich an Jobmap). Der interne /credits-Fallback bleibt im
-  // selben Tab (kein target).
   const external = /^https?:\/\//i.test(href);
 
   // Unter der Schwelle wird der Chip zum sichtbaren Aufladen-Button (Owner-
-  // Vorgabe 04.08.: der Header regelt die Credits — wird es knapp, muss man
-  // SEHEN, dass man hier klickt und auflaedt).
+  // Vorgabe 04.08.) — aber nur fuer die Rolle, die kaufen kann.
   if (state.balance < LOW_BALANCE_THRESHOLD) {
+    if (!canTopUp) {
+      return (
+        <span
+          title={t.common.balanceEmptyMember}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-400"
+        >
+          <Coins className="h-4 w-4" />
+          <span className="tabular-nums">{state.balance}</span>
+        </span>
+      );
+    }
     return (
       <a
         href={href}
@@ -88,6 +99,18 @@ export function CreditBalance() {
         <span aria-hidden>·</span>
         <span>{t.common.topUp}</span>
       </a>
+    );
+  }
+
+  if (!canTopUp) {
+    return (
+      <span
+        title="Credits"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm font-medium"
+      >
+        <Coins className="h-4 w-4" />
+        <span className="tabular-nums">{state.balance}</span>
+      </span>
     );
   }
 

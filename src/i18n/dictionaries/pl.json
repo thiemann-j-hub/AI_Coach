@@ -23,7 +23,8 @@
     "topUp": "Doładuj kredyty",
     "watchVideo": "Obejrzyj wideo",
     "expandSidebar": "Rozwiń pasek boczny",
-    "collapseSidebar": "Zwiń pasek boczny"
+    "collapseSidebar": "Zwiń pasek boczny",
+    "balanceEmptyMember": "Limit Twojej firmy został wyczerpany — administrator został poinformowany."
   },
   "nav": {
     "analyze": "Analiza transkryptu",

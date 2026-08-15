@@ -23,7 +23,8 @@
     "topUp": "Carregar créditos",
     "watchVideo": "Ver o vídeo",
     "expandSidebar": "Expandir a barra lateral",
-    "collapseSidebar": "Recolher a barra lateral"
+    "collapseSidebar": "Recolher a barra lateral",
+    "balanceEmptyMember": "A quota da tua empresa está esgotada — o teu admin foi informado."
   },
   "nav": {
     "analyze": "Análise de transcrição",

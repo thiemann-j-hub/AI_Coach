@@ -23,7 +23,8 @@
     "topUp": "Kredit feltöltése",
     "watchVideo": "Videó megtekintése",
     "expandSidebar": "Oldalsáv kinyitása",
-    "collapseSidebar": "Oldalsáv összecsukása"
+    "collapseSidebar": "Oldalsáv összecsukása",
+    "balanceEmptyMember": "A céged kerete elfogyott — az adminod értesítést kapott."
   },
   "nav": {
     "analyze": "Átirat-elemzés",

@@ -23,7 +23,8 @@
     "topUp": "Recargar créditos",
     "watchVideo": "Ver el vídeo",
     "expandSidebar": "Expandir la barra lateral",
-    "collapseSidebar": "Contraer la barra lateral"
+    "collapseSidebar": "Contraer la barra lateral",
+    "balanceEmptyMember": "El contingente de tu empresa está agotado; tu administrador ha sido informado."
   },
   "nav": {
     "analyze": "Análisis de transcripción",

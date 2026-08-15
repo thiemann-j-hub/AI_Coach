@@ -23,7 +23,8 @@
     "topUp": "Recarrega crèdits",
     "watchVideo": "Mira el vídeo",
     "expandSidebar": "Desplega la barra lateral",
-    "collapseSidebar": "Replega la barra lateral"
+    "collapseSidebar": "Replega la barra lateral",
+    "balanceEmptyMember": "El contingent de la teva empresa s'ha esgotat — el teu admin n'ha estat informat."
   },
   "nav": {
     "analyze": "Anàlisi de transcripció",

@@ -23,7 +23,8 @@
     "topUp": "Fyll på krediter",
     "watchVideo": "Se video",
     "expandSidebar": "Fäll ut sidofältet",
-    "collapseSidebar": "Fäll ihop sidofältet"
+    "collapseSidebar": "Fäll ihop sidofältet",
+    "balanceEmptyMember": "Ditt företags saldo är slut — din admin har informerats."
   },
   "nav": {
     "analyze": "Transkriptanalys",

@@ -23,7 +23,8 @@
     "topUp": "Recharger des crédits",
     "watchVideo": "Voir la vidéo",
     "expandSidebar": "Déplier la barre latérale",
-    "collapseSidebar": "Replier la barre latérale"
+    "collapseSidebar": "Replier la barre latérale",
+    "balanceEmptyMember": "Le quota de votre entreprise est épuisé — votre admin a été informé."
   },
   "nav": {
     "analyze": "Analyse de transcription",

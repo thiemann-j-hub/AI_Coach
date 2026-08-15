@@ -23,7 +23,19 @@ export async function GET(req: NextRequest) {
   const rlResponse = checkRateLimit(rlKey, 30, 60_000);
   if (rlResponse) return rlResponse;
 
-  const topUpUrl = process.env.CREDIT_TOPUP_URL || undefined;
+  // Welle F (IA-Masterplan 15.08.): Kauf-Links sieht nur, wer kaufen KANN —
+  // der Kunden-Admin. Lerner (zentrale Rolle member) bekommen keinen topUpUrl;
+  // die UI zeigt ihnen bei leerem Guthaben eine neutrale Meldung. Fail-soft:
+  // ohne zentrales Register (null) bleibt das bisherige Verhalten (Link an).
+  let canTopUp = true;
+  if (authResult.oid) {
+    const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
+    const central = await getCentralMemberInfo(authResult.oid);
+    if (central?.role === "member") canTopUp = false;
+  }
+  const topUpUrl = canTopUp
+    ? process.env.CREDIT_TOPUP_URL || "https://pulsenorth.ai/preise"
+    : undefined;
 
   // CREDITS_CENTRAL=on: Saldo zentral lesen — Token kommt aus dem Server-Store
   // (getValid(oid), refresht bei Bedarf). Kauf laeuft zentral (Website) -> der

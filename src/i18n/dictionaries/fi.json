@@ -23,7 +23,8 @@
     "topUp": "Lataa krediittejä",
     "watchVideo": "Katso video",
     "expandSidebar": "Laajenna sivupalkki",
-    "collapseSidebar": "Pienennä sivupalkki"
+    "collapseSidebar": "Pienennä sivupalkki",
+    "balanceEmptyMember": "Yrityksesi kiintiö on käytetty — ylläpitäjällesi on ilmoitettu."
   },
   "nav": {
     "analyze": "Transkriptioanalyysi",

@@ -23,7 +23,8 @@
     "topUp": "Optank kreditter",
     "watchVideo": "Se video",
     "expandSidebar": "Udvid sidepanelet",
-    "collapseSidebar": "Skjul sidepanelet"
+    "collapseSidebar": "Skjul sidepanelet",
+    "balanceEmptyMember": "Din virksomheds kontingent er opbrugt — din admin er informeret."
   },
   "nav": {
     "analyze": "Transskriptionsanalyse",

@@ -23,7 +23,8 @@
     "topUp": "Breisigh creidmheasanna",
     "watchVideo": "Féach ar an bhfíseán",
     "expandSidebar": "Leathnaigh an barra taoibh",
-    "collapseSidebar": "Laghdaigh an barra taoibh"
+    "collapseSidebar": "Laghdaigh an barra taoibh",
+    "balanceEmptyMember": "Tá cuóta do chuideachta ídithe — cuireadh do riarthóir ar an eolas."
   },
   "nav": {
     "analyze": "Anailís tras-scríbhinne",
