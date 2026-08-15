@@ -43,6 +43,30 @@ export function unauthorizedResponse(message = "Authentication required") {
 export async function requireAuth(req: NextRequest | Request) {
   const decoded = await verifyAuthToken(req);
   if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
+
+  // P3 App-Freigaben (ROLLEN-Blueprint 15.08.): das zentrale Mandanten-
+  // Register entscheidet, ob der Coach fuer dieses Konto freigeschaltet und
+  // das Konto aktiv ist. 60s-Cache; Dienststoerung -> fail-soft (Verfueg-
+  // barkeit vor Strenge). Inert ohne CREDITS_CENTRAL/oid.
+  if (decoded.oid) {
+    const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
+    const central = await getCentralMemberInfo(decoded.oid);
+    if (central) {
+      if (central.disabled) {
+        return NextResponse.json(
+          { ok: false, error: "Dieses Konto wurde deaktiviert. Wende dich an deine:n Admin.", code: "ACCOUNT_DISABLED" },
+          { status: 403 }
+        );
+      }
+      if (central.apps.length > 0 && !central.apps.includes("coach")) {
+        return NextResponse.json(
+          { ok: false, error: "Der KI-Coach ist für dieses Konto nicht freigeschaltet. Wende dich an deine:n Admin.", code: "APP_NOT_ENABLED" },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   return {
     uid: decoded.uid,
     email: decoded.email,
