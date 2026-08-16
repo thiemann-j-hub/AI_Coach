@@ -67,10 +67,11 @@ export default function ProfilePage() {
   useEffect(() => {
     const incoming = user?.displayName ?? "";
     if (!incoming) return;
-    setDisplayName((prev) =>
-      prev === "" || prev === lastAppliedName.current ? incoming : prev
-    );
+    // Vergleichswert VOR dem Set festhalten — der State-Updater laeuft
+    // erst beim Render, die Ref waere dann schon ueberschrieben.
+    const prevApplied = lastAppliedName.current;
     lastAppliedName.current = incoming;
+    setDisplayName((prev) => (prev === "" || prev === prevApplied ? incoming : prev));
   }, [user?.displayName]);
 
   const src = preview ?? user?.photoURL ?? undefined;
