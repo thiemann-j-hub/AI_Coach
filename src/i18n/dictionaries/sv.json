@@ -35,7 +35,8 @@
     "practice": "Öva",
     "mainGroup": "MAIN",
     "home": "Hem",
-    "settings": "Inställningar"
+    "settings": "Inställningar",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Rollspelssession",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Ta dig an ämnet mer grundligt?",
     "studioBridgeBody": "Skapa en kurs i Learning Studio — skräddarsydd för {c}.",
     "studioBridgeCta": "Skapa kurs i Studio"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Profilbild",
+    "changePhoto": "Byt foto",
+    "photoHint": "JPG, PNG eller WebP. Förminskas automatiskt och används överallt.",
+    "personal": "Personuppgifter",
+    "displayName": "Visningsnamn",
+    "emailLocked": "E-postadressen kan inte ändras.",
+    "role": "Roll",
+    "roleAdmin": "Administratör",
+    "roleMember": "Medlem",
+    "save": "Spara",
+    "saved": "Sparat.",
+    "saveFailed": "Det gick inte att spara.",
+    "appearance": "Utseende",
+    "appearanceHint": "Välj ljust, mörkt eller följ systeminställningen.",
+    "light": "Ljust",
+    "dark": "Mörkt",
+    "system": "System"
+  },
+  "settingsPage": {
+    "language": "Språk",
+    "languageHint": "Gäller alla texter och gränssnitt."
   }
 }

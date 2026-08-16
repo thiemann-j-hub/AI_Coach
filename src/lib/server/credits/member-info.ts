@@ -14,8 +14,9 @@ export interface CentralMemberInfo {
   role: "admin" | "member";
   apps: string[];
   disabled: boolean;
-  /** Zentrales Profilbild (16.08.): EIN Upload, alle Apps lesen es von hier. */
+  /** Zentrales Profil (16.08.): Bild + Anzeigename, EINMAL gesetzt, ueberall gleich. */
   avatarUrl: string | null;
+  displayName: string | null;
 }
 
 const BASE_URL = (
@@ -49,6 +50,7 @@ export async function getCentralMemberInfo(oid: string): Promise<CentralMemberIn
       apps?: string[];
       disabled?: boolean;
       avatarUrl?: string | null;
+      displayName?: string | null;
     };
     const info: CentralMemberInfo = {
       workspaceId: j.workspaceId ?? null,
@@ -56,10 +58,41 @@ export async function getCentralMemberInfo(oid: string): Promise<CentralMemberIn
       apps: Array.isArray(j.apps) ? j.apps : [],
       disabled: j.disabled === true,
       avatarUrl: typeof j.avatarUrl === "string" ? j.avatarUrl : null,
+      displayName: typeof j.displayName === "string" ? j.displayName : null,
     };
     cache.set(oid, { at: Date.now(), info });
     return info;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Zentrales Selbst-Service-Profil setzen (16.08.): Bild und/oder Anzeigename
+ * durchschreiben — "einmal aendern, ueberall gleich". Fail-soft (false);
+ * invalidiert den 60s-Cache, damit die App die Aenderung sofort liest.
+ */
+export async function setCentralSelfProfile(
+  oid: string,
+  patch: { avatarUrl?: string | null; displayName?: string }
+): Promise<boolean> {
+  if (!centralOn()) return false;
+  try {
+    const tok = await getValid(oid);
+    if (!tok.ok) return false;
+    const res = await fetch(`${BASE_URL}/me/profile`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${tok.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(patch),
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (res.ok) cache.delete(oid);
+    return res.ok;
+  } catch {
+    return false;
   }
 }

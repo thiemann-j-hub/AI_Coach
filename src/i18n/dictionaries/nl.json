@@ -35,7 +35,8 @@
     "practice": "Oefenen",
     "mainGroup": "MAIN",
     "home": "Home",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "profile": "Profiel"
   },
   "simulation": {
     "title": "Rollenspelsessie",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Dit thema grondiger aanpakken?",
     "studioBridgeBody": "Maak een cursus in de Learning Studio — op maat van {c}.",
     "studioBridgeCta": "Cursus in Studio maken"
+  },
+  "profilePage": {
+    "title": "Profiel",
+    "photo": "Profielfoto",
+    "changePhoto": "Foto wijzigen",
+    "photoHint": "JPG, PNG of WebP. Wordt automatisch verkleind en overal gebruikt.",
+    "personal": "Persoonlijke gegevens",
+    "displayName": "Weergavenaam",
+    "emailLocked": "Het e-mailadres kan niet worden gewijzigd.",
+    "role": "Rol",
+    "roleAdmin": "Beheerder",
+    "roleMember": "Lid",
+    "save": "Opslaan",
+    "saved": "Opgeslagen.",
+    "saveFailed": "Opslaan mislukt.",
+    "appearance": "Weergave",
+    "appearanceHint": "Kies licht, donker of volg je systeeminstelling.",
+    "light": "Licht",
+    "dark": "Donker",
+    "system": "Systeem"
+  },
+  "settingsPage": {
+    "language": "Taal",
+    "languageHint": "Geldt voor alle teksten en schermen."
   }
 }

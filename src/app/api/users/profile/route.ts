@@ -71,19 +71,27 @@ export async function GET(req: NextRequest) {
       await upsertItem(usersContainer(), doc);
     }
 
-    // Zentrales Profilbild (16.08.): EIN Upload (Hub/Studio/Jobmap), der Coach
-    // liest es aus dem Mandanten-Register mit. Fail-soft: ohne Zentrale null.
+    // Zentrales Profil (16.08.): Bild + Anzeigename aus dem Mandanten-
+    // Register — die ZENTRALE gewinnt ("einmal aendern, ueberall gleich").
+    // Fail-soft: ohne Zentrale gilt die lokale Wahrheit.
     let avatarUrl: string | null = null;
+    let centralName: string | null = null;
     if (oid) {
       try {
         const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
-        avatarUrl = (await getCentralMemberInfo(oid))?.avatarUrl ?? null;
+        const central = await getCentralMemberInfo(oid);
+        avatarUrl = central?.avatarUrl ?? null;
+        centralName = central?.displayName ?? null;
       } catch {
-        avatarUrl = null;
+        /* fail-soft */
       }
     }
 
-    return NextResponse.json({ ok: true, profile: { ...publicProfile(doc), avatarUrl } });
+    const pub = publicProfile(doc);
+    return NextResponse.json({
+      ok: true,
+      profile: { ...pub, displayName: centralName ?? pub.displayName, avatarUrl },
+    });
   } catch (err: any) {
     logger.apiError("/api/users/profile", err);
     return NextResponse.json(
@@ -96,13 +104,16 @@ export async function GET(req: NextRequest) {
 const patchSchema = z.object({
   language: z.enum(locales).optional(),
   displayName: z.string().min(1).max(200).optional(),
+  // Zentrales Profilbild (16.08.): der Coach speichert es NICHT lokal,
+  // sondern reicht es nur ans Mandanten-Register durch.
+  avatarUrl: z.string().startsWith("data:image/").max(300_000).nullable().optional(),
 });
 
 /** PATCH: language/displayName aktualisieren (Read-Modify-Upsert, Cosmos hat kein merge). */
 export async function PATCH(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
-  const { uid, email } = authResult;
+  const { uid, email, oid } = authResult;
 
   const rl = checkRateLimit(rateLimitKey(req, "profile-patch"), 20, 60_000);
   if (rl) return rl;
@@ -132,6 +143,22 @@ export async function PATCH(req: NextRequest) {
       updatedAt: now,
     };
     await upsertItem(usersContainer(), doc);
+
+    // Zentrales Profil (16.08.): Anzeigename/Bild ins Mandanten-Register
+    // durchschreiben, damit ALLE Apps dieselben Werte zeigen. Fail-soft.
+    if (oid && (parsed.data.displayName !== undefined || parsed.data.avatarUrl !== undefined)) {
+      try {
+        const { setCentralSelfProfile } = await import("@/lib/server/credits/member-info");
+        void setCentralSelfProfile(oid, {
+          ...(parsed.data.displayName !== undefined
+            ? { displayName: parsed.data.displayName }
+            : {}),
+          ...(parsed.data.avatarUrl !== undefined ? { avatarUrl: parsed.data.avatarUrl } : {}),
+        });
+      } catch {
+        /* fail-soft */
+      }
+    }
 
     return NextResponse.json({ ok: true, profile: publicProfile(doc) });
   } catch (err: any) {

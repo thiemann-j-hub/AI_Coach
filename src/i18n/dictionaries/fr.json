@@ -35,7 +35,8 @@
     "practice": "S'entraîner",
     "mainGroup": "MAIN",
     "home": "Accueil",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Session de jeu de rôle",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Aborder ce sujet plus en profondeur ?",
     "studioBridgeBody": "Créez un cours dans le Learning Studio — taillé pour {c}.",
     "studioBridgeCta": "Créer un cours dans le Studio"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Photo de profil",
+    "changePhoto": "Changer la photo",
+    "photoHint": "JPG, PNG ou WebP. Redimensionnée automatiquement, utilisée partout.",
+    "personal": "Données personnelles",
+    "displayName": "Nom affiché",
+    "emailLocked": "L'adresse e-mail ne peut pas être modifiée.",
+    "role": "Rôle",
+    "roleAdmin": "Administrateur",
+    "roleMember": "Membre",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "saveFailed": "Échec de l'enregistrement.",
+    "appearance": "Apparence",
+    "appearanceHint": "Choisissez clair, sombre ou suivez votre réglage système.",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "settingsPage": {
+    "language": "Langue",
+    "languageHint": "S'applique à tous les textes et interfaces."
   }
 }

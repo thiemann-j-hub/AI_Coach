@@ -35,7 +35,8 @@
     "practice": "Practice",
     "mainGroup": "MAIN",
     "home": "Home",
-    "settings": "Settings"
+    "settings": "Settings",
+    "profile": "Profile"
   },
   "simulation": {
     "title": "Roleplay Session",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Tackle this topic more fundamentally?",
     "studioBridgeBody": "Create a course in the Learning Studio — tailored to {c}.",
     "studioBridgeCta": "Create course in Studio"
+  },
+  "profilePage": {
+    "title": "Profile",
+    "photo": "Profile photo",
+    "changePhoto": "Change photo",
+    "photoHint": "JPG, PNG or WebP. Resized automatically and used everywhere.",
+    "personal": "Personal details",
+    "displayName": "Display name",
+    "emailLocked": "The email address cannot be changed.",
+    "role": "Role",
+    "roleAdmin": "Administrator",
+    "roleMember": "Member",
+    "save": "Save",
+    "saved": "Saved.",
+    "saveFailed": "Saving failed.",
+    "appearance": "Appearance",
+    "appearanceHint": "Choose light, dark, or follow your system setting.",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "settingsPage": {
+    "language": "Language",
+    "languageHint": "Applies to all texts and interfaces."
   }
 }

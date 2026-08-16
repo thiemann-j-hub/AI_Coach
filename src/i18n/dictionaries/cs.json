@@ -35,7 +35,8 @@
     "practice": "Trénovat",
     "mainGroup": "MAIN",
     "home": "Domů",
-    "settings": "Nastavení"
+    "settings": "Nastavení",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Hraní rolí",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Vzít téma důkladněji?",
     "studioBridgeBody": "Vytvoř kurz v Learning Studiu — na míru {c}.",
     "studioBridgeCta": "Vytvořit kurz ve Studiu"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Profilová fotka",
+    "changePhoto": "Změnit fotku",
+    "photoHint": "JPG, PNG nebo WebP. Automaticky se zmenší a platí všude.",
+    "personal": "Osobní údaje",
+    "displayName": "Zobrazované jméno",
+    "emailLocked": "E-mailovou adresu nelze změnit.",
+    "role": "Role",
+    "roleAdmin": "Administrátor",
+    "roleMember": "Člen",
+    "save": "Uložit",
+    "saved": "Uloženo.",
+    "saveFailed": "Uložení se nezdařilo.",
+    "appearance": "Vzhled",
+    "appearanceHint": "Zvol světlý, tmavý nebo se řiď nastavením systému.",
+    "light": "Světlý",
+    "dark": "Tmavý",
+    "system": "Systém"
+  },
+  "settingsPage": {
+    "language": "Jazyk",
+    "languageHint": "Platí pro všechny texty a obrazovky."
   }
 }

@@ -35,7 +35,8 @@
     "practice": "Exersează",
     "mainGroup": "MAIN",
     "home": "Acasă",
-    "settings": "Setări"
+    "settings": "Setări",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Sesiune de joc de rol",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Abordezi tema mai în profunzime?",
     "studioBridgeBody": "Creează un curs în Learning Studio — croit pe {c}.",
     "studioBridgeCta": "Creează curs în Studio"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Fotografie de profil",
+    "changePhoto": "Schimbă fotografia",
+    "photoHint": "JPG, PNG sau WebP. Redimensionată automat, valabilă peste tot.",
+    "personal": "Date personale",
+    "displayName": "Nume afișat",
+    "emailLocked": "Adresa de e-mail nu poate fi schimbată.",
+    "role": "Rol",
+    "roleAdmin": "Administrator",
+    "roleMember": "Membru",
+    "save": "Salvează",
+    "saved": "Salvat.",
+    "saveFailed": "Salvarea a eșuat.",
+    "appearance": "Aspect",
+    "appearanceHint": "Alege luminos, întunecat sau urmează setarea sistemului.",
+    "light": "Luminos",
+    "dark": "Întunecat",
+    "system": "Sistem"
+  },
+  "settingsPage": {
+    "language": "Limbă",
+    "languageHint": "Se aplică tuturor textelor și interfețelor."
   }
 }

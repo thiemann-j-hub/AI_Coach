@@ -56,7 +56,7 @@ export default async function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem={false}
+          enableSystem
           storageKey={STORAGE_KEY_THEME}
           disableTransitionOnChange
         >

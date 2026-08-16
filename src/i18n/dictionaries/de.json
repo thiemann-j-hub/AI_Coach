@@ -35,7 +35,8 @@
     "practice": "Üben",
     "mainGroup": "MAIN",
     "home": "Home",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Rollenspiel-Sitzung",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Dieses Thema grundlegender angehen?",
     "studioBridgeBody": "Erstelle einen Kurs im Learning Studio — zugeschnitten auf {c}.",
     "studioBridgeCta": "Kurs im Studio erstellen"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Profilbild",
+    "changePhoto": "Foto ändern",
+    "photoHint": "JPG, PNG oder WebP. Wird automatisch verkleinert und gilt in allen Bereichen.",
+    "personal": "Persönliche Daten",
+    "displayName": "Anzeigename",
+    "emailLocked": "Die E-Mail-Adresse kann nicht geändert werden.",
+    "role": "Rolle",
+    "roleAdmin": "Administrator",
+    "roleMember": "Mitglied",
+    "save": "Speichern",
+    "saved": "Gespeichert.",
+    "saveFailed": "Speichern fehlgeschlagen.",
+    "appearance": "Erscheinungsbild",
+    "appearanceHint": "Wähle hell, dunkel oder folge deiner Systemeinstellung.",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  },
+  "settingsPage": {
+    "language": "Sprache",
+    "languageHint": "Gilt für alle Texte und Oberflächen."
   }
 }

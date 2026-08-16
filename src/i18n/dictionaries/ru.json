@@ -35,7 +35,8 @@
     "practice": "Практика",
     "mainGroup": "MAIN",
     "home": "Главная",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "profile": "Профиль"
   },
   "simulation": {
     "title": "Ролевая сессия",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Взяться за тему основательнее?",
     "studioBridgeBody": "Создай курс в Learning Studio — под {c}.",
     "studioBridgeCta": "Создать курс в Studio"
+  },
+  "profilePage": {
+    "title": "Профиль",
+    "photo": "Фото профиля",
+    "changePhoto": "Сменить фото",
+    "photoHint": "JPG, PNG или WebP. Автоматически уменьшается и действует везде.",
+    "personal": "Личные данные",
+    "displayName": "Отображаемое имя",
+    "emailLocked": "Адрес электронной почты изменить нельзя.",
+    "role": "Роль",
+    "roleAdmin": "Администратор",
+    "roleMember": "Участник",
+    "save": "Сохранить",
+    "saved": "Сохранено.",
+    "saveFailed": "Не удалось сохранить.",
+    "appearance": "Оформление",
+    "appearanceHint": "Выберите светлую, тёмную тему или следуйте системной настройке.",
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Система"
+  },
+  "settingsPage": {
+    "language": "Язык",
+    "languageHint": "Действует для всех текстов и экранов."
   }
 }

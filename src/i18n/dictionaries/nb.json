@@ -35,7 +35,8 @@
     "practice": "Øv",
     "mainGroup": "MAIN",
     "home": "Hjem",
-    "settings": "Innstillinger"
+    "settings": "Innstillinger",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Rollespilløkt",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Ta tak i temaet mer grunnleggende?",
     "studioBridgeBody": "Lag et kurs i Learning Studio — skreddersydd for {c}.",
     "studioBridgeCta": "Lag kurs i Studio"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Profilbilde",
+    "changePhoto": "Bytt bilde",
+    "photoHint": "JPG, PNG eller WebP. Forminskes automatisk og brukes overalt.",
+    "personal": "Personopplysninger",
+    "displayName": "Visningsnavn",
+    "emailLocked": "E-postadressen kan ikke endres.",
+    "role": "Rolle",
+    "roleAdmin": "Administrator",
+    "roleMember": "Medlem",
+    "save": "Lagre",
+    "saved": "Lagret.",
+    "saveFailed": "Kunne ikke lagre.",
+    "appearance": "Utseende",
+    "appearanceHint": "Velg lys, mørk eller følg systeminnstillingen.",
+    "light": "Lys",
+    "dark": "Mørk",
+    "system": "System"
+  },
+  "settingsPage": {
+    "language": "Språk",
+    "languageHint": "Gjelder alle tekster og grensesnitt."
   }
 }

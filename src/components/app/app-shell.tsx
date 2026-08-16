@@ -17,6 +17,7 @@ import {
   LogOut,
   Settings,
   Home as HomeIcon,
+  UserRound,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '@/providers/auth-provider';
@@ -43,6 +44,15 @@ const COLLAPSE_KEY = 'coach_sidebar-collapsed';
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
+}
+
+/** Standard-Initialen-Regel (Owner-Vorgabe 16.08., alle Apps gleich):
+ *  Anfangsbuchstaben der ersten beiden Namensworte ("Jürgen Thiemann" -> JT). */
+function initialsOf(name?: string | null, email?: string | null): string {
+  const base = (name || email || '').trim();
+  if (!base) return 'U';
+  const parts = base.split(/\s+/).filter(Boolean);
+  return (parts.map((p) => p[0]).join('').toUpperCase().slice(0, 2)) || 'U';
 }
 
 export default function AppShell(props: {
@@ -253,7 +263,7 @@ export default function AppShell(props: {
               <Avatar className="h-9 w-9 shrink-0 border border-border">
                 <AvatarImage src={user.photoURL || ''} alt={user.displayName || t.auth.user} />
                 <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-sm font-medium text-white">
-                  {(user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()}
+                  {initialsOf(user.displayName, user.email)}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
@@ -328,11 +338,14 @@ export default function AppShell(props: {
                       <Avatar className="h-8 w-8 border border-border">
                         <AvatarImage src={user.photoURL || ''} alt={user.displayName || t.auth.user} />
                         <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-xs font-semibold text-white">
-                          {(user.displayName?.charAt(0) || user.email?.charAt(0) || 'U').toUpperCase()}
+                          {initialsOf(user.displayName, user.email)}
                         </AvatarFallback>
                       </Avatar>
                     </button>
                   </DropdownMenuTrigger>
+                  {/* Standard-Menue (Owner-Vorgabe 16.08., in ALLEN Apps
+                      identisch): Name/E-Mail -> Profil -> Einstellungen ->
+                      Abmelden. */}
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="px-2 py-1.5">
                       <p className="truncate text-sm font-medium text-foreground">
@@ -341,6 +354,12 @@ export default function AppShell(props: {
                       <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                     </div>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="gap-2 cursor-pointer">
+                        <UserRound className="h-4 w-4" />
+                        {t.nav.profile}
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/settings" className="gap-2 cursor-pointer">
                         <Settings className="h-4 w-4" />

@@ -62,9 +62,11 @@ const AuthContext = createContext<AuthContextType>({
 function InnerAuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [locale, setLocale] = useState<Locale>(defaultLocale);
-  // Zentrales Profilbild (16.08.): kommt aus dem Mandanten-Register (via
-  // /api/users/profile) und gewinnt gegen das Entra-Session-Bild.
+  // Zentrales Profil (16.08.): Bild + Anzeigename kommen aus dem Mandanten-
+  // Register (via /api/users/profile) und gewinnen gegen die Session-Werte —
+  // "einmal aendern, ueberall gleich".
   const [centralAvatar, setCentralAvatar] = useState<string | null>(null);
+  const [centralName, setCentralName] = useState<string | null>(null);
 
   // Initialise locale from cookie on mount (client-side only)
   useEffect(() => {
@@ -79,10 +81,10 @@ function InnerAuthProvider({ children }: { children: React.ReactNode }) {
     return {
       uid,
       email: session?.user?.email ?? null,
-      displayName: session?.user?.name ?? null,
+      displayName: centralName ?? session?.user?.name ?? null,
       photoURL: centralAvatar ?? session?.user?.image ?? null,
     };
-  }, [uid, session?.user?.email, session?.user?.name, session?.user?.image, centralAvatar]);
+  }, [uid, session?.user?.email, session?.user?.name, session?.user?.image, centralAvatar, centralName]);
 
   // Nach Login: frisches Profil aus Cosmos holen (provisioniert beim ersten
   // Mal) und gespeicherte Sprache in Cookie + State syncen.
@@ -98,9 +100,12 @@ function InnerAuthProvider({ children }: { children: React.ReactNode }) {
           setLocaleCookie(lang as Locale);
           setLocale(lang as Locale);
         }
-        // Zentrales Profilbild uebernehmen (null = keins gesetzt).
+        // Zentrales Profil uebernehmen (null = nichts gesetzt).
         if (!cancelled && typeof j?.profile?.avatarUrl === "string" && j.profile.avatarUrl) {
           setCentralAvatar(j.profile.avatarUrl);
+        }
+        if (!cancelled && typeof j?.profile?.displayName === "string" && j.profile.displayName) {
+          setCentralName(j.profile.displayName);
         }
       } catch {
         // Cookie-Locale bleibt maßgeblich

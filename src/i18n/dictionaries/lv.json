@@ -35,7 +35,8 @@
     "practice": "Trenējies",
     "mainGroup": "MAIN",
     "home": "Sākums",
-    "settings": "Iestatījumi"
+    "settings": "Iestatījumi",
+    "profile": "Profils"
   },
   "simulation": {
     "title": "Lomu spēles sesija",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Ķerties pie šīs tēmas pamatīgāk?",
     "studioBridgeBody": "Izveido kursu Learning Studio — pielāgotu {c}.",
     "studioBridgeCta": "Izveidot kursu Studio"
+  },
+  "profilePage": {
+    "title": "Profils",
+    "photo": "Profila attēls",
+    "changePhoto": "Mainīt foto",
+    "photoHint": "JPG, PNG vai WebP. Tiek automātiski samazināts un izmantots visur.",
+    "personal": "Personas dati",
+    "displayName": "Attēlojamais vārds",
+    "emailLocked": "E-pasta adresi nevar mainīt.",
+    "role": "Loma",
+    "roleAdmin": "Administrators",
+    "roleMember": "Dalībnieks",
+    "save": "Saglabāt",
+    "saved": "Saglabāts.",
+    "saveFailed": "Neizdevās saglabāt.",
+    "appearance": "Izskats",
+    "appearanceHint": "Izvēlies gaišu, tumšu vai seko sistēmas iestatījumam.",
+    "light": "Gaišs",
+    "dark": "Tumšs",
+    "system": "Sistēma"
+  },
+  "settingsPage": {
+    "language": "Valoda",
+    "languageHint": "Attiecas uz visiem tekstiem un saskarnēm."
   }
 }

@@ -35,7 +35,8 @@
     "practice": "Cleachtadh",
     "mainGroup": "MAIN",
     "home": "Baile",
-    "settings": "Socruithe"
+    "settings": "Socruithe",
+    "profile": "Próifíl"
   },
   "simulation": {
     "title": "Seisiún rólghlactha",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "An téama seo a láimhseáil níos bunúsaí?",
     "studioBridgeBody": "Cruthaigh cúrsa sa Learning Studio — saincheaptha do {c}.",
     "studioBridgeCta": "Cruthaigh cúrsa sa Studio"
+  },
+  "profilePage": {
+    "title": "Próifíl",
+    "photo": "Grianghraf próifíle",
+    "changePhoto": "Athraigh an grianghraf",
+    "photoHint": "JPG, PNG nó WebP. Laghdaítear go huathoibríoch é agus úsáidtear é i ngach áit.",
+    "personal": "Sonraí pearsanta",
+    "displayName": "Ainm taispeána",
+    "emailLocked": "Ní féidir an seoladh ríomhphoist a athrú.",
+    "role": "Ról",
+    "roleAdmin": "Riarthóir",
+    "roleMember": "Ball",
+    "save": "Sábháil",
+    "saved": "Sábháilte.",
+    "saveFailed": "Theip ar an sábháil.",
+    "appearance": "Cuma",
+    "appearanceHint": "Roghnaigh geal, dorcha nó lean socrú an chórais.",
+    "light": "Geal",
+    "dark": "Dorcha",
+    "system": "Córas"
+  },
+  "settingsPage": {
+    "language": "Teanga",
+    "languageHint": "Baineann sé le gach téacs agus comhéadan."
   }
 }

@@ -35,7 +35,8 @@
     "practice": "Allenati",
     "mainGroup": "MAIN",
     "home": "Home",
-    "settings": "Impostazioni"
+    "settings": "Impostazioni",
+    "profile": "Profilo"
   },
   "simulation": {
     "title": "Sessione di role play",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Affrontare questo tema più a fondo?",
     "studioBridgeBody": "Crea un corso nel Learning Studio — su misura per {c}.",
     "studioBridgeCta": "Crea corso nello Studio"
+  },
+  "profilePage": {
+    "title": "Profilo",
+    "photo": "Foto del profilo",
+    "changePhoto": "Cambia foto",
+    "photoHint": "JPG, PNG o WebP. Ridimensionata automaticamente e usata ovunque.",
+    "personal": "Dati personali",
+    "displayName": "Nome visualizzato",
+    "emailLocked": "L'indirizzo e-mail non può essere modificato.",
+    "role": "Ruolo",
+    "roleAdmin": "Amministratore",
+    "roleMember": "Membro",
+    "save": "Salva",
+    "saved": "Salvato.",
+    "saveFailed": "Salvataggio non riuscito.",
+    "appearance": "Aspetto",
+    "appearanceHint": "Scegli chiaro, scuro o segui l'impostazione di sistema.",
+    "light": "Chiaro",
+    "dark": "Scuro",
+    "system": "Sistema"
+  },
+  "settingsPage": {
+    "language": "Lingua",
+    "languageHint": "Vale per tutti i testi e le interfacce."
   }
 }

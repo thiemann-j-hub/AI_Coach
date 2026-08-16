@@ -35,7 +35,8 @@
     "practice": "Εξάσκηση",
     "mainGroup": "MAIN",
     "home": "Αρχική",
-    "settings": "Ρυθμίσεις"
+    "settings": "Ρυθμίσεις",
+    "profile": "Προφίλ"
   },
   "simulation": {
     "title": "Συνεδρία παιχνιδιού ρόλων",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Να πιάσεις το θέμα πιο θεμελιωδώς;",
     "studioBridgeBody": "Δημιούργησε ένα μάθημα στο Learning Studio — κομμένο και ραμμένο στο {c}.",
     "studioBridgeCta": "Δημιουργία μαθήματος στο Studio"
+  },
+  "profilePage": {
+    "title": "Προφίλ",
+    "photo": "Φωτογραφία προφίλ",
+    "changePhoto": "Αλλαγή φωτογραφίας",
+    "photoHint": "JPG, PNG ή WebP. Μικραίνει αυτόματα και ισχύει παντού.",
+    "personal": "Προσωπικά στοιχεία",
+    "displayName": "Εμφανιζόμενο όνομα",
+    "emailLocked": "Η διεύθυνση e-mail δεν αλλάζει.",
+    "role": "Ρόλος",
+    "roleAdmin": "Διαχειριστής",
+    "roleMember": "Μέλος",
+    "save": "Αποθήκευση",
+    "saved": "Αποθηκεύτηκε.",
+    "saveFailed": "Η αποθήκευση απέτυχε.",
+    "appearance": "Εμφάνιση",
+    "appearanceHint": "Επίλεξε φωτεινό, σκοτεινό ή ακολούθησε τη ρύθμιση συστήματος.",
+    "light": "Φωτεινό",
+    "dark": "Σκοτεινό",
+    "system": "Σύστημα"
+  },
+  "settingsPage": {
+    "language": "Γλώσσα",
+    "languageHint": "Ισχύει για όλα τα κείμενα και τις οθόνες."
   }
 }

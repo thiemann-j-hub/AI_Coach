@@ -35,7 +35,8 @@
     "practice": "Gyakorlás",
     "mainGroup": "MAIN",
     "home": "Kezdőlap",
-    "settings": "Beállítások"
+    "settings": "Beállítások",
+    "profile": "Profil"
   },
   "simulation": {
     "title": "Szerepjáték-ülés",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Alaposabban nekimennél ennek a témának?",
     "studioBridgeBody": "Készíts kurzust a Learning Studióban — a(z) {c} területre szabva.",
     "studioBridgeCta": "Kurzus létrehozása a Studióban"
+  },
+  "profilePage": {
+    "title": "Profil",
+    "photo": "Profilkép",
+    "changePhoto": "Fotó cseréje",
+    "photoHint": "JPG, PNG vagy WebP. Automatikusan kicsinyítve, mindenhol érvényes.",
+    "personal": "Személyes adatok",
+    "displayName": "Megjelenített név",
+    "emailLocked": "Az e-mail-cím nem módosítható.",
+    "role": "Szerep",
+    "roleAdmin": "Adminisztrátor",
+    "roleMember": "Tag",
+    "save": "Mentés",
+    "saved": "Mentve.",
+    "saveFailed": "A mentés nem sikerült.",
+    "appearance": "Megjelenés",
+    "appearanceHint": "Válassz világosat, sötétet, vagy kövesd a rendszerbeállítást.",
+    "light": "Világos",
+    "dark": "Sötét",
+    "system": "Rendszer"
+  },
+  "settingsPage": {
+    "language": "Nyelv",
+    "languageHint": "Minden szövegre és felületre érvényes."
   }
 }

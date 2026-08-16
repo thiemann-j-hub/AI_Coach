@@ -35,7 +35,8 @@
     "practice": "Practicar",
     "mainGroup": "MAIN",
     "home": "Inicio",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "profile": "Perfil"
   },
   "simulation": {
     "title": "Sesión de rol",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "¿Abordar este tema más a fondo?",
     "studioBridgeBody": "Crea un curso en el Learning Studio — a medida de {c}.",
     "studioBridgeCta": "Crear curso en el Studio"
+  },
+  "profilePage": {
+    "title": "Perfil",
+    "photo": "Foto de perfil",
+    "changePhoto": "Cambiar foto",
+    "photoHint": "JPG, PNG o WebP. Se redimensiona automáticamente y se usa en todas partes.",
+    "personal": "Datos personales",
+    "displayName": "Nombre visible",
+    "emailLocked": "La dirección de correo no se puede cambiar.",
+    "role": "Rol",
+    "roleAdmin": "Administrador",
+    "roleMember": "Miembro",
+    "save": "Guardar",
+    "saved": "Guardado.",
+    "saveFailed": "Error al guardar.",
+    "appearance": "Apariencia",
+    "appearanceHint": "Elige claro, oscuro o sigue tu ajuste del sistema.",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "settingsPage": {
+    "language": "Idioma",
+    "languageHint": "Se aplica a todos los textos e interfaces."
   }
 }

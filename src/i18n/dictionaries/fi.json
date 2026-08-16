@@ -35,7 +35,8 @@
     "practice": "Harjoittele",
     "mainGroup": "MAIN",
     "home": "Etusivu",
-    "settings": "Asetukset"
+    "settings": "Asetukset",
+    "profile": "Profiili"
   },
   "simulation": {
     "title": "Roolipeli-istunto",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Käsittele aihetta perusteellisemmin?",
     "studioBridgeBody": "Luo kurssi Learning Studiossa — räätälöity kohteelle {c}.",
     "studioBridgeCta": "Luo kurssi Studiossa"
+  },
+  "profilePage": {
+    "title": "Profiili",
+    "photo": "Profiilikuva",
+    "changePhoto": "Vaihda kuva",
+    "photoHint": "JPG, PNG tai WebP. Pienennetään automaattisesti, käytössä kaikkialla.",
+    "personal": "Henkilötiedot",
+    "displayName": "Näyttönimi",
+    "emailLocked": "Sähköpostiosoitetta ei voi muuttaa.",
+    "role": "Rooli",
+    "roleAdmin": "Järjestelmänvalvoja",
+    "roleMember": "Jäsen",
+    "save": "Tallenna",
+    "saved": "Tallennettu.",
+    "saveFailed": "Tallennus epäonnistui.",
+    "appearance": "Ulkoasu",
+    "appearanceHint": "Valitse vaalea, tumma tai seuraa järjestelmäasetusta.",
+    "light": "Vaalea",
+    "dark": "Tumma",
+    "system": "Järjestelmä"
+  },
+  "settingsPage": {
+    "language": "Kieli",
+    "languageHint": "Koskee kaikkia tekstejä ja näkymiä."
   }
 }

@@ -35,7 +35,8 @@
     "practice": "Harjuta",
     "mainGroup": "MAIN",
     "home": "Avaleht",
-    "settings": "Seaded"
+    "settings": "Seaded",
+    "profile": "Profiil"
   },
   "simulation": {
     "title": "Rollimänguseanss",
@@ -379,5 +380,29 @@
     "studioBridgeTitle": "Käsitle seda teemat põhjalikumalt?",
     "studioBridgeBody": "Loo kursus Learning Studios — rätsepatööna kompetentsile {c}.",
     "studioBridgeCta": "Loo kursus Studios"
+  },
+  "profilePage": {
+    "title": "Profiil",
+    "photo": "Profiilipilt",
+    "changePhoto": "Vaheta fotot",
+    "photoHint": "JPG, PNG või WebP. Vähendatakse automaatselt, kehtib kõikjal.",
+    "personal": "Isikuandmed",
+    "displayName": "Kuvatav nimi",
+    "emailLocked": "E-posti aadressi ei saa muuta.",
+    "role": "Roll",
+    "roleAdmin": "Administraator",
+    "roleMember": "Liige",
+    "save": "Salvesta",
+    "saved": "Salvestatud.",
+    "saveFailed": "Salvestamine ebaõnnestus.",
+    "appearance": "Välimus",
+    "appearanceHint": "Vali hele, tume või järgi süsteemi seadet.",
+    "light": "Hele",
+    "dark": "Tume",
+    "system": "Süsteem"
+  },
+  "settingsPage": {
+    "language": "Keel",
+    "languageHint": "Kehtib kõigile tekstidele ja vaadetele."
   }
 }
