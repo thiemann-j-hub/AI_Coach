@@ -40,8 +40,16 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  // Folgt AKTUALISIERUNGEN des Namens (zentraler Wert laedt nach der Session
+  // nach) — eigene Tipp-Eingaben werden nicht ueberschrieben.
+  const lastAppliedName = useRef<string>("");
   useEffect(() => {
-    if (user?.displayName) setDisplayName((prev) => prev || user.displayName!);
+    const incoming = user?.displayName ?? "";
+    if (!incoming) return;
+    setDisplayName((prev) =>
+      prev === "" || prev === lastAppliedName.current ? incoming : prev
+    );
+    lastAppliedName.current = incoming;
   }, [user?.displayName]);
 
   const src = preview ?? user?.photoURL ?? undefined;
