@@ -62,6 +62,9 @@ const AuthContext = createContext<AuthContextType>({
 function InnerAuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [locale, setLocale] = useState<Locale>(defaultLocale);
+  // Zentrales Profilbild (16.08.): kommt aus dem Mandanten-Register (via
+  // /api/users/profile) und gewinnt gegen das Entra-Session-Bild.
+  const [centralAvatar, setCentralAvatar] = useState<string | null>(null);
 
   // Initialise locale from cookie on mount (client-side only)
   useEffect(() => {
@@ -77,9 +80,9 @@ function InnerAuthProvider({ children }: { children: React.ReactNode }) {
       uid,
       email: session?.user?.email ?? null,
       displayName: session?.user?.name ?? null,
-      photoURL: session?.user?.image ?? null,
+      photoURL: centralAvatar ?? session?.user?.image ?? null,
     };
-  }, [uid, session?.user?.email, session?.user?.name, session?.user?.image]);
+  }, [uid, session?.user?.email, session?.user?.name, session?.user?.image, centralAvatar]);
 
   // Nach Login: frisches Profil aus Cosmos holen (provisioniert beim ersten
   // Mal) und gespeicherte Sprache in Cookie + State syncen.
@@ -94,6 +97,10 @@ function InnerAuthProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled && lang && locales.includes(lang as Locale)) {
           setLocaleCookie(lang as Locale);
           setLocale(lang as Locale);
+        }
+        // Zentrales Profilbild uebernehmen (null = keins gesetzt).
+        if (!cancelled && typeof j?.profile?.avatarUrl === "string" && j.profile.avatarUrl) {
+          setCentralAvatar(j.profile.avatarUrl);
         }
       } catch {
         // Cookie-Locale bleibt maßgeblich

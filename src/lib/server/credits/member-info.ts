@@ -14,6 +14,8 @@ export interface CentralMemberInfo {
   role: "admin" | "member";
   apps: string[];
   disabled: boolean;
+  /** Zentrales Profilbild (16.08.): EIN Upload, alle Apps lesen es von hier. */
+  avatarUrl: string | null;
 }
 
 const BASE_URL = (
@@ -46,12 +48,14 @@ export async function getCentralMemberInfo(oid: string): Promise<CentralMemberIn
       role?: string;
       apps?: string[];
       disabled?: boolean;
+      avatarUrl?: string | null;
     };
     const info: CentralMemberInfo = {
       workspaceId: j.workspaceId ?? null,
       role: j.role === "admin" ? "admin" : "member",
       apps: Array.isArray(j.apps) ? j.apps : [],
       disabled: j.disabled === true,
+      avatarUrl: typeof j.avatarUrl === "string" ? j.avatarUrl : null,
     };
     cache.set(oid, { at: Date.now(), info });
     return info;

@@ -71,7 +71,19 @@ export async function GET(req: NextRequest) {
       await upsertItem(usersContainer(), doc);
     }
 
-    return NextResponse.json({ ok: true, profile: publicProfile(doc) });
+    // Zentrales Profilbild (16.08.): EIN Upload (Hub/Studio/Jobmap), der Coach
+    // liest es aus dem Mandanten-Register mit. Fail-soft: ohne Zentrale null.
+    let avatarUrl: string | null = null;
+    if (oid) {
+      try {
+        const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
+        avatarUrl = (await getCentralMemberInfo(oid))?.avatarUrl ?? null;
+      } catch {
+        avatarUrl = null;
+      }
+    }
+
+    return NextResponse.json({ ok: true, profile: { ...publicProfile(doc), avatarUrl } });
   } catch (err: any) {
     logger.apiError("/api/users/profile", err);
     return NextResponse.json(
