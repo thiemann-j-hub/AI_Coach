@@ -272,14 +272,8 @@ export default function AppShell(props: {
                     <p className="truncate text-sm font-medium text-foreground">{user.displayName || t.auth.user}</p>
                     <p className="truncate text-xs text-muted-foreground">{user.email}</p>
                   </div>
-                  <Link
-                    href="/settings"
-                    title={t.nav.settings}
-                    aria-label={t.nav.settings}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Link>
+                  {/* Zahnrad entfernt (16.08.): Studio/Jobmap-Fussbereich haben
+                      keins — Profil ist ueber das Topbar-Menue erreichbar. */}
                   <button
                     onClick={onSignOut}
                     title={t.auth.signOut}
@@ -344,8 +338,9 @@ export default function AppShell(props: {
                     </button>
                   </DropdownMenuTrigger>
                   {/* Standard-Menue (Owner-Vorgabe 16.08., in ALLEN Apps
-                      identisch): Name/E-Mail -> Profil -> Einstellungen ->
-                      Abmelden. */}
+                      identisch): Name/E-Mail -> Profil -> Abmelden. KEIN
+                      "Einstellungen" — Konto & Daten leben als Karten auf
+                      der Profil-Seite. */}
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="px-2 py-1.5">
                       <p className="truncate text-sm font-medium text-foreground">
@@ -358,12 +353,6 @@ export default function AppShell(props: {
                       <Link href="/profile" className="gap-2 cursor-pointer">
                         <UserRound className="h-4 w-4" />
                         {t.nav.profile}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/settings" className="gap-2 cursor-pointer">
-                        <Settings className="h-4 w-4" />
-                        {t.nav.settings}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

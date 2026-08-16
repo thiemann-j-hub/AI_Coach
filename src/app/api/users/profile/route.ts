@@ -76,12 +76,14 @@ export async function GET(req: NextRequest) {
     // Fail-soft: ohne Zentrale gilt die lokale Wahrheit.
     let avatarUrl: string | null = null;
     let centralName: string | null = null;
+    let workspaceRole: "admin" | "member" | null = null;
     if (oid) {
       try {
         const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
         const central = await getCentralMemberInfo(oid);
         avatarUrl = central?.avatarUrl ?? null;
         centralName = central?.displayName ?? null;
+        workspaceRole = central?.role ?? null;
       } catch {
         /* fail-soft */
       }
@@ -90,7 +92,7 @@ export async function GET(req: NextRequest) {
     const pub = publicProfile(doc);
     return NextResponse.json({
       ok: true,
-      profile: { ...pub, displayName: centralName ?? pub.displayName, avatarUrl },
+      profile: { ...pub, displayName: centralName ?? pub.displayName, avatarUrl, workspaceRole },
     });
   } catch (err: any) {
     logger.apiError("/api/users/profile", err);

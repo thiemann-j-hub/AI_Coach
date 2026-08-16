@@ -19,13 +19,9 @@ import {
 import { authFetch } from "@/lib/api-client";
 import { signOut } from "@/lib/auth-service";
 import { useToast } from "@/hooks/use-toast";
-import { Languages } from "lucide-react";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { useTranslation } from "@/i18n/useTranslation";
 
 export default function SettingsClient() {
   const { toast } = useToast();
-  const { t } = useTranslation();
   const [busyHistory, setBusyHistory] = useState(false);
   const [busyAccount, setBusyAccount] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -79,25 +75,12 @@ export default function SettingsClient() {
     }
   }
 
+  // 16.08.: Kein eigener /settings-Ort mehr — diese Karten leben eingebettet
+  // auf der Profil-Seite (Standard-Menue: Name/E-Mail -> Profil -> Abmelden).
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 space-y-8">
-      {/* Standard-Einstellungsseite (Owner-Vorgabe 16.08., alle Apps gleich):
-          Karte "Sprache" zuerst; app-eigene Bereiche (Konto & Daten) darunter. */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Languages className="h-4 w-4 text-muted-foreground" />
-            {t.settingsPage.language}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4 text-sm text-muted-foreground">{t.settingsPage.languageHint}</p>
-          <LanguageSwitcher />
-        </CardContent>
-      </Card>
-
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Konto &amp; Daten</h1>
+        <h2 className="text-lg font-semibold text-foreground">Konto &amp; Daten</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Verwalte deine Daten. Löschungen sind endgültig und können nicht rückgängig gemacht werden.
         </p>

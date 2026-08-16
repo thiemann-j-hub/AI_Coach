@@ -6,13 +6,14 @@
 // Register) und gelten damit ueberall — "einmal aendern, ueberall gleich".
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import { Camera, Mail, Monitor, Moon, Palette, Save, Sun, User } from "lucide-react";
+import { Camera, Mail, Moon, Palette, Save, Shield, Sun, User } from "lucide-react";
 import AppShell from "@/components/app/app-shell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/providers/auth-provider";
 import { useTranslation } from "@/i18n/useTranslation";
 import { authFetch } from "@/lib/api-client";
+import SettingsClient from "@/app/settings/SettingsClient";
 
 /** 256px-JPEG-Data-URL (gleiche Regel wie Studio/Jobmap/Hub). */
 async function compressToDataUrl(file: File): Promise<string> {
@@ -40,6 +41,26 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Zentrale Workspace-Rolle (Standard-Profilseite zeigt sie in ALLEN Apps).
+  const [role, setRole] = useState<"admin" | "member" | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch("/api/users/profile");
+        const j = await res.json().catch(() => null);
+        if (!cancelled && (j?.profile?.workspaceRole === "admin" || j?.profile?.workspaceRole === "member")) {
+          setRole(j.profile.workspaceRole);
+        }
+      } catch {
+        /* fail-soft: ohne Zentrale bleibt das Feld leer */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // Folgt AKTUALISIERUNGEN des Namens (zentraler Wert laedt nach der Session
   // nach) — eigene Tipp-Eingaben werden nicht ueberschrieben.
   const lastAppliedName = useRef<string>("");
@@ -88,10 +109,11 @@ export default function ProfilePage() {
     if (ok) setTimeout(() => window.location.reload(), 600);
   };
 
+  // Owner-Vorgabe 16.08.: GENAU zwei Optionen mit dem WORTLAUT der
+  // Seitenleiste ("Heller Modus"/"Dunkler Modus"). KEIN System-Modus.
   const themeOptions = [
-    { value: "light", label: p.light, Icon: Sun },
-    { value: "dark", label: p.dark, Icon: Moon },
-    { value: "system", label: p.system, Icon: Monitor },
+    { value: "light", label: t.common.lightMode, Icon: Sun },
+    { value: "dark", label: t.common.darkMode, Icon: Moon },
   ] as const;
 
   return (
@@ -157,6 +179,18 @@ export default function ProfilePage() {
               />
               <p className="mt-1 text-xs text-muted-foreground">{p.emailLocked}</p>
             </div>
+            {role && (
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                  <Shield className="h-3.5 w-3.5" /> {p.role}
+                </label>
+                <input
+                  value={role === "admin" ? p.roleAdmin : p.roleMember}
+                  disabled
+                  className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -168,10 +202,12 @@ export default function ProfilePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="mb-4 text-sm text-muted-foreground">{p.appearanceHint}</p>
             <div className="inline-flex rounded-lg border border-border bg-muted/40 p-1">
               {themeOptions.map(({ value, label, Icon }) => {
-                const active = mounted && theme === value;
+                // Alles ausser "light" gilt als dunkel (raeumt gespeicherte
+                // "system"-Werte still auf).
+                const active =
+                  mounted && (value === "light" ? theme === "light" : theme !== "light");
                 return (
                   <button
                     key={value}
@@ -203,6 +239,9 @@ export default function ProfilePage() {
             <Save className="h-4 w-4" /> {p.save}
           </button>
         </div>
+
+        {/* ── Konto & Daten (frueher /settings; 16.08. hierher umgezogen) ── */}
+        <SettingsClient />
       </div>
     </AppShell>
   );

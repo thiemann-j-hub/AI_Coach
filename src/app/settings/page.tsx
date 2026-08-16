@@ -1,15 +1,7 @@
-import { Suspense } from "react";
-import SettingsClient from "./SettingsClient";
-import { AuthGuard } from "@/components/auth/auth-guard";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
+// 16.08. (Owner-Vorgabe): Kein eigener Einstellungen-Ort mehr — Konto & Daten
+// leben als Karten auf der Profil-Seite. Alt-Lesezeichen landen dort.
 export default function SettingsPage() {
-  return (
-    <AuthGuard>
-      <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
-        <SettingsClient />
-      </Suspense>
-    </AuthGuard>
-  );
+  redirect("/profile");
 }
