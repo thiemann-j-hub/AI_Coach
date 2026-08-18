@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { simulationEnabled } from "@/lib/simulation/flags";
-import { getScenario } from "@/lib/simulation/scenarios";
+import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   SIM_MAX_TIMEOUTS,
   getSimulation,
@@ -66,6 +66,12 @@ export async function POST(req: NextRequest) {
     if (doc.status !== "active") {
       return NextResponse.json({ ok: false, code: "ALREADY_FINISHED" }, { status: 409 });
     }
+    // B2: Im Prüfungsmodus gibt es keine Coach-Pausen — eine Prüfung ist
+    // eine Prüfung (Synthesia-Muster Assessment). Der Client blendet den
+    // Knopf aus; dieser Riegel gilt serverseitig.
+    if (doc.mode === "check") {
+      return NextResponse.json({ ok: false, code: "CHECK_MODE" }, { status: 409 });
+    }
     const used = doc.coachNotes?.length ?? 0;
     if (used >= SIM_MAX_TIMEOUTS) {
       return NextResponse.json(
@@ -77,7 +83,7 @@ export async function POST(req: NextRequest) {
     if (doc.turns.filter((t) => t.role === "user").length < 1) {
       return NextResponse.json({ ok: false, code: "TOO_EARLY" }, { status: 400 });
     }
-    const scenario = getScenario(doc.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
     }

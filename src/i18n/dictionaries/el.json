@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "αυξημένο",
     "dlvSoftenersMany": "πολλά",
     "dlvShowMatches": "Εμφάνιση ευρημάτων",
-    "dlvHideMatches": "Απόκρυψη ευρημάτων"
+    "dlvHideMatches": "Απόκρυψη ευρημάτων",
+    "modeLabel": "Λειτουργία",
+    "modePractice": "Εξάσκηση",
+    "modeCheck": "Αξιολόγηση",
+    "modeCheckHint": "Λειτουργία αξιολόγησης: χωρίς παύσεις προπονητή, αυστηρότερο όριο επιτυχίας — σαν πραγματική εξέταση.",
+    "modeCheckBadge": "Αξιολόγηση",
+    "hardnessLabel": "Δυσκολία",
+    "hardnessMild": "Ήπιο",
+    "hardnessStandard": "Κανονικό",
+    "hardnessHart": "Σκληρό",
+    "hardnessHint": "Το Ήπιο ανοίγεται πιο γρήγορα, το Σκληρό επιμένει περισσότερο — ίδια κατάσταση, διαφορετικός συνομιλητής."
   },
   "auth": {
     "signIn": "Σύνδεση",

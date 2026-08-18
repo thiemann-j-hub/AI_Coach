@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "verhoogd",
     "dlvSoftenersMany": "veel",
     "dlvShowMatches": "Treffers tonen",
-    "dlvHideMatches": "Treffers verbergen"
+    "dlvHideMatches": "Treffers verbergen",
+    "modeLabel": "Modus",
+    "modePractice": "Oefenen",
+    "modeCheck": "Toets",
+    "modeCheckHint": "Toetsmodus: geen coachpauzes, strengere slaaggrens — als een echt examen.",
+    "modeCheckBadge": "Toets",
+    "hardnessLabel": "Zwaarte",
+    "hardnessMild": "Mild",
+    "hardnessStandard": "Standaard",
+    "hardnessHart": "Hard",
+    "hardnessHint": "Mild opent zich sneller, Hard houdt langer vast aan posities — zelfde situatie, andere gesprekspartner."
   },
   "auth": {
     "signIn": "Aanmelden",

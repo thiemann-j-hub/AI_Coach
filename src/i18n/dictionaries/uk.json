@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "підвищено",
     "dlvSoftenersMany": "багато",
     "dlvShowMatches": "Показати збіги",
-    "dlvHideMatches": "Сховати збіги"
+    "dlvHideMatches": "Сховати збіги",
+    "modeLabel": "Режим",
+    "modePractice": "Тренування",
+    "modeCheck": "Іспит",
+    "modeCheckHint": "Режим іспиту: без пауз із коучем, суворіший поріг проходження — як справжній іспит.",
+    "modeCheckBadge": "Іспит",
+    "hardnessLabel": "Жорсткість",
+    "hardnessMild": "М'який",
+    "hardnessStandard": "Стандарт",
+    "hardnessHart": "Жорсткий",
+    "hardnessHint": "М'який відкривається швидше, Жорсткий довше стоїть на своєму — та сама ситуація, інший співрозмовник."
   },
   "auth": {
     "signIn": "Увійти",

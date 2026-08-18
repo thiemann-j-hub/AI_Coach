@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "повышенно",
     "dlvSoftenersMany": "много",
     "dlvShowMatches": "Показать совпадения",
-    "dlvHideMatches": "Скрыть совпадения"
+    "dlvHideMatches": "Скрыть совпадения",
+    "modeLabel": "Режим",
+    "modePractice": "Тренировка",
+    "modeCheck": "Экзамен",
+    "modeCheckHint": "Режим экзамена: без пауз с коучем, строже порог прохождения — как настоящий экзамен.",
+    "modeCheckBadge": "Экзамен",
+    "hardnessLabel": "Жёсткость",
+    "hardnessMild": "Мягкий",
+    "hardnessStandard": "Стандарт",
+    "hardnessHart": "Жёсткий",
+    "hardnessHint": "Мягкий открывается быстрее, Жёсткий дольше стоит на своём — та же ситуация, другой собеседник."
   },
   "auth": {
     "signIn": "Войти",

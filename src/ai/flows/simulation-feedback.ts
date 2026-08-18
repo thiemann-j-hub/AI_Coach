@@ -176,8 +176,10 @@ export async function generateSimulationFeedback(args: {
     scenarioTitle: scenario.title,
     personaName: scenario.persona.name,
     goalsList: scenario.candidateBriefing.goals.map((g, i) => `${i + 1}. ${g}`).join('\n'),
+    // B1: szenariospezifische Rubrik je Anker — Anweisung an den Bewerter
+    // (Synthesia-Muster »Rubrik je Skill«); ohne rubric bleibt die 1–4-Skala.
     rubricList: scenario.assessment.competencies
-      .map((c) => `- ${c.key}: ${c.label}`)
+      .map((c) => `- ${c.key}: ${c.label}${c.rubric ? ` — BEWERTUNGS-RUBRIK: ${c.rubric}` : ''}`)
       .join('\n'),
     checkpointList: scenario.assessment.checkpoints
       .map((c) => `- id "${c.id}": ${c.description}`)

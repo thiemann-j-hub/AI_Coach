@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { simulationEnabled } from "@/lib/simulation/flags";
-import { publicScenarios } from "@/lib/simulation/scenarios";
+import { publicScenario, publicScenarios } from "@/lib/simulation/scenarios";
+import { listScenariosForUser } from "@/lib/server/scenario-store";
 import { weakestObservedC, type RatingLike } from "@/lib/simulation/empfehlung";
 import {
   latestFinishedAny,
@@ -59,7 +60,15 @@ export async function GET(req: NextRequest) {
       logger.apiError("/api/simulation/scenarios insight", err);
     }
 
-    return NextResponse.json({ ok: true, scenarios: publicScenarios(), recent, insight });
+    // B3a: Workspace-Szenarien des Mandanten hinter den Katalog hängen —
+    // dieselbe Anti-Leak-Projektion (publicScenario), fail-soft leere Liste.
+    const workspaceScenarios = (await listScenariosForUser(auth.uid)).map(publicScenario);
+    return NextResponse.json({
+      ok: true,
+      scenarios: [...publicScenarios(), ...workspaceScenarios],
+      recent,
+      insight,
+    });
   } catch (err) {
     logger.apiError("/api/simulation/scenarios", err);
     return NextResponse.json(

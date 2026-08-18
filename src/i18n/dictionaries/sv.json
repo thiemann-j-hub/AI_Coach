@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "förhöjt",
     "dlvSoftenersMany": "många",
     "dlvShowMatches": "Visa träffar",
-    "dlvHideMatches": "Dölj träffar"
+    "dlvHideMatches": "Dölj träffar",
+    "modeLabel": "Läge",
+    "modePractice": "Övning",
+    "modeCheck": "Prov",
+    "modeCheckHint": "Provläge: inga coachpauser, strängare godkäntgräns — som ett riktigt prov.",
+    "modeCheckBadge": "Prov",
+    "hardnessLabel": "Svårighet",
+    "hardnessMild": "Mjuk",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Hård",
+    "hardnessHint": "Mjuk öppnar sig snabbare, Hård står längre på sig — samma situation, annan motpart."
   },
   "auth": {
     "signIn": "Logga in",

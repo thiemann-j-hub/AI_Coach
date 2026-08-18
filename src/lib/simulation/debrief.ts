@@ -19,6 +19,8 @@ export interface DebriefRubricInput {
   key: string;
   label: string;
   score: number | null; // 1–4 oder null = nicht beobachtbar
+  /** B1: relatives Anker-Gewicht (Default 1 = alle gleich). */
+  weight?: number;
 }
 
 export interface DebriefCheckpointInput {
@@ -68,6 +70,8 @@ export interface DebriefDelta {
 }
 
 export const DEFAULT_PASS_THRESHOLD = 0.6;
+/** B2: Bestehensgrenze im Prüfungsmodus, wenn das Szenario keine eigene setzt. */
+export const CHECK_PASS_THRESHOLD = 0.7;
 const ANCHOR_WEIGHT = 0.7;
 const CHECKPOINT_WEIGHT = 0.3;
 /** Unter dieser Belegquote ist ein Urteil unseriös → "Nicht bewertbar". */
@@ -109,10 +113,26 @@ export function computeDebrief(args: {
 
   const observed = anchors.filter((a) => a.pct != null);
   const coverage = anchors.length === 0 ? 0 : observed.length / anchors.length;
+  // B1: gewichtetes Mittel über die BEOBACHTETEN Anker (Normalisierung über
+  // deren Gewichtssumme — Ehrlichkeits-Prinzip unverändert: null verkleinert
+  // die Basis statt auf 0 zu drücken). Ohne weights identisch zum alten Mittel.
+  const weightByKey = new Map(
+    args.rubric.map((r) => [
+      r.key,
+      typeof r.weight === "number" && r.weight > 0 ? r.weight : 1,
+    ])
+  );
+  const observedWeightSum = observed.reduce(
+    (s, a) => s + (weightByKey.get(a.key) ?? 1),
+    0
+  );
   const anchorPct =
-    observed.length === 0
+    observed.length === 0 || observedWeightSum === 0
       ? null
-      : observed.reduce((s, a) => s + (a.pct as number), 0) / observed.length;
+      : observed.reduce(
+          (s, a) => s + (a.pct as number) * (weightByKey.get(a.key) ?? 1),
+          0
+        ) / observedWeightSum;
 
   const checkpointsTotal = args.checkpoints.length;
   const checkpointsHit = args.checkpoints.filter((c) => c.hit).length;

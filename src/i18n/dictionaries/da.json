@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "forhøjet",
     "dlvSoftenersMany": "mange",
     "dlvShowMatches": "Vis fund",
-    "dlvHideMatches": "Skjul fund"
+    "dlvHideMatches": "Skjul fund",
+    "modeLabel": "Tilstand",
+    "modePractice": "Øvelse",
+    "modeCheck": "Prøve",
+    "modeCheckHint": "Prøvetilstand: ingen coachpauser, strengere beståelsesgrænse — som en rigtig eksamen.",
+    "modeCheckBadge": "Prøve",
+    "hardnessLabel": "Sværhedsgrad",
+    "hardnessMild": "Mild",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Hård",
+    "hardnessHint": "Mild åbner sig hurtigere, Hård holder længere fast — samme situation, anden modpart."
   },
   "auth": {
     "signIn": "Log ind",

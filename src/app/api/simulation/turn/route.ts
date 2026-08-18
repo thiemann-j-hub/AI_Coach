@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { simulationEnabled } from "@/lib/simulation/flags";
-import { getScenario } from "@/lib/simulation/scenarios";
+import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   SIM_MAX_TURN_CHARS,
   SIM_MAX_USER_TURNS,
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) {
       return NextResponse.json({ ok: false, code: "TURN_LIMIT" }, { status: 409 });
     }
-    const scenario = getScenario(doc.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
     }
@@ -80,7 +80,12 @@ export async function POST(req: NextRequest) {
     // ein, dass sie gleich los muss; ist die Zeit um, beantwortet sie den
     // letzten Beitrag kurz, verabschiedet sich (Folgetermin) — Zwangsende.
     const elapsedMs = Date.now() - new Date(doc.createdAt).getTime();
-    const limitMs = scenario.durationMin * 60_000;
+    // B2: im Prüfungsmodus gilt die (meist kürzere) Check-Zeitbox.
+    const durationMin =
+      doc.mode === "check"
+        ? (scenario.checkDurationMin ?? scenario.durationMin)
+        : scenario.durationMin;
+    const limitMs = durationMin * 60_000;
     let timeSignal: PersonaTimeSignal | undefined;
     if (elapsedMs >= limitMs) {
       timeSignal = "farewell";
@@ -105,6 +110,7 @@ export async function POST(req: NextRequest) {
           userMessage: d.message,
           convoLocale: doc.convoLocale,
           timeSignal,
+          hardness: doc.hardness,
         }),
       { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn", retries: 1 }
     );

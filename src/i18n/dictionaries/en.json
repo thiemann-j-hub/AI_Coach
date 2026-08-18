@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "elevated",
     "dlvSoftenersMany": "many",
     "dlvShowMatches": "Show matches",
-    "dlvHideMatches": "Hide matches"
+    "dlvHideMatches": "Hide matches",
+    "modeLabel": "Mode",
+    "modePractice": "Practice",
+    "modeCheck": "Assessment",
+    "modeCheckHint": "Assessment mode: no coach pauses, stricter pass mark — like a real exam.",
+    "modeCheckBadge": "Assessment",
+    "hardnessLabel": "Difficulty",
+    "hardnessMild": "Gentle",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Tough",
+    "hardnessHint": "Gentle opens up faster, Tough insists longer on positions — same situation, different counterpart."
   },
   "auth": {
     "signIn": "Sign In",

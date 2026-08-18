@@ -66,6 +66,11 @@ export interface SimulationDoc {
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ─────────────────────────────
   /** Gewählte Gesprächssprache (Persona spricht diese Sprache); fehlt bei Alt-Docs → Szenario-Locale. */
   convoLocale?: "de" | "en" | "es" | "fr";
+  // ── Welle B (Synthesia-Vergleich §7) ──────────────────────────────────────
+  /** B2: Übungs- (Default) oder Prüfungsmodus; fehlt bei Alt-Docs → practice. */
+  mode?: "practice" | "check";
+  /** B2: Härtegrad der Persona; fehlt bei Alt-Docs → standard. */
+  hardness?: "mild" | "standard" | "hart";
   /** Zeit-Regie: der beiläufige »muss gleich los«-Hinweis wurde bereits gegeben. */
   timeWarned?: boolean;
   /** Zeit-Regie: die Persona hat sich verabschiedet — keine weiteren Turns möglich. */
@@ -123,6 +128,8 @@ export async function createSimulation(args: {
   attempt?: number;
   focus?: string | null;
   convoLocale?: "de" | "en" | "es" | "fr";
+  mode?: "practice" | "check";
+  hardness?: "mild" | "standard" | "hart";
 }): Promise<SimulationDoc> {
   const now = new Date().toISOString();
   const doc: SimulationDoc = {
@@ -138,6 +145,8 @@ export async function createSimulation(args: {
     attempt: args.attempt ?? 1,
     focus: args.focus ?? null,
     ...(args.convoLocale ? { convoLocale: args.convoLocale } : {}),
+    ...(args.mode && args.mode !== "practice" ? { mode: args.mode } : {}),
+    ...(args.hardness && args.hardness !== "standard" ? { hardness: args.hardness } : {}),
   };
   await upsertItem(runsContainer(), doc);
   return doc;

@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "podwyższone",
     "dlvSoftenersMany": "dużo",
     "dlvShowMatches": "Pokaż wystąpienia",
-    "dlvHideMatches": "Ukryj wystąpienia"
+    "dlvHideMatches": "Ukryj wystąpienia",
+    "modeLabel": "Tryb",
+    "modePractice": "Ćwiczenie",
+    "modeCheck": "Egzamin",
+    "modeCheckHint": "Tryb egzaminu: bez przerw z coachem, wyższy próg zaliczenia — jak prawdziwy egzamin.",
+    "modeCheckBadge": "Egzamin",
+    "hardnessLabel": "Trudność",
+    "hardnessMild": "Łagodny",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Twardy",
+    "hardnessHint": "Łagodny otwiera się szybciej, Twardy dłużej obstaje przy swoim — ta sama sytuacja, inny rozmówca."
   },
   "auth": {
     "signIn": "Zaloguj się",

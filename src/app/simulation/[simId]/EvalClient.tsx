@@ -38,6 +38,9 @@ interface LoadedSim {
   /** A2: Turns für das Delivery-Panel (deterministisch, client-seitig). */
   turns: Array<{ role: string; text: string }> | null;
   convoLocale: string | null;
+  /** B2: Modus + Härtegrad des Laufs (Badges in der Auswertung). */
+  mode: 'practice' | 'check';
+  hardness: 'mild' | 'standard' | 'hart';
 }
 
 export default function EvalClient() {
@@ -143,6 +146,8 @@ export default function EvalClient() {
             selfAssessment: s.selfAssessment ?? null,
             turns: Array.isArray(s.turns) ? s.turns : null,
             convoLocale: s.convoLocale ?? null,
+            mode: s.mode ?? 'practice',
+            hardness: s.hardness ?? 'standard',
           });
           setState('ready');
         }
@@ -254,6 +259,8 @@ export default function EvalClient() {
         selfAssessment={sim.selfAssessment}
         turns={sim.turns}
         convoLocale={sim.convoLocale}
+        mode={sim.mode}
+        hardness={sim.hardness}
         history={history}
         currentScenarioId={sim.scenarioId}
         scenarios={scenarios}

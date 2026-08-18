@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "ardaithe",
     "dlvSoftenersMany": "go leor",
     "dlvShowMatches": "Taispeáin torthaí",
-    "dlvHideMatches": "Folaigh torthaí"
+    "dlvHideMatches": "Folaigh torthaí",
+    "modeLabel": "Mód",
+    "modePractice": "Cleachtadh",
+    "modeCheck": "Measúnú",
+    "modeCheckHint": "Mód measúnaithe: gan sosanna cóitseála, tairseach pas níos déine — cosúil le fíorscrúdú.",
+    "modeCheckBadge": "Measúnú",
+    "hardnessLabel": "Déine",
+    "hardnessMild": "Séimh",
+    "hardnessStandard": "Caighdeánach",
+    "hardnessHart": "Crua",
+    "hardnessHint": "Osclaíonn Séimh níos tapúla, seasann Crua níos faide ar a sheasamh — an cás céanna, páirtí difriúil."
   },
   "auth": {
     "signIn": "Sínigh isteach",

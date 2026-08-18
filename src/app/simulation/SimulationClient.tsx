@@ -22,6 +22,7 @@ import {
   Compass,
   Flag,
   GraduationCap,
+  MessagesSquare,
   Lightbulb,
   Loader2,
   Mic,
@@ -62,6 +63,7 @@ interface PublicScenario {
   teaser: string;
   difficulty: 1 | 2 | 3;
   durationMin: number;
+  checkDurationMin?: number;
   locale?: 'de' | 'en';
   category: ScenarioCategory;
   competencyFocus?: string[];
@@ -429,6 +431,9 @@ export default function SimulationClient() {
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ──
   /** Gewählte Gesprächssprache (Flaggen-Pills im Briefing). */
   const [convoLocale, setConvoLocale] = useState<ConvoLocale>('de');
+  // B2 (Welle B): Übungs- vs. Prüfungsmodus + Härtegrad — gewählt im Briefing.
+  const [simMode, setSimMode] = useState<'practice' | 'check'>('practice');
+  const [simHardness, setSimHardness] = useState<'mild' | 'standard' | 'hart'>('standard');
   // Mülleimer in der Simulationsliste (endgültig, inkl. DB): zweistufig.
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -687,6 +692,8 @@ export default function SimulationClient() {
         body: JSON.stringify({
           scenarioId: s.id,
           locale: convoLocale,
+          mode: simMode,
+          hardness: simHardness,
           ...(focusToSend ? { focus: focusToSend } : {}),
         }),
       });
@@ -741,6 +748,8 @@ export default function SimulationClient() {
       setSimStartedAt(json.simulation.createdAt ?? item.createdAt);
       setCoachNotes(json.simulation.coachNotes ?? []);
       setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
+      setSimMode(json.simulation.mode ?? 'practice');
+      setSimHardness(json.simulation.hardness ?? 'standard');
       setTimeUp(json.simulation.timeUp === true);
       setBriefingOpen(false);
       setView('chat');
@@ -856,6 +865,8 @@ export default function SimulationClient() {
     setTimeoutOpen(false);
     setLeaveOpen(false);
     setSimStartedAt(null);
+    setSimMode('practice');
+    setSimHardness('standard');
     setBriefStep(0);
     setView('loading');
     void loadCatalog();
@@ -1349,6 +1360,59 @@ export default function SimulationClient() {
                   ))}
                 </div>
               </div>
+
+              {/* ── B2: Übungs- vs. Prüfungsmodus ── */}
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                  {ts.modeLabel}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(['practice', 'check'] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => setSimMode(m)}
+                      aria-pressed={simMode === m}
+                      className={cx(
+                        'inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
+                        simMode === m
+                          ? 'border-primary/60 bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
+                      )}
+                    >
+                      {m === 'practice' ? <MessagesSquare className="h-4 w-4" /> : <Flag className="h-4 w-4" />}
+                      {m === 'practice' ? ts.modePractice : ts.modeCheck}
+                    </button>
+                  ))}
+                </div>
+                {simMode === 'check' && (
+                  <p className="mt-2 text-xs text-amber-400 leading-relaxed">{ts.modeCheckHint}</p>
+                )}
+              </div>
+
+              {/* ── B2: Härtegrad der Persona ── */}
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                  {ts.hardnessLabel}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(['mild', 'standard', 'hart'] as const).map((h) => (
+                    <button
+                      key={h}
+                      onClick={() => setSimHardness(h)}
+                      aria-pressed={simHardness === h}
+                      className={cx(
+                        'rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
+                        simHardness === h
+                          ? 'border-primary/60 bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
+                      )}
+                    >
+                      {h === 'mild' ? ts.hardnessMild : h === 'standard' ? ts.hardnessStandard : ts.hardnessHart}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{ts.hardnessHint}</p>
+              </div>
             </div>
 
             {/* ── Rechte Spalte: Hero-Porträt mit Overlay (Synthesia-Muster) ── */}
@@ -1390,7 +1454,7 @@ export default function SimulationClient() {
                   <div className="text-xs text-white/80 leading-snug">
                     <span className="inline-flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
+                      {ts.timeboxHonest.replace('{min}', String(simMode === 'check' ? (scenario.checkDurationMin ?? scenario.durationMin) : scenario.durationMin))}
                     </span>
                   </div>
                   {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog. */}
@@ -1536,7 +1600,10 @@ export default function SimulationClient() {
   if (view === 'chat' && scenario) {
     const timeoutsLeft = Math.max(0, timeoutsMax - coachNotes.length);
     // ── W2-1: sichtbare Uhr (Client-Anzeige; Server-Zeitregie bleibt Wahrheit) ──
-    const limitMs = scenario.durationMin * 60_000;
+    const limitMs =
+      (simMode === 'check'
+        ? (scenario.checkDurationMin ?? scenario.durationMin)
+        : scenario.durationMin) * 60_000;
     const startedMs = simStartedAt ? new Date(simStartedAt).getTime() : null;
     const elapsedMs = startedMs != null ? Math.max(0, nowTs - startedMs) : 0;
     const remainingMs = startedMs != null ? Math.max(0, limitMs - elapsedMs) : null;
@@ -1608,6 +1675,7 @@ export default function SimulationClient() {
                 {speakReplies ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </button>
             )}
+            {simMode !== 'check' && (
             <button
               onClick={() => setTimeoutOpen(true)}
               disabled={userTurnCount < 1 || timeoutsLeft === 0}
@@ -1620,6 +1688,12 @@ export default function SimulationClient() {
                 {coachNotes.length}/{timeoutsMax}
               </span>
             </button>
+            )}
+            {simMode === 'check' && (
+              <span className="text-xs font-semibold rounded-lg px-3 py-2 border border-amber-500/40 text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
+                <Flag className="h-3.5 w-3.5" /> {ts.modeCheckBadge}
+              </span>
+            )}
             {/* W2-3: erst ab 3 eigenen Beiträgen aktiv (Dialog verlangte es
                 schon immer — jetzt sagt es auch der Button). Nach Zeitablauf
                 übernimmt das Banner/Modal — kein doppelter Auswerten-Knopf. */}

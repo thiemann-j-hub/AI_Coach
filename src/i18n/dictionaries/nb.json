@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "forhøyet",
     "dlvSoftenersMany": "mange",
     "dlvShowMatches": "Vis treff",
-    "dlvHideMatches": "Skjul treff"
+    "dlvHideMatches": "Skjul treff",
+    "modeLabel": "Modus",
+    "modePractice": "Øvelse",
+    "modeCheck": "Prøve",
+    "modeCheckHint": "Prøvemodus: ingen coachpauser, strengere beståttgrense — som en ekte eksamen.",
+    "modeCheckBadge": "Prøve",
+    "hardnessLabel": "Vanskelighetsgrad",
+    "hardnessMild": "Mild",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Hard",
+    "hardnessHint": "Mild åpner seg raskere, Hard står lenger på sitt — samme situasjon, annen motpart."
   },
   "auth": {
     "signIn": "Logg inn",

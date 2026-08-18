@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "elevat",
     "dlvSoftenersMany": "molts",
     "dlvShowMatches": "Mostra coincidències",
-    "dlvHideMatches": "Amaga coincidències"
+    "dlvHideMatches": "Amaga coincidències",
+    "modeLabel": "Mode",
+    "modePractice": "Pràctica",
+    "modeCheck": "Avaluació",
+    "modeCheckHint": "Mode avaluació: sense pauses de coach, llindar d'aprovat més estricte — com un examen real.",
+    "modeCheckBadge": "Avaluació",
+    "hardnessLabel": "Duresa",
+    "hardnessMild": "Suau",
+    "hardnessStandard": "Estàndard",
+    "hardnessHart": "Dur",
+    "hardnessHint": "Suau s'obre més ràpid, Dur insisteix més en les posicions — mateixa situació, interlocutor diferent."
   },
   "auth": {
     "signIn": "Inicia la sessió",

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenario } from "@/lib/simulation/scenarios";
+import { listScenariosForUser } from "@/lib/server/scenario-store";
 import { listSimulations } from "@/lib/server/simulation-store";
 import { logger } from "@/lib/logger";
 
@@ -27,8 +28,10 @@ export async function GET(req: NextRequest) {
   const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.trunc(rawLimit))) : 50;
 
   try {
+    // B3a: Titel auch für Workspace-Szenarien auflösen (fail-soft).
+    const wsById = new Map((await listScenariosForUser(auth.uid)).map((w) => [w.id, w]));
     const items = (await listSimulations(auth.uid, limit)).map((r) => {
-      const s = getScenario(r.scenarioId);
+      const s = getScenario(r.scenarioId) ?? wsById.get(r.scenarioId);
       return {
         ...r,
         scenarioTitle: s?.title ?? r.scenarioId,

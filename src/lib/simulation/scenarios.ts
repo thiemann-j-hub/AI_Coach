@@ -1197,6 +1197,7 @@ export function publicScenario(s: SimulationScenario): PublicSimulationScenario 
     conversationType: s.conversationType,
     difficulty: s.difficulty,
     durationMin: s.durationMin,
+    ...(s.checkDurationMin ? { checkDurationMin: s.checkDurationMin } : {}),
     locale: s.locale,
     category: s.category,
     ...(s.competencyFocus ? { competencyFocus: s.competencyFocus } : {}),

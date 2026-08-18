@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "élevé",
     "dlvSoftenersMany": "nombreux",
     "dlvShowMatches": "Afficher les occurrences",
-    "dlvHideMatches": "Masquer les occurrences"
+    "dlvHideMatches": "Masquer les occurrences",
+    "modeLabel": "Mode",
+    "modePractice": "Entraînement",
+    "modeCheck": "Évaluation",
+    "modeCheckHint": "Mode évaluation : pas de pause coach, seuil de réussite plus strict — comme un vrai examen.",
+    "modeCheckBadge": "Évaluation",
+    "hardnessLabel": "Intensité",
+    "hardnessMild": "Douce",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Difficile",
+    "hardnessHint": "Douce s'ouvre plus vite, Difficile campe plus longtemps sur ses positions — même situation, interlocuteur différent."
   },
   "auth": {
     "signIn": "Se connecter",

@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "ridicat",
     "dlvSoftenersMany": "multe",
     "dlvShowMatches": "Arată aparițiile",
-    "dlvHideMatches": "Ascunde aparițiile"
+    "dlvHideMatches": "Ascunde aparițiile",
+    "modeLabel": "Mod",
+    "modePractice": "Exersare",
+    "modeCheck": "Evaluare",
+    "modeCheckHint": "Mod evaluare: fără pauze de coach, prag de promovare mai strict — ca un examen adevărat.",
+    "modeCheckBadge": "Evaluare",
+    "hardnessLabel": "Duritate",
+    "hardnessMild": "Blând",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Dur",
+    "hardnessHint": "Blând se deschide mai repede, Dur insistă mai mult pe poziții — aceeași situație, interlocutor diferit."
   },
   "auth": {
     "signIn": "Conectare",

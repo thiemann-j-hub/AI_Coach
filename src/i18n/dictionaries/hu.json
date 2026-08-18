@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "emelkedett",
     "dlvSoftenersMany": "sok",
     "dlvShowMatches": "Találatok megjelenítése",
-    "dlvHideMatches": "Találatok elrejtése"
+    "dlvHideMatches": "Találatok elrejtése",
+    "modeLabel": "Mód",
+    "modePractice": "Gyakorlás",
+    "modeCheck": "Vizsga",
+    "modeCheckHint": "Vizsgamód: nincs coach-szünet, szigorúbb megfelelési küszöb — mint egy igazi vizsga.",
+    "modeCheckBadge": "Vizsga",
+    "hardnessLabel": "Keménység",
+    "hardnessMild": "Szelíd",
+    "hardnessStandard": "Normál",
+    "hardnessHart": "Kemény",
+    "hardnessHint": "A Szelíd hamarabb nyílik meg, a Kemény tovább ragaszkodik az álláspontjához — ugyanaz a helyzet, más partner."
   },
   "auth": {
     "signIn": "Bejelentkezés",

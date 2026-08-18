@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "erhöht",
     "dlvSoftenersMany": "viele",
     "dlvShowMatches": "Treffer zeigen",
-    "dlvHideMatches": "Treffer verbergen"
+    "dlvHideMatches": "Treffer verbergen",
+    "modeLabel": "Modus",
+    "modePractice": "Üben",
+    "modeCheck": "Prüfung",
+    "modeCheckHint": "Prüfungsmodus: keine Coach-Pausen, strengere Bestehensgrenze — wie eine echte Prüfung.",
+    "modeCheckBadge": "Prüfung",
+    "hardnessLabel": "Härtegrad",
+    "hardnessMild": "Sanft",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Hart",
+    "hardnessHint": "Sanft öffnet sich schneller, Hart beharrt länger auf Positionen — gleiche Situation, anderes Gegenüber."
   },
   "auth": {
     "signIn": "Anmelden",

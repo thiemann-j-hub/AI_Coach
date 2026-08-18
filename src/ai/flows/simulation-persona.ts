@@ -34,10 +34,30 @@ const LANGUAGE_NAME_EN: Record<SimConversationLocale, string> = {
   fr: 'French',
 };
 
+/**
+ * B2 (Welle B, Synthesia-Vergleich §7): Härtegrad als DNA-Stellschraube —
+ * gleiche Situation, gleiche DNA, aber die Öffnungs-Dynamik verschiebt sich.
+ * `standard` fügt nichts hinzu (identisch zum bisherigen Verhalten).
+ */
+export type SimPersonaHardness = 'mild' | 'standard' | 'hart';
+
+function hardnessDirective(s: SimulationScenario, hardness: SimPersonaHardness | undefined): string {
+  if (!hardness || hardness === 'standard') return '';
+  if (hardness === 'mild') {
+    return s.locale === 'en'
+      ? `\nSOFTER SETTING: You are somewhat more approachable today. Your concession conditions kick in at the FIRST honest attempt in their direction; use at most one objection per reply and de-escalate quickly once your counterpart shows genuine interest.`
+      : `\nSANFTERE EINSTELLUNG: Du bist heute etwas zugänglicher. Deine Öffnungs-Bedingungen greifen schon beim ERSTEN ehrlichen Ansatz in ihre Richtung; bringe höchstens einen Einwand pro Antwort und lass dich schneller besänftigen, sobald dein Gegenüber echtes Interesse zeigt.`;
+  }
+  return s.locale === 'en'
+    ? `\nHARDER SETTING: You are considerably tougher today. Your concession conditions only kick in after REPEATED, convincing signals (never on the first attempt); use your objection repertoire more often, insist on your positions longer, and treat superficial harmony offers as an escalation trigger.`
+    : `\nHÄRTERE EINSTELLUNG: Du bist heute deutlich zäher. Deine Öffnungs-Bedingungen greifen erst nach WIEDERHOLTEN, überzeugenden Signalen (nie beim ersten Anlauf); nutze dein Einwand-Repertoire häufiger, beharre länger auf deinen Positionen und werte oberflächliche Harmonie-Angebote als Eskalations-Trigger.`;
+}
+
 /** PURE (getestet): baut den System-Prompt aus der Rollen-DNA. */
 export function buildPersonaSystemPrompt(
   s: SimulationScenario,
-  convoLocale?: SimConversationLocale
+  convoLocale?: SimConversationLocale,
+  hardness?: SimPersonaHardness
 ): string {
   const d = s.personaDna;
   return `Du spielst eine Rolle in einer geschützten Gesprächssimulation für Führungskräfte-Training. Dein Gegenüber (der Nutzer) übt das Gespräch aus dem Szenario "${s.title}". Du bist ${d.name}, ${d.role} bei NorthBay Foods.
@@ -58,7 +78,7 @@ ${d.objectionPlaybook.map((o) => `- Wenn ${o.trigger}: »${o.objection}«`).join
 ÖFFNUNGS-BEDINGUNGEN — NUR wenn diese wirklich eintreten, wirst du Schritt für Schritt kooperativer:
 ${bullets(d.concessionConditions)}
 ESKALATIONS-TRIGGER — dann wirst du verschlossener oder schärfer:
-${bullets(d.escalationTriggers)}
+${bullets(d.escalationTriggers)}${hardnessDirective(s, hardness)}
 TONFALL: ${d.personality.tone}
 EIGENHEITEN:
 ${bullets(d.personality.quirks)}
@@ -113,6 +133,8 @@ export async function runPersonaTurn(args: {
   userMessage: string;
   convoLocale?: SimConversationLocale;
   timeSignal?: PersonaTimeSignal;
+  /** B2: Härtegrad des Laufs (aus dem Simulations-Doc). */
+  hardness?: SimPersonaHardness;
 }): Promise<string> {
   const { sanitized, injectionDetected } = sanitizeForPrompt(args.userMessage, {
     label: 'GESPRÄCHSBEITRAG',
@@ -144,7 +166,7 @@ export async function runPersonaTurn(args: {
 
   const response = await ai.generate({
     system:
-      buildPersonaSystemPrompt(args.scenario, args.convoLocale) +
+      buildPersonaSystemPrompt(args.scenario, args.convoLocale, args.hardness) +
       timeDirective(args.scenario, args.timeSignal),
     messages: [
       ...history,
@@ -198,6 +220,8 @@ function cleanPersonaResponse(response: {
 export async function runPersonaOpening(args: {
   scenario: SimulationScenario;
   convoLocale: SimConversationLocale;
+  /** B2: Härtegrad des Laufs — wirkt auch auf die Eröffnung. */
+  hardness?: SimPersonaHardness;
 }): Promise<string> {
   const s = args.scenario;
   const instruction =
@@ -205,7 +229,7 @@ export async function runPersonaOpening(args: {
       ? `(The conversation starts now. Open it with your first line, conveying: »${s.personaDna.openingLine}«)`
       : `(Das Gespräch beginnt jetzt. Eröffne es mit deinem ersten Satz, sinngemäß: »${s.personaDna.openingLine}«)`;
   const response = await ai.generate({
-    system: buildPersonaSystemPrompt(s, args.convoLocale),
+    system: buildPersonaSystemPrompt(s, args.convoLocale, args.hardness),
     messages: [{ role: 'user' as const, content: [{ text: instruction }] }],
     config: {
       maxOutputTokens: MAX_OUTPUT_TOKENS,

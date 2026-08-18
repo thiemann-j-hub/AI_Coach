@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { simulationEnabled } from "@/lib/simulation/flags";
-import { getScenario } from "@/lib/simulation/scenarios";
+import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { withRetry, timeoutMs } from "@/lib/with-timeout";
 
 const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
@@ -34,6 +34,10 @@ const requestSchema = z.object({
    * openingLine; sonst erzeugt die Persona ihre Eröffnung in der Zielsprache.
    */
   locale: z.enum(["de", "en", "es", "fr"]).optional(),
+  /** B2: Übungs- (Default) oder Prüfungsmodus. */
+  mode: z.enum(["practice", "check"]).optional(),
+  /** B2: Härtegrad der Persona (Default standard). */
+  hardness: z.enum(["mild", "standard", "hart"]).optional(),
 });
 
 /** Harte Kappe fuer den gespeicherten Fokus (Prompt-Injektion + Doc-Groesse). */
@@ -61,7 +65,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const scenario = getScenario(parsed.data.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, parsed.data.scenarioId);
     if (!scenario) {
       return NextResponse.json(
         { ok: false, code: "UNKNOWN_SCENARIO" },
@@ -78,6 +82,8 @@ export async function POST(req: NextRequest) {
     }
     const focus = parsed.data.focus?.trim().slice(0, FOCUS_MAX_CHARS) || null;
     const convoLocale = parsed.data.locale ?? scenario.locale;
+    const mode = parsed.data.mode ?? "practice";
+    const hardness = parsed.data.hardness ?? "standard";
 
     // Eroeffnung: Autorensprache = statisch (kein LLM-Call); abweichende
     // Gesprächssprache = Persona eröffnet sinngemäß in der Zielsprache.
@@ -90,7 +96,7 @@ export async function POST(req: NextRequest) {
       });
       if (!budget.allowed && budget.response) return budget.response;
       openingText = await withRetry(
-        () => runPersonaOpening({ scenario, convoLocale }),
+        () => runPersonaOpening({ scenario, convoLocale, hardness }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-opening", retries: 1 }
       );
     }
@@ -103,6 +109,8 @@ export async function POST(req: NextRequest) {
       attempt,
       focus,
       convoLocale,
+      mode,
+      hardness,
       openingTurn: {
         role: "persona",
         text: openingText,
@@ -125,6 +133,8 @@ export async function POST(req: NextRequest) {
         turns: doc.turns,
         attempt,
         focus,
+        mode,
+        hardness,
         // W2-1: Client-Uhr rechnet ab createdAt (Server bleibt die Wahrheit).
         createdAt: doc.createdAt,
       },

@@ -246,6 +246,9 @@ export function SimulationEvaluation(props: {
   convoLocale?: string | null;
   /** A3: alle Versuche dieses Szenarios für die Verlaufskurve (inkl. aktuellem). */
   history?: SimEvalHistoryPoint[] | null;
+  /** B2: Modus + Härtegrad des Laufs (Badges). */
+  mode?: 'practice' | 'check';
+  hardness?: 'mild' | 'standard' | 'hart';
   /** Szenario dieser Auswertung (für den Delta-CTA: Abwechslung schlägt Wiederholung). */
   currentScenarioId?: string | null;
   /** Katalog-Projektion für den Delta-CTA (W3-1); leer = kein CTA-Szenario. */
@@ -309,11 +312,23 @@ export function SimulationEvaluation(props: {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Herkunfts-Pill (W1-8): woher diese Messung stammt */}
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-        <MessagesSquare className="h-3.5 w-3.5" />
-        {t.evaluation.sourceSim}
-        {props.personaName ? ` · ${props.personaName}` : ''}
-      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+          <MessagesSquare className="h-3.5 w-3.5" />
+          {t.evaluation.sourceSim}
+          {props.personaName ? ` · ${props.personaName}` : ''}
+        </span>
+        {props.mode === 'check' && (
+          <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400">
+            {ts.modeCheckBadge}
+          </span>
+        )}
+        {props.hardness && props.hardness !== 'standard' && (
+          <span className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+            {props.hardness === 'mild' ? ts.hardnessMild : ts.hardnessHart}
+          </span>
+        )}
+      </div>
 
       {/* ── Debrief-Held: Score, Urteil, größter Hebel ── */}
       {debrief && (

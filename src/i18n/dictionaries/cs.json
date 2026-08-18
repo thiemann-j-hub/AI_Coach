@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "zvýšené",
     "dlvSoftenersMany": "hodně",
     "dlvShowMatches": "Zobrazit výskyty",
-    "dlvHideMatches": "Skrýt výskyty"
+    "dlvHideMatches": "Skrýt výskyty",
+    "modeLabel": "Režim",
+    "modePractice": "Trénink",
+    "modeCheck": "Zkouška",
+    "modeCheckHint": "Režim zkoušky: žádné pauzy s koučem, přísnější hranice úspěchu — jako skutečná zkouška.",
+    "modeCheckBadge": "Zkouška",
+    "hardnessLabel": "Tvrdost",
+    "hardnessMild": "Mírný",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Tvrdý",
+    "hardnessHint": "Mírný se otevře dřív, Tvrdý déle trvá na svém — stejná situace, jiný protějšek."
   },
   "auth": {
     "signIn": "Přihlásit se",

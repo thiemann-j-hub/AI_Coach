@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getSimulation } from "@/lib/server/simulation-store";
-import { getScenario, publicScenario } from "@/lib/simulation/scenarios";
+import { publicScenario } from "@/lib/simulation/scenarios";
+import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { computeDebrief } from "@/lib/simulation/debrief";
 import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
 import { logger } from "@/lib/logger";
@@ -34,10 +35,11 @@ export async function GET(req: NextRequest) {
 
     // Debrief 2.0: Altbestand ohne gespeicherten Debrief wird beim Lesen
     // nachgerechnet (computeDebrief ist pure — gleiche Zahlen wie beim Finish).
+    const scenarioFull = await getScenarioForUser(auth.uid, doc.scenarioId);
     let debrief = doc.debriefJson ?? null;
     const fb = doc.feedbackJson as SimulationFeedbackOutput | null | undefined;
     if (!debrief && doc.status === "finished" && fb?.rubric) {
-      const scenario = getScenario(doc.scenarioId);
+      const scenario = scenarioFull;
       debrief = computeDebrief({
         rubric: fb.rubric.map((r) => ({ key: r.key, label: r.label, score: r.score })),
         checkpoints: (fb.checkpoints ?? []).map((c) => ({ id: c.id, hit: c.hit })),
@@ -47,8 +49,6 @@ export async function GET(req: NextRequest) {
 
     // W1-7: Szenario-Projektion mitliefern — die eigenständige Auswertungs-
     // Seite (/simulation/[simId]) braucht Titel/Persona ohne Katalog-Fetch.
-    const scenarioFull = getScenario(doc.scenarioId);
-
     return NextResponse.json({
       ok: true,
       scenario: scenarioFull ? publicScenario(scenarioFull) : null,
@@ -67,6 +67,8 @@ export async function GET(req: NextRequest) {
         attempt: doc.attempt ?? 1,
         focus: doc.focus ?? null,
         selfAssessment: doc.selfAssessment ?? null,
+        mode: doc.mode ?? "practice",
+        hardness: doc.hardness ?? "standard",
         coachNotes: doc.coachNotes ?? [],
         convoLocale: doc.convoLocale ?? null,
         timeUp: doc.closedByTime === true,

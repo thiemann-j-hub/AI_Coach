@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "paaugstināts",
     "dlvSoftenersMany": "daudz",
     "dlvShowMatches": "Rādīt atbilsmes",
-    "dlvHideMatches": "Slēpt atbilsmes"
+    "dlvHideMatches": "Slēpt atbilsmes",
+    "modeLabel": "Režīms",
+    "modePractice": "Treniņš",
+    "modeCheck": "Pārbaude",
+    "modeCheckHint": "Pārbaudes režīms: bez trenera pauzēm, stingrāks nokārtošanas slieksnis — kā īsts eksāmens.",
+    "modeCheckBadge": "Pārbaude",
+    "hardnessLabel": "Grūtība",
+    "hardnessMild": "Maigs",
+    "hardnessStandard": "Standarta",
+    "hardnessHart": "Ciets",
+    "hardnessHint": "Maigs atveras ātrāk, Ciets ilgāk paliek pie savām pozīcijām — tā pati situācija, cits sarunu partneris."
   },
   "auth": {
     "signIn": "Pierakstīties",

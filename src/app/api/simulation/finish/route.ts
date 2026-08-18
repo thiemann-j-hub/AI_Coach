@@ -27,7 +27,7 @@ import {
   simulationEnabled,
   simulationRadarEmitEnabled,
 } from "@/lib/simulation/flags";
-import { getScenario } from "@/lib/simulation/scenarios";
+import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   assembleTranscript,
   countUserTurns,
@@ -36,6 +36,7 @@ import {
   saveSimulation,
 } from "@/lib/server/simulation-store";
 import {
+  CHECK_PASS_THRESHOLD,
   computeDebrief,
   computeDelta,
   type Debrief,
@@ -116,6 +117,8 @@ export async function POST(req: NextRequest) {
         attempt: doc.attempt ?? 1,
         focus: doc.focus ?? null,
         selfAssessment: doc.selfAssessment ?? null,
+        mode: doc.mode ?? "practice",
+        hardness: doc.hardness ?? "standard",
       });
     }
     if (countUserTurns(doc.turns) < MIN_USER_TURNS) {
@@ -124,7 +127,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const scenario = getScenario(doc.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
     }
@@ -252,10 +255,24 @@ export async function POST(req: NextRequest) {
 
     // Debrief 2.0 (D1): deterministische Gesamtwertung in Code — das LLM
     // liefert nur Einzel-Scores. Plus Delta zum Vorversuch (D2), best effort.
+    // Welle B: Anker-Gewichte aus dem Szenario (B1) + strengere Grenze im
+    // Prüfungsmodus (B2).
+    const weightByKey = new Map(
+      scenario.assessment.competencies.map((c) => [c.key, c.weight])
+    );
+    const passThreshold =
+      doc.mode === "check"
+        ? (scenario.assessment.checkPassThreshold ?? CHECK_PASS_THRESHOLD)
+        : scenario.assessment.passThreshold;
     const debrief = computeDebrief({
-      rubric: feedback.rubric.map((r) => ({ key: r.key, label: r.label, score: r.score })),
+      rubric: feedback.rubric.map((r) => ({
+        key: r.key,
+        label: r.label,
+        score: r.score,
+        weight: weightByKey.get(r.key),
+      })),
       checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
-      passThreshold: scenario.assessment.passThreshold,
+      passThreshold,
     });
     let delta: (ReturnType<typeof computeDelta> & {
       competencies?: Record<string, number | null>;
@@ -347,6 +364,8 @@ export async function POST(req: NextRequest) {
       attempt: doc.attempt ?? 1,
       focus: doc.focus ?? null,
       selfAssessment: doc.selfAssessment ?? null,
+      mode: doc.mode ?? "practice",
+      hardness: doc.hardness ?? "standard",
     });
   } catch (err) {
     if (grant) await compensateEntitlement(grant);

@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "elevato",
     "dlvSoftenersMany": "molti",
     "dlvShowMatches": "Mostra occorrenze",
-    "dlvHideMatches": "Nascondi occorrenze"
+    "dlvHideMatches": "Nascondi occorrenze",
+    "modeLabel": "Modalità",
+    "modePractice": "Allenamento",
+    "modeCheck": "Valutazione",
+    "modeCheckHint": "Modalità valutazione: nessuna pausa coach, soglia di superamento più severa — come un vero esame.",
+    "modeCheckBadge": "Valutazione",
+    "hardnessLabel": "Intensità",
+    "hardnessMild": "Morbida",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Dura",
+    "hardnessHint": "Morbida si apre prima, Dura insiste più a lungo sulle posizioni — stessa situazione, interlocutore diverso."
   },
   "auth": {
     "signIn": "Accedi",

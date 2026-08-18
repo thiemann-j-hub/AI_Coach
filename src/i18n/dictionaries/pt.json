@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "elevado",
     "dlvSoftenersMany": "muitos",
     "dlvShowMatches": "Mostrar ocorrências",
-    "dlvHideMatches": "Ocultar ocorrências"
+    "dlvHideMatches": "Ocultar ocorrências",
+    "modeLabel": "Modo",
+    "modePractice": "Praticar",
+    "modeCheck": "Avaliação",
+    "modeCheckHint": "Modo avaliação: sem pausas de coach e limite de aprovação mais rigoroso — como um exame real.",
+    "modeCheckBadge": "Avaliação",
+    "hardnessLabel": "Dureza",
+    "hardnessMild": "Suave",
+    "hardnessStandard": "Padrão",
+    "hardnessHart": "Duro",
+    "hardnessHint": "Suave abre-se mais depressa, Duro insiste mais nas posições — mesma situação, interlocutor diferente."
   },
   "auth": {
     "signIn": "Iniciar sessão",

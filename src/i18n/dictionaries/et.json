@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "kõrgenenud",
     "dlvSoftenersMany": "palju",
     "dlvShowMatches": "Näita vasteid",
-    "dlvHideMatches": "Peida vasted"
+    "dlvHideMatches": "Peida vasted",
+    "modeLabel": "Režiim",
+    "modePractice": "Harjutus",
+    "modeCheck": "Eksam",
+    "modeCheckHint": "Eksamirežiim: ilma treeneripausideta, rangem läbimise piir — nagu päris eksam.",
+    "modeCheckBadge": "Eksam",
+    "hardnessLabel": "Raskusaste",
+    "hardnessMild": "Leebe",
+    "hardnessStandard": "Standard",
+    "hardnessHart": "Karm",
+    "hardnessHint": "Leebe avaneb kiiremini, Karm jääb kauem oma seisukohtade juurde — sama olukord, erinev vestluspartner."
   },
   "auth": {
     "signIn": "Logi sisse",

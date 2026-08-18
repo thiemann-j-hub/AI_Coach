@@ -32,7 +32,26 @@ export interface SimCheckpoint {
 export interface SimRubricCompetency {
   key: string;
   label: string;
+  /**
+   * B1 (Welle B, Synthesia-Vergleich §7): relatives Gewicht dieses Ankers im
+   * Gesamtscore. Ohne Angabe zählen alle Anker gleich (Gewicht 1). Die
+   * Rechnung normalisiert über die BEOBACHTETEN Anker — Ehrlichkeits-Prinzip
+   * bleibt: Nicht-Beobachtetes drückt nicht auf 0, sondern verkleinert die Basis.
+   */
+  weight?: number;
+  /**
+   * B1: szenariospezifische Bewertungs-Rubrik dieses Ankers — Anweisung an
+   * den KI-Bewerter (nicht Feedbacktext), Synthesia-Muster »Rubrik je Skill«.
+   * Ohne Angabe gilt allein die generische 1–4-Skala.
+   */
+  rubric?: string;
 }
+
+/** B2: Übungs- vs. Prüfungsmodus (Synthesia-Muster »Retries an/aus«). */
+export type SimulationMode = "practice" | "check";
+
+/** B2: Härtegrad der Persona — DNA-Stellschraube, gleiche Situation. */
+export type PersonaHardness = "mild" | "standard" | "hart";
 
 /**
  * Faktenblatt-Visualisierung (Owner-Vorgabe 04.08.: »ansprechend
@@ -122,6 +141,11 @@ export interface SimulationAssessment {
    * ohne Angabe gilt DEFAULT_PASS_THRESHOLD (0.6) aus debrief.ts.
    */
   passThreshold?: number;
+  /**
+   * B2: strengere Bestehensgrenze im Prüfungsmodus (0–1); ohne Angabe gilt
+   * CHECK_PASS_THRESHOLD (0.7) aus debrief.ts.
+   */
+  checkPassThreshold?: number;
 }
 
 /**
@@ -156,6 +180,11 @@ export interface SimulationScenario {
   durationMin: number;
   /** V1: Szenario-Inhalte bewusst Deutsch (Materialtreue); UI-Chrome ist ×7 lokalisiert. */
   locale: "de" | "en";
+  /**
+   * B2: Zeitbox im Prüfungsmodus (Minuten); ohne Angabe gilt durationMin.
+   * Synthesia-Erfahrungswert: Prüfungen etwas kürzer und fokussierter.
+   */
+  checkDurationMin?: number;
   /** Wirkungsrichtung fürs Einstiegs-Raster (Blueprint §2.1). */
   category: ScenarioCategory;
   /**
@@ -179,6 +208,8 @@ export interface PublicSimulationScenario {
   conversationType: string;
   difficulty: SimulationDifficulty;
   durationMin: number;
+  /** B2: Zeitbox im Prüfungsmodus (Minuten), falls abweichend. */
+  checkDurationMin?: number;
   locale: "de" | "en";
   category: ScenarioCategory;
   competencyFocus?: CompetencyKey[];

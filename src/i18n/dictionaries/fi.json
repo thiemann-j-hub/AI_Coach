@@ -178,7 +178,17 @@
     "dlvSoftenersElevated": "koholla",
     "dlvSoftenersMany": "paljon",
     "dlvShowMatches": "Näytä osumat",
-    "dlvHideMatches": "Piilota osumat"
+    "dlvHideMatches": "Piilota osumat",
+    "modeLabel": "Tila",
+    "modePractice": "Harjoittelu",
+    "modeCheck": "Koe",
+    "modeCheckHint": "Koetila: ei valmentajataukoja, tiukempi läpäisyraja — kuin oikea koe.",
+    "modeCheckBadge": "Koe",
+    "hardnessLabel": "Vaikeus",
+    "hardnessMild": "Lempeä",
+    "hardnessStandard": "Vakio",
+    "hardnessHart": "Kova",
+    "hardnessHint": "Lempeä avautuu nopeammin, Kova pitää kauemmin kiinni kannoistaan — sama tilanne, eri vastapuoli."
   },
   "auth": {
     "signIn": "Kirjaudu sisään",
