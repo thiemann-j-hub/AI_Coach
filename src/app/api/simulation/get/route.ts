@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
         delta: doc.deltaJson ?? null,
         attempt: doc.attempt ?? 1,
         focus: doc.focus ?? null,
+        selfAssessment: doc.selfAssessment ?? null,
         coachNotes: doc.coachNotes ?? [],
         convoLocale: doc.convoLocale ?? null,
         timeUp: doc.closedByTime === true,

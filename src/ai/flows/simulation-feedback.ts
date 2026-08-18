@@ -21,6 +21,8 @@ export const SimulationFeedbackInputSchema = z.object({
   transcript: z.string(),
   /** Fokus-Retry (D2): der EINE Vorsatz aus dem letzten Debrief; leer = kein Fokus. */
   focus: z.string(),
+  /** Coaching-Check-in (A1): Selbsteinschätzung des Übenden; leer = übersprungen. */
+  selfAssessment: z.string(),
   /** Sprache der Textausgaben (summary/why/comment/nextStep) — folgt der Gesprächssprache. */
   outputLanguage: z.string(),
 });
@@ -67,6 +69,17 @@ export const SimulationFeedbackOutputSchema = z.object({
     })
     .nullable()
     .describe('NUR bewerten, wenn ein FOKUS-VORSATZ vorgegeben war; sonst null.'),
+  selfReview: z
+    .object({
+      agreement: z
+        .enum(['confirms', 'partly', 'differs'])
+        .describe('Deckt sich die Selbsteinschätzung mit der Auswertung? confirms = weitgehend, partly = teils, differs = klar abweichend.'),
+      comment: z
+        .string()
+        .describe('2–3 Sätze: greife die Selbsteinschätzung wörtlich auf und bestätige oder korrigiere sie — AUSSCHLIESSLICH mit Beleg aus dem Gespräch.'),
+    })
+    .nullable()
+    .describe('NUR bewerten, wenn eine SELBSTEINSCHÄTZUNG vorliegt; sonst null.'),
 });
 
 export type SimulationFeedbackOutput = z.infer<typeof SimulationFeedbackOutputSchema>;
@@ -111,6 +124,17 @@ Bewerte in focusReview, ob der Vorsatz erkennbar umgesetzt wurde — mit Beleg.
 Kein Fokus-Vorsatz vorgegeben → focusReview = null.
 {{/if}}
 
+{{#if selfAssessment}}
+SELBSTEINSCHÄTZUNG DES ÜBENDEN (direkt nach dem Gespräch, vor dieser Auswertung):
+"{{selfAssessment}}"
+PFLICHT: Fülle selfReview. Greife die Selbsteinschätzung inhaltlich auf ("Du meintest …")
+und bestätige oder korrigiere sie — ausschließlich mit Beleg aus dem Gespräch.
+Sei ehrlich: Eine zu strenge Selbstsicht verdient genauso eine Korrektur wie eine zu milde.
+Die Selbsteinschätzung ist KEINE Evidenz für die Rubrik-Scores — bewertet wird nur das Gespräch.
+{{else}}
+Keine Selbsteinschätzung abgegeben → selfReview = null.
+{{/if}}
+
 summary und nextStep: direkte Ansprache ("Du …"), konkret, auf DIESES Gespräch bezogen.
 Alle Textausgaben (summary, why, comment, nextStep) auf {{outputLanguage}} — Zitate in der EVIDENCE bleiben wörtlich in der Gesprächssprache.
 
@@ -136,6 +160,8 @@ export async function generateSimulationFeedback(args: {
   focus?: string;
   /** Gesprächssprache — Feedback-Texte folgen ihr (Default: Szenario-Locale). */
   convoLocale?: string;
+  /** Coaching-Check-in (A1): Selbsteinschätzung des Übenden, optional. */
+  selfAssessment?: string;
 }): Promise<SimulationFeedbackOutput> {
   const { scenario, turns } = args;
   const rawTranscript = assembleTranscript(turns, scenario.persona.name);
@@ -158,6 +184,12 @@ export async function generateSimulationFeedback(args: {
       .join('\n'),
     transcript: sanitized,
     focus: (args.focus ?? '').slice(0, 300),
+    // A1: Nutzertext → derselbe Injection-Schutz wie das Transkript.
+    selfAssessment: args.selfAssessment
+      ? sanitizeForPrompt(args.selfAssessment.slice(0, 600), {
+          label: 'SELBSTEINSCHÄTZUNG',
+        }).sanitized
+      : '',
     outputLanguage:
       FEEDBACK_LANGUAGE[args.convoLocale ?? scenario.locale] ?? 'Deutsch',
   });
@@ -188,5 +220,7 @@ export async function generateSimulationFeedback(args: {
     nextStep: output.nextStep,
     // focusReview nur, wenn wirklich ein Fokus vorgegeben war (kein LLM-Eigenleben).
     focusReview: args.focus ? (output.focusReview ?? null) : null,
+    // selfReview nur bei tatsächlich abgegebener Selbsteinschätzung (A1).
+    selfReview: args.selfAssessment ? (output.selfReview ?? null) : null,
   };
 }

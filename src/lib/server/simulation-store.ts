@@ -45,6 +45,12 @@ export interface SimulationDoc {
   attempt?: number;
   /** Fokus-Vorsatz aus dem letzten Debrief (Fokus-Retry). */
   focus?: string | null;
+  /**
+   * Coaching-Check-in (Welle A1, Synthesia-Vergleich §7): Selbsteinschätzung
+   * des Übenden NACH dem Gespräch, VOR der Auswertung. Optional (Überspringen
+   * ist erste Bürgerin) — fließt als Pflichtsektion belegt ins Debrief ein.
+   */
+  selfAssessment?: string | null;
   /** Deterministische Gesamtwertung (computeDebrief) — beim Finish persistiert. */
   debriefJson?: unknown | null;
   /** Vergleich zum Vorversuch (computeDelta) — beim Finish persistiert. */

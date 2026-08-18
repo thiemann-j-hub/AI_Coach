@@ -21,6 +21,7 @@ import {
   Clock,
   Compass,
   Flag,
+  GraduationCap,
   Lightbulb,
   Loader2,
   Mic,
@@ -391,6 +392,13 @@ export default function SimulationClient() {
   const [starting, setStarting] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  /**
+   * Coaching-Check-in (Welle A1, Synthesia-Vergleich §7): EINE statische
+   * Reflexionsfrage zwischen »Beenden« und Auswertung. Das Eingabefeld teilt
+   * sich den `input`-State mit dem Chat — so diktiert das Mikrofon ohne
+   * Umbau auch hier hinein. Überspringen ist gleichwertig (kein Zwang).
+   */
+  const [checkinOpen, setCheckinOpen] = useState(false);
   const [briefingOpen, setBriefingOpen] = useState(false);
   const [attempt, setAttempt] = useState(1);
   const [focus, setFocus] = useState<string | null>(null);
@@ -810,14 +818,15 @@ export default function SimulationClient() {
     }
   }
 
-  async function finishSimulation() {
+  async function finishSimulation(selfAssessment?: string) {
     if (!simId || finishing) return;
     setFinishing(true);
     setError(null);
     try {
+      const trimmed = (selfAssessment ?? '').trim().slice(0, 600);
       const res = await authFetch('/api/simulation/finish', {
         method: 'POST',
-        body: JSON.stringify({ simId }),
+        body: JSON.stringify({ simId, ...(trimmed ? { selfAssessment: trimmed } : {}) }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
@@ -2017,8 +2026,76 @@ export default function SimulationClient() {
                   {t.common.cancel}
                 </button>
                 <button
-                  onClick={() => void finishSimulation()}
+                  onClick={() => {
+                    // A1: erst der Check-in, dann die Auswertung. Das geteilte
+                    // Eingabefeld wird geleert — ein liegengebliebener Entwurf
+                    // gehört zum beendeten Gespräch, nicht zur Reflexion.
+                    setConfirmOpen(false);
+                    setCheckinOpen(true);
+                    setInput('');
+                  }}
                   disabled={finishing || userTurnCount < 3}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {ts.confirmCta}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* A1: Coaching-Check-in — Selbstbild einholen, BEVOR das Ergebnis kommt
+            (Synthesia-Vergleich §7). Antwort fährt im Finish-Aufruf mit: kein
+            zusätzlicher Credit, keine zusätzliche Latenz. */}
+        {checkinOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+                  <GraduationCap className="h-5 w-5" />
+                </span>
+                <h3 className="font-semibold text-lg">{ts.checkinTitle}</h3>
+              </div>
+              <p className="text-sm leading-relaxed">{ts.checkinQuestion}</p>
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  rows={4}
+                  maxLength={500}
+                  placeholder={ts.checkinPlaceholder}
+                  className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  autoFocus
+                />
+                {speechSupported && (
+                  <button
+                    onClick={() => (micActive ? stopMic() : startMic())}
+                    className={cx(
+                      'relative rounded-xl p-3 border transition-colors',
+                      micActive
+                        ? 'border-primary/60 text-primary bg-primary/15 shadow-neon'
+                        : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
+                    )}
+                    aria-label={micActive ? ts.micStop : ts.micStart}
+                    title={micActive ? ts.micStop : ts.micStart}
+                  >
+                    <Mic className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+              {error && errorBanner}
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => void finishSimulation()}
+                  disabled={finishing}
+                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {ts.checkinSkip}
+                </button>
+                <button
+                  onClick={() => void finishSimulation(input)}
+                  disabled={finishing || !input.trim()}
                   className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
                 >
                   {finishing ? (
@@ -2026,7 +2103,7 @@ export default function SimulationClient() {
                   ) : (
                     <Sparkles className="h-4 w-4" />
                   )}
-                  {ts.confirmCta}
+                  {ts.checkinSubmit}
                 </button>
               </div>
             </div>

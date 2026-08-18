@@ -60,6 +60,12 @@ const requestSchema = z.object({
     .min(8)
     .max(64)
     .regex(/^[A-Za-z0-9-]+$/),
+  /**
+   * Welle A1: Selbsteinschätzung aus dem Coaching-Check-in — optional
+   * (Überspringen ist gleichwertig). Serverseitiger Deckel spiegelt den
+   * Client (500) mit Luft für Diktat-Ausreißer.
+   */
+  selfAssessment: z.string().trim().max(600).optional(),
 });
 
 /**
@@ -109,6 +115,7 @@ export async function POST(req: NextRequest) {
         delta: doc.deltaJson ?? null,
         attempt: doc.attempt ?? 1,
         focus: doc.focus ?? null,
+        selfAssessment: doc.selfAssessment ?? null,
       });
     }
     if (countUserTurns(doc.turns) < MIN_USER_TURNS) {
@@ -150,6 +157,7 @@ export async function POST(req: NextRequest) {
             turns: doc.turns,
             focus: doc.focus ?? undefined,
             convoLocale: doc.convoLocale ?? undefined,
+            selfAssessment: parsed.data.selfAssessment || undefined,
           }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-feedback", retries: 1 }
       ),
@@ -290,6 +298,7 @@ export async function POST(req: NextRequest) {
     const finishedAt = new Date().toISOString();
     doc.status = "finished";
     doc.finishedAt = finishedAt;
+    doc.selfAssessment = parsed.data.selfAssessment || null;
     doc.feedbackJson = feedback;
     doc.competencyRatings = competencyRatings;
     doc.competencyError = competencyError;
@@ -337,6 +346,7 @@ export async function POST(req: NextRequest) {
       delta,
       attempt: doc.attempt ?? 1,
       focus: doc.focus ?? null,
+      selfAssessment: doc.selfAssessment ?? null,
     });
   } catch (err) {
     if (grant) await compensateEntitlement(grant);

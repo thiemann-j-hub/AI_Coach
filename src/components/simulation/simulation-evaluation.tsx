@@ -9,12 +9,15 @@
 
 import React, { useMemo, useState } from 'react';
 import {
+  Activity,
   ArrowRight,
   CheckCircle2,
   ChevronDown,
   GraduationCap,
+  History,
   Loader2,
   MessagesSquare,
+  Minus,
   RotateCcw,
   Sparkles,
   TrendingDown,
@@ -23,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ScoreRing } from '@/components/app/score-ring';
 import { computeDeltaCta, computeStudioBridge } from '@/lib/simulation/endscreen';
+import { computeDelivery, type DeliveryReport } from '@/lib/simulation/delivery';
 import { useTranslation } from '@/i18n/useTranslation';
 
 /* ── Typen (Vertrag der /api/simulation/get- bzw. finish-Antwort) ── */
@@ -33,6 +37,15 @@ export interface SimEvalFeedback {
   checkpoints: { id: string; hit: boolean; comment: string }[];
   nextStep: string;
   focusReview?: { addressed: boolean; comment: string } | null;
+  /** A1: Abgleich Selbstbild ↔ Auswertung (nur wenn Check-in beantwortet wurde). */
+  selfReview?: { agreement: 'confirms' | 'partly' | 'differs'; comment: string } | null;
+}
+
+/** A3: ein Punkt der Verlaufskurve (aus /api/simulation/list, gleiche Quelle wie die Historie). */
+export interface SimEvalHistoryPoint {
+  id: string;
+  attempt: number;
+  overall: number | null;
 }
 
 export interface SimEvalDebriefAnchor {
@@ -114,6 +127,101 @@ function DeltaTag({ delta }: { delta: number | null }) {
   );
 }
 
+/**
+ * A3: Verlaufskurve — Score über Versuche als schlichtes Inline-SVG (keine
+ * neue Bibliothek). Bestehenslinie gestrichelt, bester Versuch markiert.
+ */
+function AttemptChart(props: {
+  points: SimEvalHistoryPoint[];
+  passMark: number;
+  currentAttempt: number;
+  bestLabel: string;
+}) {
+  const pts = [...props.points]
+    .filter((p) => p.overall != null)
+    .sort((a, b) => a.attempt - b.attempt);
+  if (pts.length < 2) return null;
+  const W = 320;
+  const H = 120;
+  const PAD = { l: 30, r: 14, t: 14, b: 20 };
+  const x = (i: number) =>
+    PAD.l + (i * (W - PAD.l - PAD.r)) / Math.max(1, pts.length - 1);
+  const y = (v: number) => PAD.t + ((100 - v) * (H - PAD.t - PAD.b)) / 100;
+  const best = pts.reduce((m, p) => ((p.overall ?? 0) > (m.overall ?? 0) ? p : m), pts[0]);
+  const line = pts.map((p, i) => `${x(i)},${y(p.overall as number)}`).join(' ');
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="w-full max-w-md"
+      role="img"
+      aria-label="Score-Verlauf"
+    >
+      {[0, 50, 100].map((v) => (
+        <g key={v}>
+          <text x={PAD.l - 6} y={y(v) + 3} textAnchor="end" className="fill-current opacity-50" fontSize="8">
+            {v}
+          </text>
+          <line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} className="stroke-current opacity-10" strokeWidth="1" />
+        </g>
+      ))}
+      {/* Bestehenslinie */}
+      <line
+        x1={PAD.l}
+        x2={W - PAD.r}
+        y1={y(props.passMark)}
+        y2={y(props.passMark)}
+        className="stroke-amber-400/70"
+        strokeWidth="1"
+        strokeDasharray="4 3"
+      />
+      <polyline points={line} fill="none" className="stroke-current text-primary" strokeWidth="2" />
+      {pts.map((p, i) => (
+        <g key={p.id}>
+          <circle
+            cx={x(i)}
+            cy={y(p.overall as number)}
+            r={p.attempt === props.currentAttempt ? 4.5 : 3}
+            className={cx(
+              'fill-current',
+              p.attempt === props.currentAttempt ? 'text-accent' : 'text-primary'
+            )}
+          />
+          <text x={x(i)} y={H - 6} textAnchor="middle" className="fill-current opacity-60" fontSize="8">
+            {p.attempt}
+          </text>
+          {p.id === best.id && (
+            <text
+              x={x(i)}
+              y={y(p.overall as number) - 8}
+              textAnchor="middle"
+              className="fill-current text-emerald-400 font-semibold"
+              fontSize="8"
+            >
+              {props.bestLabel}
+            </text>
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/** A2: Drei-Stufen-Skala eines Delivery-Werts — zeigt, WO auf der Skala der Lauf liegt. */
+function DeliveryScale(props: { position: 0 | 1 | 2; tone: 'ok' | 'mid' | 'off' }) {
+  const toneCls =
+    props.tone === 'ok' ? 'bg-emerald-400' : props.tone === 'mid' ? 'bg-amber-400' : 'bg-rose-400';
+  return (
+    <div className="flex gap-1 w-24 shrink-0" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className={cx('h-1.5 flex-1 rounded-full', i === props.position ? toneCls : 'bg-border')}
+        />
+      ))}
+    </div>
+  );
+}
+
 const EXPECTATION_STYLES: Record<SimEvalDebriefAnchor['expectation'], string> = {
   exceeds: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   meets: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
@@ -130,6 +238,14 @@ export function SimulationEvaluation(props: {
   attempt: number;
   focus: string | null;
   ratings: SimEvalRating[] | null;
+  /** A1: die Selbsteinschätzung aus dem Check-in (wörtlich, für die Karte). */
+  selfAssessment?: string | null;
+  /** A2: Turns für das deterministische Delivery-Panel (null = Panel entfällt). */
+  turns?: Array<{ role: string; text: string }> | null;
+  /** A2: Gesprächssprache — wählt das Weichmacher-Lexikon. */
+  convoLocale?: string | null;
+  /** A3: alle Versuche dieses Szenarios für die Verlaufskurve (inkl. aktuellem). */
+  history?: SimEvalHistoryPoint[] | null;
   /** Szenario dieser Auswertung (für den Delta-CTA: Abwechslung schlägt Wiederholung). */
   currentScenarioId?: string | null;
   /** Katalog-Projektion für den Delta-CTA (W3-1); leer = kein CTA-Szenario. */
@@ -166,6 +282,12 @@ export function SimulationEvaluation(props: {
   );
   // W3-3: Studio-Brücke nur bei echter Schwäche (≤ 2).
   const studioBridge = useMemo(() => computeStudioBridge(ratings), [ratings]);
+  // A2: Delivery deterministisch aus den Turns — pure, kostenlos, auch für Alt-Läufe.
+  const delivery: DeliveryReport | null = useMemo(
+    () => (props.turns && props.turns.length ? computeDelivery(props.turns, props.convoLocale) : null),
+    [props.turns, props.convoLocale]
+  );
+  const [softenersOpen, setSoftenersOpen] = useState(false);
 
   const deltaByKey = new Map((delta?.anchors ?? []).map((a) => [a.key, a.delta]));
   const verdict = debrief?.verdict ?? 'unrated';
@@ -239,6 +361,56 @@ export function SimulationEvaluation(props: {
                 <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* A3: Verlaufskurve — erst ab dem zweiten bewerteten Versuch. */}
+      {debrief && (props.history?.filter((p) => p.overall != null).length ?? 0) >= 2 && (
+        <section className="glass-panel rounded-2xl p-5 border border-border space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+            <History className="h-4 w-4" /> {ts.historyTitle}
+          </h2>
+          <AttemptChart
+            points={props.history!}
+            passMark={debrief.passMarkPct}
+            currentAttempt={attempt}
+            bestLabel={ts.historyBest}
+          />
+          <p className="text-xs text-muted-foreground">{ts.historyHint}</p>
+        </section>
+      )}
+
+      {/* A1: Selbstbild ↔ Auswertung — der Synthesia-Moment, aber belegt. */}
+      {feedback.selfReview && props.selfAssessment && (
+        <section
+          className={cx(
+            'glass-panel rounded-2xl p-4 border flex items-start gap-3',
+            feedback.selfReview.agreement === 'confirms'
+              ? 'border-emerald-500/30 bg-emerald-500/5'
+              : feedback.selfReview.agreement === 'partly'
+                ? 'border-sky-500/30 bg-sky-500/5'
+                : 'border-amber-500/30 bg-amber-500/5'
+          )}
+        >
+          {feedback.selfReview.agreement === 'confirms' ? (
+            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+          ) : feedback.selfReview.agreement === 'partly' ? (
+            <Minus className="h-5 w-5 text-sky-400 shrink-0 mt-0.5" />
+          ) : (
+            <RotateCcw className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+          )}
+          <div className="min-w-0">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {ts.selfReviewTitle} —{' '}
+              {feedback.selfReview.agreement === 'confirms'
+                ? ts.selfConfirms
+                : feedback.selfReview.agreement === 'partly'
+                  ? ts.selfPartly
+                  : ts.selfDiffers}
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5 italic">»{props.selfAssessment}«</p>
+            <p className="text-sm leading-relaxed mt-1">{feedback.selfReview.comment}</p>
           </div>
         </section>
       )}
@@ -368,6 +540,130 @@ export function SimulationEvaluation(props: {
           ))}
         </div>
       </section>
+
+      {/* A2: Delivery-Panel — WIE kommuniziert wurde. Deterministisch, ohne
+          Score-Einfluss (Sparring-Beschluss); Weichmacher-Treffer sind auf
+          Klick im Kontext einsehbar (Beleg-Philosophie). */}
+      {delivery && delivery.talkRatioPct != null && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+            <Activity className="h-4 w-4" /> {ts.deliveryTitle}
+          </h2>
+          <div className="glass-panel rounded-xl border border-border p-4 space-y-3">
+            <p className="text-xs text-muted-foreground">{ts.deliveryHint}</p>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{ts.dlvTalkRatio}</div>
+                <div className="text-xs text-muted-foreground">
+                  {delivery.talkRatioPct} % ·{' '}
+                  {delivery.talkBand === 'listening'
+                    ? ts.dlvTalkListening
+                    : delivery.talkBand === 'balanced'
+                      ? ts.dlvTalkBalanced
+                      : ts.dlvTalkTalking}
+                </div>
+              </div>
+              <DeliveryScale
+                position={delivery.talkBand === 'listening' ? 0 : delivery.talkBand === 'balanced' ? 1 : 2}
+                tone={delivery.talkBand === 'balanced' ? 'ok' : 'mid'}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{ts.dlvSentenceLength}</div>
+                <div className="text-xs text-muted-foreground">
+                  {delivery.medianSentenceWords} {ts.dlvWordsUnit} ·{' '}
+                  {delivery.sentenceBand === 'short'
+                    ? ts.dlvSentenceShort
+                    : delivery.sentenceBand === 'normal'
+                      ? ts.dlvSentenceNormal
+                      : ts.dlvSentenceLong}
+                </div>
+              </div>
+              <DeliveryScale
+                position={delivery.sentenceBand === 'short' ? 0 : delivery.sentenceBand === 'normal' ? 1 : 2}
+                tone={delivery.sentenceBand === 'normal' ? 'ok' : 'mid'}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{ts.dlvOpeners}</div>
+                <div className="text-xs text-muted-foreground">
+                  {delivery.openerRepetitionPct} % ·{' '}
+                  {delivery.openerBand === 'varied'
+                    ? ts.dlvOpenersVaried
+                    : delivery.openerBand === 'some'
+                      ? ts.dlvOpenersSome
+                      : ts.dlvOpenersRepetitive}
+                </div>
+              </div>
+              <DeliveryScale
+                position={delivery.openerBand === 'varied' ? 0 : delivery.openerBand === 'some' ? 1 : 2}
+                tone={
+                  delivery.openerBand === 'varied' ? 'ok' : delivery.openerBand === 'some' ? 'mid' : 'off'
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium">{ts.dlvSofteners}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {delivery.softenersPer100} {ts.dlvPer100} ·{' '}
+                    {delivery.softenerBand === 'normal'
+                      ? ts.dlvSoftenersNormal
+                      : delivery.softenerBand === 'elevated'
+                        ? ts.dlvSoftenersElevated
+                        : ts.dlvSoftenersMany}
+                  </div>
+                </div>
+                <DeliveryScale
+                  position={
+                    delivery.softenerBand === 'normal' ? 0 : delivery.softenerBand === 'elevated' ? 1 : 2
+                  }
+                  tone={
+                    delivery.softenerBand === 'normal'
+                      ? 'ok'
+                      : delivery.softenerBand === 'elevated'
+                        ? 'mid'
+                        : 'off'
+                  }
+                />
+              </div>
+              {delivery.softenerMatches.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setSoftenersOpen((v) => !v)}
+                    className="text-[11px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1"
+                  >
+                    <ChevronDown
+                      className={cx('h-3.5 w-3.5 transition-transform', softenersOpen && 'rotate-180')}
+                    />
+                    {softenersOpen ? ts.dlvHideMatches : ts.dlvShowMatches} (
+                    {delivery.softenerMatches.length})
+                  </button>
+                  {softenersOpen && (
+                    <div className="space-y-1.5 mt-2">
+                      {delivery.softenerMatches.slice(0, 12).map((m, idx) => (
+                        <blockquote
+                          key={idx}
+                          className="text-xs italic border-l-2 border-primary/40 pl-2.5 py-0.5 text-muted-foreground leading-relaxed"
+                        >
+                          <span className="not-italic font-semibold">{m.phrase}</span> — {m.context}
+                        </blockquote>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* C1–C10 — W1-8: NICHT mehr zugeklappt; die Brücke zum Radar ist Kernaussage. */}
       {ratings && (

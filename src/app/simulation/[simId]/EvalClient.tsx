@@ -19,6 +19,7 @@ import {
   type SimEvalDebrief,
   type SimEvalDelta,
   type SimEvalFeedback,
+  type SimEvalHistoryPoint,
   type SimEvalRating,
 } from '@/components/simulation/simulation-evaluation';
 
@@ -32,6 +33,11 @@ interface LoadedSim {
   attempt: number;
   focus: string | null;
   ratings: SimEvalRating[] | null;
+  /** A1: Selbsteinschätzung aus dem Check-in (für die Selbstbild-Karte). */
+  selfAssessment: string | null;
+  /** A2: Turns für das Delivery-Panel (deterministisch, client-seitig). */
+  turns: Array<{ role: string; text: string }> | null;
+  convoLocale: string | null;
 }
 
 export default function EvalClient() {
@@ -72,6 +78,39 @@ export default function EvalClient() {
     };
   }, []);
 
+  // A3: Verlaufskurve — alle Versuche desselben Szenarios (best effort;
+  // ohne Historie fehlt nur die Kurve, der Rest der Auswertung steht).
+  const [history, setHistory] = useState<SimEvalHistoryPoint[]>([]);
+  useEffect(() => {
+    if (!sim?.scenarioId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch('/api/simulation/list?limit=100');
+        const json = await res.json().catch(() => null);
+        if (!cancelled && res.ok && json?.ok && Array.isArray(json.items)) {
+          setHistory(
+            json.items
+              .filter(
+                (i: { scenarioId: string; status: string }) =>
+                  i.scenarioId === sim.scenarioId && i.status === 'finished'
+              )
+              .map((i: { id: string; attempt?: number; overall?: number | null }) => ({
+                id: i.id,
+                attempt: i.attempt ?? 1,
+                overall: typeof i.overall === 'number' ? i.overall : null,
+              }))
+          );
+        }
+      } catch {
+        /* Kurve degradiert still */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sim?.scenarioId]);
+
   useEffect(() => {
     if (!simId) return;
     let cancelled = false;
@@ -101,6 +140,9 @@ export default function EvalClient() {
             attempt: s.attempt ?? 1,
             focus: s.focus ?? null,
             ratings: s.competencyRatings ?? null,
+            selfAssessment: s.selfAssessment ?? null,
+            turns: Array.isArray(s.turns) ? s.turns : null,
+            convoLocale: s.convoLocale ?? null,
           });
           setState('ready');
         }
@@ -209,6 +251,10 @@ export default function EvalClient() {
         attempt={sim.attempt}
         focus={sim.focus}
         ratings={sim.ratings}
+        selfAssessment={sim.selfAssessment}
+        turns={sim.turns}
+        convoLocale={sim.convoLocale}
+        history={history}
         currentScenarioId={sim.scenarioId}
         scenarios={scenarios}
         onOpenScenario={(scenarioId) =>
