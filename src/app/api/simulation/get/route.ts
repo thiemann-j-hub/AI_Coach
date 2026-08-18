@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
     // Debrief 2.0: Altbestand ohne gespeicherten Debrief wird beim Lesen
     // nachgerechnet (computeDebrief ist pure — gleiche Zahlen wie beim Finish).
-    const scenarioFull = await getScenarioForUser(auth.uid, doc.scenarioId);
+    const scenarioFull = await getScenarioForUser(auth.uid, doc.scenarioId, auth.oid);
     let debrief = doc.debriefJson ?? null;
     const fb = doc.feedbackJson as SimulationFeedbackOutput | null | undefined;
     if (!debrief && doc.status === "finished" && fb?.rubric) {

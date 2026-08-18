@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     if (doc.turns.filter((t) => t.role === "user").length < 1) {
       return NextResponse.json({ ok: false, code: "TOO_EARLY" }, { status: 400 });
     }
-    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId, auth.oid);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
     }

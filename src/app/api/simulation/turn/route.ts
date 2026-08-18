@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) {
       return NextResponse.json({ ok: false, code: "TURN_LIMIT" }, { status: 409 });
     }
-    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, doc.scenarioId, auth.oid);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
     }

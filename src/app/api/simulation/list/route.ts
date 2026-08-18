@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // B3a: Titel auch für Workspace-Szenarien auflösen (fail-soft).
-    const wsById = new Map((await listScenariosForUser(auth.uid)).map((w) => [w.id, w]));
+    const wsById = new Map((await listScenariosForUser(auth.uid, auth.oid)).map((w) => [w.id, w]));
     const items = (await listSimulations(auth.uid, limit)).map((r) => {
       const s = getScenario(r.scenarioId) ?? wsById.get(r.scenarioId);
       return {

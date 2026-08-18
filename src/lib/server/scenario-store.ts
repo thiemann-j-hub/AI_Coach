@@ -1,6 +1,7 @@
 import "server-only";
 
 import { deleteItem, queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
+import { getCentralMemberInfo } from "@/lib/server/credits/member-info";
 import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
 import { getScenario } from "@/lib/simulation/scenarios";
 import { validateScenario } from "@/lib/simulation/scenario-schema";
@@ -36,6 +37,20 @@ export interface ScenarioDoc {
 
 export function scenarioPartitionKey(workspaceId: string): string {
   return `simscn:${workspaceId}`;
+}
+
+/**
+ * Mandanten-Auflösung für Szenarien: die ZENTRALE workspaceId aus dem
+ * CreditService ist die Wahrheit (dieselbe, die Spend/Rechnungen tragen —
+ * Live-Befund 18.08.: das lokale users-Doc kennt sie nicht und fiele auf den
+ * Solo-Default uid zurück). Fallback lokal nur, wenn zentral nichts liefert.
+ */
+async function resolveWorkspaceIdForScenarios(uid: string, oid?: string | null): Promise<string> {
+  if (oid) {
+    const info = await getCentralMemberInfo(oid);
+    if (info?.workspaceId) return info.workspaceId;
+  }
+  return getWorkspaceIdForUser(uid);
 }
 
 /** Upsert mit Pflicht-Validierung — ungültige Entwürfe erreichen die DB nie. */
@@ -98,13 +113,14 @@ export async function listWorkspaceScenarios(
  */
 export async function getScenarioForUser(
   uid: string,
-  scenarioId: string
+  scenarioId: string,
+  oid?: string | null
 ): Promise<SimulationScenario | null> {
   const builtin = getScenario(scenarioId);
   if (builtin) return builtin;
   if (!scenarioId.startsWith("ws-")) return null;
   try {
-    const workspaceId = await getWorkspaceIdForUser(uid);
+    const workspaceId = await resolveWorkspaceIdForScenarios(uid, oid);
     const doc = await readItem<ScenarioDoc>(
       runsContainer(),
       scenarioId,
@@ -118,9 +134,12 @@ export async function getScenarioForUser(
 }
 
 /** Workspace-Szenarien des Users für den Katalog (fail-soft: leere Liste). */
-export async function listScenariosForUser(uid: string): Promise<SimulationScenario[]> {
+export async function listScenariosForUser(
+  uid: string,
+  oid?: string | null
+): Promise<SimulationScenario[]> {
   try {
-    const workspaceId = await getWorkspaceIdForUser(uid);
+    const workspaceId = await resolveWorkspaceIdForScenarios(uid, oid);
     return await listWorkspaceScenarios(workspaceId);
   } catch (e) {
     logger.apiError("scenario-store/listScenariosForUser", e);

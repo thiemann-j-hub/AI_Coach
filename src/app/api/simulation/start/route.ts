@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const scenario = await getScenarioForUser(auth.uid, parsed.data.scenarioId);
+    const scenario = await getScenarioForUser(auth.uid, parsed.data.scenarioId, auth.oid);
     if (!scenario) {
       return NextResponse.json(
         { ok: false, code: "UNKNOWN_SCENARIO" },

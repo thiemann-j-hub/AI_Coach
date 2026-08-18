@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
 
     // B3a: Workspace-Szenarien des Mandanten hinter den Katalog hängen —
     // dieselbe Anti-Leak-Projektion (publicScenario), fail-soft leere Liste.
-    const workspaceScenarios = (await listScenariosForUser(auth.uid)).map(publicScenario);
+    const workspaceScenarios = (await listScenariosForUser(auth.uid, auth.oid)).map(publicScenario);
     return NextResponse.json({
       ok: true,
       scenarios: [...publicScenarios(), ...workspaceScenarios],
