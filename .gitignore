@@ -53,7 +53,9 @@ workspace/*.json
 *.bak-*
 handover_dump_*.md
 localStorage
-generate
+# nur das Wurzel-Artefakt, NICHT src/**/generate/ (Lehre 19.08.: Regel
+# 'generate' verschluckte die Builder-Route api/simulation/builder/generate)
+/generate
 /trotzdem
 
 # Optimierungs-Audit-Artefakte (Arbeitsdateien, kein App-Code)
