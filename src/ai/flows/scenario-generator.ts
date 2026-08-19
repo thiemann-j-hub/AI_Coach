@@ -31,6 +31,13 @@ export interface ScenarioDraftArgs {
   category?: 'mitarbeiterfuehrung' | 'zusammenarbeit' | 'vertrieb' | 'stakeholder';
   difficulty?: 1 | 2 | 3;
   locale?: 'de' | 'en';
+  /**
+   * Welle C (Überarbeitungs-Runde, Synthesia-Muster »describe any changes«):
+   * der bisherige Entwurf + der Änderungswunsch des Kunden-Admins. Der
+   * Generator überarbeitet den Entwurf, statt neu zu würfeln.
+   */
+  previousDraft?: SimulationScenario;
+  reviseNote?: string;
 }
 
 /** PURE (getestet): baut den Meta-Prompt des Generators. */
@@ -68,9 +75,28 @@ ${templates.map((t) => JSON.stringify(t)).join('\n---\n')}
 BRIEF
 ${brief}
 ${doc ? `\nMATERIAL (Kundenunterlagen — Fakten hieraus verwenden)\n${doc}` : ''}
+${args.previousDraft ? `\nBISHERIGER ENTWURF (überarbeite IHN — behalte Bewährtes, ändere nur, was der ÄNDERUNGSWUNSCH verlangt):\n${JSON.stringify(args.previousDraft)}` : ''}
+${args.reviseNote ? `\nÄNDERUNGSWUNSCH DES AUTORS:\n${sanitizeForPrompt(args.reviseNote.slice(0, 2000), { label: 'WUNSCH' }).sanitized}` : ''}
 ${args.previousIssues ? `\nDEIN VORIGER ENTWURF SCHEITERTE AN DIESEN SCHEMA-FEHLERN — behebe genau sie:\n${args.previousIssues}` : ''}
 
 Gib AUSSCHLIESSLICH das JSON-Objekt des Szenarios zurück (kein Markdown, keine Erklärungen).`;
+}
+
+/** Welle C: stabile ws--Id aus einem Brief ableiten (Slug + Zufallssuffix). */
+export function draftIdFromBrief(brief: string, random: string): string {
+  const slug = brief
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .split('-')
+    .filter(Boolean)
+    .slice(0, 4)
+    .join('-')
+    .slice(0, 40);
+  return `ws-${slug || 'szenario'}-${random}`;
 }
 
 /** Entfernt ggf. Markdown-Zäune und parst das JSON des Modells. */

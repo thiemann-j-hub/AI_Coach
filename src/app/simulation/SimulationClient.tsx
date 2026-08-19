@@ -410,6 +410,23 @@ export default function SimulationClient() {
   const [insight, setInsight] = useState<EntryInsight | null>(null);
   /** Filterzeile: »Alle« oder eine nicht-leere Kategorie (W1-5). */
   const [categoryFilter, setCategoryFilter] = useState<'all' | ScenarioCategory>('all');
+  // Welle C: Builder-Karte nur für Workspace-Admins (Rolle aus dem Profil).
+  const [isWorkspaceAdmin, setIsWorkspaceAdmin] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await authFetch('/api/users/profile');
+        const j = await res.json().catch(() => null);
+        if (!cancelled && j?.profile?.workspaceRole === 'admin') setIsWorkspaceAdmin(true);
+      } catch {
+        /* ohne Rolle keine Builder-Karte — fail-soft */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   // Geister-Karte → Szenario-Wunsch (W1-5)
   const [wishOpen, setWishOpen] = useState(false);
   const [wishText, setWishText] = useState('');
@@ -1201,6 +1218,22 @@ export default function SimulationClient() {
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {visibleScenarios.map((s) => scenarioCard(s))}
             {/* Geister-Karte (W1-5): der Wunsch wird Nachfrage-Statistik. */}
+            {/* Welle C: Self-Service-Builder — nur für Workspace-Admins. */}
+            {isWorkspaceAdmin && (
+              <button
+                onClick={() => router.push('/simulation/builder')}
+                className="rounded-2xl p-5 text-left border-2 border-dashed border-accent/40 hover:border-accent transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
+              >
+                <Sparkles className="h-6 w-6 text-accent" />
+                <h3 className="font-semibold leading-snug text-foreground">
+                  {ts.builderCardTitle}
+                </h3>
+                <p className="text-sm leading-relaxed">{ts.builderCardBody}</p>
+                <span className="mt-1 text-xs font-semibold text-accent">
+                  {ts.builderCardCta} →
+                </span>
+              </button>
+            )}
             <button
               onClick={() => {
                 setWishDone(false);

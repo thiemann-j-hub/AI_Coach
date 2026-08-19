@@ -31,6 +31,13 @@ export interface ScenarioDoc {
   workspaceId: string;
   createdAt: string;
   updatedAt: string;
+  /**
+   * Welle C: draft = nur im Builder sichtbar (Kunden-Admin), published = im
+   * Katalog des Workspace. Alt-Docs ohne Feld gelten als published (B3a-Weg).
+   */
+  status?: "draft" | "published";
+  /** Welle C: uid des Erstellers (Builder); Concierge-Docs haben keine. */
+  createdByUid?: string;
   /** Validiertes Szenario (Schema-geprüft beim Upsert). */
   scenario: SimulationScenario;
 }
@@ -45,7 +52,7 @@ export function scenarioPartitionKey(workspaceId: string): string {
  * Live-Befund 18.08.: das lokale users-Doc kennt sie nicht und fiele auf den
  * Solo-Default uid zurück). Fallback lokal nur, wenn zentral nichts liefert.
  */
-async function resolveWorkspaceIdForScenarios(uid: string, oid?: string | null): Promise<string> {
+export async function resolveWorkspaceIdForScenarios(uid: string, oid?: string | null): Promise<string> {
   if (oid) {
     const info = await getCentralMemberInfo(oid);
     if (info?.workspaceId) return info.workspaceId;
@@ -56,7 +63,8 @@ async function resolveWorkspaceIdForScenarios(uid: string, oid?: string | null):
 /** Upsert mit Pflicht-Validierung — ungültige Entwürfe erreichen die DB nie. */
 export async function upsertWorkspaceScenario(
   workspaceId: string,
-  input: unknown
+  input: unknown,
+  opts?: { status?: "draft" | "published"; createdByUid?: string }
 ): Promise<ScenarioDoc> {
   const scenario = validateScenario(input);
   const now = new Date().toISOString();
@@ -72,10 +80,47 @@ export async function upsertWorkspaceScenario(
     workspaceId,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
+    status: opts?.status ?? existing?.status ?? "published",
+    ...(opts?.createdByUid
+      ? { createdByUid: opts.createdByUid }
+      : existing?.createdByUid
+        ? { createdByUid: existing.createdByUid }
+        : {}),
     scenario,
   };
   await upsertItem(runsContainer(), doc);
   return doc;
+}
+
+/** Welle C: Status eines Workspace-Szenarios umschalten (publish/unpublish). */
+export async function setWorkspaceScenarioStatus(
+  workspaceId: string,
+  scenarioId: string,
+  status: "draft" | "published"
+): Promise<ScenarioDoc | null> {
+  const existing = await readItem<ScenarioDoc>(
+    runsContainer(),
+    scenarioId,
+    scenarioPartitionKey(workspaceId)
+  );
+  if (!existing || existing.docType !== SCENARIO_DOC_TYPE) return null;
+  const doc = { ...existing, status, updatedAt: new Date().toISOString() };
+  await upsertItem(runsContainer(), doc);
+  return doc;
+}
+
+/** Welle C: alle Szenario-DOCS des Workspace (inkl. Drafts) für den Builder. */
+export async function listWorkspaceScenarioDocs(
+  workspaceId: string
+): Promise<ScenarioDoc[]> {
+  return queryItems<ScenarioDoc>(
+    runsContainer(),
+    "SELECT * FROM c WHERE c.sessionId = @pk AND c.docType = @dt ORDER BY c.createdAt DESC",
+    [
+      { name: "@pk", value: scenarioPartitionKey(workspaceId) },
+      { name: "@dt", value: SCENARIO_DOC_TYPE },
+    ]
+  );
 }
 
 export async function deleteWorkspaceScenario(
@@ -97,7 +142,9 @@ export async function listWorkspaceScenarios(
 ): Promise<SimulationScenario[]> {
   const rows = await queryItems<ScenarioDoc>(
     runsContainer(),
-    "SELECT * FROM c WHERE c.sessionId = @pk AND c.docType = @dt ORDER BY c.createdAt ASC",
+    // Welle C: Drafts bleiben im Builder — der Katalog sieht nur published
+    // (Alt-Docs ohne status-Feld gelten als published).
+    "SELECT * FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND (NOT IS_DEFINED(c.status) OR c.status = 'published') ORDER BY c.createdAt ASC",
     [
       { name: "@pk", value: scenarioPartitionKey(workspaceId) },
       { name: "@dt", value: SCENARIO_DOC_TYPE },
