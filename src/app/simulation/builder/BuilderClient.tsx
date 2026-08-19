@@ -124,7 +124,7 @@ export default function BuilderClient() {
         method: 'POST',
         body: JSON.stringify(
           reviseScenarioId
-            ? { brief: brief || openItem?.scenario.teaser || '—', reviseScenarioId, reviseNote: reviseNote.trim() }
+            ? { reviseScenarioId, reviseNote: reviseNote.trim() }
             : {
                 brief: brief.trim(),
                 ...(material.trim() ? { material: material.trim() } : {}),

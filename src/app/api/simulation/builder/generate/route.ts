@@ -35,7 +35,9 @@ const LLM_TIMEOUT_MS = timeoutMs("BUILDER_LLM_TIMEOUT_MS", 90_000);
 const MAX_SCENARIOS_PER_WORKSPACE = 30;
 
 const requestSchema = z.object({
-  brief: z.string().trim().min(30).max(4000),
+  /** Pflicht (>=30 Zeichen) NUR bei Neuanlage — die Überarbeitung trägt ihren
+   *  Kontext im bisherigen Entwurf (Fix 19.08.: 400 bei Revise-Runden). */
+  brief: z.string().trim().max(4000).optional(),
   material: z.string().trim().max(20_000).optional(),
   category: z
     .enum(["mitarbeiterfuehrung", "zusammenarbeit", "vertrieb", "stakeholder"])
@@ -45,6 +47,13 @@ const requestSchema = z.object({
   /** Überarbeitungs-Runde: bestehende Draft-Id + Änderungswunsch. */
   reviseScenarioId: z.string().regex(/^ws-[a-z0-9-]+$/).optional(),
   reviseNote: z.string().trim().max(2000).optional(),
+}).superRefine((d, ctx) => {
+  if (!d.reviseScenarioId && (d.brief?.length ?? 0) < 30) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["brief"], message: "Brief (>=30 Zeichen) fehlt" });
+  }
+  if (d.reviseScenarioId && (d.reviseNote?.trim().length ?? 0) < 5) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["reviseNote"], message: "Änderungswunsch fehlt" });
+  }
 });
 
 /**
@@ -99,7 +108,7 @@ export async function POST(req: NextRequest) {
     const budget = await checkAndConsumeBudget({
       uid: auth.uid,
       email: auth.email,
-      estimatedTokens: estimateTokens(d.brief, d.material ?? ""),
+      estimatedTokens: estimateTokens(d.brief ?? "", d.material ?? ""),
     });
     if (!budget.allowed && budget.response) return budget.response;
 
@@ -110,11 +119,17 @@ export async function POST(req: NextRequest) {
     }
 
     const id =
-      previousDraft?.id ?? draftIdFromBrief(d.brief, crypto.randomBytes(3).toString("hex"));
+      previousDraft?.id ?? draftIdFromBrief(d.brief ?? "", crypto.randomBytes(3).toString("hex"));
+    const briefForRun =
+      d.brief && d.brief.length >= 30
+        ? d.brief
+        : previousDraft
+          ? `${previousDraft.scenario.title} — ${previousDraft.scenario.teaser}`
+          : (d.brief ?? "");
     const scenario = await withRetry(
       () =>
         generateScenarioDraft({
-          brief: d.brief,
+          brief: briefForRun,
           id,
           sourceDocument: d.material,
           category: d.category,
