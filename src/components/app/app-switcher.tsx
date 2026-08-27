@@ -21,7 +21,7 @@ const APPS: Array<{ key: string; href: string; name?: string; suffix?: string }>
   { key: "coach", href: "/coach", suffix: "Coach" },
   { key: "jobmap", href: "/jobmap", suffix: "Jobmap" },
   { key: "studio", href: "/studio", suffix: "Learning Studio" },
-  { key: "radar", href: "/radar", name: "Privates Radar" },
+  { key: "radar", href: "/radar", name: "Mein Lernbereich" },
   { key: "team", href: "/team", name: "Team-Radar" },
 ];
 
