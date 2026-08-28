@@ -173,6 +173,10 @@ export async function POST(req: NextRequest) {
           lang: doc.convoLocale ?? "de",
           leaderLabel: "Teilnehmer:in",
           employeeLabel: scenario.persona.name,
+          // V2 (28.08.): Szenario-Typ rahmt die Bewertung — ein Verkaufs-
+          // oder Konfliktgespräch wird nicht mehr als Führungssituation
+          // bewertet (Kategorie liegt im Szenario bereits vor).
+          scenarioCategory: scenario.category,
         }),
         LLM_TIMEOUT_MS,
         "gemini-sim-competencies"

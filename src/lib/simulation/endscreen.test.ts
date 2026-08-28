@@ -3,8 +3,8 @@ import { computeDeltaCta, computeStudioBridge } from "./endscreen";
 import type { RatingLike } from "./empfehlung";
 
 const ratings: RatingLike[] = [
-  { id: "C2", name: "Klarheit und Entscheidungsstärke", score: 3 },
-  { id: "C5", name: "Kommunikation und Kooperation", score: 2 },
+  { id: "C2", name: "Problemlösung und Entscheidungsfindung", score: 3 },
+  { id: "C5", name: "Kommunikation und Teamfähigkeit", score: 2 },
   { id: "C9", name: "Zukunftsorientierung", score: null },
 ];
 

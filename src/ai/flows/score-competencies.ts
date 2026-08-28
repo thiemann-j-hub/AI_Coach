@@ -6,13 +6,80 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
+import { COMP_MODEL, COMPETENCY_DEFINITIONS } from '@/lib/competency-model';
 
 export const ScoreCompetenciesInputSchema = z.object({
   transcriptText: z.string(),
   lang: z.string().optional(),
   leaderLabel: z.string().optional(),
   employeeLabel: z.string().optional(),
+  /**
+   * Kompetenzmodell v2 (Owner-GO 28.08.) — Szenario-Typ des Gesprächs.
+   * Der Prompt war bis dahin HART auf Führung verdrahtet ("Leadership-Coach",
+   * "Verhalten der Führungskraft", "keine Führungsleistung") und hätte ein
+   * Verkaufs- oder Konfliktgespräch systematisch falsch gerahmt. Default
+   * bleibt "mitarbeiterfuehrung" — damit verhält sich der Transkript-Upload
+   * (/api/analyze, dort ist die Kategorie unbekannt) exakt wie bisher.
+   */
+  scenarioCategory: z
+    .enum(["mitarbeiterfuehrung", "zusammenarbeit", "vertrieb", "stakeholder"])
+    .optional(),
+  // Vom Flow aus scenarioCategory abgeleitet (nicht vom Aufrufer zu setzen).
+  coachRole: z.string().optional(),
+  subjectLabel: z.string().optional(),
+  counterpartLabel: z.string().optional(),
+  nonPerformanceHint: z.string().optional(),
+  competencyList: z.string().optional(),
 });
+
+/**
+ * Rollen-Rahmen je Szenario-Typ. `subjectLabel` ist die BEWERTETE Person,
+ * `counterpartLabel` das Gegenüber — beide gehen in die Anonymisierung der
+ * Zitate ein (ein Vertriebs-Transkript zitiert "Verkäufer:in:", nicht
+ * "Führungskraft:").
+ */
+const SCENARIO_FRAMING = {
+  mitarbeiterfuehrung: {
+    coachRole: "erfahrener Leadership-Coach",
+    subject: "Führungskraft",
+    counterpart: "Mitarbeiter:in",
+    nonPerformance:
+      "Reine Terminabsprachen, Logistik oder Small-Talk sind KEINE Führungsleistung.",
+  },
+  zusammenarbeit: {
+    coachRole: "erfahrener Coach für Zusammenarbeit und Konfliktklärung",
+    subject: "Teilnehmer:in",
+    counterpart: "Gegenüber",
+    nonPerformance:
+      "Reine Terminabsprachen, Logistik oder Small-Talk sind KEINE beobachtbare Zusammenarbeits-Leistung.",
+  },
+  vertrieb: {
+    coachRole: "erfahrener Vertriebs-Coach",
+    subject: "Verkäufer:in",
+    counterpart: "Kunde:in",
+    nonPerformance:
+      "Reine Terminabsprachen, Preislisten-Vorlesen oder Small-Talk sind KEINE Verkaufsleistung.",
+  },
+  stakeholder: {
+    coachRole: "erfahrener Coach für Stakeholder-Kommunikation",
+    subject: "Teilnehmer:in",
+    counterpart: "Stakeholder",
+    nonPerformance:
+      "Reine Terminabsprachen, Status-Aufzählungen oder Small-Talk sind KEINE beobachtbare Leistung.",
+  },
+} as const;
+
+export type ScenarioCategory = keyof typeof SCENARIO_FRAMING;
+
+/**
+ * Kompetenz-Liste MIT Ein-Satz-Definitionen. Bis v2 standen im Prompt nur die
+ * nackten zehn Titel — das Modell musste raten, was z. B. "C6" konkret meint.
+ */
+function buildCompetencyList(): string {
+  return COMP_MODEL.map(
+    (c) => `${c.id} – ${c.name}: ${COMPETENCY_DEFINITIONS[c.id] ?? ""}`
+  ).join("\n");
+}
 
 // WICHTIG: Feldreihenfolge ist load-bearing (Schema-Forced Reasoning aus der
 // Schwester-App, §9). Das Modell füllt die Felder in dieser Reihenfolge — erst
@@ -52,7 +119,7 @@ const prompt = ai.definePrompt({
   input: { schema: ScoreCompetenciesInputSchema },
   output: { schema: ScoreCompetenciesOutputSchema },
   prompt: `
-Du bist ein erfahrener Leadership‑Coach.
+Du bist ein {{coachRole}}.
 
 SPRACHE
 Verfasse alle "why"-Begründungen in der Sprache des Transkripts (Zielsprache: {{lang}}).
@@ -60,7 +127,8 @@ Bei lang="en" schreibe die Begründungen auf Englisch, bei "de" auf Deutsch usw.
 Die Evidenz-Zitate bleiben immer im Originalwortlaut des Transkripts.
 
 AUFGABE
-Bewerte NUR das Verhalten der Führungskraft im Transkript entlang der Kompetenzen C1–C10.
+Bewerte NUR das Verhalten der Person „{{subjectLabel}}" im Transkript entlang der Kompetenzen C1–C10.
+Das Gegenüber („{{counterpartLabel}}") wird NICHT bewertet.
 Nutze nur Dinge, die im Transkript wirklich erkennbar sind. Keine Spekulationen.
 
 SKALA 1–4
@@ -68,19 +136,19 @@ SKALA 1–4
 2 = erste solide Ansätze
 3 = gut und überwiegend wirksam
 4 = sehr gut / vorbildlich in dieser Situation
-TRENNSCHÄRFE: Bewerte je Kompetenz NUR ihren eigenen Kern und lass ihn nicht vom Gesamteindruck
-einfärben — z. B. kann C2 (Klarheit/Entscheidungsstärke) hoch sein, obwohl der Ton schlecht ist
-(der Ton gehört zu C5). Ein durchgängig negatives Gespräch macht nicht automatisch JEDE
+TRENNSCHÄRFE: Bewerte je Kompetenz NUR ihren eigenen Kern (s. Definitionen unten) und lass ihn
+nicht vom Gesamteindruck einfärben — z. B. kann C2 (Problemlösung/Entscheidungsfindung) hoch sein,
+obwohl der Ton schlecht ist (der Ton gehört zu C5). Ein durchgängig negatives Gespräch macht nicht automatisch JEDE
 beobachtbare Kompetenz zur 1.
 
 REIHENFOLGE DER BEWERTUNG (zwingend, pro Kompetenz):
 1) Sammle zuerst die EVIDENCE: 1–2 wörtliche Zitate aus dem Transkript (max. ~18 Wörter),
-   anonymisiert mit Prefix "Führungskraft:" / "Mitarbeiter:in:" (keine echten Namen, keine Paraphrasen).
+   anonymisiert mit Prefix "{{subjectLabel}}:" / "{{counterpartLabel}}:" (keine echten Namen, keine Paraphrasen).
 2) Begründe (why) ausschließlich auf Basis dieser Zitate.
 3) Vergib ERST DANN den score — nur wenn die Evidenz ihn belegt.
 
 BEOBACHTBARKEITS-TEST (zwingend VOR jedem Score, pro Kompetenz — Konsistenz vor Vollständigkeit):
-Stelle GENAU diese Frage: "Gibt es mindestens EIN wörtliches Zitat, in dem die Führungskraft in einer
+Stelle GENAU diese Frage: "Gibt es mindestens EIN wörtliches Zitat, in dem „{{subjectLabel}}" in einer
 Situation handelt, die DIESE Kompetenz konkret fordert?"
 - NEIN → evidence = [], score = null, why = "nicht ausreichend beobachtbar". IMMER. Keine Ausnahme.
 - JA  → score 1–4 vergeben. Auch KONTRAPRODUKTIVES Verhalten in einer relevanten Situation IST
@@ -96,22 +164,19 @@ Erfinde KEINE Zitate. Ein Zitat in evidence MUSS WÖRTLICH und ZUSAMMENHÄNGEND 
 (keine Fragmente aus verschiedenen Sätzen zusammensetzen).
 
 KEIN ÜBER-SCORING:
-Reine Terminabsprachen, Logistik oder Small-Talk sind KEINE Führungsleistung.
-Wenn eine Kompetenz im Transkript nicht durch konkretes Führungsverhalten belegt ist,
+{{nonPerformanceHint}}
+Wenn eine Kompetenz im Transkript nicht durch konkretes, beobachtbares Verhalten belegt ist,
 ist score = null — vergib NIEMALS einen Score auf Basis bloßer Vermutung oder weil das
 Thema „passen könnte".
 
-KOMPETENZMODELL (Kurz)
-C1 – Integrieren und Verbinden
-C2 – Klarheit und Entscheidungsstärke
-C3 – Befähigen und Entwickeln
-C4 – Sicherheit und Stabilität geben
-C5 – Kommunikation und Kooperation
-C6 – Zielorientierte Umsetzung
-C7 – Innovative Kultur fördern
-C8 – Selbstreflexion und Lernmotivation
-C9 – Zukunftsorientierung und strategischer Weitblick
-C10 – KI- und Datenkompetenz
+KOMPETENZMODELL (C1–C10 mit Definitionen — bewerte GENAU diese Bedeutung)
+{{competencyList}}
+
+WICHTIG zu C3, C4, C7, C9 (Führungskompetenzen): Diese vier setzen echte
+Führungs-/Verantwortungssituationen voraus. Zeigt das Transkript keine solche
+Situation (z. B. ein reines Verkaufs- oder Kollegengespräch), sind sie
+"nicht ausreichend beobachtbar" (score = null) — konstruiere daraus NIE
+Führungsverhalten.
 
 TRANSKRIPT
 {{{transcriptText}}}
@@ -183,7 +248,22 @@ export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesI
     console.warn(`[prompt-guard] Injection pattern detected in transcriptText (content redacted).`);
   }
 
-  const hardenedInput = { ...input, transcriptText: fencedText };
+  // V2: Rollen-Rahmen + Kompetenz-Definitionen ableiten. Der Default
+  // "mitarbeiterfuehrung" haelt den Transkript-Upload verhaltensgleich.
+  const framing =
+    SCENARIO_FRAMING[input.scenarioCategory ?? 'mitarbeiterfuehrung'] ??
+    SCENARIO_FRAMING.mitarbeiterfuehrung;
+  const hardenedInput = {
+    ...input,
+    transcriptText: fencedText,
+    coachRole: framing.coachRole,
+    // Sprecher-Labels des Transkripts gewinnen, wenn der Aufrufer sie kennt —
+    // sonst der generische Rollen-Begriff des Szenario-Typs.
+    subjectLabel: input.leaderLabel || framing.subject,
+    counterpartLabel: input.employeeLabel || framing.counterpart,
+    nonPerformanceHint: framing.nonPerformance,
+    competencyList: buildCompetencyList(),
+  };
 
   if (scoringConsensusEnabled()) {
     // n=3 parallel (kaum Latenz-Aufschlag, 3x Scoring-Tokens). Faellt ein Lauf

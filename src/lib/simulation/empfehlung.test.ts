@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { recommendScenarios, weakestObservedC, type RatingLike } from "./empfehlung";
 
 const ratings: RatingLike[] = [
-  { id: "C1", name: "Integrieren und Verbinden", score: 3 },
-  { id: "C2", name: "Klarheit und Entscheidungsstärke", score: 2 },
+  { id: "C1", name: "Beziehungsmanagement und Vernetzung", score: 3 },
+  { id: "C2", name: "Problemlösung und Entscheidungsfindung", score: 2 },
   { id: "C3", name: "Befähigen und Entwickeln", score: null }, // nicht beobachtbar
-  { id: "C5", name: "Kommunikation und Kooperation", score: 2 },
+  { id: "C5", name: "Kommunikation und Teamfähigkeit", score: 2 },
 ];
 
 const scenarios = [
@@ -26,7 +26,10 @@ describe("weakestObservedC (W1-4)", () => {
   it("bei Gleichstand gewinnt die niedrigere C-Nummer (deterministisch)", () => {
     // C2 und C5 sind beide 2 → C2.
     expect(weakestObservedC(ratings)?.id).toBe("C2");
-    expect(weakestObservedC(ratings)?.name).toContain("Klarheit");
+    // Kompetenzmodell v2 (28.08.): C2 heißt jetzt „Problemlösung und
+    // Entscheidungsfindung" — der Test pinnt weiter Name-zu-id, nicht den
+    // alten Wortlaut.
+    expect(weakestObservedC(ratings)?.name).toContain("Problemlösung");
   });
 
   it("robust gegen Müll: kein Array / leere Liste / nur nulls → null", () => {
