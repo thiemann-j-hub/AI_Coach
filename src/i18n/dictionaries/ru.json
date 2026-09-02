@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Точно удалить?",
     "builderCardTitle": "Создайте свой сценарий",
     "builderCardBody": "Постройте ролевую игру из вашего реального разговора — с вашими возражениями и фактами.",
-    "builderCardCta": "Открыть конструктор"
+    "builderCardCta": "Открыть конструктор",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Войти",
@@ -307,7 +312,9 @@
     "saveTranscript": "Сохранить транскрипт вместе с результатом",
     "saveTranscriptHint": "Сохраняет проанализированный (анонимизированный) текст, чтобы позже просмотреть его в отчёте.",
     "retrySave": "Повторить сохранение",
-    "saveFailed": "Анализ выполнен, но сохранить не удалось. Результат не потерян — повтори сохранение."
+    "saveFailed": "Анализ выполнен, но сохранить не удалось. Результат не потерян — повтори сохранение.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "История сессий",

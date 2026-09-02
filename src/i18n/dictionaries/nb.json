@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Vil du virkelig slette?",
     "builderCardTitle": "Lag ditt eget scenario",
     "builderCardBody": "Bygg et rollespill av deres virkelige samtale — med deres innvendinger og fakta.",
-    "builderCardCta": "Åpne byggeren"
+    "builderCardCta": "Åpne byggeren",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Logg inn",
@@ -307,7 +312,9 @@
     "saveTranscript": "Lagre transkripsjonen med kjøringen",
     "saveTranscriptHint": "Lagrer den analyserte (anonymiserte) teksten, slik at du kan se den i rapporten senere.",
     "retrySave": "Prøv å lagre igjen",
-    "saveFailed": "Analysen lyktes, men lagringen mislyktes. Resultatet ditt er bevart — prøv å lagre igjen."
+    "saveFailed": "Analysen lyktes, men lagringen mislyktes. Resultatet ditt er bevart — prøv å lagre igjen.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Økthistorikk",

@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Tiešām dzēst?",
     "builderCardTitle": "Izveido savu scenāriju",
     "builderCardBody": "Uzbūvē lomu spēli no jūsu īstās sarunas — ar jūsu iebildumiem un faktiem.",
-    "builderCardCta": "Atvērt veidotāju"
+    "builderCardCta": "Atvērt veidotāju",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Pierakstīties",
@@ -307,7 +312,9 @@
     "saveTranscript": "Saglabāt transkriptu kopā ar analīzi",
     "saveTranscriptHint": "Saglabā analizēto (anonimizēto) tekstu, lai vēlāk to varētu apskatīt pārskatā.",
     "retrySave": "Mēģināt saglabāt vēlreiz",
-    "saveFailed": "Analīze izdevās, bet saglabāšana neizdevās. Tavs rezultāts netiek zaudēts — mēģini saglabāt vēlreiz."
+    "saveFailed": "Analīze izdevās, bet saglabāšana neizdevās. Tavs rezultāts netiek zaudēts — mēģini saglabāt vēlreiz.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Sesiju vēsture",

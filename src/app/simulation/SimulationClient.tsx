@@ -491,9 +491,34 @@ export default function SimulationClient() {
     setMicActive(false);
   }, []);
 
+  // CP-3.4 (M21 Option 1, Compliance-Blueprint 31.08.): Aufklärung vor der
+  // ERSTEN Mikrofon-Nutzung je Gerät. Die Browser-Spracherkennung überträgt
+  // die Aufnahme an den Browser-Hersteller (Chrome: Google) — vom Arbeitsplatz
+  // aus, außerhalb unserer Auftragsverarbeitung. Das Modal macht den Datenfluss
+  // transparent; die Bestätigung landet in localStorage (try/catch, Vorgabe
+  // Browser-Storage). Funktionsumfang des Mikros unverändert.
+  const MIC_ACK_KEY = "pn-mic-notice-ack";
+  const [micNoticeOpen, setMicNoticeOpen] = useState(false);
+  // Sitzungs-Fallback, falls localStorage blockiert ist (Privatmodus): die
+  // Bestätigung gilt dann für die laufende Sitzung, ohne Endlos-Modal.
+  const micAckRef = useRef(false);
+
   /** Diktat: erkannter Text wird ans Eingabefeld ANGEHÄNGT (nichts überschreiben). */
   const startMic = useCallback(() => {
     if (!speechSupported || micActive) return;
+    if (!micAckRef.current) {
+      let acked = false;
+      try {
+        acked = localStorage.getItem(MIC_ACK_KEY) === "1";
+      } catch {
+        acked = false;
+      }
+      if (!acked) {
+        setMicNoticeOpen(true);
+        return;
+      }
+      micAckRef.current = true;
+    }
     wantMicRef.current = true;
     // Sprich-Modus: wer ins Mikro spricht, bekommt die Antwort auch zu hören.
     if (ttsSupported) setSpeakReplies(true);
@@ -1899,6 +1924,12 @@ export default function SimulationClient() {
 
           {/* Eingabe */}
           <div className="border-t border-border p-3">
+            {/* CP-3.3 (M17, EU-KI-VO Art. 50): dauerhafter KI-Hinweis — bewusst
+                persistent statt einmal wegklickbar (beweissicher, Abs. 5:
+                spätestens bei der ersten Interaktion). */}
+            <p className="max-w-3xl mx-auto mb-1 text-[10px] leading-tight text-muted-foreground/70">
+              {ts.aiNotice}
+            </p>
             {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
                 Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
             {effTimeUp && !deadEnd && (
@@ -2116,6 +2147,39 @@ export default function SimulationClient() {
         )}
 
         {/* Auswerten-Bestätigung (Kostenhinweis) */}
+        {/* CP-3.4 (M21 Option 1) — Aufklärung vor der ersten Mikrofon-Nutzung. */}
+        {micNoticeOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+              <h3 className="font-semibold text-lg">{ts.micNoticeTitle}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{ts.micNoticeBody}</p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setMicNoticeOpen(false)}
+                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                >
+                  {ts.micNoticeDecline}
+                </button>
+                <button
+                  onClick={() => {
+                    micAckRef.current = true;
+                    try {
+                      localStorage.setItem(MIC_ACK_KEY, "1");
+                    } catch {
+                      /* Privatmodus — Sitzungs-Fallback micAckRef greift */
+                    }
+                    setMicNoticeOpen(false);
+                    startMic();
+                  }}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
+                >
+                  {ts.micNoticeAccept}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {confirmOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">

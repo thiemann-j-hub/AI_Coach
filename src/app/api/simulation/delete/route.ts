@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const deleted = await deleteSimulation(auth.uid, parsed.data.simId);
+    const deleted = await deleteSimulation(auth.uid, parsed.data.simId, { oid: auth.oid });
     if (!deleted) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }

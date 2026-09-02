@@ -1,6 +1,7 @@
 import "server-only";
 
 import { deleteItem, queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
+import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import type { SimulationTurn } from "@/lib/simulation/types";
 
 /**
@@ -175,9 +176,22 @@ export async function saveSimulation(doc: SimulationDoc): Promise<void> {
  * der Liste, inkl. Datenbank). Ownership-Check wie beim Lesen — fremde oder
  * unbekannte Docs melden false (Route antwortet 404, löscht nie blind).
  */
-export async function deleteSimulation(uid: string, simId: string): Promise<boolean> {
+export async function deleteSimulation(
+  uid: string,
+  simId: string,
+  opts?: { oid?: string | null }
+): Promise<boolean> {
   const doc = await getSimulation(uid, simId);
   if (!doc) return false;
+  // CP-3.1 (M8, Compliance-Blueprint 31.08.): Löschen räumt auf — der bei
+  // SIMULATION_RADAR_EMIT=on emittierte Radar-Messpunkt (runId = simId, samt
+  // Belegzitaten) wird MIT dem Rollenspiel gelöscht. Spiegelt exakt das
+  // Muster aus account-delete.ts; fail-soft, damit das Löschen des
+  // Rollenspiels nie am Messpunkt scheitert. Der Analyse-Pfad
+  // (runs/delete) macht das seit jeher richtig — hier fehlte die Zeile.
+  await deleteCoachMeasurement(simId, [doc.workspaceId, opts?.oid]).catch(
+    () => ({ deleted: 0 })
+  );
   await deleteItem(runsContainer(), simId, simPartitionKey(uid));
   return true;
 }

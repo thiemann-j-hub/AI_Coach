@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "¿Eliminar de verdad?",
     "builderCardTitle": "Crea tu propio escenario",
     "builderCardBody": "Construye un roleplay a partir de vuestra conversación real — con vuestras objeciones y datos.",
-    "builderCardCta": "Abrir constructor"
+    "builderCardCta": "Abrir constructor",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -307,7 +312,9 @@
     "saveTranscript": "Guardar la transcripción",
     "saveTranscriptHint": "Guarda el texto analizado (anonimizado) para poder consultarlo más tarde en el informe.",
     "retrySave": "Reintentar guardado",
-    "saveFailed": "Análisis completado, pero no se pudo guardar. Tu resultado se conserva — reintenta el guardado."
+    "saveFailed": "Análisis completado, pero no se pudo guardar. Tu resultado se conserva — reintenta el guardado.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Historial de sesiones",

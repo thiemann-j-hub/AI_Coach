@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Opravdu smazat?",
     "builderCardTitle": "Vytvořte vlastní scénář",
     "builderCardBody": "Postavte scénku z vašeho skutečného rozhovoru — s vašimi námitkami a fakty.",
-    "builderCardCta": "Otevřít tvůrce"
+    "builderCardCta": "Otevřít tvůrce",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Přihlásit se",
@@ -307,7 +312,9 @@
     "saveTranscript": "Uložit přepis",
     "saveTranscriptHint": "Uloží analyzovaný (anonymizovaný) text, abyste si jej mohli později prohlédnout v reportu.",
     "retrySave": "Zopakovat uložení",
-    "saveFailed": "Analýza proběhla úspěšně, ale uložení selhalo. Výsledek zůstává zachován — zopakujte uložení."
+    "saveFailed": "Analýza proběhla úspěšně, ale uložení selhalo. Výsledek zůstává zachován — zopakujte uložení.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Historie relací",

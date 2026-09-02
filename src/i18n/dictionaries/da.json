@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Vil du virkelig slette?",
     "builderCardTitle": "Byg dit eget scenarie",
     "builderCardBody": "Byg et rollespil ud fra jeres virkelige samtale — med jeres indvendinger og fakta.",
-    "builderCardCta": "Åbn byggeren"
+    "builderCardCta": "Åbn byggeren",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Log ind",
@@ -307,7 +312,9 @@
     "saveTranscript": "Gem transskriptionen med kørslen",
     "saveTranscriptHint": "Gemmer den analyserede (anonymiserede) tekst, så du senere kan se den i rapporten.",
     "retrySave": "Prøv at gemme igen",
-    "saveFailed": "Analysen lykkedes, men den kunne ikke gemmes. Dit resultat er bevaret — prøv at gemme igen."
+    "saveFailed": "Analysen lykkedes, men den kunne ikke gemmes. Dit resultat er bevaret — prøv at gemme igen.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Sessionshistorik",

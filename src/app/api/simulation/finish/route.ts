@@ -352,11 +352,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // CP-3.2 (M9, Compliance-Blueprint 31.08.): KEINE Bewertungsdaten in den
+    // Anwendungsprotokollen — uid+simId reichen zur Fehlersuche. overall/
+    // verdict standen vorher als Klartext in Azure Monitor (BV § 6.4 wäre
+    // sonst durch die Log-Leserechte ausgehebelt).
     logger.api("/api/simulation/finish", "complete", {
       uid: auth.uid,
       simId: doc.id,
-      overall: debrief.overall,
-      verdict: debrief.verdict,
     });
     return NextResponse.json({
       ok: true,

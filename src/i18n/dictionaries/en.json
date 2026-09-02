@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Really delete?",
     "builderCardTitle": "Create your own scenario",
     "builderCardBody": "Build a roleplay from your real conversation — with your objections and facts.",
-    "builderCardCta": "Open builder"
+    "builderCardCta": "Open builder",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Sign In",
@@ -307,7 +312,9 @@
     "saveTranscript": "Save transcript with the run",
     "saveTranscriptHint": "Stores the analyzed (anonymized) text so you can review it later in the report.",
     "retrySave": "Retry saving",
-    "saveFailed": "Analysis succeeded, but saving failed. Your result is kept — retry saving."
+    "saveFailed": "Analysis succeeded, but saving failed. Your result is kept — retry saving.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Session history",

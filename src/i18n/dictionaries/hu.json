@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Biztosan törlöd?",
     "builderCardTitle": "Készítsd el a saját forgatókönyved",
     "builderCardBody": "Építs szerepjátékot a valódi beszélgetésetekből — a ti ellenvetéseitekkel és tényeitekkel.",
-    "builderCardCta": "Készítő megnyitása"
+    "builderCardCta": "Készítő megnyitása",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Bejelentkezés",
@@ -307,7 +312,9 @@
     "saveTranscript": "Átirat mentése a futtatással együtt",
     "saveTranscriptHint": "Elmenti az elemzett (anonimizált) szöveget, hogy később megnézhesd a jelentésben.",
     "retrySave": "Mentés újrapróbálása",
-    "saveFailed": "Az elemzés sikerült, de a mentés nem. Az eredményed megmarad — próbáld újra a mentést."
+    "saveFailed": "Az elemzés sikerült, de a mentés nem. Az eredményed megmarad — próbáld újra a mentést.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Munkamenet-előzmények",

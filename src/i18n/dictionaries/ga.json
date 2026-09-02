@@ -233,7 +233,12 @@
     "builderDeleteConfirm": "Scrios i ndáiríre?",
     "builderCardTitle": "Cruthaigh do chás féin",
     "builderCardBody": "Tóg rólghlacadh as bhur bhfíorchomhrá — le bhur n-agóidí agus fíricí féin.",
-    "builderCardCta": "Oscail an tógálaí"
+    "builderCardCta": "Oscail an tógálaí",
+    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "micNoticeTitle": "About voice input",
+    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeAccept": "Got it, use the microphone",
+    "micNoticeDecline": "I'd rather type"
   },
   "auth": {
     "signIn": "Sínigh isteach",
@@ -307,7 +312,9 @@
     "saveTranscript": "Sábháil an tras-scríbhinn in éineacht leis an toradh",
     "saveTranscriptHint": "Sábhálann sé an téacs a ndearnadh anailís air (anaithnidithe), ionas gur féidir leat é a athbhreithniú sa tuairisc níos déanaí.",
     "retrySave": "Bain triail eile as an sábháil",
-    "saveFailed": "D'éirigh leis an anailís, ach theip ar an sábháil. Coinnítear do thoradh — bain triail eile as an sábháil."
+    "saveFailed": "D'éirigh leis an anailís, ach theip ar an sábháil. Coinnítear do thoradh — bain triail eile as an sábháil.",
+    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
   },
   "dashboard": {
     "title": "Stair na seisiún",

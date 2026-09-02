@@ -66,7 +66,9 @@ export async function POST(req: NextRequest) {
     }
     doc.status = "aborted";
     await saveSimulation(doc);
-    logger.api("/api/simulation/abort", "aborted", { uid: auth.uid, simId: doc.id });
+    // CP-3.2 (M9): kein uid im Abbruch-Log — "wer abgebrochen hat" gehört
+    // nicht in Azure Monitor; simId genügt zur Fehlersuche.
+    logger.api("/api/simulation/abort", "aborted", { simId: doc.id });
     return NextResponse.json({ ok: true });
   } catch (err) {
     logger.apiError("/api/simulation/abort", err);

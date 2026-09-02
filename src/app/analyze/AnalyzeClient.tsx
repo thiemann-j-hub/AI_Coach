@@ -589,6 +589,9 @@ export default function AnalyzeClient() {
             <div className="mt-8 border-t border-border pt-6">
               <h4 className="text-sm font-bold text-foreground mb-4">{t.analyze.privacy}</h4>
 
+              {/* CP-3.3 (M17, EU-KI-VO Art. 50): dauerhafter KI-Hinweis. */}
+              <p className="mb-4 text-xs text-muted-foreground/80">{t.analyze.aiNotice}</p>
+
               <label className="flex items-start gap-3 cursor-pointer select-none mb-4">
                 <input
                   type="checkbox"
@@ -602,6 +605,14 @@ export default function AnalyzeClient() {
                   <div className="text-xs text-muted-foreground">
                     {t.analyze.anonymizeHint}
                   </div>
+                  {/* CP-3.5 (M22): ehrlicher Inline-Hinweis beim Abschalten —
+                      der Schalter selbst bleibt (Owner-Leitplanke: keine
+                      Funktionseinbuße), aber die Folge wird benannt. */}
+                  {!privacyMode && (
+                    <div className="mt-1 text-xs text-amber-500 dark:text-amber-400">
+                      {t.analyze.anonymizeOffWarning}
+                    </div>
+                  )}
                 </div>
               </label>
 
