@@ -38,7 +38,7 @@ const morgan: SimulationScenario = {
   competencyFocus: ["C3", "C2"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Alex Morgan", role: "Kundenverantwortliche" },
+  persona: { name: "Alex Morgan", role: "Kundenverantwortliche", voice: "seraphina-hd" },
   candidateBriefing: {
     yourRole:
       "Du bist Führungskraft bei der NorthBay Foods Inc. Alex Morgan ist seit drei Monaten Kundenverantwortliche in deinem Bereich und führt fachlich ein kleines Team mit zwei Junior-Experts. Sie ist ausgesprochen beziehungsorientiert, hat hohe Qualitätsansprüche an sich selbst — und tut sich schwer, zwischen Harmonie und Steuerung die Balance zu finden.",
@@ -160,7 +160,7 @@ const lang: SimulationScenario = {
   competencyFocus: ["C1", "C5"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Viktor Lang", role: "Werksleiter Kingsport 2" },
+  persona: { name: "Viktor Lang", role: "Werksleiter Kingsport 2", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "Du bist seit wenigen Monaten Werksleiter:in des Werks Kingsport 1 der NorthBay Foods Inc. (Marke BlueCrest, Tiefkühl-Lebensmittel). Du wurdest berufen, um Auslastung und Prozesse des Werks zu verbessern. Beide Kingsport-Werke sollen im konzernweiten UMS-Projekt (Unified-Management-System für Qualität, Umwelt und Arbeitssicherheit) ihre Prozesse vereinheitlichen; die Projektsteuerung liegt bei Dr. Elias Berger von SystemWorks Consulting.",
@@ -291,7 +291,7 @@ const vance: SimulationScenario = {
   competencyFocus: ["C5", "C2"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Dr. Robin Vance", role: "Leiter IT" },
+  persona: { name: "Dr. Robin Vance", role: "Leiter IT", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "Du bist seit zwei Monaten CEO der NorthBay Foods Inc. Dein Auftrag: Strukturen und Prozesse effizienter machen und die Mitarbeitenden für den Wandel gewinnen. Im IT-Bereich, den Dr. Robin Vance leitet, siehst du den größten Veränderungsbedarf.",
@@ -497,7 +497,7 @@ const roth: SimulationScenario = {
   competencyFocus: ["C5", "C4"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf" },
+  persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "Du bist im zweiten Lehrjahr bei der NorthBay Foods Inc. und seit drei Wochen im Bereich Einkauf der Zentrale eingesetzt. Zu deinen Aufgaben gehören Lagerbestände, Wareneingang — und aktuell eine Sonderaufgabe der Abteilungsleiterin Frau Valente: eine vollständige Übersicht über die rund 90 Lieferanten des Unternehmens, denn NorthBay will die Lieferantenzahl um ein Viertel reduzieren, um Bündelungsvorteile zu nutzen.",
@@ -627,7 +627,7 @@ const reed: SimulationScenario = {
   competencyFocus: ["C2", "C6"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Sam Reed", role: "Referent Auftragsabwicklung" },
+  persona: { name: "Sam Reed", role: "Referent Auftragsabwicklung", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "Du leitest ein Team in der Auftragsabwicklung der NorthBay Foods Inc. Gemeinsam mit den Nachbarabteilungen läuft ein Projekt zur Schnittstellen-Optimierung: Antwort- und Durchlaufzeiten sollen sinken, denn Benchmarks zeigen deutlichen Rückstand im Wettbewerb. Vereinbart ist eine Reaktionszeit von maximal 24 Stunden auf Anfragen.",
@@ -765,7 +765,7 @@ const brandt: SimulationScenario = {
   competencyFocus: ["C1", "C7"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Marek Brandt", role: "Teammanager Projekte" },
+  persona: { name: "Marek Brandt", role: "Teammanager Projekte", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "Du bist seit Kurzem Bereichsleiter:in Digital & Projekte der NorthBay Foods Inc. — zuvor warst du Führungskraft in einem anderen Bereich des Hauses. Vor sechs Monaten hat NorthBay das Food-Tech-Start-up FreshLoop übernommen; vor einem Monat wurden dessen Team (5 Personen inkl. Teammanagerin Lena Iversen) und das NorthBay-Projektteam (6 Personen inkl. Teammanager Marek Brandt) unter deiner Leitung zusammengelegt. In zwei Wochen zieht FreshLoop ins Head Office. Beide Teams leiten vergleichbare Projekte — arbeiten aber völlig unterschiedlich, ohne Synergien, mit ersten Konflikten und wechselseitigem Unverständnis.",
@@ -909,7 +909,7 @@ const falk: SimulationScenario = {
   competencyFocus: ["C1", "C9"],
   durationMin: 15,
   locale: "de",
-  persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment" },
+  persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "Du bist seit zwei Jahren bei der NorthBay Foods Inc., seit vier Monaten Senior Product Lead für die neue pflanzenbasierte Linie GreenFjord — zusätzlich verantwortest du das konzernweite Nachhaltigkeitsmanagement. Die Unternehmensleitung (Frau Solberg) hat eine Nachhaltigkeitsstrategie ausgerufen: CO2-Reduktion im ganzen Konzern, GreenFjord als Wachstumsfokus — und die Logistikkosten samt veralteter eigener Kühlflotte wurden als inakzeptabel eingestuft. Du und Ruben Falk seid GEMEINSAM beauftragt, eine nachhaltige Fuhrpark-Lösung zu erarbeiten. Deine Analyse ist klar: Die eigene Flotte ist überaltert, wird bald Technik- und Sicherheitsstandards reißen, bräuchte massive Investitionen — zertifizierte externe Kühllogistiker wären günstiger UND klimafreundlicher. Für dich steht fest: Outsourcing.",
@@ -1055,7 +1055,7 @@ const stone: SimulationScenario = {
   competencyFocus: ["C3", "C5"],
   durationMin: 15,
   locale: "en",
-  persona: { name: "Erik Stone", role: "Regional Sales Manager East" },
+  persona: { name: "Erik Stone", role: "Regional Sales Manager East", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
       "You are the Managing Director of the NorthBay Foods frozen-goods division, four months in the role after a highly successful run as a sales lead elsewhere in the group. Every fortnight you meet your three regional sales managers (North, East, South) to review the business.",

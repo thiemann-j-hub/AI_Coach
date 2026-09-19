@@ -107,6 +107,16 @@ export interface CandidateBriefing {
   expectation?: string;
 }
 
+/**
+ * Persona-Stimme (Owner-GO 19.09.2026): Azure-Neural-HD, dieselben drei
+ * Stimmen wie die Studio-Videos (Hörtest 08/2026). Client-sicher, damit die
+ * Auswahl mit der öffentlichen Szenario-Projektion reisen kann. Fehlt das
+ * Feld (Alt-Docs, Builder ohne Auswahl), gilt DEFAULT_PERSONA_VOICE.
+ */
+export const PERSONA_VOICES = ["seraphina-hd", "florian-hd", "emma-hd"] as const;
+export type PersonaVoice = (typeof PERSONA_VOICES)[number];
+export const DEFAULT_PERSONA_VOICE: PersonaVoice = "florian-hd";
+
 /** Verdeckter Teil — nur System-Prompt, nie im Client. */
 export interface PersonaDna {
   name: string;
@@ -194,7 +204,7 @@ export interface SimulationScenario {
    */
   competencyFocus?: CompetencyKey[];
   /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). */
-  persona: { name: string; role: string };
+  persona: { name: string; role: string; voice?: PersonaVoice };
   candidateBriefing: CandidateBriefing;
   personaDna: PersonaDna;
   assessment: SimulationAssessment;
@@ -213,7 +223,7 @@ export interface PublicSimulationScenario {
   locale: "de" | "en";
   category: ScenarioCategory;
   competencyFocus?: CompetencyKey[];
-  persona: { name: string; role: string };
+  persona: { name: string; role: string; voice?: PersonaVoice };
   candidateBriefing: CandidateBriefing;
   competencies: SimRubricCompetency[];
 }

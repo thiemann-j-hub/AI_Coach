@@ -45,7 +45,7 @@ import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { withBasePath } from '@/lib/base-path';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
-import type { FactVisual } from '@/lib/simulation/types';
+import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
 import { recommendScenarios } from '@/lib/simulation/empfehlung';
 
 /** Wirkungsrichtungen in fester Anzeige-Reihenfolge (Blueprint §2.1). */
@@ -67,7 +67,7 @@ interface PublicScenario {
   locale?: 'de' | 'en';
   category: ScenarioCategory;
   competencyFocus?: string[];
-  persona: { name: string; role: string };
+  persona: { name: string; role: string; voice?: PersonaVoice };
   candidateBriefing: {
     yourRole: string;
     relationship: string;
@@ -470,7 +470,10 @@ export default function SimulationClient() {
     typeof window !== 'undefined' &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-  const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  // Owner-GO 19.09.: Persona-Antworten spricht der Server (Azure-HD, /api/tts);
+  // die Browserstimme („Microsoft Hedda") ist nur noch der Notnagel bei 503/Netzfehler.
+  const browserTtsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  const ttsSupported = typeof window !== 'undefined' && (browserTtsSupported || 'Audio' in window);
 
   // Diktat/Vorlesen folgen der GEWÄHLTEN Gesprächssprache (nicht der Autorensprache).
   const speechLang = SPEECH_LANG[convoLocale];
@@ -559,11 +562,23 @@ export default function SimulationClient() {
     rec.start();
   }, [speechSupported, micActive, speechLang, ttsSupported]);
 
-  /** Persona-Antwort vorlesen (Anruf-Anmutung) — Stimme passend zur Szenario-Sprache. */
-  const speak = useCallback(
+  /** Laufende Sprachausgabe (Azure-Audio UND Browserstimme) stoppen. */
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const stopSpeaking = useCallback(() => {
+    const a = audioRef.current;
+    if (a) {
+      a.pause();
+      if (a.src.startsWith('blob:')) URL.revokeObjectURL(a.src);
+      a.removeAttribute('src');
+      audioRef.current = null;
+    }
+    if (browserTtsSupported) window.speechSynthesis.cancel();
+  }, [browserTtsSupported]);
+
+  /** Notnagel: Browserstimme (erste Stimme der Gesprächssprache). */
+  const speakBrowser = useCallback(
     (text: string) => {
-      if (!ttsSupported) return;
-      window.speechSynthesis.cancel();
+      if (!browserTtsSupported) return;
       const u = new SpeechSynthesisUtterance(text);
       u.lang = speechLang;
       const voices = window.speechSynthesis.getVoices();
@@ -574,16 +589,45 @@ export default function SimulationClient() {
       u.rate = 1.04;
       window.speechSynthesis.speak(u);
     },
-    [ttsSupported, speechLang]
+    [browserTtsSupported, speechLang]
+  );
+
+  /**
+   * Persona-Antwort vorlesen — Azure-HD-Stimme der Persona (Server), Browserstimme
+   * nur wenn der Server nicht kann (503 nicht konfiguriert, Netz, Autoplay-Sperre).
+   */
+  const speak = useCallback(
+    async (text: string) => {
+      if (!ttsSupported) return;
+      stopSpeaking();
+      try {
+        const res = await authFetch('/api/tts', {
+          method: 'POST',
+          body: JSON.stringify({ text, voice: scenario?.persona.voice, locale: convoLocale }),
+        });
+        if (!res.ok) throw new Error(`tts ${res.status}`);
+        const url = URL.createObjectURL(await res.blob());
+        const a = new Audio(url);
+        audioRef.current = a;
+        a.onended = () => {
+          URL.revokeObjectURL(url);
+          if (audioRef.current === a) audioRef.current = null;
+        };
+        await a.play();
+      } catch {
+        speakBrowser(text);
+      }
+    },
+    [ttsSupported, stopSpeaking, speakBrowser, scenario, convoLocale]
   );
 
   // Aufraeumen: beim Verlassen des Chats Mikro und Vorlesen stoppen.
   useEffect(() => {
     if (view !== 'chat') {
       stopMic();
-      if (ttsSupported) window.speechSynthesis.cancel();
+      stopSpeaking();
     }
-  }, [view, stopMic, ttsSupported]);
+  }, [view, stopMic, stopSpeaking]);
 
   // W2-1: Uhr tickt nur im Chat (1 s Auflösung genügt für mm:ss).
   useEffect(() => {
@@ -829,7 +873,7 @@ export default function SimulationClient() {
         setTimeUp(true);
         stopMic();
       }
-      if (speakReplies) speak(json.reply);
+      if (speakReplies) void speak(json.reply);
     } catch {
       setTurns((prev) => prev.filter((x) => x !== optimistic));
       setInput(message);
@@ -1719,7 +1763,7 @@ export default function SimulationClient() {
             {ttsSupported && (
               <button
                 onClick={() => {
-                  if (speakReplies && ttsSupported) window.speechSynthesis.cancel();
+                  if (speakReplies) stopSpeaking();
                   setSpeakReplies((v) => !v);
                 }}
                 className={cx(
@@ -1982,8 +2026,11 @@ export default function SimulationClient() {
                   aria-label={micActive ? ts.micStop : ts.micStart}
                   title={micActive ? ts.micStop : ts.micStart}
                 >
+                  {/* Owner-Befund 19.09.: animate-ping skalierte den Ring auf 2x und ragte 9 px in den
+                      scrollbaren Gesprächsbereich → Scrollbar flackerte im Sekundentakt → die Seite
+                      wackelte rechts-links. Pulsieren ohne Wachsen hält das Layout still. */}
                   {micActive && (
-                    <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-ping pointer-events-none" aria-hidden />
+                    <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-pulse pointer-events-none" aria-hidden />
                   )}
                   <Mic className="h-5 w-5" />
                 </button>

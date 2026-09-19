@@ -10,6 +10,7 @@
  */
 import { z } from "zod";
 import type { SimulationScenario } from "./types";
+import { PERSONA_VOICES } from "./types";
 
 const nonEmpty = (max: number) => z.string().trim().min(1).max(max);
 
@@ -131,7 +132,12 @@ export const scenarioSchema = z
       .min(1)
       .max(3)
       .optional(),
-    persona: z.object({ name: nonEmpty(60), role: nonEmpty(120) }),
+    persona: z.object({
+      name: nonEmpty(60),
+      role: nonEmpty(120),
+      // Owner-GO 19.09.: Azure-HD-Stimme je Persona; optional (Alt-Docs → Default).
+      voice: z.enum(PERSONA_VOICES).optional(),
+    }),
     candidateBriefing: candidateBriefingSchema,
     personaDna: personaDnaSchema,
     assessment: assessmentSchema,

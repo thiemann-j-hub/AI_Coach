@@ -228,3 +228,16 @@ describe("Szenario-Kategorien + Kompetenz-Fokus (§2.1/§2.2)", () => {
     }
   });
 });
+
+describe("Persona-Stimmen (Owner-GO 19.09.)", () => {
+  it("jede eingebaute Persona hat eine Whitelist-Stimme, die mit der öffentlichen Projektion reist", async () => {
+    const { PERSONA_VOICES } = await import("./types");
+    for (const s of SIMULATION_SCENARIOS) {
+      expect(PERSONA_VOICES).toContain(s.persona.voice);
+      expect(publicScenario(s).persona.voice).toBe(s.persona.voice);
+    }
+    // Alex Morgan („Kundenverantwortliche") ist die einzige Frau im Katalog.
+    expect(getScenario("sim-coaching-morgan")?.persona.voice).toBe("seraphina-hd");
+    expect(getScenario("sim-merge-brandt")?.persona.voice).toBe("florian-hd");
+  });
+});

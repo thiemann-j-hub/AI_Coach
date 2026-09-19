@@ -70,6 +70,16 @@ describe('scenario-schema (B3a)', () => {
     expect(s.assessment.competencies[0].weight).toBe(2);
   });
 
+  it('Persona-Stimme (Owner-GO 19.09.): optional, nur aus der Whitelist', () => {
+    const withVoice = baseScenario() as { persona: Record<string, unknown> };
+    withVoice.persona.voice = 'seraphina-hd';
+    expect(validateScenario(withVoice).persona.voice).toBe('seraphina-hd');
+    const bad = baseScenario() as { persona: Record<string, unknown> };
+    bad.persona.voice = 'Microsoft Hedda';
+    expect(() => validateScenario(bad)).toThrow();
+    expect(validateScenario(baseScenario()).persona.voice).toBeUndefined();
+  });
+
   it('erzwingt das ws--Präfix (keine Kollision mit sim-…)', () => {
     const bad = { ...baseScenario(), id: 'sim-coaching-morgan' };
     expect(() => validateScenario(bad)).toThrow(/ws-<kebab-case>/);
