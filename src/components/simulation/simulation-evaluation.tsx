@@ -318,6 +318,12 @@ export function SimulationEvaluation(props: {
           {t.evaluation.sourceSim}
           {props.personaName ? ` · ${props.personaName}` : ''}
         </span>
+        {/* EU-KI-VO Art. 50 (T1.5, Owner-GO 25.09.): die Auswertung ist KI-erzeugt —
+            derselbe Wortlaut wie auf der Transkript-Seite (analyze.aiNotice). */}
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
+          <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
+          {t.analyze.aiNotice}
+        </span>
         {props.mode === 'check' && (
           <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400">
             {ts.modeCheckBadge}

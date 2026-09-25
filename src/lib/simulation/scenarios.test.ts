@@ -31,6 +31,14 @@ const FORBIDDEN_ORIGINALS = [
   "Bonamie",
   "SystemSolution",
   "Easy-Error",
+  // AC-Korpus 25.09.2026 (30 Ergebnisberichte, Owner ist Urheber): Firmen-,
+  // Einheits- und Arbeitgebernamen aus dem Wortlaut — nie im Produkt.
+  "Storch",
+  "Ciret",
+  "GSC",
+  "Vaillant",
+  "Solar World",
+  "Schneider Electric",
   // Nachgeliefertes AC-Material (02.08.2026): Azubi-Peer-Übung, Post-Merger-
   // Teammeeting, Performance-Gespräch + Rollenspieler-Briefings. Regel:
   // Original-Namen ZUERST hierher, dann abwandeln.

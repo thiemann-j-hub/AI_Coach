@@ -238,7 +238,8 @@
     "micNoticeTitle": "About voice input",
     "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
     "micNoticeAccept": "Got it, use the microphone",
-    "micNoticeDecline": "I'd rather type"
+    "micNoticeDecline": "I'd rather type",
+    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated."
   },
   "auth": {
     "signIn": "Logga in",

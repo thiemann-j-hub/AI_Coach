@@ -52,10 +52,23 @@ function buildRetrievalQuery(input: GenerateDynamicFeedbackInput): string {
   return truncate(parts.join('\n'), 4000);
 }
 
-function buildBaseFilter(input: GenerateDynamicFeedbackInput): Record<string, any> {
+/**
+ * V1 (Owner-GO 25.09., Befund N4-76): Der Kundenweg sendet fest
+ * conversationType 'feedback' + jurisdiction 'de_eu'. Als EXAKTER Filter
+ * matchte das 10 von 209 deutschen Karten und 0 englische — 14 echte Läufe
+ * bekamen insgesamt 9 verschiedene Karten. Die Karten tragen ueberwiegend
+ * jurisdiction 'global' und fuenf Gespraechstypen (leadership_1on1, conflict,
+ * feedback, annual_review, job_interview), die der Transkript-Weg nicht kennt.
+ * Deshalb: jurisdiction als $in [eigene, 'global']; der Gespraechstyp bleibt
+ * Teil der Suchanfrage (buildRetrievalQuery), aber KEIN harter Filter mehr —
+ * die Vektorsuche entscheidet.
+ */
+export function buildBaseFilter(input: Pick<GenerateDynamicFeedbackInput, 'jurisdiction'>): Record<string, any> {
   const f: Record<string, any> = {};
-  if (isNonEmptyString(input.conversationType)) f.conversation_type = input.conversationType;
-  if (isNonEmptyString(input.jurisdiction)) f.jurisdiction = input.jurisdiction;
+  if (isNonEmptyString(input.jurisdiction)) {
+    const j = input.jurisdiction.trim();
+    f.jurisdiction = j === 'global' ? 'global' : { $in: [j, 'global'] };
+  }
   return f;
 }
 

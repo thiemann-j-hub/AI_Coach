@@ -22,11 +22,18 @@ export async function GET(req: NextRequest) {
   const topK = sp.get("topK") ?? sp.get("top_k") ?? undefined;
 
   try {
-    const out = await searchCards({ text, lang, topK });
+    // V1 (25.09.): optionaler Kundenfilter, um die Treffermenge des echten
+    // Analyse-Wegs live zu pruefen (jurisdiction wie buildBaseFilter: $in mit 'global').
+    const jurisdiction = sp.get("jurisdiction") ?? undefined;
+    const conversationType = sp.get("conversation_type") ?? undefined;
+    const filter: Record<string, unknown> = {};
+    if (jurisdiction) filter.jurisdiction = jurisdiction === "global" ? "global" : { $in: [jurisdiction, "global"] };
+    if (conversationType) filter.conversation_type = conversationType;
+    const out = await searchCards({ text, lang, topK, filter: Object.keys(filter).length ? filter : undefined });
 
     return NextResponse.json({
       ok: true,
-      query: { text, lang: lang ?? null, topK: topK ?? null },
+      query: { text, lang: lang ?? null, topK: topK ?? null, filter: Object.keys(filter).length ? filter : null },
       count: out.count,
       results: out.results,
     });

@@ -1561,6 +1561,12 @@ export default function SimulationClient() {
                   </div>
                   {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog. */}
                   <div className="text-[11px] text-white/65">{t.entry.priceNote}</div>
+                  {/* EU-KI-VO Art. 50 (T1.5, Owner-GO 25.09.): Interaktions-Hinweis VOR dem Start —
+                      sichtbar, nicht wegklickbar; der Fusszeilen-Hinweis im Chat bleibt zusaetzlich. */}
+                  <div className="text-[11px] text-white/85 inline-flex items-center justify-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                    <span>{ts.aiStartNotice}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1935,6 +1941,13 @@ export default function SimulationClient() {
             <div className="max-w-3xl mx-auto space-y-3">
               {/* W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog. */}
               {error && !confirmOpen && errorBanner}
+              {/* EU-KI-VO Art. 50 (T1.5): Hinweis am Sessionstart, oberhalb des ersten Beitrags. */}
+              <div className="flex justify-center">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
+                  <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
+                  {ts.aiStartNotice}
+                </span>
+              </div>
               {turns.map((turn, idx) => (
                 <div
                   key={idx}

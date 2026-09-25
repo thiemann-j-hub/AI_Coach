@@ -238,7 +238,8 @@
     "micNoticeTitle": "Hinweis zur Spracheingabe",
     "micNoticeBody": "Die Spracherkennung deines Browsers wandelt deine Stimme in Text um. Dabei überträgt dein Browser die Aufnahme an seinen Hersteller (bei Chrome: Google). Wenn du das nicht möchtest, tippe deine Antwort.",
     "micNoticeAccept": "Verstanden, Mikro nutzen",
-    "micNoticeDecline": "Lieber tippen"
+    "micNoticeDecline": "Lieber tippen",
+    "aiStartNotice": "Du trainierst mit einem KI-Agenten. Person, Stimme und Antworten sind computergeneriert."
   },
   "auth": {
     "signIn": "Anmelden",
