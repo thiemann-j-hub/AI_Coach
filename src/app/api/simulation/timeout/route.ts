@@ -96,19 +96,27 @@ export async function POST(req: NextRequest) {
     });
     if (!budget.allowed && budget.response) return budget.response;
 
-    const tip = await withRetry(
+    // V3 (Owner-GO 25.09.): Impuls baut auf einer Karte aus der Coaching-
+    // Bibliothek auf (fail-open — ohne Karten kommt ein freier Impuls).
+    const { tip, card } = await withRetry(
       () =>
         runCoachTimeout({
           scenario,
           turns: doc.turns,
           question: d.question,
+          convoLocale: doc.convoLocale ?? undefined,
         }),
       { ms: LLM_TIMEOUT_MS, label: "gemini-sim-timeout", retries: 1 }
     );
 
     doc.coachNotes = [
       ...(doc.coachNotes ?? []),
-      { question: d.question?.trim() ?? "", answer: tip, ts: new Date().toISOString() },
+      {
+        question: d.question?.trim() ?? "",
+        answer: tip,
+        ts: new Date().toISOString(),
+        ...(card ? { card } : {}),
+      },
     ];
     await saveSimulation(doc);
 
@@ -116,10 +124,12 @@ export async function POST(req: NextRequest) {
       uid: auth.uid,
       simId: d.simId,
       used: doc.coachNotes.length,
+      card: card?.id ?? null,
     });
     return NextResponse.json({
       ok: true,
       tip,
+      card,
       timeoutsUsed: doc.coachNotes.length,
       timeoutsMax: SIM_MAX_TIMEOUTS,
     });

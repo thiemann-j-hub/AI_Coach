@@ -29,11 +29,14 @@ export async function GET(req: NextRequest) {
     const filter: Record<string, unknown> = {};
     if (jurisdiction) filter.jurisdiction = jurisdiction === "global" ? "global" : { $in: [jurisdiction, "global"] };
     if (conversationType) filter.conversation_type = conversationType;
-    const out = await searchCards({ text, lang, topK, filter: Object.keys(filter).length ? filter : undefined });
+    // E-4 (25.09.): draft=1 zeigt auch Entwürfe — Prüfweg vor der Freigabe
+    // (scripts/publish-coach-cards.ts). Der Kundenweg sieht nur 'published'.
+    const includeDraft = sp.get("draft") === "1";
+    const out = await searchCards({ text, lang, topK, filter: Object.keys(filter).length ? filter : undefined, includeDraft });
 
     return NextResponse.json({
       ok: true,
-      query: { text, lang: lang ?? null, topK: topK ?? null, filter: Object.keys(filter).length ? filter : null },
+      query: { text, lang: lang ?? null, topK: topK ?? null, filter: Object.keys(filter).length ? filter : null, includeDraft },
       count: out.count,
       results: out.results,
     });

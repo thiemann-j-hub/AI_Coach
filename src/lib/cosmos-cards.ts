@@ -28,6 +28,7 @@ import { embedText } from "@/lib/gemini-embed";
 const VEC_DB = process.env.COSMOS_VECTOR_DATABASE || "coach-vec";
 const VEC_CONTAINER = process.env.COSMOS_VECTOR_CONTAINER || "cards";
 const NAMESPACE = "cards_v3";
+const PUBLISHED_STATUS = "published";
 const MAX_ATTEMPTS = 10;
 
 // ── Rückgabe-Shape — VectorSearchResult ──
@@ -178,14 +179,25 @@ function condToSql(field: string, cond: unknown, params: SqlParam[]): string | n
 function buildWhere(
   filter: Record<string, unknown> | undefined,
   lang: string | undefined,
-  params: SqlParam[]
+  params: SqlParam[],
+  includeDraft = false
 ): string {
   const nsP = `@p${params.length}`;
   params.push({ name: nsP, value: NAMESPACE });
   const parts = [`c.namespace = ${nsP}`];
+  // E-4 (Owner-GO 25.09.2026): Freigabeprozess — Kund:innen sehen NUR Karten
+  // mit status 'published'. Neue Karten kommen als 'draft' in die DB, werden
+  // über rag-smoke?draft=1 geprüft und mit scripts/publish-coach-cards.ts
+  // freigegeben. Pflichtprädikat, nicht per Filter überschreibbar.
+  if (!includeDraft) {
+    const stP = `@p${params.length}`;
+    params.push({ name: stP, value: PUBLISHED_STATUS });
+    parts.push(`c.status = ${stP}`);
+  }
   if (filter) {
     for (const [field, cond] of Object.entries(filter)) {
       if (field === "lang") continue; // lang läuft separat (s.o.)
+      if (field === "status") continue; // status ist autoritativ (E-4), s.o.
       const sql = condToSql(field, cond, params);
       if (sql) parts.push(sql);
     }
@@ -203,10 +215,11 @@ async function runVectorSearch(
   vector: number[],
   topK: number,
   filter: Record<string, unknown> | undefined,
-  lang: string | undefined
+  lang: string | undefined,
+  includeDraft = false
 ): Promise<Doc[]> {
   const params: SqlParam[] = [];
-  const where = buildWhere(filter, lang, params);
+  const where = buildWhere(filter, lang, params, includeDraft);
   const qvP = `@p${params.length}`;
   params.push({ name: qvP, value: vector });
   const cols = ["c.id", ...CARD_FIELDS.map((f) => `c.${f}`)].join(", ");
@@ -246,6 +259,8 @@ export async function searchCards(args: {
   lang?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filter?: Record<string, unknown>;
+  /** E-4: auch Entwürfe liefern — NUR für Prüfwege (rag-smoke?draft=1), nie im Kundenweg. */
+  includeDraft?: boolean;
 }): Promise<VectorSearchResult> {
   const text = String(args?.text ?? "").trim();
   if (!text) throw new Error("Missing search text (expected args.text)");
@@ -253,14 +268,15 @@ export async function searchCards(args: {
   const topK = Number.isFinite(rawK) && (rawK as number) > 0 ? Math.floor(rawK as number) : 8;
   const lang = typeof args?.lang === "string" && args.lang.trim() ? args.lang.trim() : undefined;
   const filter = args?.filter;
+  const includeDraft = args?.includeDraft === true;
 
   const q = await embedText(text);
 
-  let raw = await runVectorSearch(q, topK, filter, lang);
+  let raw = await runVectorSearch(q, topK, filter, lang, includeDraft);
 
   // Lang-Fallback: lang gesetzt UND 0 Treffer → erneut OHNE lang.
   if (lang && raw.length === 0) {
-    raw = await runVectorSearch(q, topK, filter, undefined);
+    raw = await runVectorSearch(q, topK, filter, undefined, includeDraft);
   }
 
   return toCompat(raw);
@@ -271,6 +287,6 @@ export const _test = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setContainer(c: any) { _container = c as Container; },
   reset() { _container = null; },
-  VEC_DB, VEC_CONTAINER, NAMESPACE, CARD_FIELDS,
+  VEC_DB, VEC_CONTAINER, NAMESPACE, CARD_FIELDS, PUBLISHED_STATUS,
   condToSql, buildWhere,
 };

@@ -39,6 +39,8 @@ export interface SimEvalFeedback {
   focusReview?: { addressed: boolean; comment: string } | null;
   /** A1: Abgleich Selbstbild ↔ Auswertung (nur wenn Check-in beantwortet wurde). */
   selfReview?: { agreement: 'confirms' | 'partly' | 'differs'; comment: string } | null;
+  /** V3: Merkkarten aus der Coaching-Bibliothek zum nächsten Schritt (fehlt bei Alt-Läufen). */
+  cards?: { id: string; title: string; hint: string }[];
 }
 
 /** A3: ein Punkt der Verlaufskurve (aus /api/simulation/list, gleiche Quelle wie die Historie). */
@@ -380,6 +382,20 @@ export function SimulationEvaluation(props: {
                   <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
                 </div>
                 <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
+                {/* V3 (Owner-GO 25.09.): Merkkarten aus der Coaching-Bibliothek zum nächsten Schritt. */}
+                {feedback.cards && feedback.cards.length > 0 && (
+                  <div className="mt-3 space-y-1.5" data-testid="debrief-cards">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {ts.coachCardsTitle}
+                    </div>
+                    {feedback.cards.map((c) => (
+                      <div key={c.id} className="rounded-lg border border-border bg-background/70 px-3 py-2">
+                        <div className="text-sm font-medium">{c.title}</div>
+                        {c.hint && <div className="text-xs text-muted-foreground leading-snug">{c.hint}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

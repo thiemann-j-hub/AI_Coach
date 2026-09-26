@@ -11,6 +11,16 @@ import { z } from 'genkit';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import type { SimulationScenario, SimulationTurn } from '@/lib/simulation/types';
 import { assembleTranscript } from '@/lib/server/simulation-store';
+import { OBSERVER_CANON_DE } from '@/lib/coach-canon';
+import {
+  buildCoachQuery,
+  cardLang,
+  cardsToPromptBlock,
+  matchCardsByTitle,
+  retrieveCoachCards,
+  toPublicCard,
+  type PublicCoachCard,
+} from '@/lib/coach-cards';
 
 export const SimulationFeedbackInputSchema = z.object({
   scenarioTitle: z.string(),
@@ -25,6 +35,10 @@ export const SimulationFeedbackInputSchema = z.object({
   selfAssessment: z.string(),
   /** Sprache der Textausgaben (summary/why/comment/nextStep) — folgt der Gesprächssprache. */
   outputLanguage: z.string(),
+  /** V2: Beobachter-Kanon (Formulierungsregeln). */
+  canon: z.string(),
+  /** V3: Karten aus der Coaching-Bibliothek (leer = keine verfügbar). */
+  cardsBlock: z.string(),
 });
 
 const RubricRatingSchema = z.object({
@@ -80,9 +94,24 @@ export const SimulationFeedbackOutputSchema = z.object({
     })
     .nullable()
     .describe('NUR bewerten, wenn eine SELBSTEINSCHÄTZUNG vorliegt; sonst null.'),
+  recommendedCards: z
+    .array(z.string())
+    .max(2)
+    .describe(
+      'Wörtliche TITEL der 1–2 Karten aus dem Karten-Block, die den nextStep stützen und zur schwächsten Rubrik-Kompetenz passen. Leeres Array, wenn kein Karten-Block vorliegt oder keine passt.'
+    ),
 });
 
-export type SimulationFeedbackOutput = z.infer<typeof SimulationFeedbackOutputSchema>;
+/** Rohausgabe des Modells (inkl. recommendedCards-Titel). */
+export type SimulationFeedbackRaw = z.infer<typeof SimulationFeedbackOutputSchema>;
+
+/**
+ * Persistierter Vertrag (feedbackJson): normalisierte Rubrik/Checkpoints,
+ * seit V3 zusätzlich `cards` — die aufgelösten Merkkarten (ohne Volltext).
+ */
+export type SimulationFeedbackOutput = Omit<SimulationFeedbackRaw, 'recommendedCards'> & {
+  cards: PublicCoachCard[];
+};
 
 const prompt = ai.definePrompt({
   name: 'simulationFeedbackPrompt',
@@ -135,6 +164,20 @@ Die Selbsteinschätzung ist KEINE Evidenz für die Rubrik-Scores — bewertet wi
 Keine Selbsteinschätzung abgegeben → selfReview = null.
 {{/if}}
 
+{{{canon}}}
+Gilt für summary, why, comment und nextStep: Entwicklungspunkte als Du-Botschaft
+MOMENT → WIRKUNG → WIRKSAMERER WEG, Stärken verb-first mit Wirkung und Beleg.
+
+{{#if cardsBlock}}
+KARTEN AUS DER COACHING-BIBLIOTHEK (intern — nie als Quelle nennen, nicht wörtlich zitieren)
+{{{cardsBlock}}}
+Nutze sie, um nextStep konkret und übbar zu machen (EIN Move, EINE Formulierung, an dieses
+Gespräch angepasst). Trage in recommendedCards die wörtlichen Titel der 1–2 Karten ein, die zur
+schwächsten Rubrik-Kompetenz passen; leer, wenn keine wirklich passt.
+{{else}}
+Kein Karten-Block vorhanden → recommendedCards = [].
+{{/if}}
+
 summary und nextStep: direkte Ansprache ("Du …"), konkret, auf DIESES Gespräch bezogen.
 Alle Textausgaben (summary, why, comment, nextStep) auf {{outputLanguage}} — Zitate in der EVIDENCE bleiben wörtlich in der Gesprächssprache.
 
@@ -172,6 +215,23 @@ export async function generateSimulationFeedback(args: {
     console.warn('[prompt-guard] Injection pattern detected in simulation transcript (content redacted).');
   }
 
+  // V3 (Owner-GO 25.09., N4-77): Karten für den nächsten Schritt — Suchtext aus
+  // Gesprächstyp, Zielen, Rubrik und dem Ende des Gesprächs. Fail-open.
+  const lang = cardLang(args.convoLocale, scenario.locale);
+  const { cards } = await retrieveCoachCards({
+    text: buildCoachQuery({
+      conversationType: scenario.conversationType,
+      title: scenario.title,
+      goals: scenario.candidateBriefing.goals,
+      rubricLabels: scenario.assessment.competencies.map((c) => c.label),
+      transcript: sanitized,
+      maxChars: 3500,
+    }),
+    lang,
+    topK: 6,
+    label: 'debrief-cards',
+  });
+
   const { output } = await prompt({
     scenarioTitle: scenario.title,
     personaName: scenario.persona.name,
@@ -194,6 +254,9 @@ export async function generateSimulationFeedback(args: {
       : '',
     outputLanguage:
       FEEDBACK_LANGUAGE[args.convoLocale ?? scenario.locale] ?? 'Deutsch',
+    // V2: Der Prompt ist deutsch verfasst → deutscher Kanon; die Ausgabe folgt outputLanguage.
+    canon: OBSERVER_CANON_DE,
+    cardsBlock: cards.length ? cardsToPromptBlock(cards, 900) : '',
   });
   if (!output) throw new Error('simulation feedback returned empty output');
 
@@ -215,6 +278,13 @@ export async function generateSimulationFeedback(args: {
       : { id: c.id, hit: false, comment: 'Im Gespräch nicht erkennbar.' };
   });
 
+  // V3: gewählte Karten auflösen. Nennt das Modell keine, fällt auf die
+  // bestpassende Karte des Retrievals zurück (Vektorsuche hat bereits nach
+  // Nähe zu diesem Gespräch sortiert) — der Übende bekommt immer EINE Karte
+  // zum nächsten Schritt, sofern die Bibliothek erreichbar war.
+  const picked = matchCardsByTitle(cards, output.recommendedCards ?? [], 2);
+  const cardRefs = (picked.length ? picked : cards.slice(0, 1)).map(toPublicCard);
+
   return {
     summary: output.summary,
     rubric,
@@ -224,5 +294,6 @@ export async function generateSimulationFeedback(args: {
     focusReview: args.focus ? (output.focusReview ?? null) : null,
     // selfReview nur bei tatsächlich abgegebener Selbsteinschätzung (A1).
     selfReview: args.selfAssessment ? (output.selfReview ?? null) : null,
+    cards: cardRefs,
   };
 }

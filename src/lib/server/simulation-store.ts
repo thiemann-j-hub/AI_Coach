@@ -63,7 +63,13 @@ export interface SimulationDoc {
    * Bewusst getrennt von `turns` — die Persona »hört« den Time-out nicht,
    * und die Auswertung bewertet nur das eigentliche Gespräch.
    */
-  coachNotes?: Array<{ question: string; answer: string; ts: string }>;
+  coachNotes?: Array<{
+    question: string;
+    answer: string;
+    ts: string;
+    /** V3: Merkkarte aus der Coaching-Bibliothek, auf der der Impuls aufbaut. */
+    card?: { id: string; title: string; hint: string } | null;
+  }>;
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ─────────────────────────────
   /** Gewählte Gesprächssprache (Persona spricht diese Sprache); fehlt bei Alt-Docs → Szenario-Locale. */
   convoLocale?: "de" | "en" | "es" | "fr";

@@ -5,6 +5,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
+import { OBSERVER_CANON_EN } from '@/lib/coach-canon';
 
 export const GenerateTailoredFeedbackInputSchema = z.object({
   inputText: z.string().describe('The input text to analyze.'),
@@ -21,6 +22,8 @@ export const GenerateTailoredFeedbackInputSchema = z.object({
   employeeLabel: z.string().optional().describe('Speaker label for the employee (e.g., MA).'),
 
   relevantSnippets: z.array(z.string()).optional().describe('Relevant snippets retrieved from the vector store, if any.'),
+  /** V2: Beobachter-Kanon — wird im Flow gesetzt, Aufrufer müssen ihn nicht kennen. */
+  canon: z.string().optional().describe('Observer canon (feedback wording rules), injected by the flow.'),
 });
 
 export type GenerateTailoredFeedbackInput = z.infer<typeof GenerateTailoredFeedbackInputSchema>;
@@ -57,6 +60,11 @@ IMPORTANT RULES:
 - Do NOT reveal any internal sources, cards, vector DB, or metadata. Use relevant snippets only as guidance.
 - Do NOT use real names in quotes. Use the labels (leaderLabel / employeeLabel) or generic "Führungskraft" / "Mitarbeiter:in".
 - Output language: if lang is provided (e.g., "de"), write the feedback in that language. Otherwise, default to German.
+- Address the leader directly ("Du …" in German, "you …" in English) — the feedback is written FOR the leader, not about them.
+
+{{{canon}}}
+Apply the canon to summary, strengths, improvements and rewrites: every improvement is a
+you-message MOMENT → EFFECT → MORE EFFECTIVE PATH with a concrete example phrase.
 
 Transcript:
 {{{inputText}}}
@@ -96,7 +104,8 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
       console.warn(`[prompt-guard] Injection pattern detected in inputText (content redacted).`);
     }
 
-    const hardenedInput = { ...input, inputText: fencedText };
+    // V2 (Owner-GO 25.09.): Beobachter-Kanon immer mitgeben (Prompt ist englisch verfasst).
+    const hardenedInput = { ...input, inputText: fencedText, canon: OBSERVER_CANON_EN };
     const { output } = await generateTailoredFeedbackPrompt(hardenedInput);
     return output!;
   }

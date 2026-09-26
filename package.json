@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "quality:regression": "node --conditions=react-server --import tsx scripts/quality/run-regression.ts",
     "quality:reliability": "node --conditions=react-server --import tsx scripts/quality/reliability.ts",
-    "verify:debrief": "tsx scripts/verify-debrief.ts"
+    "verify:debrief": "tsx scripts/verify-debrief.ts",
+    "verify:retrieval": "node --conditions=react-server --import tsx scripts/verify-retrieval-gate.ts",
+    "cards:publish": "tsx scripts/publish-coach-cards.ts"
   },
   "dependencies": {
     "@azure/cosmos": "^4.9.3",

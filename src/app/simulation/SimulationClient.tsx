@@ -289,6 +289,8 @@ interface CoachNote {
   question: string;
   answer: string;
   ts: string;
+  /** V3: Merkkarte aus der Coaching-Bibliothek, auf der der Impuls aufbaut. */
+  card?: { id: string; title: string; hint: string } | null;
 }
 
 interface RecentSim {
@@ -902,7 +904,12 @@ export default function SimulationClient() {
       }
       setCoachNotes((prev) => [
         ...prev,
-        { question: timeoutQuestion.trim(), answer: json.tip, ts: new Date().toISOString() },
+        {
+          question: timeoutQuestion.trim(),
+          answer: json.tip,
+          ts: new Date().toISOString(),
+          card: json.card ?? null,
+        },
       ]);
       setTimeoutsMax(json.timeoutsMax ?? 3);
       setTimeoutQuestion('');
@@ -2166,6 +2173,21 @@ export default function SimulationClient() {
                       Coach
                     </div>
                     {n.answer}
+                    {/* V3 (Owner-GO 25.09.): die Merkkarte, auf der der Impuls aufbaut. */}
+                    {n.card && (
+                      <div
+                        className="mt-2 rounded-lg border border-border bg-background/70 px-3 py-2 text-left"
+                        data-testid="coach-card"
+                      >
+                        <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                          <Lightbulb className="h-3 w-3" aria-hidden /> {ts.coachCardLabel}
+                        </div>
+                        <div className="text-sm font-medium">{n.card.title}</div>
+                        {n.card.hint && (
+                          <div className="text-xs text-muted-foreground leading-snug">{n.card.hint}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

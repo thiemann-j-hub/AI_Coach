@@ -17,6 +17,7 @@ const DIMENSIONS = [
   ["actionability", "Sind Verbesserungen/Hinweise konkret und umsetzbar (nicht generisch wie 'besser kommunizieren')?"],
   ["competency_consistency", "Sind die Kompetenz-Scores durch die jeweilige Evidenz gerechtfertigt und in sich konsistent?"],
   ["tone", "Ist die Rückmeldung konstruktiv/respektvoll (Coaching-Haltung, nicht abwertend)?"],
+  ["observer_canon", "Folgt die Rückmeldung dem Beobachter-Kanon (V2): Verhalten statt Person (kein 'du bist …'), Entwicklungspunkte als Du-Botschaft MOMENT → WIRKUNG → WIRKSAMERER WEG mit Beispiel/Zitat, Stärken verb-first mit Wirkung und Beleg, keine Generalisierungen ('immer', 'total'), Begleiter- statt Richter-Haltung?"],
   ["locale", "Durchgängig in der Zielsprache, korrekte Anredeform?"],
 ] as const;
 

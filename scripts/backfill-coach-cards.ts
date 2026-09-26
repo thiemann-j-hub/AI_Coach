@@ -41,7 +41,8 @@ config({ path: join(here, "..", ".env.local") });
 
 // ── Vertrag (fix — NICHT abweichen) ──────────────────────────────────────────
 const NAMESPACE = "cards_v3"; // einziger Partition-Key-Wert (alle Karten)
-const EXPECTED = 418; // erwartete Kartenzahl → Count-Verify-Ziel
+// 418 (v3, Jan 2026) + 28 (V4 AC-Nachzug 26.09.2026: 14 Gruppen × de/en)
+const EXPECTED = 446; // erwartete Kartenzahl → Count-Verify-Ziel
 const DIM = 768; // gemini-embedding-001 Dimensionalität (Container-Policy)
 const EXPORT_PATH = join(here, "..", "data", "cards_v3_export.json");
 

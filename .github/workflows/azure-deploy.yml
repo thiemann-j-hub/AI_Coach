@@ -39,6 +39,17 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
         run: npm run build
 
+      # Retrieval-Gate (Gemini-Vorgabe zu V1, Owner-GO 25.09.2026): der echte
+      # Kundenfilter muss gegen die Karten-DB Treffer liefern (de + en + Coach-
+      # Pause) und alle Treffer müssen 'published' sein (E-4). Sonst KEIN Deploy —
+      # der Filterfehler N4-76 blieb monatelang unbemerkt, weil nichts ihn maß.
+      - name: Retrieval-Gate — Kundenweg muss Karten liefern
+        env:
+          COSMOS_ENDPOINT: ${{ secrets.COSMOS_ENDPOINT }}
+          COSMOS_KEY: ${{ secrets.COSMOS_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npm run verify:retrieval
+
       - name: Assemble standalone bundle
         run: |
           # Next standalone enthält .next/static + public NICHT — reinkopieren.
