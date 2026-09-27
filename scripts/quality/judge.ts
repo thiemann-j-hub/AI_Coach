@@ -4,7 +4,7 @@
  * Owner-Entscheid 27.09.2026 (E-2): KEIN Anthropic-Schlüssel (DSGVO-Linie) —
  * der Richter ist Gemini. Damit Gemini nicht sich selbst benotet, gilt:
  *   - anderes Modell als der Schreiber (Schreiber: gemini-2.5-flash,
- *     Richter: gemini-2.5-pro; überschreibbar via JUDGE_MODEL),
+ *     Richter: gemini-3.1-pro-preview; überschreibbar via JUDGE_MODEL),
  *   - der Richter sieht NUR Transkript + Ergebnis, nie den Schreiber-Prompt,
  *   - Rubrik mit Ankern, n=3 Läufe, Median je Dimension,
  *   - Ergebnis als Trend lesen; die deterministischen Checks (Grounding,
@@ -13,7 +13,8 @@
 import { ai } from "../../src/ai/genkit";
 import { z } from "genkit";
 
-const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "googleai/gemini-2.5-pro";
+// 27.09.: gemini-2.5-pro ist für neue Nutzer abgeschaltet (404) — 3.1 Pro Preview läuft.
+const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "googleai/gemini-3.1-pro-preview";
 const N = 3;
 
 export const DIMENSIONS = [

@@ -77,6 +77,7 @@ export function isQuoteGrounded(hayGround: string, needleRaw: string): boolean {
     .map((f) => groundForm(f))
     .filter((f) => f.length >= 8);
   if (fragments.length === 0) return false;
+  const hayWords = hay.split(" ").filter(Boolean);
   return fragments.every((frag) => {
     if (hay.includes(frag)) return true;
     const words = frag.split(" ").filter(Boolean);
@@ -85,8 +86,46 @@ export function isQuoteGrounded(hayGround: string, needleRaw: string): boolean {
       if (rest.length < MIN_FRAGMENT_WORDS) break;
       if (hay.includes(rest.join(" "))) return true;
     }
-    return false;
+    return isCompressedQuote(hayWords, words);
   });
+}
+
+/** Anteil der Zitat-Wörter, die in Reihenfolge im Transkript sitzen müssen. */
+const MIN_ORDERED_SHARE = 0.9;
+
+/**
+ * Verdichtetes Zitat (Prüfset 27.09.): Das Modell lässt Füllwörter aus („bei mir“,
+ * „seit“, „für 20 Minuten“) oder glättet einen Tippfehler — der Sinn ist wörtlich,
+ * die Zeichenkette nicht. Regel: ≥ 90 % der Zitat-Wörter kommen im Transkript in
+ * DERSELBEN Reihenfolge vor, innerhalb eines Fensters von höchstens
+ * 1,5 × Zitatlänge + 4 Wörtern. Erfundene Sätze scheitern daran (ihre Wörter
+ * stehen nicht in dieser Reihenfolge eng beieinander), zusammengesetzte Zitate aus
+ * entfernten Stellen auch (Fenster zu lang). Mindestens 6 Wörter.
+ */
+export function isCompressedQuote(hayWords: string[], needleWords: string[]): boolean {
+  const n = needleWords.length;
+  if (n < MIN_FRAGMENT_WORDS) return false;
+  const needMatches = Math.ceil(n * MIN_ORDERED_SHARE);
+  const maxSpan = Math.floor(n * 1.5) + 4;
+  // Startkandidaten: jede Stelle, an der eines der ersten beiden Zitat-Wörter steht.
+  for (let start = 0; start < hayWords.length; start++) {
+    if (hayWords[start] !== needleWords[0] && hayWords[start] !== needleWords[1]) continue;
+    let matched = 0;
+    let ni = hayWords[start] === needleWords[0] ? 0 : 1;
+    if (ni === 1) matched = 0; // erstes Zitat-Wort fehlt → zählt als Lücke
+    for (let hi = start; hi < hayWords.length && hi - start < maxSpan && ni < n; hi++) {
+      if (hayWords[hi] === needleWords[ni]) {
+        matched++;
+        ni++;
+      } else if (ni + 1 < n && hayWords[hi] === needleWords[ni + 1]) {
+        // ein Zitat-Wort fehlt im Transkript (Glättung) → überspringen
+        ni += 2;
+        matched++;
+      }
+    }
+    if (matched >= needMatches) return true;
+  }
+  return false;
 }
 
 /**

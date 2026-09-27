@@ -36,7 +36,7 @@ export const GenerateTailoredFeedbackOutputSchema = z.object({
   improvements: z
     .array(z.string())
     .describe(
-      'Areas for improvement, 1–3 items, each a you-message in this order: MOMENT (what the leader said, short verbatim quote) → EFFECT (what it led to) → MORE EFFECTIVE PATH (one example sentence in quotation marks).'
+      'Areas for improvement, 1–3 items, each a you-message in this order: the moment (what the leader said, short verbatim quote) → the effect (what it led to) → a more effective path (one example sentence in quotation marks). Flowing sentences without section labels.'
     ),
   // O1e (N4-85): Paare statt loser Strings — die Ergebnisseite zeigt Original/Besser
   // nebeneinander, der Qualitäts-Check vergleicht beide.
@@ -87,6 +87,8 @@ IMPORTANT RULES:
 {{{canon}}}
 Apply the canon to summary, strengths, improvements and rewrites: every improvement is a
 you-message MOMENT → EFFECT → MORE EFFECTIVE PATH with a concrete example phrase.
+Write these as flowing sentences in the output language — NEVER print the labels
+"MOMENT", "EFFECT", "MORE EFFECTIVE PATH" (or any translation of them) in the text.
 
 Transcript:
 {{{inputText}}}

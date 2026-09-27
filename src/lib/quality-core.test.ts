@@ -181,3 +181,30 @@ describe("checkEvidenceGrounding — N4-84: Sprecher-Präfix ist Metadatum, verg
     expect(grounded(["FK: der Kunde spätestens nach zwei Tagen einen Zwischenstand bekommt"], LABELED)).toHaveLength(0);
   });
 });
+
+describe("isCompressedQuote — verdichtete Zitate (Füllwörter ausgelassen) zählen, Erfundenes nicht", () => {
+  const RAW =
+    "Der Kunde hat sich bei mir gemeldet, weil das Angebot seit zwei Wochen aussteht. Für ihn ist das kein Detail mehr. " +
+    "Ich sehe da ein Muster, nicht einen Einzelfall: beim Angebot, beim Delegieren, und ich glaube auch bei Kim und Lea. " +
+    "Wir setzen uns nächste Woche Donnerstag um 10 Uhr für 20 Minuten zusammen und schauen, wie es läuft.";
+  const g = (evidence: string[]) =>
+    checkEvidenceGrounding([{ id: "S9", score: 3, evidence }], RAW).filter((n) => n.code === "EVIDENCE_NOT_GROUNDED");
+
+  it("ausgelassene Füllwörter (»bei mir«, »seit«, »für 20 Minuten«) → gegroundet", () => {
+    expect(g(["Teilnehmer:in: Der Kunde hat sich gemeldet, weil das Angebot zwei Wochen aussteht."])).toHaveLength(0);
+    expect(g(["Teilnehmer:in: Ich sehe da ein Muster, nicht einen Einzelfall: beim Angebot, Delegieren und bei Kim und Lea."])).toHaveLength(0);
+    expect(g(["Teilnehmer:in: Wir setzen uns nächste Woche Donnerstag um 10 Uhr zusammen und schauen, wie es läuft."])).toHaveLength(0);
+  });
+
+  it("erfundener Satz aus vorhandenen Wörtern in anderer Reihenfolge → nicht gegroundet", () => {
+    expect(g(["Teilnehmer:in: Das Angebot ist kein Muster, Kim und Lea schauen seit Wochen zusammen auf den Kunden."])).toHaveLength(1);
+  });
+
+  it("aus zwei entfernten Stellen zusammengesetzt (Fenster zu lang) → nicht gegroundet", () => {
+    expect(g(["Teilnehmer:in: Der Kunde hat sich bei mir gemeldet und wir schauen, wie es läuft."])).toHaveLength(1);
+  });
+
+  it("zu viele Abweichungen (< 90 % in Reihenfolge) → nicht gegroundet", () => {
+    expect(g(["Teilnehmer:in: Der Kunde hat sich sehr verärgert bei uns gemeldet, weil das Angebot leider aussteht."])).toHaveLength(1);
+  });
+});
