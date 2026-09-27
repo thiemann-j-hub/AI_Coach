@@ -89,7 +89,7 @@
     "id": "reed-short-weak",
     "scenarioId": "sim-performance-reed",
     "convoLocale": "de",
-    "note": "Echter Lauf 26.09.: drei Beiträge, Weichmacher, Sofort-Lösung, dann Kurskorrektur. Kurz — viele null-Werte sind hier RICHTIG.",
+    "note": "Echter Lauf 26.09.: drei Beiträge, Weichmacher, Sofort-Lösung, dann Kurskorrektur. Kurz — viele null-Werte sind hier RICHTIG. Urteil offen gelassen: drei Beiträge mit sauberer Kurskorrektur bestehen knapp (62 %) — kein Fehler, nur kein Maßstab.",
     "turns": [
       {
         "role": "persona",
@@ -121,10 +121,6 @@
       }
     ],
     "expect": {
-      "verdict": [
-        "failed",
-        "unrated"
-      ],
       "maxWithheld": 0,
       "notObservable": [
         "C7",

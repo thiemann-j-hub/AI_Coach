@@ -18,6 +18,9 @@ const mono = JetBrains_Mono({ subsets: ["latin", "latin-ext", "cyrillic", "greek
 export const metadata: Metadata = {
   title: "PulseNorth.AI · Coach",
   description: "AI-powered communication coaching.",
+  // O4 Bündel-Frische: Build-SHA steht mit dem Dokument fest — der VersionWatcher
+  // vergleicht sie mit public/build-info.json (nicht mit einer Chunk-Konstante).
+  other: { "build-sha": (process.env.NEXT_PUBLIC_BUILD_SHA ?? "").slice(0, 7) || "dev" },
 };
 
 function resolveLocale(value: string | undefined): Locale | null {

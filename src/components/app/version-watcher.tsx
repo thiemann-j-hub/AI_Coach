@@ -18,9 +18,23 @@ import { usePathname } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 
-const CLIENT_SHA = (process.env.NEXT_PUBLIC_BUILD_SHA ?? '').slice(0, 7);
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const POLL_MS = 10 * 60_000;
+
+/**
+ * Vergleichswert des Tabs: das <meta name="build-sha"> des ausgelieferten HTML
+ * (Root-Layout). Es steht mit dem Dokument fest — anders als eine in einen Chunk
+ * eingebackene Konstante, die der Tab nach einem Deploy schon in der NEUEN
+ * Fassung nachladen kann (Deploy-Test 27.09.: genau deshalb blieb der Hinweis
+ * aus). Fallback: die Build-Konstante (lokal/alte Dokumente).
+ */
+function clientSha(): string {
+  if (typeof document !== 'undefined') {
+    const meta = document.querySelector('meta[name="build-sha"]')?.getAttribute('content');
+    if (meta) return meta.slice(0, 7);
+  }
+  return (process.env.NEXT_PUBLIC_BUILD_SHA ?? '').slice(0, 7);
+}
 
 async function fetchServerSha(): Promise<string | null> {
   try {
@@ -40,11 +54,12 @@ export function VersionWatcher() {
   const firstPath = useRef(pathname);
 
   useEffect(() => {
-    if (!CLIENT_SHA) return;
+    const mine = clientSha();
+    if (!mine) return;
     let cancelled = false;
     const check = async () => {
       const sha = await fetchServerSha();
-      if (!cancelled && sha && sha !== CLIENT_SHA) setStale(true);
+      if (!cancelled && sha && sha !== mine) setStale(true);
     };
     void check();
     const onVisible = () => {
