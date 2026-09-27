@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 config({ path: join(here, "..", "..", ".env.local") });
 
+import { GENKIT_MODEL_ID } from "../../src/ai/genkit";
 import { getScenario } from "../../src/lib/simulation/scenarios";
 import { generateSimulationFeedback } from "../../src/ai/flows/simulation-feedback";
 import { scoreCompetencies } from "../../src/ai/flows/score-competencies";
@@ -154,7 +155,7 @@ async function runCase(c: Case) {
 }
 
 async function main() {
-  console.log(`=== Rollenspiel-Prüfset: ${cases.length} Fall/Fälle${withJudge ? " +judge" : ""} ===\n`);
+  console.log(`=== Rollenspiel-Prüfset: ${cases.length} Fall/Fälle${withJudge ? " +judge" : ""} · Schreiber ${GENKIT_MODEL_ID} · Konsens ${(process.env.SCORING_CONSENSUS ?? "off").toLowerCase()} ===\n`);
   const results: any[] = [];
   for (const c of cases) {
     try {
@@ -179,9 +180,10 @@ async function main() {
   const cNullAvg = results.filter((r) => typeof r.cNull === "number").reduce((a, r) => a + r.cNull, 0) / Math.max(1, results.length);
   const canonMiss = results.filter((r) => (r.soft ?? []).some((s: string) => s.startsWith("nextStep ohne Kanon"))).length;
   const thirdPerson = results.reduce((a, r) => a + ((r.soft ?? []).find((s: string) => s.includes("3. Person")) ? 1 : 0), 0);
-  console.log(`=== Summe: ${passed}/${results.length} PASS · zurückgehaltene Scores gesamt ${withheldTotal} · ohne Urteil ${unrated} · Ø C-null ${cNullAvg.toFixed(1)}/10 · nextStep ohne Kanon ${canonMiss} · Fälle mit 3.-Person-Begründungen ${thirdPerson} ===`);
+  const msAvg = results.filter((r) => typeof r.ms === "number").reduce((a, r) => a + r.ms, 0) / Math.max(1, results.filter((r) => typeof r.ms === "number").length);
+  console.log(`=== Summe: ${passed}/${results.length} PASS · zurückgehaltene Scores gesamt ${withheldTotal} · ohne Urteil ${unrated} · Ø C-null ${cNullAvg.toFixed(1)}/10 · nextStep ohne Kanon ${canonMiss} · Fälle mit 3.-Person-Begründungen ${thirdPerson} · Ø ${Math.round(msAvg / 1000)} s je Fall · Modell ${GENKIT_MODEL_ID} ===`);
   if (outPath) {
-    writeFileSync(outPath, JSON.stringify({ at: new Date().toISOString(), results }, null, 1), "utf8");
+    writeFileSync(outPath, JSON.stringify({ at: new Date().toISOString(), model: GENKIT_MODEL_ID, consensus: process.env.SCORING_CONSENSUS ?? "off", results }, null, 1), "utf8");
     console.log(`Rohdaten: ${outPath}`);
   }
   process.exit(passed === results.length ? 0 : 1);

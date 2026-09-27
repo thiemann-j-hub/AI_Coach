@@ -20,6 +20,7 @@ import { config } from "dotenv";
 const here = dirname(fileURLToPath(import.meta.url));
 config({ path: join(here, "..", "..", ".env.local") });
 
+import { GENKIT_MODEL_ID } from "../../src/ai/genkit";
 import { scoreCompetencies } from "../../src/ai/flows/score-competencies";
 import { checkEvidenceGrounding, norm } from "../../src/lib/quality-core";
 
@@ -121,7 +122,7 @@ async function runScenario(s: Scenario) {
 }
 
 (async () => {
-  console.log(`\n=== Regression: ${scenarios.length} Szenario(en), n=${nRuns}${withJudge ? ", +judge" : ""} ===\n`);
+  console.log(`\n=== Regression: ${scenarios.length} Szenario(en), n=${nRuns}${withJudge ? ", +judge" : ""} · Modell ${GENKIT_MODEL_ID} ===\n`);
   let passed = 0;
   const judgeResults: any[] = [];
 
