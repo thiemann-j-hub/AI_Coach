@@ -228,6 +228,8 @@ export async function POST(req: NextRequest) {
       // runs/save persistiert das Feld bereits (analysisJson.competency_error).
       competency_error,
       quality_notes,
+      // Provenienz (27.09.): Schreiber-Modell — der Client reicht es an /api/runs/save weiter.
+      model: GENKIT_MODEL_ID,
     };
 
     // Schatten-Persistenz: Credit verbraucht => Run existiert. Vor dem Settle,

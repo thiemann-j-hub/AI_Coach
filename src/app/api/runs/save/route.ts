@@ -184,6 +184,8 @@ export async function POST(req: NextRequest) {
       rewrites: Array.isArray((result as any).rewrites) ? (result as any).rewrites : [],
       riskFlags: Array.isArray((result as any).riskFlags) ? (result as any).riskFlags : [],
       practice7Days: pickPractice7Days(result),
+      // Provenienz (27.09.): Schreiber-Modell aus der Analyse-Antwort (kommt vom Server).
+      model: typeof (result as any).model === "string" ? (result as any).model : null,
       scores: isObject((result as any).scores) ? (result as any).scores : {},
       competency_ratings: Array.isArray((result as any).competency_ratings)
         ? (result as any).competency_ratings
