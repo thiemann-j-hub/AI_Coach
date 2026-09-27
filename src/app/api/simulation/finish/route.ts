@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateSimulationFeedback } from "@/ai/flows/simulation-feedback";
+import { GENKIT_MODEL_ID } from "@/ai/genkit";
 import { scoreCompetencies } from "@/ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
@@ -348,6 +349,8 @@ export async function POST(req: NextRequest) {
     doc.debriefJson = debrief;
     doc.deltaJson = delta;
     doc.qualityNotes = qualityNotes;
+    // Provenienz (27.09.): welches Schreiber-Modell diese Auswertung erzeugt hat.
+    doc.modelId = GENKIT_MODEL_ID;
     // O2: Der Vorschlag des Debriefs ist ab sofort der Vorsatz (Gemini Zu 3: ein
     // Schritt, keine Auswahl). Der Lernende kann ihn über /api/simulation/commit
     // mit eigenen Worten überschreiben.

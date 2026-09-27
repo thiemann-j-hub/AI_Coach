@@ -76,6 +76,8 @@ export interface SimulationDoc {
   commitment?: Commitment | null;
   /** Rückmeldung beim nächsten Login: probiert / teilweise / nicht / nicht mehr fragen. */
   transferCheck?: TransferCheck | null;
+  /** Provenienz: Schreiber-Modell der Auswertung (z. B. googleai/gemini-3.5-flash). */
+  modelId?: string;
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ─────────────────────────────
   /** Gewählte Gesprächssprache (Persona spricht diese Sprache); fehlt bei Alt-Docs → Szenario-Locale. */
   convoLocale?: "de" | "en" | "es" | "fr";

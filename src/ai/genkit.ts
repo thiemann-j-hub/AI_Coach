@@ -1,5 +1,6 @@
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
+import {resolveWriterModelId} from './model-id';
 
 /**
  * Modell-ID als exportierte Konstante: der Reliabilitäts-Harness protokolliert
@@ -13,12 +14,7 @@ import {googleAI} from '@genkit-ai/google-genai';
  * (gemini-3.5-flash …), und der spätere Wechsel ist ein Setting, kein Deploy.
  * Der Judge hat sein eigenes JUDGE_MODEL (scripts/quality/judge.ts).
  */
-function resolveModelId(): string {
-  const raw = (process.env.GEMINI_TEXT_MODEL ?? '').trim();
-  if (!raw) return 'googleai/gemini-2.5-flash';
-  return raw.includes('/') ? raw : `googleai/${raw}`;
-}
-export const GENKIT_MODEL_ID = resolveModelId();
+export const GENKIT_MODEL_ID = resolveWriterModelId();
 /** Keine explizite Temperatur konfiguriert → Provider-Default. */
 export const GENKIT_TEMPERATURE = 'provider-default';
 

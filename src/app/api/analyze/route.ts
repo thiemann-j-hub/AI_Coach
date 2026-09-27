@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { GENKIT_MODEL_ID } from "@/ai/genkit";
 import { generateDynamicFeedback } from "../../../ai/flows/generate-dynamic-feedback";
 import { scoreCompetencies } from "../../../ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
@@ -260,6 +261,8 @@ export async function POST(req: NextRequest) {
               // O2b: eigener 7-Tage-Schritt aus dem Modell (vorher fiel die
               // Anzeige auf improvements[0] zurück — eine wörtliche Kopie).
               practice7Days: (result as any).practice7Days ?? null,
+              // Provenienz (27.09.): Schreiber-Modell dieser Analyse.
+              model: GENKIT_MODEL_ID,
               scores: (result as any).scores ?? {},
               competency_ratings,
               competency_error,

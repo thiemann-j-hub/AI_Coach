@@ -1,5 +1,6 @@
 // src/app/api/health/route.ts
 import { NextResponse } from "next/server";
+import { resolveWriterModelId } from "@/ai/model-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +24,9 @@ export async function GET() {
         (process.env.NEXT_PUBLIC_BUILD_SHA ? process.env.NEXT_PUBLIC_BUILD_SHA.slice(0, 7) : "unstamped"),
       branch: process.env.BUILD_BRANCH ?? null,
       stampedAt: process.env.BUILD_STAMPED_AT ?? null,
+      // 27.09.: Schreiber-Modell sichtbar (App-Setting GEMINI_TEXT_MODEL) — der
+      // Modellwechsel ist damit ohne Credit nachweisbar.
+      writerModel: resolveWriterModelId(),
     },
     { status: 200 }
   );
