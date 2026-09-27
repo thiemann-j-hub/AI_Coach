@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mergeConsensusRuns } from "./score-competencies";
+import { applyCategoryRule, applyObservabilityCap, mergeConsensusRuns } from "./score-competencies";
 
 /**
  * Konsens-Merge (SCORING_CONSENSUS): Mehrheits-Beobachtbarkeit + Median-Score.
@@ -7,7 +7,7 @@ import { mergeConsensusRuns } from "./score-competencies";
  * Läufen "sieht", ist konsistent nicht beobachtbar.
  */
 const C = (id: string, score: number | null, why = "w", evidence: string[] = score ? ["\"Zitat\""] : []) =>
-  ({ id, name: id, evidence, why, score, confidence: score ? 0.8 : null });
+  ({ id, name: id, observability: "explicit" as const, evidence, why, score, confidence: score ? 0.8 : null });
 
 describe("mergeConsensusRuns", () => {
   it("Mehrheit beobachtet (2/3) -> Median-Score, Repraesentant liefert Evidenz", () => {
@@ -56,5 +56,38 @@ describe("mergeConsensusRuns", () => {
     ]);
     // majority = ceil(2/2) = 1 -> beobachtet
     expect(merged.competencies[0].score).toBe(2);
+  });
+});
+
+describe("applyObservabilityCap — O1d: Beobachtbarkeit deckelt den Score (Gemini Zu 2: Struktur statt Zitat-Zwang)", () => {
+  it("none → null, incidental → max 3, explicit bleibt, fehlendes Feld bleibt", () => {
+    const out = applyObservabilityCap({
+      competencies: [
+        { id: "C7", name: "Innovative Kultur", observability: "none", evidence: ["x"], why: "…", score: 3 },
+        { id: "C9", name: "Weitblick", observability: "incidental", evidence: ["Teilnehmer:in: …"], why: "…", score: 4 },
+        { id: "C2", name: "Problemlösung", observability: "incidental", evidence: ["…"], why: "…", score: 2 },
+        { id: "C5", name: "Kommunikation", observability: "explicit", evidence: ["…"], why: "…", score: 4 },
+        { id: "C1", name: "Beziehung", evidence: ["…"], why: "…", score: 4 },
+      ] as any,
+    });
+    const by = Object.fromEntries(out.competencies.map((c: any) => [c.id, c]));
+    expect(by.C7.score).toBeNull();
+    expect(by.C7.evidence).toEqual([]);
+    expect(by.C9.score).toBe(3);
+    expect(by.C2.score).toBe(2);
+    expect(by.C5.score).toBe(4);
+    expect(by.C1.score).toBe(4);
+  });
+});
+
+describe("applyCategoryRule — O1d: Führungskompetenzen nur in Führungsszenarien", () => {
+  it("zusammenarbeit/vertrieb → C3/C4/C7/C9 null; mitarbeiterfuehrung/ohne Kategorie unverändert", () => {
+    const base = { competencies: [C("C4", 3), C("C5", 4), C("C9", 4), C("C3", null)] };
+    const peer = applyCategoryRule(base, "zusammenarbeit");
+    expect(peer.competencies.map((c) => `${c.id}=${c.score}`)).toEqual(["C4=null", "C5=4", "C9=null", "C3=null"]);
+    expect(peer.competencies[0].evidence).toEqual([]);
+    expect(applyCategoryRule(base, "vertrieb").competencies[2].score).toBeNull();
+    expect(applyCategoryRule(base, "mitarbeiterfuehrung").competencies[0].score).toBe(3);
+    expect(applyCategoryRule(base).competencies[2].score).toBe(4);
   });
 });

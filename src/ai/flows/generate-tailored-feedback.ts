@@ -30,10 +30,32 @@ export type GenerateTailoredFeedbackInput = z.infer<typeof GenerateTailoredFeedb
 
 export const GenerateTailoredFeedbackOutputSchema = z.object({
   summary: z.string().describe('A summary of the feedback.'),
-  strengths: z.array(z.string()).describe('Identified strengths.'),
-  improvements: z.array(z.string()).describe('Areas for improvement.'),
-  rewrites: z.array(z.string()).describe('Suggested rewrites.'),
+  strengths: z
+    .array(z.string())
+    .describe('Identified strengths: verb first + effect + short verbatim quote from the transcript, addressed to the leader ("Du …" / "You …").'),
+  improvements: z
+    .array(z.string())
+    .describe(
+      'Areas for improvement, 1–3 items, each a you-message in this order: MOMENT (what the leader said, short verbatim quote) → EFFECT (what it led to) → MORE EFFECTIVE PATH (one example sentence in quotation marks).'
+    ),
+  // O1e (N4-85): Paare statt loser Strings — die Ergebnisseite zeigt Original/Besser
+  // nebeneinander, der Qualitäts-Check vergleicht beide.
+  rewrites: z
+    .array(
+      z.object({
+        original: z.string().describe('Verbatim sentence the leader actually said (from the transcript).'),
+        better: z.string().describe('A more effective wording of the SAME sentence, same language, same intent.'),
+      })
+    )
+    .max(4)
+    .describe('Suggested rewrites of concrete leader sentences, 1–4 pairs. Empty array if nothing needs rewriting.'),
   riskFlags: z.array(z.string()).describe('Potential risks identified.'),
+  // O2b: eigener Transfer-Schritt — keine Kopie des Verbesserungspunkts.
+  practice7Days: z
+    .string()
+    .describe(
+      'ONE on-the-job practice step for the coming 7 days, imperative, addressed to the leader, with a concrete occasion ("In your next 1:1 on …", "Tomorrow when …") and ONE sentence to say. Must be different in wording from the improvements — it names what to DO, not what went wrong. Max 60 words.'
+    ),
   scores: z
     .object({ overall: z.number().min(0).max(10).optional() })
     .catchall(z.number())

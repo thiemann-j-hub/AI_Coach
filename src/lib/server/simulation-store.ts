@@ -3,6 +3,7 @@ import "server-only";
 import { deleteItem, queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
 import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import type { SimulationTurn } from "@/lib/simulation/types";
+import type { Commitment, TransferCheck } from "@/lib/simulation/transfer";
 
 /**
  * Persistenz der Gesprächssimulation (SIM-2).
@@ -70,6 +71,11 @@ export interface SimulationDoc {
     /** V3: Merkkarte aus der Coaching-Bibliothek, auf der der Impuls aufbaut. */
     card?: { id: string; title: string; hint: string } | null;
   }>;
+  // ── O2 Micro-Transfer (Blueprint COACH-OPTIMIERUNG 27.09.2026) ───────────
+  /** Der EINE Schritt fürs echte Gespräch — Vorschlag des Debriefs, ggf. vom Lernenden angepasst. */
+  commitment?: Commitment | null;
+  /** Rückmeldung beim nächsten Login: probiert / teilweise / nicht / nicht mehr fragen. */
+  transferCheck?: TransferCheck | null;
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ─────────────────────────────
   /** Gewählte Gesprächssprache (Persona spricht diese Sprache); fehlt bei Alt-Docs → Szenario-Locale. */
   convoLocale?: "de" | "en" | "es" | "fr";
@@ -328,4 +334,82 @@ export async function latestFinishedAny(
     finishedAt: r.finishedAt ?? r.createdAt,
     competencyRatings: r.competencyRatings ?? null,
   };
+}
+
+// ── O2 Micro-Transfer (Blueprint COACH-OPTIMIERUNG 27.09.2026) ──────────────
+
+export interface PendingTransferCheck {
+  id: string;
+  scenarioId: string;
+  finishedAt: string;
+  commitment: Commitment;
+}
+
+/**
+ * Jüngste abgeschlossene Simulation MIT Vorsatz und OHNE Rückmeldung, die
+ * mindestens `minAgeMs` alt ist — die eine Nachfrage beim Login (Gemini Zu 4,
+ * Owner E-4: nur beim Login, keine Mails; wegklicken = nie wieder).
+ * Partitions-lokal, billig.
+ */
+export async function latestPendingTransferCheck(
+  uid: string,
+  minAgeMs: number
+): Promise<PendingTransferCheck | null> {
+  const cutoff = new Date(Date.now() - Math.max(0, minAgeMs)).toISOString();
+  const rows = await queryItems<{
+    id: string;
+    scenarioId: string;
+    finishedAt?: string;
+    createdAt: string;
+    commitment?: Commitment | null;
+  }>(
+    runsContainer(),
+    "SELECT TOP 1 c.id, c.scenarioId, c.finishedAt, c.createdAt, c.commitment FROM c " +
+      "WHERE c.sessionId = @pk AND c.docType = @dt AND c.status = @st " +
+      "AND IS_DEFINED(c.commitment) AND NOT IS_NULL(c.commitment) " +
+      "AND (NOT IS_DEFINED(c.transferCheck) OR IS_NULL(c.transferCheck)) " +
+      "AND c.finishedAt <= @cutoff ORDER BY c.finishedAt DESC",
+    [
+      { name: "@pk", value: simPartitionKey(uid) },
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@st", value: "finished" },
+      { name: "@cutoff", value: cutoff },
+    ]
+  );
+  const r = rows[0];
+  if (!r?.commitment?.text) return null;
+  return {
+    id: r.id,
+    scenarioId: r.scenarioId,
+    finishedAt: r.finishedAt ?? r.createdAt,
+    commitment: r.commitment,
+  };
+}
+
+/**
+ * Jüngste Rückmeldung aus dem Alltag (nicht „dismissed“) — Kontext für das
+ * nächste Debrief („Vorsatz X, Rückmeldung Y“). Partitions-lokal.
+ */
+export async function latestTransferReview(
+  uid: string
+): Promise<{ commitment: Commitment; transferCheck: TransferCheck; scenarioId: string } | null> {
+  const rows = await queryItems<{
+    scenarioId: string;
+    commitment?: Commitment | null;
+    transferCheck?: TransferCheck | null;
+  }>(
+    runsContainer(),
+    "SELECT TOP 1 c.scenarioId, c.commitment, c.transferCheck FROM c " +
+      "WHERE c.sessionId = @pk AND c.docType = @dt AND c.status = @st " +
+      "AND IS_DEFINED(c.transferCheck) AND NOT IS_NULL(c.transferCheck) " +
+      "AND c.transferCheck.outcome != 'dismissed' ORDER BY c.transferCheck.at DESC",
+    [
+      { name: "@pk", value: simPartitionKey(uid) },
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@st", value: "finished" },
+    ]
+  );
+  const r = rows[0];
+  if (!r?.commitment?.text || !r.transferCheck) return null;
+  return { commitment: r.commitment, transferCheck: r.transferCheck, scenarioId: r.scenarioId };
 }

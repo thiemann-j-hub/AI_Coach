@@ -24,7 +24,8 @@
     "watchVideo": "Video bekijken",
     "expandSidebar": "Zijbalk uitklappen",
     "collapseSidebar": "Zijbalk inklappen",
-    "balanceEmptyMember": "Het tegoed van je bedrijf is op — je admin is geïnformeerd."
+    "balanceEmptyMember": "Het tegoed van je bedrijf is op — je admin is geïnformeerd.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Transcriptanalyse",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Aanmelden",
@@ -404,32 +409,6 @@
     "badgeSolid": "Solide",
     "badgeNeedsWork": "Focus nodig"
   },
-  "linkedin": {
-    "title": "Delen op LinkedIn",
-    "subtitle": "Genereer een AI-post met afbeelding en publiceer die direct",
-    "step1": "1. Posttekst genereren",
-    "step2": "2. Afbeelding genereren (NanoBanana Pro)",
-    "generatePost": "Post genereren",
-    "generating": "Bezig met genereren…",
-    "generateImage": "Afbeelding genereren",
-    "generatingImage": "Afbeelding wordt gemaakt…",
-    "imageHeadline": "Afbeeldingskop",
-    "postPlaceholder": "De tekst van je LinkedIn-post verschijnt hier na het genereren…",
-    "noImage": "Klik op \"Afbeelding genereren\" om een AI-afbeelding voor je post te maken",
-    "regenerate": "Opnieuw genereren",
-    "connect": "LinkedIn koppelen",
-    "postToLinkedIn": "Posten op LinkedIn",
-    "posting": "Bezig met posten…",
-    "posted": "Succesvol gepost!",
-    "viewPost": "Post bekijken",
-    "generatePostFirst": "Genereer eerst de posttekst.",
-    "tokenExpired": "LinkedIn-sessie verlopen. Koppel opnieuw.",
-    "notConfigured": "LinkedIn is niet geconfigureerd voor deze omgeving.",
-    "connectedOk": "LinkedIn gekoppeld.",
-    "connectFailed": "LinkedIn-koppeling mislukt:",
-    "confirmQuestion": "Deze post nu openbaar publiceren op LinkedIn?",
-    "confirmNow": "Ja, openbaar posten"
-  },
   "api": {
     "unauthorized": "Authenticatie vereist",
     "accessDenied": "Toegang geweigerd",
@@ -464,7 +443,14 @@
     "wishThanks": "Bedankt! Je wens is ontvangen en telt mee in de prioritering van nieuwe scenario's.",
     "resumeTimeLeft": "nog ~{min} min",
     "resumeTimeUp": "Tijd verstreken",
-    "dropWrongType": "Hier wordt alleen pdf geaccepteerd — gebruik voor tekst de analysepagina."
+    "dropWrongType": "Hier wordt alleen pdf geaccepteerd — gebruik voor tekst de analysepagina.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "uit rollenspel",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Wat doe je de volgende keer concreet anders?",
     "studioBridgeTitle": "Dit thema grondiger aanpakken?",
     "studioBridgeBody": "Maak een cursus in de Learning Studio — op maat van {c}.",
-    "studioBridgeCta": "Cursus in Studio maken"
+    "studioBridgeCta": "Cursus in Studio maken",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profiel",

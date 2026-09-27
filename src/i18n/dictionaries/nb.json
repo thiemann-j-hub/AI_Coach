@@ -24,7 +24,8 @@
     "watchVideo": "Se video",
     "expandSidebar": "Utvid sidefeltet",
     "collapseSidebar": "Skjul sidefeltet",
-    "balanceEmptyMember": "Bedriftens kvote er brukt opp — administratoren din er informert."
+    "balanceEmptyMember": "Bedriftens kvote er brukt opp — administratoren din er informert.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Transkripsjonsanalyse",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Logg inn",
@@ -404,32 +409,6 @@
     "badgeSolid": "Solid",
     "badgeNeedsWork": "Trenger fokus"
   },
-  "linkedin": {
-    "title": "Del på LinkedIn",
-    "subtitle": "Generer et AI-innlegg med bilde, og publiser det direkte",
-    "step1": "1. Generer innleggstekst",
-    "step2": "2. Generer bilde (NanoBanana Pro)",
-    "generatePost": "Generer innlegg",
-    "generating": "Genererer…",
-    "generateImage": "Generer bilde",
-    "generatingImage": "Lager bilde…",
-    "imageHeadline": "Bildeoverskrift",
-    "postPlaceholder": "LinkedIn-innleggsteksten din vises her etter genereringen…",
-    "noImage": "Klikk på \"Generer bilde\" for å lage et AI-bilde til innlegget ditt",
-    "regenerate": "Generer på nytt",
-    "connect": "Koble til LinkedIn",
-    "postToLinkedIn": "Publiser på LinkedIn",
-    "posting": "Publiserer…",
-    "posted": "Publisert!",
-    "viewPost": "Vis innlegg",
-    "generatePostFirst": "Generer innleggsteksten først.",
-    "tokenExpired": "LinkedIn-økten er utløpt. Koble til på nytt.",
-    "notConfigured": "LinkedIn er ikke konfigurert for dette miljøet.",
-    "connectedOk": "LinkedIn tilkoblet.",
-    "connectFailed": "LinkedIn-tilkoblingen mislyktes:",
-    "confirmQuestion": "Publisere dette innlegget offentlig på LinkedIn nå?",
-    "confirmNow": "Ja, publiser offentlig"
-  },
   "api": {
     "unauthorized": "Innlogging kreves",
     "accessDenied": "Tilgang nektet",
@@ -464,7 +443,14 @@
     "wishThanks": "Takk! Ønsket ditt er mottatt og går inn i prioriteringen av nye scenarioer.",
     "resumeTimeLeft": "~{min} min igjen",
     "resumeTimeUp": "Tiden er ute",
-    "dropWrongType": "Bare PDF godtas her — bruk analysesiden for tekst."
+    "dropWrongType": "Bare PDF godtas her — bruk analysesiden for tekst.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "fra rollespill",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Hva gjør du konkret annerledes neste gang?",
     "studioBridgeTitle": "Ta tak i temaet mer grunnleggende?",
     "studioBridgeBody": "Lag et kurs i Learning Studio — skreddersydd for {c}.",
-    "studioBridgeCta": "Lag kurs i Studio"
+    "studioBridgeCta": "Lag kurs i Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profil",

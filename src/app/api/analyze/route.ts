@@ -257,6 +257,9 @@ export async function POST(req: NextRequest) {
               improvements: (result as any).improvements ?? [],
               rewrites: (result as any).rewrites ?? [],
               riskFlags: (result as any).riskFlags ?? [],
+              // O2b: eigener 7-Tage-Schritt aus dem Modell (vorher fiel die
+              // Anzeige auf improvements[0] zurück — eine wörtliche Kopie).
+              practice7Days: (result as any).practice7Days ?? null,
               scores: (result as any).scores ?? {},
               competency_ratings,
               competency_error,

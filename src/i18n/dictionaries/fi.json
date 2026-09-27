@@ -24,7 +24,8 @@
     "watchVideo": "Katso video",
     "expandSidebar": "Laajenna sivupalkki",
     "collapseSidebar": "Pienennä sivupalkki",
-    "balanceEmptyMember": "Yrityksesi kiintiö on käytetty — ylläpitäjällesi on ilmoitettu."
+    "balanceEmptyMember": "Yrityksesi kiintiö on käytetty — ylläpitäjällesi on ilmoitettu.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Transkriptioanalyysi",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Kirjaudu sisään",
@@ -404,32 +409,6 @@
     "badgeSolid": "Vankka",
     "badgeNeedsWork": "Vaatii fokusta"
   },
-  "linkedin": {
-    "title": "Jaa LinkedInissä",
-    "subtitle": "Luo tekoälypostaus kuvineen ja julkaise se suoraan",
-    "step1": "1. Luo postauksen teksti",
-    "step2": "2. Luo kuva (NanoBanana Pro)",
-    "generatePost": "Luo postaus",
-    "generating": "Luodaan…",
-    "generateImage": "Luo kuva",
-    "generatingImage": "Kuvaa luodaan…",
-    "imageHeadline": "Kuvan otsikko",
-    "postPlaceholder": "LinkedIn-postauksesi teksti ilmestyy tähän luomisen jälkeen…",
-    "noImage": "Napsauta \"Luo kuva\" luodaksesi tekoälykuvan postaukseesi",
-    "regenerate": "Luo uudelleen",
-    "connect": "Yhdistä LinkedIn",
-    "postToLinkedIn": "Julkaise LinkedInissä",
-    "posting": "Julkaistaan…",
-    "posted": "Julkaistu onnistuneesti!",
-    "viewPost": "Näytä postaus",
-    "generatePostFirst": "Luo ensin postauksen teksti.",
-    "tokenExpired": "LinkedIn-istunto on vanhentunut. Yhdistä uudelleen.",
-    "notConfigured": "LinkedIniä ei ole määritetty tähän ympäristöön.",
-    "connectedOk": "LinkedIn yhdistetty.",
-    "connectFailed": "LinkedIn-yhteys epäonnistui:",
-    "confirmQuestion": "Julkaistaanko tämä postaus nyt julkisesti LinkedInissä?",
-    "confirmNow": "Kyllä, julkaise julkisesti"
-  },
   "api": {
     "unauthorized": "Kirjautuminen vaaditaan",
     "accessDenied": "Pääsy evätty",
@@ -464,7 +443,14 @@
     "wishThanks": "Kiitos! Toiveesi on vastaanotettu ja vaikuttaa uusien skenaarioiden priorisointiin.",
     "resumeTimeLeft": "~{min} min jäljellä",
     "resumeTimeUp": "Aika loppui",
-    "dropWrongType": "Tässä hyväksytään vain PDF — käytä tekstille analyysisivua."
+    "dropWrongType": "Tässä hyväksytään vain PDF — käytä tekstille analyysisivua.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "roolipelistä",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Mitä teet ensi kerralla konkreettisesti toisin?",
     "studioBridgeTitle": "Käsittele aihetta perusteellisemmin?",
     "studioBridgeBody": "Luo kurssi Learning Studiossa — räätälöity kohteelle {c}.",
-    "studioBridgeCta": "Luo kurssi Studiossa"
+    "studioBridgeCta": "Luo kurssi Studiossa",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profiili",

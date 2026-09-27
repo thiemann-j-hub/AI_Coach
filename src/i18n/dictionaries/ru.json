@@ -24,7 +24,8 @@
     "watchVideo": "Смотреть видео",
     "expandSidebar": "Развернуть боковую панель",
     "collapseSidebar": "Свернуть боковую панель",
-    "balanceEmptyMember": "Квота вашей компании исчерпана — ваш администратор уведомлён."
+    "balanceEmptyMember": "Квота вашей компании исчерпана — ваш администратор уведомлён.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Анализ транскрипта",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Войти",
@@ -404,32 +409,6 @@
     "badgeSolid": "Прочно",
     "badgeNeedsWork": "Нужен фокус"
   },
-  "linkedin": {
-    "title": "Поделиться в LinkedIn",
-    "subtitle": "Сгенерируй пост с изображением от ИИ и опубликуй его напрямую",
-    "step1": "1. Сгенерировать текст поста",
-    "step2": "2. Сгенерировать изображение (NanoBanana Pro)",
-    "generatePost": "Сгенерировать пост",
-    "generating": "Генерация…",
-    "generateImage": "Сгенерировать изображение",
-    "generatingImage": "Создание изображения…",
-    "imageHeadline": "Заголовок изображения",
-    "postPlaceholder": "Текст твоего поста для LinkedIn появится здесь после генерации…",
-    "noImage": "Нажми «Сгенерировать изображение», чтобы создать ИИ-изображение для поста",
-    "regenerate": "Сгенерировать заново",
-    "connect": "Подключить LinkedIn",
-    "postToLinkedIn": "Опубликовать в LinkedIn",
-    "posting": "Публикация…",
-    "posted": "Успешно опубликовано!",
-    "viewPost": "Посмотреть пост",
-    "generatePostFirst": "Сначала сгенерируй текст поста.",
-    "tokenExpired": "Сессия LinkedIn истекла. Подключись заново.",
-    "notConfigured": "LinkedIn не настроен для этого развёртывания.",
-    "connectedOk": "LinkedIn подключён.",
-    "connectFailed": "Не удалось подключить LinkedIn:",
-    "confirmQuestion": "Опубликовать этот пост в LinkedIn публично прямо сейчас?",
-    "confirmNow": "Да, опубликовать публично"
-  },
   "api": {
     "unauthorized": "Требуется вход",
     "accessDenied": "Доступ запрещён",
@@ -464,7 +443,14 @@
     "wishThanks": "Спасибо! Твоё пожелание получено и влияет на приоритизацию новых сценариев.",
     "resumeTimeLeft": "осталось ~{min} мин",
     "resumeTimeUp": "Время вышло",
-    "dropWrongType": "Здесь принимается только PDF — для текста используй страницу анализа."
+    "dropWrongType": "Здесь принимается только PDF — для текста используй страницу анализа.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "из ролевой игры",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Что ты в следующий раз сделаешь конкретно иначе?",
     "studioBridgeTitle": "Взяться за тему основательнее?",
     "studioBridgeBody": "Создай курс в Learning Studio — под {c}.",
-    "studioBridgeCta": "Создать курс в Studio"
+    "studioBridgeCta": "Создать курс в Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Профиль",

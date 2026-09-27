@@ -24,7 +24,8 @@
     "watchVideo": "Se video",
     "expandSidebar": "Udvid sidepanelet",
     "collapseSidebar": "Skjul sidepanelet",
-    "balanceEmptyMember": "Din virksomheds kontingent er opbrugt — din admin er informeret."
+    "balanceEmptyMember": "Din virksomheds kontingent er opbrugt — din admin er informeret.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Transskriptionsanalyse",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Log ind",
@@ -404,32 +409,6 @@
     "badgeSolid": "Solid",
     "badgeNeedsWork": "Kræver fokus"
   },
-  "linkedin": {
-    "title": "Del på LinkedIn",
-    "subtitle": "Generér et AI-opslag med billede, og udgiv det direkte",
-    "step1": "1. Generér opslagstekst",
-    "step2": "2. Generér billede (NanoBanana Pro)",
-    "generatePost": "Generér opslag",
-    "generating": "Genererer…",
-    "generateImage": "Generér billede",
-    "generatingImage": "Opretter billede…",
-    "imageHeadline": "Billedoverskrift",
-    "postPlaceholder": "Din LinkedIn-opslagstekst vises her efter genereringen…",
-    "noImage": "Klik på \"Generér billede\" for at oprette et AI-billede til dit opslag",
-    "regenerate": "Generér igen",
-    "connect": "Forbind LinkedIn",
-    "postToLinkedIn": "Slå op på LinkedIn",
-    "posting": "Slår op…",
-    "posted": "Opslået!",
-    "viewPost": "Vis opslag",
-    "generatePostFirst": "Generér først opslagsteksten.",
-    "tokenExpired": "LinkedIn-sessionen er udløbet. Forbind igen.",
-    "notConfigured": "LinkedIn er ikke konfigureret til dette miljø.",
-    "connectedOk": "LinkedIn forbundet.",
-    "connectFailed": "LinkedIn-forbindelsen mislykkedes:",
-    "confirmQuestion": "Udgiv dette opslag offentligt på LinkedIn nu?",
-    "confirmNow": "Ja, slå op offentligt"
-  },
   "api": {
     "unauthorized": "Login påkrævet",
     "accessDenied": "Adgang nægtet",
@@ -464,7 +443,14 @@
     "wishThanks": "Tak! Dit ønske er modtaget og indgår i prioriteringen af nye scenarier.",
     "resumeTimeLeft": "~{min} min. tilbage",
     "resumeTimeUp": "Tiden er gået",
-    "dropWrongType": "Kun PDF accepteres her — brug analysesiden til tekst."
+    "dropWrongType": "Kun PDF accepteres her — brug analysesiden til tekst.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "fra rollespil",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Hvad gør du konkret anderledes næste gang?",
     "studioBridgeTitle": "Tag fat på emnet mere grundlæggende?",
     "studioBridgeBody": "Opret et kursus i Learning Studio — skræddersyet til {c}.",
-    "studioBridgeCta": "Opret kursus i Studio"
+    "studioBridgeCta": "Opret kursus i Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profil",

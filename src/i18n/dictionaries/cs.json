@@ -24,7 +24,8 @@
     "watchVideo": "Přehrát video",
     "expandSidebar": "Rozbalit boční panel",
     "collapseSidebar": "Sbalit boční panel",
-    "balanceEmptyMember": "Kvóta vaší firmy je vyčerpaná — váš admin byl informován."
+    "balanceEmptyMember": "Kvóta vaší firmy je vyčerpaná — váš admin byl informován.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Analýza přepisu",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Přihlásit se",
@@ -404,32 +409,6 @@
     "badgeSolid": "Solidní",
     "badgeNeedsWork": "Chce to fokus"
   },
-  "linkedin": {
-    "title": "Sdílet na LinkedIn",
-    "subtitle": "Vygenerujte AI příspěvek s obrázkem a publikujte přímo",
-    "step1": "1. Vygenerovat text příspěvku",
-    "step2": "2. Vygenerovat obrázek (NanoBanana Pro)",
-    "generatePost": "Vygenerovat příspěvek",
-    "generating": "Generování…",
-    "generateImage": "Vygenerovat obrázek",
-    "generatingImage": "Vytváření obrázku…",
-    "imageHeadline": "Nadpis obrázku",
-    "postPlaceholder": "Text vašeho LinkedIn příspěvku se zde zobrazí po vygenerování…",
-    "noImage": "Klikněte na \"Vygenerovat obrázek\" pro vytvoření AI obrázku pro váš příspěvek",
-    "regenerate": "Vygenerovat znovu",
-    "connect": "Připojit LinkedIn",
-    "postToLinkedIn": "Publikovat na LinkedIn",
-    "posting": "Publikování…",
-    "posted": "Úspěšně publikováno!",
-    "viewPost": "Zobrazit příspěvek",
-    "generatePostFirst": "Nejprve prosím vygenerujte text příspěvku.",
-    "tokenExpired": "Relace LinkedIn vypršela. Prosím připojte se znovu.",
-    "notConfigured": "LinkedIn není pro toto prostředí nakonfigurován.",
-    "connectedOk": "LinkedIn připojen.",
-    "connectFailed": "Připojení k LinkedIn se nezdařilo:",
-    "confirmQuestion": "Zveřejnit tento příspěvek veřejně na LinkedIn nyní?",
-    "confirmNow": "Ano, zveřejnit"
-  },
   "api": {
     "unauthorized": "Vyžadováno přihlášení",
     "accessDenied": "Přístup odepřen",
@@ -464,7 +443,14 @@
     "wishThanks": "Díky! Tvé přání dorazilo a jde do prioritizace nových scénářů.",
     "resumeTimeLeft": "zbývá ~{min} min",
     "resumeTimeUp": "Čas vypršel",
-    "dropWrongType": "Zde se přijímá pouze PDF — pro text použij stránku analýzy."
+    "dropWrongType": "Zde se přijímá pouze PDF — pro text použij stránku analýzy.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "z hraní rolí",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Co příště uděláš konkrétně jinak?",
     "studioBridgeTitle": "Vzít téma důkladněji?",
     "studioBridgeBody": "Vytvoř kurz v Learning Studiu — na míru {c}.",
-    "studioBridgeCta": "Vytvořit kurz ve Studiu"
+    "studioBridgeCta": "Vytvořit kurz ve Studiu",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profil",

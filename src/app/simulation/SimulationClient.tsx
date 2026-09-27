@@ -312,6 +312,17 @@ interface EntryInsight {
   source: 'sim' | 'run';
 }
 
+/** O2: die eine Nachfrage beim Login — Vorsatz aus dem letzten Debrief. */
+interface TransferItem {
+  simId: string;
+  scenarioId: string;
+  scenarioTitle: string;
+  personaName: string | null;
+  text: string;
+  dueHint: string | null;
+  finishedAt: string;
+}
+
 type View = 'loading' | 'disabled' | 'list' | 'briefing' | 'chat';
 
 function cx(...parts: Array<string | false | null | undefined>) {
@@ -410,6 +421,10 @@ export default function SimulationClient() {
   // ── Einstieg (COACH-UX-BLUEPRINT §1) ──
   /** Empfehlungs-Insight des Katalogs (W1-4); null = Cold Start. */
   const [insight, setInsight] = useState<EntryInsight | null>(null);
+  // O2 Micro-Transfer: anstehende Nachfrage (null = keine) + Dank nach Antwort.
+  const [transfer, setTransfer] = useState<TransferItem | null>(null);
+  const [transferBusy, setTransferBusy] = useState(false);
+  const [transferThanks, setTransferThanks] = useState(false);
   /** Filterzeile: »Alle« oder eine nicht-leere Kategorie (W1-5). */
   const [categoryFilter, setCategoryFilter] = useState<'all' | ScenarioCategory>('all');
   // Welle C: Builder-Karte nur für Workspace-Admins (Rolle aus dem Profil).
@@ -682,11 +697,39 @@ export default function SimulationClient() {
       setRecent(json.recent ?? []);
       setInsight(json.insight ?? null);
       setView('list');
+      // O2: die eine Nachfrage — best effort, blockiert den Einstieg nie.
+      try {
+        const tr = await authFetch('/api/simulation/transfer-check');
+        const tj = await tr.json().catch(() => null);
+        if (tr.ok && tj?.ok && tj.item?.simId) setTransfer(tj.item as TransferItem);
+      } catch {
+        /* keine Nachfrage */
+      }
     } catch {
       setError(ts.genericError);
       setView('list');
     }
   }, [ts]);
+
+  async function answerTransfer(outcome: 'done' | 'partly' | 'not' | 'dismissed') {
+    if (!transfer || transferBusy) return;
+    setTransferBusy(true);
+    try {
+      await authFetch('/api/simulation/transfer-check', {
+        method: 'POST',
+        body: JSON.stringify({ simId: transfer.simId, outcome }),
+      });
+    } catch {
+      /* Angebot, kein Blocker */
+    } finally {
+      setTransferBusy(false);
+      setTransfer(null);
+      if (outcome !== 'dismissed') {
+        setTransferThanks(true);
+        window.setTimeout(() => setTransferThanks(false), 6000);
+      }
+    }
+  }
 
   useEffect(() => {
     void loadCatalog();
@@ -1139,6 +1182,64 @@ export default function SimulationClient() {
               {t.entry.sub}
             </p>
           </section>
+
+          {/* ── O2: die eine Nachfrage zum Vorsatz (Gemini Zu 4 / Owner E-4: nur beim Login) ── */}
+          {transfer && (
+            <section
+              className="glass-panel rounded-xl p-4 border border-primary/30 bg-primary/5 space-y-3"
+              data-testid="transfer-check"
+            >
+              <div className="flex items-start gap-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <Sparkles className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-primary">
+                    {t.entry.transferTitle}
+                  </div>
+                  <p className="text-sm mt-1 leading-snug">»{transfer.text}«</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {transfer.scenarioTitle} · {new Date(transfer.finishedAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void answerTransfer('dismissed')}
+                  className="text-muted-foreground hover:text-foreground"
+                  title={t.entry.transferDismiss}
+                  aria-label={t.entry.transferDismiss}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 pl-12">
+                <span className="text-sm font-medium mr-1">{t.entry.transferQuestion}</span>
+                {(['done', 'partly', 'not'] as const).map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    disabled={transferBusy}
+                    onClick={() => void answerTransfer(o)}
+                    className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors disabled:opacity-50"
+                  >
+                    {o === 'done' ? t.entry.transferDone : o === 'partly' ? t.entry.transferPartly : t.entry.transferNot}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => void answerTransfer('dismissed')}
+                  className="text-xs text-muted-foreground underline ml-1"
+                >
+                  {t.entry.transferDismiss}
+                </button>
+              </div>
+            </section>
+          )}
+          {transferThanks && (
+            <p className="text-xs text-muted-foreground" data-testid="transfer-thanks">
+              {t.entry.transferThanks}
+            </p>
+          )}
 
           {/* ── Fortsetzen-Streifen: nur bei offener Simulation ── */}
           {activeSims.length > 0 && (

@@ -42,7 +42,7 @@ const CoachTimeoutOutputSchema = z.object({
   tip: z
     .string()
     .describe(
-      'Max. ~110 Wörter, direkte Ansprache als Du-Botschaft. Aufbau: 1 Satz MOMENT aus DIESEM Verlauf (kurzer Bezug, was du gesagt hast) + WIRKUNG, dann EIN konkreter Impuls (wirksamerer Weg), dann ein Formulierungsangebot in Anführungszeichen, das direkt gesagt werden kann.'
+      'HARTE GRENZE 100 Wörter (zähle mit; kürzer ist besser). Direkte Ansprache als Du-Botschaft. Aufbau: 1 Satz MOMENT aus DIESEM Verlauf (kurzes Zitat, was du gesagt hast) + WIRKUNG, dann EIN konkreter Impuls (wirksamerer Weg), dann EIN Formulierungsangebot in Anführungszeichen, das direkt gesagt werden kann. Keine Einleitung, keine Zusammenfassung.'
     ),
   cardTitle: z
     .string()

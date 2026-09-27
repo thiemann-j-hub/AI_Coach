@@ -48,11 +48,13 @@ export function buildCoachQuery(parts: {
   maxChars?: number;
 }): string {
   const out: string[] = [];
+  // O3 (27.09.): Die Frage des Lernenden hat Vorrang vor dem Verlauf — sie steht
+  // zuerst und doppelt, damit die Vektorsuche die Karte zur FRAGE holt.
+  if (parts.question?.trim()) out.push(`Frage: ${parts.question.trim()}`, `Anliegen: ${parts.question.trim()}`);
   if (parts.conversationType) out.push(`conversationType: ${parts.conversationType}`);
   if (parts.title) out.push(`Szenario: ${parts.title}`);
   if (parts.goals?.length) out.push(`Ziele: ${parts.goals.join(' | ')}`);
   if (parts.rubricLabels?.length) out.push(`Kompetenzen: ${parts.rubricLabels.join(' | ')}`);
-  if (parts.question?.trim()) out.push(`Frage: ${parts.question.trim()}`);
   const max = parts.maxChars ?? 3500;
   const head = out.join('\n');
   const t = String(parts.transcript ?? '').trim();

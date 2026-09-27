@@ -7,7 +7,7 @@
  * W1-8: einheitlicher ScoreRing, Herkunfts-Pill, C1–C10-Block offen.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   ArrowRight,
@@ -41,6 +41,8 @@ export interface SimEvalFeedback {
   selfReview?: { agreement: 'confirms' | 'partly' | 'differs'; comment: string } | null;
   /** V3: Merkkarten aus der Coaching-Bibliothek zum nächsten Schritt (fehlt bei Alt-Läufen). */
   cards?: { id: string; title: string; hint: string }[];
+  /** O2: der EINE Schritt für den Alltag (fehlt bei Alt-Läufen). */
+  microTransfer?: { step: string; when: string } | null;
 }
 
 /** A3: ein Punkt der Verlaufskurve (aus /api/simulation/list, gleiche Quelle wie die Historie). */
@@ -260,6 +262,10 @@ export function SimulationEvaluation(props: {
   /** Fokus-Retry: startet dasselbe Szenario mit diesem Fokus (W3-2: selbst geschrieben). */
   onRetry: (focusText: string) => void;
   retryBusy?: boolean;
+  /** O2: gespeicherter Vorsatz (vom Lernenden angepasst) — Vorrang vor dem Modellvorschlag. */
+  initialCommitment?: string | null;
+  /** O2: speichert den angepassten Vorsatz (entprellt; Modellvorschlag ist serverseitig schon gesetzt). */
+  onCommit?: (text: string) => void;
   /** Zurück zum Einstieg. */
   onNew: () => void;
 }) {
@@ -272,7 +278,21 @@ export function SimulationEvaluation(props: {
   // nextStep-Vorschlag, frei editierbar (kein stummes slice mehr).
   // An der WORTGRENZE kürzen (Test-Fund 11.08.: der harte 280-Schnitt endete
   // mitten im Wort — »… statt alles zu bündeln« wurde zu »… sta«).
-  const [commitment, setCommitment] = useState(() => truncateAtWord(feedback.nextStep, 280));
+  // O2: Vorsatz = gespeicherter Text > Micro-Transfer des Debriefs > (Alt-Läufe) größter Hebel.
+  const defaultCommitment =
+    props.initialCommitment?.trim() ||
+    feedback.microTransfer?.step?.trim() ||
+    truncateAtWord(feedback.nextStep, 280);
+  const [commitment, setCommitment] = useState(defaultCommitment);
+  // Entprellt speichern, nur wenn der Lernende den Text wirklich verändert hat.
+  useEffect(() => {
+    if (!props.onCommit) return;
+    const text = commitment.trim();
+    if (!text || text === defaultCommitment.trim()) return;
+    const id = window.setTimeout(() => props.onCommit?.(text.slice(0, 300)), 900);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commitment]);
 
   // W3-1: Erkenntnis → Handlung (pure, getestet).
   const deltaCta = useMemo(
@@ -382,6 +402,18 @@ export function SimulationEvaluation(props: {
                   <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
                 </div>
                 <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
+                {/* O2 (27.09.): der EINE Schritt für den Alltag — nach ihm wird beim nächsten Login gefragt. */}
+                {feedback.microTransfer?.step && (
+                  <div className="mt-3 rounded-lg border border-primary/40 bg-background/70 px-3 py-2" data-testid="micro-transfer">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1">
+                      <ArrowRight className="h-3 w-3" aria-hidden /> {t.evaluation.microTransferTitle}
+                      {feedback.microTransfer.when && (
+                        <span className="normal-case tracking-normal text-muted-foreground">· {feedback.microTransfer.when}</span>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium leading-snug">{feedback.microTransfer.step}</p>
+                  </div>
+                )}
                 {/* V3 (Owner-GO 25.09.): Merkkarten aus der Coaching-Bibliothek zum nächsten Schritt. */}
                 {feedback.cards && feedback.cards.length > 0 && (
                   <div className="mt-3 space-y-1.5" data-testid="debrief-cards">

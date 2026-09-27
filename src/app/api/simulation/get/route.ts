@@ -72,6 +72,9 @@ export async function GET(req: NextRequest) {
         coachNotes: doc.coachNotes ?? [],
         convoLocale: doc.convoLocale ?? null,
         timeUp: doc.closedByTime === true,
+        // O2 Micro-Transfer: Vorsatz (Modell oder Lernende:r) + Rückmeldung.
+        commitment: doc.commitment ?? null,
+        transferCheck: doc.transferCheck ?? null,
       },
     });
   } catch (err) {

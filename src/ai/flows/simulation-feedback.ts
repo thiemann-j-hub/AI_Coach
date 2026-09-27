@@ -39,6 +39,8 @@ export const SimulationFeedbackInputSchema = z.object({
   canon: z.string(),
   /** V3: Karten aus der Coaching-Bibliothek (leer = keine verfügbar). */
   cardsBlock: z.string(),
+  /** O2: Vorsatz + Rückmeldung aus dem Alltag seit dem letzten Debrief (leer = keine). */
+  transferReview: z.string(),
 });
 
 const RubricRatingSchema = z.object({
@@ -50,7 +52,9 @@ const RubricRatingSchema = z.object({
     .describe('1–2 wörtliche Zitate AUS DEM GESPRÄCH (max ~20 Wörter), mit Sprecher-Prefix. Leeres Array, wenn nicht beobachtbar.'),
   why: z
     .string()
-    .describe('Begründung ausschließlich auf Basis der Evidenz; "nicht beobachtbar", wenn keine Evidenz vorliegt.'),
+    .describe(
+      'Begründung als DIREKTE ANSPRACHE des Übenden (Du-Form), ausschließlich auf Basis der Evidenz: „Du hast … gesagt — das führte dazu, dass …". Nie „Der/die Übende …" oder „Der/die Teilnehmer:in …". "nicht beobachtbar", wenn keine Evidenz vorliegt.'
+    ),
   score: z
     .number()
     .min(1)
@@ -75,7 +79,9 @@ export const SimulationFeedbackOutputSchema = z.object({
   checkpoints: z.array(CheckpointResultSchema),
   nextStep: z
     .string()
-    .describe('EIN konkreter, übbarer nächster Schritt für das nächste Gespräch (1–2 Sätze, direkt umsetzbar).'),
+    .describe(
+      'Der größte Hebel als Du-Botschaft in GENAU dieser Reihenfolge, 3–4 Sätze, max. 90 Wörter: (1) MOMENT — „In dem Moment, als …, hast du … gesagt" mit kurzem wörtlichem Zitat aus dem Gespräch; (2) WIRKUNG — „Das führte dazu, dass …"; (3) WIRKSAMERER WEG — „Ein wirksamerer Weg wäre …" mit EINEM Beispielsatz in Anführungszeichen, der im nächsten Gespräch direkt gesagt werden kann. Kein Lob-Sandwich, kein allgemeiner Rat.'
+    ),
   focusReview: z
     .object({
       addressed: z.boolean().describe('true nur, wenn der Fokus-Vorsatz im Gespräch erkennbar umgesetzt wurde.'),
@@ -100,6 +106,16 @@ export const SimulationFeedbackOutputSchema = z.object({
     .describe(
       'Wörtliche TITEL der 1–2 Karten aus dem Karten-Block, die den nextStep stützen und zur schwächsten Rubrik-Kompetenz passen. Leeres Array, wenn kein Karten-Block vorliegt oder keine passt.'
     ),
+  microTransfer: z
+    .object({
+      step: z
+        .string()
+        .describe(
+          'EIN On-the-job-Schritt fürs ECHTE Gespräch im Alltag, imperativ, Du-Form, max. 25 Wörter, mit konkretem Anlass („Morgen im Team-Meeting …", „Im nächsten 1:1 mit …") und dem einen Satz, den du sagst. Keine Auswahl, kein „oder". Abgeleitet aus dem größten Hebel.'
+        ),
+      when: z.string().describe('Kurze Zeitangabe für den Schritt: „morgen", „bis Freitag", „im nächsten 1:1" (max. 6 Wörter).'),
+    })
+    .describe('O2 Micro-Transfer: der Vorsatz, nach dem beim nächsten Login gefragt wird.'),
 });
 
 /** Rohausgabe des Modells (inkl. recommendedCards-Titel). */
@@ -178,6 +194,16 @@ schwächsten Rubrik-Kompetenz passen; leer, wenn keine wirklich passt.
 Kein Karten-Block vorhanden → recommendedCards = [].
 {{/if}}
 
+{{#if transferReview}}
+TRANSFER-RÜCKBLICK (aus dem echten Alltag seit dem letzten Debrief)
+{{transferReview}}
+Würdige das in summary in EINEM Satz: Zeigt sich dieser Vorsatz in DIESEM Gespräch? Bewerte nur das
+Gespräch, nicht den Alltag.
+{{/if}}
+
+microTransfer: EIN Schritt für den Alltag, der aus dem größten Hebel folgt — imperativ, mit Anlass
+und Zeitpunkt („Morgen im Team-Meeting sagst du zuerst: »…«"). Kein zweiter Schritt, keine Auswahl.
+
 summary und nextStep: direkte Ansprache ("Du …"), konkret, auf DIESES Gespräch bezogen.
 Alle Textausgaben (summary, why, comment, nextStep) auf {{outputLanguage}} — Zitate in der EVIDENCE bleiben wörtlich in der Gesprächssprache.
 
@@ -205,6 +231,8 @@ export async function generateSimulationFeedback(args: {
   convoLocale?: string;
   /** Coaching-Check-in (A1): Selbsteinschätzung des Übenden, optional. */
   selfAssessment?: string;
+  /** O2: Vorsatz + Rückmeldung aus dem Alltag (buildTransferReviewText), optional. */
+  transferReview?: string;
 }): Promise<SimulationFeedbackOutput> {
   const { scenario, turns } = args;
   const rawTranscript = assembleTranscript(turns, scenario.persona.name);
@@ -257,6 +285,7 @@ export async function generateSimulationFeedback(args: {
     // V2: Der Prompt ist deutsch verfasst → deutscher Kanon; die Ausgabe folgt outputLanguage.
     canon: OBSERVER_CANON_DE,
     cardsBlock: cards.length ? cardsToPromptBlock(cards, 900) : '',
+    transferReview: (args.transferReview ?? '').slice(0, 600),
   });
   if (!output) throw new Error('simulation feedback returned empty output');
 
@@ -295,5 +324,9 @@ export async function generateSimulationFeedback(args: {
     // selfReview nur bei tatsächlich abgegebener Selbsteinschätzung (A1).
     selfReview: args.selfAssessment ? (output.selfReview ?? null) : null,
     cards: cardRefs,
+    microTransfer: {
+      step: String(output.microTransfer?.step ?? '').trim().slice(0, 300),
+      when: String(output.microTransfer?.when ?? '').trim().slice(0, 60),
+    },
   };
 }

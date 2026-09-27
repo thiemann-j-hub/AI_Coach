@@ -33,8 +33,10 @@ import {
   countUserTurns,
   getSimulation,
   latestFinishedForScenario,
+  latestTransferReview,
   saveSimulation,
 } from "@/lib/server/simulation-store";
+import { buildTransferReviewText } from "@/lib/simulation/transfer";
 import {
   CHECK_PASS_THRESHOLD,
   computeDebrief,
@@ -151,6 +153,23 @@ export async function POST(req: NextRequest) {
       grant = ent.grant;
     }
 
+    // O2: Rückmeldung aus dem Alltag (letzter beantworteter Vorsatz) als
+    // Kontext fürs Debrief — best effort, nie blockierend.
+    let transferReview = "";
+    try {
+      const tr = await latestTransferReview(auth.uid);
+      if (tr) {
+        transferReview = buildTransferReviewText({
+          lang: doc.convoLocale ?? scenario.locale,
+          commitmentText: tr.commitment.text,
+          outcome: tr.transferCheck.outcome,
+          note: tr.transferCheck.note,
+        });
+      }
+    } catch (e) {
+      logger.apiError("/api/simulation/finish/transfer-review", e, { simId: doc.id });
+    }
+
     // Rubrik-Feedback (Pflichtpfad) + C1–C10-Scoring (degradiert nur) parallel.
     const [fbSettled, compSettled] = await Promise.allSettled([
       withRetry(
@@ -161,6 +180,7 @@ export async function POST(req: NextRequest) {
             focus: doc.focus ?? undefined,
             convoLocale: doc.convoLocale ?? undefined,
             selfAssessment: parsed.data.selfAssessment || undefined,
+            transferReview: transferReview || undefined,
           }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-feedback", retries: 1 }
       ),
@@ -220,7 +240,9 @@ export async function POST(req: NextRequest) {
             ...rubricForCheck,
           ],
         },
-        transcript
+        // O1a (N4-84, Gemini Zu 1): Vergleichstext sind die ROHEN Beiträge ohne
+        // Sprecher-Labels — Labels sind Metadaten, geprüft wird nur der Wortlaut.
+        doc.turns.map((t) => t.text).join("\n")
       );
       qualityNotes = qc.notes;
       if (qc.notes.length) {
@@ -326,6 +348,17 @@ export async function POST(req: NextRequest) {
     doc.debriefJson = debrief;
     doc.deltaJson = delta;
     doc.qualityNotes = qualityNotes;
+    // O2: Der Vorschlag des Debriefs ist ab sofort der Vorsatz (Gemini Zu 3: ein
+    // Schritt, keine Auswahl). Der Lernende kann ihn über /api/simulation/commit
+    // mit eigenen Worten überschreiben.
+    if (feedback.microTransfer?.step) {
+      doc.commitment = {
+        text: feedback.microTransfer.step,
+        source: "model",
+        createdAt: finishedAt,
+        dueHint: feedback.microTransfer.when || null,
+      };
+    }
     if (grant) {
       doc.workspaceId = grant.workspaceId;
       doc.centralSpendTxId = grant.centralTxId ?? null;

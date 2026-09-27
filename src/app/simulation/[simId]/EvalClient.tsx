@@ -41,6 +41,8 @@ interface LoadedSim {
   /** B2: Modus + Härtegrad des Laufs (Badges in der Auswertung). */
   mode: 'practice' | 'check';
   hardness: 'mild' | 'standard' | 'hart';
+  /** O2: vom Lernenden angepasster Vorsatz (null = Modellvorschlag gilt). */
+  commitment: { text: string; source: 'model' | 'user' } | null;
 }
 
 export default function EvalClient() {
@@ -148,6 +150,7 @@ export default function EvalClient() {
             convoLocale: s.convoLocale ?? null,
             mode: s.mode ?? 'practice',
             hardness: s.hardness ?? 'standard',
+            commitment: s.commitment ?? null,
           });
           setState('ready');
         }
@@ -272,6 +275,14 @@ export default function EvalClient() {
             `/?szenario=${encodeURIComponent(sim.scenarioId)}&fokus=${encodeURIComponent(focusText)}`
           )
         }
+        initialCommitment={sim.commitment?.source === 'user' ? sim.commitment.text : null}
+        onCommit={(text) => {
+          // O2: eigene Worte des Lernenden speichern — best effort, kein Fehler-UI.
+          void authFetch('/api/simulation/commit', {
+            method: 'POST',
+            body: JSON.stringify({ simId, text }),
+          }).catch(() => undefined);
+        }}
         onNew={() => router.push('/')}
       />
     </AppShell>

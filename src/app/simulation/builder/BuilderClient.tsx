@@ -36,7 +36,7 @@ interface BuilderScenario {
   teaser: string;
   category: string;
   difficulty: number;
-  persona: { name: string; role: string };
+  persona: { name: string; role: string; voice?: string };
   candidateBriefing: {
     yourRole: string;
     relationship: string;
@@ -168,6 +168,30 @@ export default function BuilderClient() {
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) throw new Error('status');
       await load();
+    } catch {
+      setError(ts.genericError);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // O5a: Stimme der Persona wählen (Seraphina/Florian/Emma) — Kundenszenarien
+  // sprachen bisher alle mit der Standardstimme.
+  async function setVoice(id: string, voice: string) {
+    setBusyId(id);
+    setError(null);
+    try {
+      const res = await authFetch('/api/simulation/builder/voice', {
+        method: 'POST',
+        body: JSON.stringify({ scenarioId: id, voice }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) throw new Error('voice');
+      setItems((prev) =>
+        prev.map((it) =>
+          it.id === id ? { ...it, scenario: { ...it.scenario, persona: { ...it.scenario.persona, voice } } } : it
+        )
+      );
     } catch {
       setError(ts.genericError);
     } finally {
@@ -382,6 +406,22 @@ export default function BuilderClient() {
                 {isOpen && (
                   <div className="border-t border-border p-4 space-y-4 text-sm">
                     <p className="text-muted-foreground leading-relaxed">{s.teaser}</p>
+
+                    {/* O5a: Stimme der Persona (Sprachmodus) */}
+                    <label className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-semibold uppercase tracking-wide">{ts.builderVoice}</span>
+                      <select
+                        value={s.persona.voice ?? 'florian-hd'}
+                        disabled={busyId === item.id}
+                        onChange={(e) => void setVoice(item.id, e.target.value)}
+                        className="rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground"
+                        data-testid="builder-voice"
+                      >
+                        <option value="seraphina-hd">{ts.voiceSeraphina}</option>
+                        <option value="florian-hd">{ts.voiceFlorian}</option>
+                        <option value="emma-hd">{ts.voiceEmma}</option>
+                      </select>
+                    </label>
 
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">

@@ -24,7 +24,8 @@
     "watchVideo": "Féach ar an bhfíseán",
     "expandSidebar": "Leathnaigh an barra taoibh",
     "collapseSidebar": "Laghdaigh an barra taoibh",
-    "balanceEmptyMember": "Tá cuóta do chuideachta ídithe — cuireadh do riarthóir ar an eolas."
+    "balanceEmptyMember": "Tá cuóta do chuideachta ídithe — cuireadh do riarthóir ar an eolas.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Anailís tras-scríbhinne",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Sínigh isteach",
@@ -404,32 +409,6 @@
     "badgeSolid": "Daingean",
     "badgeNeedsWork": "Fócas de dhíth"
   },
-  "linkedin": {
-    "title": "Comhroinn ar LinkedIn",
-    "subtitle": "Gin postáil IS le híomhá agus foilsigh go díreach í",
-    "step1": "1. Gin téacs na postála",
-    "step2": "2. Gin íomhá (NanoBanana Pro)",
-    "generatePost": "Gin postáil",
-    "generating": "Á ghiniúint…",
-    "generateImage": "Gin íomhá",
-    "generatingImage": "Íomhá á cruthú…",
-    "imageHeadline": "Ceannlíne na híomhá",
-    "postPlaceholder": "Feicfear téacs do phostála LinkedIn anseo tar éis na giniúna…",
-    "noImage": "Cliceáil \"Gin íomhá\" chun íomhá IS a chruthú do do phostáil",
-    "regenerate": "Gin arís",
-    "connect": "Ceangail LinkedIn",
-    "postToLinkedIn": "Postáil ar LinkedIn",
-    "posting": "Á postáil…",
-    "posted": "Postáilte go rathúil!",
-    "viewPost": "Féach ar an bpostáil",
-    "generatePostFirst": "Gin téacs na postála ar dtús, le do thoil.",
-    "tokenExpired": "Tá seisiún LinkedIn imithe in éag. Ceangail arís, le do thoil.",
-    "notConfigured": "Níl LinkedIn cumraithe don imscaradh seo.",
-    "connectedOk": "LinkedIn ceangailte.",
-    "connectFailed": "Theip ar cheangal LinkedIn:",
-    "confirmQuestion": "An phostáil seo a fhoilsiú go poiblí ar LinkedIn anois?",
-    "confirmNow": "Sea, postáil go poiblí"
-  },
   "api": {
     "unauthorized": "Fíordheimhniú de dhíth",
     "accessDenied": "Rochtain diúltaithe",
@@ -464,7 +443,14 @@
     "wishThanks": "Go raibh maith agat! Tháinig d'iarratas isteach agus téann sé i dtosaíochtú cásanna nua.",
     "resumeTimeLeft": "~{min} nóim. fágtha",
     "resumeTimeUp": "Tá an t-am istigh",
-    "dropWrongType": "Ní ghlactar ach le PDF anseo — bain úsáid as an leathanach anailíse le haghaidh téacs."
+    "dropWrongType": "Ní ghlactar ach le PDF anseo — bain úsáid as an leathanach anailíse le haghaidh téacs.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "ó rólimirt",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Cad a dhéanfaidh tú go nithiúil ar bhealach difriúil an chéad uair eile?",
     "studioBridgeTitle": "An téama seo a láimhseáil níos bunúsaí?",
     "studioBridgeBody": "Cruthaigh cúrsa sa Learning Studio — saincheaptha do {c}.",
-    "studioBridgeCta": "Cruthaigh cúrsa sa Studio"
+    "studioBridgeCta": "Cruthaigh cúrsa sa Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Próifíl",

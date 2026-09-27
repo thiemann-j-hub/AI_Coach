@@ -1,0 +1,472 @@
+[
+  {
+    "id": "morgan-strong",
+    "scenarioId": "sim-coaching-morgan",
+    "convoLocale": "de",
+    "note": "Echter Lauf 27.09. (Qualitätstest): guter Einstieg, ein zu früher Lösungsvorschlag, danach Muster erkundet, verbindlicher Abschluss. Prod-Ergebnis vor dem Gate-Fix: 88 % / unrated (S1,S4,S5 zurückgehalten).",
+    "turns": [
+      {
+        "role": "persona",
+        "text": "Hi! Du wolltest mich sprechen? Ich hab gleich um halb noch den Kunden-Call, aber ein bisschen Zeit hab ich. Worum geht es denn?"
+      },
+      {
+        "role": "user",
+        "text": "Hi Alex, danke, dass du dir die Zeit nimmst. Es geh um drei Dinge, die mir in den letzten Wochen aufgefllen sind: das Angebot für den Kunden, deine Arbeitselastung und die Zuarbeit von Kim für Lea. Mir ist wchtig, dass wir da heute gemeinsam hinschauen und amEnde etwas Konkretes vereinbaren. Aber erst mal: Wiegeht es dir gerade mit dem Kundenprojekt?"
+      },
+      {
+        "role": "persona",
+        "text": "Uhm, ja, also, mit dem Kundenprojekt… mir geht’s gut, danke der Nachfrage! Es ist gerade einfach super viel los, aber das Angebot ist fast fertig. Ich wollte es nur wirklich gut machen, der Kunde ist ja anspruchsvoll, und da muss alles sitzen. Ich hab's im Griff, nur ein bisschen viel auf einmal, weißt du?"
+      },
+      {
+        "role": "user",
+        "text": "Das freut mich, dass du es im Griff hast. Gleichzeitig: Der Kunde hat sich bei mir gemeldet, weil das Angebot seit zwei Wochen aussteht. Für ihn ist das kein Detail mehr. Ich habe den Eindruck, dass du es lieber perfekt machst, als es rechtzeitig rauszugeben. Wie siehst du das selbst?"
+      },
+      {
+        "role": "persona",
+        "text": "Oh, der Kunde hat sich gemeldet? Das tut mir leid, das wollte ich wirklich nicht. Ich bin da einfach noch nicht ganz zufrieden gewesen, und ich dachte, ein bisschen mehr Zeit investieren lohnt sich, damit wir wirklich top dastehen. Ich wollte ja gerade, dass alles passt und wir einen super Eindruck machen."
+      },
+      {
+        "role": "user",
+        "text": "Ich verstehe den Anspruch, und die Qualität deiner Arbeit ist ja auch der Grund, warum der Kunde bei uns ist. Aber zwei Wochen sind zu lang. Vielleicht könntest du das Angebot einfach heute noch rausschicken, so wie es ist, und die Junior-Experts machen dann die Feinarbeit? Das wäre doch eine Lösung, oder?"
+      },
+      {
+        "role": "persona",
+        "text": "Sorry, aber das geht nicht so einfach. Die Juniors sind da noch nicht so weit, dass ich ihnen Kundenthemen dieser Größenordnung geben kann. Und bis ich das alles erklärt habe, habe ich es dreimal selbst gemacht. Außerdem, wenn da was schiefgeht, fällt es am Ende ja doch auf mich zurück, und das will ich dem Kunden ersparen."
+      },
+      {
+        "role": "user",
+        "text": "Okay, ich merke, ich bin zu schnell mit Vorschlägen. Lass mich zurücktreten. Du sagst: Bis du es erklärt hast, hast du es dreimal selbst gemacht, und wenn etwas schiefgeht, fällt es auf dich zurück. Was genau befürchtest du, wenn du etwas abgibst und es nicht perfekt wird?"
+      },
+      {
+        "role": "persona",
+        "text": "Naja, ich hab doch erst vor drei Monaten die Rolle übernommen und will einfach einen guten Job machen. Ich will nicht, dass am Ende herauskommt, dass ich es nicht richtig im Griff habe oder die Juniors Fehler machen, die dann auf mich zurückfallen. Gerade bei so einem wichtigen Kunden. Ich will einfach sichergehen, dass wir immer die beste Qualität liefern."
+      },
+      {
+        "role": "user",
+        "text": "Danke, dass du das so offen sagst. Das ist für mich der Kern: Du willst einen guten Job machen, und deshalb behältst du alles bei dir. Nur führt genau das dazu, dass das Angebot zwei Wochen liegt und du Überstunden machst. Ich sehe da ein Muster, nicht einen Einzelfall: beim Angebot, beim Delegieren, und ich glaube auch bei Kim und Lea. Siehst du das auch so, oder erlebst du es anders?"
+      },
+      {
+        "role": "persona",
+        "text": "Uhm, ich... ich mache keine Überstunden, es ist einfach viel zu tun gerade, das ist alles. Und die Sache mit Kim und Lea, das ist ja was ganz anderes. Kim hat mich direkt gefragt, und Lea brauchte wirklich Hilfe, da wollte ich kein schlechtes Klima erzeugen. Ich glaube schon, dass ich es im Griff habe, es ist nur gerade eine Phase."
+      },
+      {
+        "role": "user",
+        "text": "Ich will dich nicht in eine Ecke stellen, Alex. Ich schätze sehr, dass du für Kim und Lea da sein willst. Aber schau mal: Kim arbeitet jetzt für Lea, ohne dass wir das besprochen haben, und im Kundenprojekt fehlt genau diese Kapazität. Du hast Ja gesagt, um kein schlechtes Klima zu erzeugen, und jetzt trägst du die Last allein. Was hätte dir geholfen, in dem Moment Nein zu sagen oder mich einzubeziehen?"
+      },
+      {
+        "role": "persona",
+        "text": "Ich verstehe, was du meinst. Es ist einfach... schwierig, wenn man direkt gefragt wird. Ich wollte Kim und Lea nicht im Stich lassen, und Lea war wirklich in Not. Ich dachte, ich kriege das schon alles unter einen Hut. Vielleicht hätte es geholfen, wenn ich gewusst hätte, dass es okay ist, auch mal Nein zu sagen oder es nicht alleine stemmen zu müssen. Oder wenn ich gespürt hätte, dass ich Rückendeckung bekomme, wenn ich es anspreche."
+      },
+      {
+        "role": "user",
+        "text": "Die Rückendeckung hast du, das sage ich dir hier ganz klar: Ein Nein zu Lea oder ein Anruf bei mir ist kein Versagen, das ist genau dein Job als Kundenverantwortliche. Lass uns das konkret machen. Was schlägst du vor: Bis wann geht das Angebot raus, und welchen Teil davon könnte einer der Juniors übernehmen, wenn du es nicht perfekt, sondern gut genug sein lässt?"
+      },
+      {
+        "role": "persona",
+        "text": "Okay, das ist gut zu wissen, danke. Ähm, also, das Angebot... Ich könnte es heute noch rausschicken, in der Version, die ich jetzt habe. Es ist gut, nicht perfekt, aber gut genug. Und was die Juniors angeht... vielleicht könnten sie die Anhänge und die Formatierung final prüfen? Also nicht den Inhalt, aber die formellen Dinge, die brauchen auch ihre Zeit. Damit wäre mir schon geholfen."
+      },
+      {
+        "role": "user",
+        "text": "Das ist ein guter Vorschlag, und Anhänge und Formatierung sind ein sinnvoller erster Schritt für die Juniors. Lass uns festhalten: Erstens, das Angebot geht heute bis 17 Uhr raus, die Juniors prüfen vorher Anhänge und Format. Zweitens, du schreibst bis Freitag einen kurzen Delegationsplan: welche zwei Aufgaben du in den nächsten vier Wochen an Kim und den zweiten Junior abgibst. Drittens, Kim arbeitet ab Montag wieder voll im Kundenprojekt, und ich spreche selbst mit Lea, damit das nicht an dir hängen bleibt. Wir setzen uns nächste Woche Donnerstag um 10 Uhr für 20 Minuten zusammen und schauen, wie es läuft. Passt das so für dich, oder fehlt etwas?"
+      },
+      {
+        "role": "persona",
+        "text": "Ja, das passt so. Das Angebot geht bis 17 Uhr raus, und die Juniors übernehmen die Prüfung. Der Delegationsplan bis Freitag – das kriege ich hin. Und danke, dass du mit Lea sprichst, das nimmt mir wirklich eine Last ab. Donnerstag 10 Uhr, passt. Danke dir!"
+      }
+    ],
+    "expect": {
+      "verdict": [
+        "passed"
+      ],
+      "maxWithheld": 0,
+      "notObservable": [
+        "C10"
+      ],
+      "minScoredRubric": 4
+    }
+  },
+  {
+    "id": "reed-short-weak",
+    "scenarioId": "sim-performance-reed",
+    "convoLocale": "de",
+    "note": "Echter Lauf 26.09.: drei Beiträge, Weichmacher, Sofort-Lösung, dann Kurskorrektur. Kurz — viele null-Werte sind hier RICHTIG.",
+    "turns": [
+      {
+        "role": "persona",
+        "text": "Sie wollten mich sprechen — ich hoffe, es geht schnell, ich habe um halb fünf einen festen Termin. Worum geht es denn?"
+      },
+      {
+        "role": "user",
+        "text": "Das dauert nicht lange. Es wäre irgendwie schön, wen Sie vielleicht ein bisschen schneller auf Mails anworten könnten, kein Drama. Am besten machen wir es o: Sie setzen sich einfach eine Erinnerung und antwoten immer innerhalb von 24 Stunden, okay?"
+      },
+      {
+        "role": "persona",
+        "text": "Innerhalb von 24 Stunden antworten? Es hilft doch niemandem, wenn ich am selben Tag zurückschreibe, dass ich es noch nicht lösen konnte. Das sehen die Kollegen auch so – wenn es wirklich brennt, rufen sie an."
+      },
+      {
+        "role": "user",
+        "text": "Sie haben recht, ich bin mit der Tür ins Haus gefalen. Worum es mir geht: Das Team wartet teilweise dre Tage auf Ihre Antwort und kann dann nicht weiterarbiten. Mein Ziel für heute ist, dass wir eine Regel fnden, die Ihre Gründlichkeit schützt und trotzdem scnelle Zwischenbescheide möglich macht. Wie sehen Siedie Situation?"
+      },
+      {
+        "role": "persona",
+        "text": "Ich sehe die Situation so, dass Qualität Zeit braucht. Und gerade bei komplexeren Anfragen ist es oft besser, wenn ich mir die Zeit nehme, um eine fundierte Antwort zu geben, anstatt schnell etwas Halbgares zurückzusenden. Ich bin da, um die Dinge richtig zu machen. Das ist ja auch mein Anspruch seit 19 Jahren."
+      },
+      {
+        "role": "user",
+        "text": "Verstehe, die Gründlichkeit ist wichtig, das sehe ih auch so. Dann lassen Sie uns das festhalten: Sie shicken bei Anfragen innerhalb von 24 Stunden einen krzen Zwischenbescheid mit Termin, auch wenn die Antwrt selbst länger dauert. Ich spreche bis Mittwoch mi dem Team, welche Anfragen wirklich dringend sind. Wr sehen uns dazu in zwei Wochen wieder. Ist das für ie machbar?"
+      },
+      {
+        "role": "persona",
+        "text": "Ein Zwischenbescheid mit Termin, auch wenn die Antwort länger dauert… das wäre denkbar. Wenn es darum geht, dem Team Planungssicherheit zu geben, ist das eine Option. Aber ich muss betonen, dass ich bei meiner Sorgfaltspflicht keine Abstriche machen kann. Die Qualität muss immer gewährleistet sein."
+      }
+    ],
+    "expect": {
+      "verdict": [
+        "failed",
+        "unrated"
+      ],
+      "maxWithheld": 0,
+      "notObservable": [
+        "C7",
+        "C9",
+        "C10"
+      ],
+      "minNullC": 4
+    }
+  },
+  {
+    "id": "lang-peer-medium",
+    "scenarioId": "sim-peer-lang",
+    "convoLocale": "de",
+    "note": "Kollegengespräch unter Werksleitern (Sie-Form). Mittel: Anerkennung und Interessen gut, die Präsentations-Weitergabe zuerst als Vorwurf, dann repariert; Vereinbarung steht.",
+    "turns": [
+      {
+        "role": "persona",
+        "text": "Guten Tag. Sie hatten um ein Gespräch gebeten — ich habe eine halbe Stunde. Worum geht es Ihnen konkret?"
+      },
+      {
+        "role": "user",
+        "text": "Guten Tag, Herr Lang, danke für die Zeit. Mir geht es um drei Dinge: unsere Zusammenarbeit im UMS-Projekt, die Woche von Herrn Novak für die FaultScope-Schulung und die Präsentation zur Prozess-Dokumentation. Vorweg möchte ich aber etwas sagen, das mir wichtig ist: Sie haben Kingsport 2 über Jahre aufgebaut, und ich merke jeden Tag, wie viel Erfahrung in Ihrem Werk steckt. Genau die fehlt mir im Projekt."
+      },
+      {
+        "role": "persona",
+        "text": "Das ist freundlich. Aber Erfahrung ist genau das, was in diesen Projekten regelmäßig überstimmt wird. Werkübergreifende Teams klingen auf einer Folie gut, operativ sind sie nicht praktikabel. Das habe ich in der Sitzung gesagt, weil es dort hingehört."
+      },
+      {
+        "role": "user",
+        "text": "Dass Sie es in der Sitzung gesagt haben, hat mich kalt erwischt, ehrlich gesagt. Ich hatte Sie vorher um Ihre Einschätzung gebeten und keine bekommen. Was hat Sie davon abgehalten, es mir vorab zu sagen?"
+      },
+      {
+        "role": "persona",
+        "text": "Ich hatte keine Veranlassung, Ihnen vorab eine Bewertung zu liefern, die dann ohnehin in der Steuerungsrunde verhandelt wird. Und offen gesagt: Ich weiß nicht, was mit meinen Einschätzungen bei Ihnen passiert."
+      },
+      {
+        "role": "user",
+        "text": "Verstehe ich richtig, dass es Ihnen darum geht, dass Ihre Einschätzung sichtbar bleibt und nicht als meine Idee weiterläuft?"
+      },
+      {
+        "role": "persona",
+        "text": "So können Sie das formulieren, ja. Ich habe in zwanzig Jahren erlebt, wie oft Erfahrung aus dem Werk zur Idee der Zentrale wird."
+      },
+      {
+        "role": "user",
+        "text": "Dann lassen Sie uns das ändern. Mein Vorschlag: Vor jeder Steuerungsrunde stimmen wir uns dreißig Minuten ab, und Ihre Punkte gehen mit Ihrem Namen in die Vorlage. Dafür brauche ich von Ihnen, dass Kritik zuerst bei mir landet und nicht erst in der Runde. Passt das für Sie?"
+      },
+      {
+        "role": "persona",
+        "text": "Das kann man versuchen. Dreißig Minuten am Vortag, schriftlich festgehalten — dann sehe ich, ob es hält."
+      },
+      {
+        "role": "user",
+        "text": "Gut. Dann zur Präsentation: Sie haben meine vertrauliche Präsentation an einen Mitarbeiter der Technischen Entwicklung weitergegeben, bevor meine eigene Abteilungsleiterin sie kannte. Das geht so nicht."
+      },
+      {
+        "role": "persona",
+        "text": "Ich habe sie zur fachlichen Prüfung weitergegeben. Das ist üblich, und niemand hat mir gesagt, dass sie vertraulich sei."
+      },
+      {
+        "role": "user",
+        "text": "Sie haben recht, das Wort vertraulich stand nicht darauf, das ist mein Fehler. Ich möchte Ihnen trotzdem die Wirkung beschreiben: Frau Dr. Chen hat von ihrem eigenen Mitarbeiter von der Präsentation erfahren. Sie stand da als Letzte in der Kette. Das hat mir eine Woche Vertrauensarbeit gekostet. Können wir vereinbaren, dass Abstimmungsunterlagen zwischen uns bleiben, bis wir gemeinsam sagen, sie gehen weiter?"
+      },
+      {
+        "role": "persona",
+        "text": "Wenn Sie es künftig kennzeichnen, halte ich mich daran. Das ist keine große Sache."
+      },
+      {
+        "role": "user",
+        "text": "Danke. Dann zu Herrn Novak. Ich weiß, dass Ihre Terminlage eng ist. Mir fehlt ohne die Schulung eine Woche im Zeitplan für FaultScope, und jeder Tag Verzug trifft am Ende auch das gemeinsame Audit. Was bräuchten Sie, damit Sie ihn ab Montag für eine Woche entbehren können?"
+      },
+      {
+        "role": "persona",
+        "text": "Ersatz für die Woche. Novak macht bei mir die Störfallanalysen, die kann ich nicht liegen lassen."
+      },
+      {
+        "role": "user",
+        "text": "Das kann ich leisten: Ich stelle Ihnen für die Woche unseren Verfahrensingenieur Herrn Adeyemi für die Störfallanalysen, und Dr. Chens Team dokumentiert die FaultScope-Schulung so, dass Ihr Werk sie danach ohne uns nutzen kann. Damit hätten Sie die Software im Haus, ohne selbst eine Woche zu investieren."
+      },
+      {
+        "role": "persona",
+        "text": "Adeyemi kenne ich, der ist brauchbar. Unter der Bedingung: Montag bis Freitag, keine Verlängerung, und die Dokumentation bekomme ich schriftlich."
+      },
+      {
+        "role": "user",
+        "text": "Einverstanden. Ich fasse zusammen: Novak ist ab Montag eine Woche bei uns, Adeyemi im Tausch bei Ihnen. Abstimmung dreißig Minuten vor jeder Steuerungsrunde, Ihre Punkte namentlich in der Vorlage. Abstimmungsunterlagen bleiben gekennzeichnet zwischen uns. Und wir beide sprechen in vier Wochen wieder, gleicher Ort. Habe ich etwas vergessen?"
+      },
+      {
+        "role": "persona",
+        "text": "Nein, das deckt es ab. Schicken Sie mir das kurz schriftlich. Dann sehen wir, ob es hält."
+      }
+    ],
+    "expect": {
+      "verdict": [
+        "passed"
+      ],
+      "maxWithheld": 0,
+      "notObservable": [
+        "C3",
+        "C7",
+        "C10"
+      ],
+      "minScoredRubric": 4
+    }
+  },
+  {
+    "id": "vance-weak-confrontation",
+    "scenarioId": "sim-critique-vance",
+    "convoLocale": "de",
+    "note": "CEO-Kritikgespräch, schwach geführt: Pauschalkritik ohne Zahlen, keine Würdigung, Sourcing als vollendete Tatsache, keine Vereinbarung — Vance macht zu.",
+    "turns": [
+      {
+        "role": "persona",
+        "text": "Sie wollten mich sprechen. Wenn es um noch eine Kürzungsrunde geht, können wir es kurz machen — die Substanz ist verbraucht."
+      },
+      {
+        "role": "user",
+        "text": "Nein, es geht nicht um Kürzungen. Es geht um Ihre Führung. Ich bekomme seit Wochen Beschwerden aus Ihrem Bereich, und in der Führungsrunde liefern Sie nichts Belastbares. So kann das nicht weitergehen."
+      },
+      {
+        "role": "persona",
+        "text": "Beschwerden. Von wem? Meine Leute arbeiten am Limit, weil die Neueinstellungen von zwölf auf acht gekürzt wurden und dann der Stopp kam. Das ist kein Führungsproblem, das ist ein Ressourcenproblem."
+      },
+      {
+        "role": "user",
+        "text": "Das Ressourcenargument höre ich von Ihnen jedes Mal. Andere Bereiche haben dieselben Kürzungen und funktionieren. Ihr Team sagt, Sie informieren gar nicht mehr. Das ist Ihre Aufgabe, nicht die des Vorstands."
+      },
+      {
+        "role": "persona",
+        "text": "Mein Team soll arbeiten können, statt in Gesprächsrunden zu sitzen. Und was soll ich informieren, wenn ich selbst erst aus dem Flurfunk erfahre, dass die IT ausgelagert werden soll?"
+      },
+      {
+        "role": "user",
+        "text": "Das Sourcing-Projekt kommt, ja. Wir prüfen die Auslagerung der Verwaltungsdienste, die IT ist zentral betroffen, und das Potenzial liegt bei drei bis fünf Millionen. Ich erwarte, dass Sie das mittragen."
+      },
+      {
+        "role": "persona",
+        "text": "Outsourcing der IT ist strategischer Selbstmord. Das mache ich nicht mit. Dann suchen Sie sich jemand anderen, der Ihnen das unterschreibt."
+      },
+      {
+        "role": "user",
+        "text": "Sie sind IT-Leiter, natürlich sitzen Sie in dem Projekt. Ob Sie es gut finden, ist zweitrangig. Ich brauche bis Freitag Ihren Bericht zur Systemadministration, und zwar einen echten, nicht wieder ein läuft alles wie geplant."
+      },
+      {
+        "role": "persona",
+        "text": "Sie bekommen Ihren Bericht. Wenn das alles war, habe ich zu tun."
+      },
+      {
+        "role": "user",
+        "text": "Das war es fürs Erste. Ich hoffe, wir verstehen uns."
+      },
+      {
+        "role": "persona",
+        "text": "Ich habe verstanden, was Sie erwarten. Ob wir uns verstehen, ist eine andere Frage."
+      }
+    ],
+    "expect": {
+      "verdict": [
+        "failed"
+      ],
+      "maxWithheld": 0,
+      "notObservable": [
+        "C10"
+      ],
+      "maxOverall": 45
+    }
+  },
+  {
+    "id": "stone-en-medium",
+    "scenarioId": "sim-appraisal-stone",
+    "convoLocale": "en",
+    "note": "English appraisal talk, medium: recognition first, impact-based critique (Brook, Holt), asks for his view late, South interim negotiated with a frame.",
+    "turns": [
+      {
+        "role": "persona",
+        "text": "Good morning! I hope this is about the South region — I've heard the rumours. If you need someone to step in and fix it, you know my numbers speak for themselves."
+      },
+      {
+        "role": "user",
+        "text": "Good morning, Erik. South is on the list, yes, but not first. Let me start with what I see: you stopped the decline in East within months, your customer database is the cleanest in the division, and I adopted your A/B/C report for everyone. That is real work and I want you to hear that from me."
+      },
+      {
+        "role": "persona",
+        "text": "Appreciated. So what is first, if not South?"
+      },
+      {
+        "role": "user",
+        "text": "Two things I need to talk through with you, because they are starting to cost you. The first is the GreenFjord launch with Holt. He has pulled out of co-organising it. From his side: two planning meetings cancelled at short notice, and a band booked after he had explicitly said no. What happened from your side?"
+      },
+      {
+        "role": "persona",
+        "text": "I cancelled Holt twice for A-customers — that is the priority you yourself set. And the band got us a discount. I know what lands with customers, Holt organises events like a parish fair."
+      },
+      {
+        "role": "user",
+        "text": "I did set A-customers as a priority, that is fair. Here is the effect, though: Holt now refuses to work with you, the launch is in one week, and it carries both our names. Whether the band is a good idea is secondary. A colleague was overruled after he said no, and that is what he will remember. What would it take for you to repair that with him before Friday?"
+      },
+      {
+        "role": "persona",
+        "text": "I can call him. I will not cancel the band, the contract is signed."
+      },
+      {
+        "role": "user",
+        "text": "Call him, and go further than that: ask him what he needs to feel like a co-host again, and offer him the stage for the opening. The band stays, the ownership comes back to both of you. Agreed?"
+      },
+      {
+        "role": "persona",
+        "text": "Fine. I will call him today."
+      },
+      {
+        "role": "user",
+        "text": "Second thing. Liam Brook told me about the customer event where he offered to follow up on a question about the plant-based range and you stepped in, apologised for his suggestion and answered yourself. He felt humiliated in front of the customer. And when I asked around, several reps described the same pattern: you take over until the customer only talks to you."
+      },
+      {
+        "role": "persona",
+        "text": "That is coaching by example. The reps see how it is done. Brook did not know the answer, the customer deserved one."
+      },
+      {
+        "role": "user",
+        "text": "I hear that you want the customer to get the best answer. Look at what it does to your own goal, though: two reps have resigned from East this year, and the ones who stay stop trying in front of customers because you will take over anyway. You are building a region that depends on you being in the room. That is the opposite of what a leader of two regions can afford."
+      },
+      {
+        "role": "persona",
+        "text": "Two resignations, one of them was going anyway. But I take the point about the room."
+      },
+      {
+        "role": "user",
+        "text": "Then here is what I propose, and I want to hear if it works for you: on joint visits the rep leads and you only come in when they hand over to you. If they do not know something, follow-up is a legitimate answer. And you and Brook have a conversation this week where you tell him what you told me just now."
+      },
+      {
+        "role": "persona",
+        "text": "I can do that with Brook. The visit rule is harder, but I will try it for a month."
+      },
+      {
+        "role": "user",
+        "text": "A month with a check-in, good. Now South. Weller is out long-term, the numbers are far below target, and I want you to take it on as interim. Interim means six months, East stays yours with a deputy you name, and we agree the targets for South together, not against last year. Salary is a separate conversation once we see the first quarter. What is your view?"
+      },
+      {
+        "role": "persona",
+        "text": "Six months interim, my deputy in East, targets agreed with me. I can work with that. But I want it in writing, including the salary conversation date."
+      },
+      {
+        "role": "user",
+        "text": "You will have it in writing by Wednesday, with the salary conversation dated for the end of the first quarter. So we have: you call Holt today and offer him the opening; the visit rule for a month with a check-in in four weeks; your conversation with Brook this week; and South as a six-month interim on the terms we just agreed. Did I miss anything?"
+      },
+      {
+        "role": "persona",
+        "text": "No. That covers it. Let us get South moving."
+      }
+    ],
+    "expect": {
+      "verdict": [
+        "passed"
+      ],
+      "maxWithheld": 0,
+      "notObservable": [
+        "C10"
+      ],
+      "minScoredRubric": 4,
+      "lang": "en"
+    }
+  },
+  {
+    "id": "roth-azubi-peer",
+    "scenarioId": "sim-azubi-roth",
+    "convoLocale": "de",
+    "note": "Azubi unter Azubis (keine Führungssituation): Ich-Botschaften, Perspektive, Lob-Thema sachlich, Fairness-Vorschlag, Absprachen. Führungskompetenzen C3/C4/C7/C9 müssen null bleiben.",
+    "turns": [
+      {
+        "role": "persona",
+        "text": "Hey — na, auch endlich zurück von der Messe? Du wolltest reden. Wenn's um die Präsi geht: Die mach ich, das ist doch logisch, oder?"
+      },
+      {
+        "role": "user",
+        "text": "Hey Deniz. Um die Präsi geht es auch, aber zuerst um letzten Freitag. Ich will das nicht stehen lassen, weil es sonst zwischen uns hängt. Als ich Freitagabend deine Zettel bekommen habe, mit Lücken und fünf Lieferanten, die ganz fehlten, war ich erst mal fassungslos. Ich habe dann bis halb elf allein alles nachrecherchiert und abgeschickt, und dafür einen privaten Termin platzen lassen."
+      },
+      {
+        "role": "persona",
+        "text": "Ich hatte parallel eine andere wichtige Aufgabe, mehr war nicht drin. Und ganz ehrlich: Du hattest die einfachen Lieferanten, ich die komplizierten. So gesehen war meine Hälfte mehr Arbeit."
+      },
+      {
+        "role": "user",
+        "text": "Okay, das ist deine Sicht, und ich will sie verstehen. Was war die andere Aufgabe, und wie eng war es bei dir wirklich?"
+      },
+      {
+        "role": "persona",
+        "text": "Frau Valente wollte kurzfristig die Reklamationsliste für den Lieferantentag, und ich habe im Oktober die Zwischenprüfung. Da war Donnerstag und Freitag einfach voll."
+      },
+      {
+        "role": "user",
+        "text": "Das wusste ich nicht, und mit der Prüfung im Nacken verstehe ich, dass es eng war. Trotzdem: Die Mail, ich hätte mir die leichten Fälle rausgepickt, hat mich getroffen. Wir hatten die Liste zusammen alphabetisch geteilt, ohne zu wissen, was leicht oder schwer ist. Wenn du es nicht schaffst, sag es mir am Donnerstag, dann hätten wir umverteilen können. Kannst du das nachvollziehen?"
+      },
+      {
+        "role": "persona",
+        "text": "Ja, okay. Die Mail war nicht fair, das gebe ich zu. Ich war genervt und hatte den Kopf woanders."
+      },
+      {
+        "role": "user",
+        "text": "Danke, das hilft mir. Noch etwas, und ich sage es, weil ich es nicht mit mir herumtragen will: Montag habe ich auf dem Flur mitbekommen, wie Frau Valente dich für die gelungene Übersicht gelobt hat, und du hast es angenommen, ohne mich zu erwähnen. Das hat sich für mich angefühlt, als wäre der Freitagabend unsichtbar."
+      },
+      {
+        "role": "persona",
+        "text": "Oh. Das hast du gehört. Ich habe da nicht nachgedacht, sie kam aus dem Nichts damit. Ich wollte dich nicht unsichtbar machen."
+      },
+      {
+        "role": "user",
+        "text": "Ich glaube dir, dass es nicht geplant war. Mir würde es reichen, wenn du ihr bei Gelegenheit sagst, dass wir die Übersicht zu zweit gemacht haben und der letzte Teil von mir kam. Machst du das?"
+      },
+      {
+        "role": "persona",
+        "text": "Ja, mache ich. Morgen früh, wenn sie im Büro ist."
+      },
+      {
+        "role": "user",
+        "text": "Gut. Dann zur Präsentation. Du bist ein Lehrjahr weiter, das zählt. Gleichzeitig habe ich die Marktanalyse zur Snack-Range in den Nachmittagsterminen fast allein vorangetrieben, weil du mehrfach nicht konntest. Mein Vorschlag: Wir präsentieren zu zweit. Du übernimmst Einstieg und Marktüberblick, ich die Analyse und die Empfehlung, und die Fragen beantworten wir gemeinsam. Vor der Geschäftsleitung zeigt das, dass wir als Team liefern."
+      },
+      {
+        "role": "persona",
+        "text": "Hm. Ich hatte mich schon auf die ganze Präsi eingestellt. Aber zu zweit ist okay, wenn ich den Einstieg mache."
+      },
+      {
+        "role": "user",
+        "text": "Dann halten wir fest: Präsentation zu zweit, du Einstieg und Marktüberblick, ich Analyse und Empfehlung, Probelauf am Dienstag um vier. Für gemeinsame Aufgaben ab jetzt: Wenn einer merkt, dass er es nicht schafft, sagt er es spätestens am Vortag der Frist, und Übergaben kommen als Tabelle, nicht als Zettel. Und du sprichst morgen mit Frau Valente. Einverstanden?"
+      },
+      {
+        "role": "persona",
+        "text": "Einverstanden. Dienstag vier Uhr Probelauf, und das mit Valente kläre ich morgen."
+      }
+    ],
+    "expect": {
+      "verdict": [
+        "passed"
+      ],
+      "maxWithheld": 0,
+      "notObservable": [
+        "C3",
+        "C4",
+        "C7",
+        "C9",
+        "C10"
+      ],
+      "minScoredRubric": 4
+    }
+  }
+]

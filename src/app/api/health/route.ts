@@ -16,7 +16,11 @@ export async function GET() {
     {
       ok: true,
       status: "alive",
-      sha: process.env.BUILD_SHA ?? "unstamped",
+      // App-Setting BUILD_SHA wird vom GitHub-Deploy nicht mehr gepflegt (stand
+      // auf Juli) — Fallback ist die zur Build-Zeit eingebackene SHA.
+      sha:
+        process.env.BUILD_SHA ??
+        (process.env.NEXT_PUBLIC_BUILD_SHA ? process.env.NEXT_PUBLIC_BUILD_SHA.slice(0, 7) : "unstamped"),
       branch: process.env.BUILD_BRANCH ?? null,
       stampedAt: process.env.BUILD_STAMPED_AT ?? null,
     },

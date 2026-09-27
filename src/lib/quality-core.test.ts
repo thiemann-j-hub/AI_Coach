@@ -132,3 +132,52 @@ describe("collectQualityNotes — Integration", () => {
     expect(notes.some((n) => n.severity === "error" && n.code === "EVIDENCE_ALL_UNGROUNDED")).toBe(true);
   });
 });
+
+describe("checkEvidenceGrounding — N4-84: Sprecher-Präfix ist Metadatum, verglichen wird der Wortlaut", () => {
+  // Rohe Beiträge OHNE Labels (so übergibt /api/simulation/finish den Vergleichstext seit O1a).
+  const RAW =
+    "Okay, ich merke, ich bin zu schnell mit Vorschlägen. Lass mich zurücktreten. Was genau befürchtest du, wenn du etwas abgibst und es nicht perfekt wird?\n" +
+    "Naja, ich hab doch erst vor drei Monaten die Rolle übernommen und will einfach einen guten Job machen.\n" +
+    "Das ist ein guter Vorschlag. Lass uns festhalten: Erstens, das Angebot geht heute bis 17 Uhr raus, die Juniors prüfen vorher Anhänge und Format. Zweitens, du schreibst bis Freitag einen kurzen Delegationsplan.";
+
+  // Nur die Einzel-Warnungen zählen (der ALL_UNGROUNDED-error folgt mechanisch, wenn alle fehlen).
+  const grounded = (evidence: string[], hay = RAW) =>
+    checkEvidenceGrounding([{ id: "S9", score: 3, evidence }], hay).filter(
+      (n) => n.field === "S9" && n.code === "EVIDENCE_NOT_GROUNDED"
+    );
+
+  it("„Teilnehmer:in:“ vor einem Zitat aus der MITTE des Beitrags → gegroundet (vorher: fabriziert)", () => {
+    expect(grounded(["Teilnehmer:in: Was genau befürchtest du, wenn du etwas abgibst und es nicht perfekt wird?"])).toHaveLength(0);
+  });
+
+  it.each([
+    ["Dr. Robin Vance: Naja, ich hab doch erst vor drei Monaten die Rolle übernommen"],
+    ["Führungskraft (FK): Lass uns festhalten: Erstens, das Angebot geht heute bis 17 Uhr raus"],
+    ["Person 1: Okay, ich merke, ich bin zu schnell mit Vorschlägen."],
+    ["Alex Morgan / Kundenverantwortliche: erst vor drei Monaten die Rolle übernommen und will einfach"],
+  ])("beliebige Label-Formen werden nicht zum Zitat gezählt: %s", (q) => {
+    expect(grounded([q])).toHaveLength(0);
+  });
+
+  it("Auslassungspunkte: jedes Teilstück muss wörtlich sitzen", () => {
+    expect(grounded(["Teilnehmer:in: Angebot geht heute bis 17 Uhr raus... du schreibst bis Freitag einen kurzen Delegationsplan"])).toHaveLength(0);
+    // Paraphrasiertes Teilstück (so stand es im echten Lauf 27.09.) bleibt ungegroundet.
+    expect(grounded(["Teilnehmer:in: Angebot geht heute bis 17 Uhr raus... Delegationsplan bis Freitag"])).toHaveLength(1);
+    expect(grounded(["Teilnehmer:in: Angebot geht heute bis 17 Uhr raus… und du kündigst Kim die Zusammenarbeit"])).toHaveLength(1);
+  });
+
+  it("erfundener Kopf mit echtem Schwanz rutscht NICHT durch (max. 4 führende Wörter Toleranz)", () => {
+    expect(grounded(["Du hast völlig recht gehabt und ich sage: Lass mich zurücktreten. Was genau befürchtest du"])).toHaveLength(1);
+    expect(grounded(["Ich habe versagt und das weiß ich"])).toHaveLength(1);
+  });
+
+  it("kurze echte Zitate bleiben gültig", () => {
+    expect(grounded(["Teilnehmer:in: Lass mich zurücktreten."])).toHaveLength(0);
+  });
+
+  it("Label-Haystack (Analyse-Weg) funktioniert weiter", () => {
+    const LABELED = "Führungskraft: Ich erwarte, dass der Kunde spätestens nach zwei Tagen einen Zwischenstand bekommt.\nMitarbeiter: Das verstehe ich.";
+    expect(grounded(["Führungskraft: Ich erwarte, dass der Kunde spätestens nach zwei Tagen einen Zwischenstand bekommt."], LABELED)).toHaveLength(0);
+    expect(grounded(["FK: der Kunde spätestens nach zwei Tagen einen Zwischenstand bekommt"], LABELED)).toHaveLength(0);
+  });
+});

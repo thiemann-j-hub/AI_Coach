@@ -88,13 +88,22 @@ function buildCompetencyList(): string {
 export const CompetencyRatingSchema = z.object({
   id: z.string(),
   name: z.string(),
+  // O1d (27.09.2026, Blueprint COACH-OPTIMIERUNG): Beobachtbarkeit VOR der Evidenz
+  // entscheiden — Code deckelt danach hart (none → null, incidental → max 3).
+  observability: z
+    .enum(["explicit", "incidental", "none"])
+    .describe(
+      "ZUERST entscheiden: 'explicit' = die Situation hat DIESE Kompetenz konkret gefordert und die Person hat erkennbar gehandelt; 'incidental' = nur beiläufig berührt, kein echter Prüfstein; 'none' = im Gespräch nicht gefordert/nicht beobachtbar."
+    ),
   evidence: z
     .array(z.string())
     .max(3)
     .describe("1–2 wörtliche, anonymisierte Zitate AUS DEM TRANSKRIPT (max ~18 Wörter). Keine Paraphrasen, keine erfundenen Zitate. Leeres Array, wenn nicht beobachtbar."),
   why: z
     .string()
-    .describe("Begründung der Bewertung, ausschließlich auf die Evidenz gestützt. 'nicht ausreichend beobachtbar', wenn keine Evidenz vorliegt."),
+    .describe(
+      "Begründung als DIREKTE ANSPRACHE der bewerteten Person (Du-Form bzw. 'you'), ausschließlich auf die Evidenz gestützt: was du gesagt hast → welche Wirkung das hatte. Nie 'Der/die Übende …' oder 'Die Führungskraft …'. 'nicht ausreichend beobachtbar', wenn keine Evidenz vorliegt."
+    ),
   score: z
     .number()
     .min(1)
@@ -142,10 +151,16 @@ obwohl der Ton schlecht ist (der Ton gehört zu C5). Ein durchgängig negatives 
 beobachtbare Kompetenz zur 1.
 
 REIHENFOLGE DER BEWERTUNG (zwingend, pro Kompetenz):
-1) Sammle zuerst die EVIDENCE: 1–2 wörtliche Zitate aus dem Transkript (max. ~18 Wörter),
+0) Entscheide die BEOBACHTBARKEIT (observability): 'explicit' nur, wenn eine Gesprächssituation
+   diese Kompetenz konkret GEFORDERT hat und „{{subjectLabel}}" darauf erkennbar reagiert hat;
+   'incidental', wenn sie nur am Rande berührt wurde (kein echter Prüfstein); sonst 'none'.
+1) Sammle dann die EVIDENCE: 1–2 wörtliche Zitate aus dem Transkript (max. ~18 Wörter),
    anonymisiert mit Prefix "{{subjectLabel}}:" / "{{counterpartLabel}}:" (keine echten Namen, keine Paraphrasen).
-2) Begründe (why) ausschließlich auf Basis dieser Zitate.
+2) Begründe (why) ausschließlich auf Basis dieser Zitate — als direkte Ansprache („Du hast …
+   gesagt — das führte dazu, dass …"), nie in der 3. Person.
 3) Vergib ERST DANN den score — nur wenn die Evidenz ihn belegt.
+   'none' → score = null. 'incidental' → höchstens 3. Eine 4 gibt es NUR bei 'explicit' mit
+   klarem Beleg — eine 4 ist nie der Standardwert, auch nicht bei einem insgesamt guten Gespräch.
 
 BEOBACHTBARKEITS-TEST (zwingend VOR jedem Score, pro Kompetenz — Konsistenz vor Vollständigkeit):
 Stelle GENAU diese Frage: "Gibt es mindestens EIN wörtliches Zitat, in dem „{{subjectLabel}}" in einer
@@ -265,6 +280,9 @@ export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesI
     competencyList: buildCompetencyList(),
   };
 
+  const finalize = <T extends { competencies: Array<Partial<Rating> & { id: string }> }>(out: T): T =>
+    applyCategoryRule(applyObservabilityCap(out), input.scenarioCategory);
+
   if (scoringConsensusEnabled()) {
     // n=3 parallel (kaum Latenz-Aufschlag, 3x Scoring-Tokens). Faellt ein Lauf
     // aus, tragen die verbleibenden die Mehrheit (fail-soft via allSettled).
@@ -276,10 +294,60 @@ export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesI
       .map((s) => s.value.output)
       .filter((o): o is NonNullable<typeof o> => !!o);
     if (ok.length === 0) throw (settled[0] as PromiseRejectedResult).reason;
-    if (ok.length === 1) return ok[0];
-    return mergeConsensusRuns(ok);
+    if (ok.length === 1) return finalize(ok[0]);
+    return finalize(mergeConsensusRuns(ok));
   }
 
   const { output } = await prompt(hardenedInput);
-  return output!;
+  return finalize(output!);
+}
+
+/** Führungskompetenzen, die eine echte Führungs-/Verantwortungssituation voraussetzen. */
+export const LEADERSHIP_ONLY_COMPETENCIES = ['C3', 'C4', 'C7', 'C9'] as const;
+
+/**
+ * O1d — PURE Kategorie-Regel (testbar): Der Prompt sagt es seit V2, der Code
+ * hält es jetzt ein — in Szenarien ohne Führungsrolle (Kollegengespräch,
+ * Verhandlung, Stakeholder) sind C3/C4/C7/C9 „nicht beobachtbar“, egal was
+ * das Modell hineininterpretiert (Prüfset 27.09.: C4=3 im Azubi-Gespräch).
+ * Ohne Kategorie (Transkript-Upload = Default Mitarbeiterführung) greift nichts.
+ */
+export function applyCategoryRule<T extends { competencies: Array<Partial<Rating> & { id: string }> }>(
+  out: T,
+  scenarioCategory?: ScenarioCategory
+): T {
+  if (!scenarioCategory || scenarioCategory === 'mitarbeiterfuehrung') return out;
+  const blocked = new Set<string>(LEADERSHIP_ONLY_COMPETENCIES);
+  return {
+    ...out,
+    competencies: out.competencies.map((c) =>
+      blocked.has(c.id) && typeof c.score === 'number'
+        ? ({ ...c, score: null, evidence: [], confidence: null } as typeof c)
+        : c
+    ),
+  };
+}
+
+/**
+ * O1d — PURE Deckel (testbar): Die Beobachtbarkeits-Entscheidung des Modells ist
+ * bindend für den Score. 'none' → null (kein Score aus Vermutung), 'incidental' →
+ * höchstens 3 (eine 4 setzt eine Situation voraus, die die Kompetenz wirklich
+ * gefordert hat). Fehlt das Feld (Alt-Ausgaben), bleibt der Score unverändert.
+ * Gemini-Sparring 27.09. (Zu 2): keine erzwungene Zitatzahl — das verführt zu
+ * herausgerissenen Zitaten; stattdessen Struktur + Deckel.
+ */
+export function applyObservabilityCap<T extends { competencies: Array<Partial<Rating> & { id: string }> }>(out: T): T {
+  return {
+    ...out,
+    competencies: out.competencies.map((c) => {
+      const obs = (c as { observability?: string }).observability;
+      if (obs === "none") {
+        return { ...c, score: null, evidence: [], confidence: null } as typeof c;
+      }
+      if (obs === "incidental" && typeof c.score === "number" && c.score > 3) {
+        return { ...c, score: 3 } as typeof c;
+      }
+      return c;
+    }),
+  };
 }

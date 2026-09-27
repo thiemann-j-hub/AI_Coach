@@ -24,7 +24,8 @@
     "watchVideo": "Videó megtekintése",
     "expandSidebar": "Oldalsáv kinyitása",
     "collapseSidebar": "Oldalsáv összecsukása",
-    "balanceEmptyMember": "A céged kerete elfogyott — az adminod értesítést kapott."
+    "balanceEmptyMember": "A céged kerete elfogyott — az adminod értesítést kapott.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Átirat-elemzés",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Bejelentkezés",
@@ -404,32 +409,6 @@
     "badgeSolid": "Szilárd",
     "badgeNeedsWork": "Fókusz kell"
   },
-  "linkedin": {
-    "title": "Megosztás a LinkedIn-en",
-    "subtitle": "Generálj MI-posztot képpel, és tedd közzé közvetlenül",
-    "step1": "1. Posztszöveg generálása",
-    "step2": "2. Kép generálása (NanoBanana Pro)",
-    "generatePost": "Poszt generálása",
-    "generating": "Generálás…",
-    "generateImage": "Kép generálása",
-    "generatingImage": "Kép készítése…",
-    "imageHeadline": "Kép címsora",
-    "postPlaceholder": "A LinkedIn-poszt szövege a generálás után itt jelenik meg…",
-    "noImage": "Kattints a „Kép generálása” gombra, hogy MI-képet készíts a posztodhoz",
-    "regenerate": "Újragenerálás",
-    "connect": "LinkedIn összekapcsolása",
-    "postToLinkedIn": "Közzététel a LinkedIn-en",
-    "posting": "Közzététel folyamatban…",
-    "posted": "Sikeresen közzétéve!",
-    "viewPost": "Poszt megtekintése",
-    "generatePostFirst": "Először generáld le a poszt szövegét.",
-    "tokenExpired": "A LinkedIn-munkamenet lejárt. Kapcsold össze újra.",
-    "notConfigured": "A LinkedIn nincs konfigurálva ehhez a környezethez.",
-    "connectedOk": "LinkedIn összekapcsolva.",
-    "connectFailed": "A LinkedIn-kapcsolat nem jött létre:",
-    "confirmQuestion": "Közzéteszed most nyilvánosan ezt a posztot a LinkedIn-en?",
-    "confirmNow": "Igen, közzéteszem nyilvánosan"
-  },
   "api": {
     "unauthorized": "Bejelentkezés szükséges",
     "accessDenied": "Hozzáférés megtagadva",
@@ -464,7 +443,14 @@
     "wishThanks": "Köszönjük! Kérésed megérkezett, és beszámít az új forgatókönyvek priorizálásába.",
     "resumeTimeLeft": "még ~{min} perc",
     "resumeTimeUp": "Lejárt az idő",
-    "dropWrongType": "Itt csak PDF fogadható el — szöveghez használd az elemzés oldalt."
+    "dropWrongType": "Itt csak PDF fogadható el — szöveghez használd az elemzés oldalt.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "szerepjátékból",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Mit csinálsz legközelebb konkrétan másképp?",
     "studioBridgeTitle": "Alaposabban nekimennél ennek a témának?",
     "studioBridgeBody": "Készíts kurzust a Learning Studióban — a(z) {c} területre szabva.",
-    "studioBridgeCta": "Kurzus létrehozása a Studióban"
+    "studioBridgeCta": "Kurzus létrehozása a Studióban",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profil",

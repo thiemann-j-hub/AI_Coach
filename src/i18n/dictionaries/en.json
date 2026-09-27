@@ -24,7 +24,8 @@
     "watchVideo": "Watch video",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
-    "balanceEmptyMember": "Your company's quota is used up — your admin has been notified."
+    "balanceEmptyMember": "Your company's quota is used up — your admin has been notified.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Transcript Analysis",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Sign In",
@@ -404,32 +409,6 @@
     "badgeSolid": "Solid",
     "badgeNeedsWork": "Needs focus"
   },
-  "linkedin": {
-    "title": "Share on LinkedIn",
-    "subtitle": "Generate an AI post with image and publish it directly",
-    "step1": "1. Generate Post Text",
-    "step2": "2. Generate Image (NanoBanana Pro)",
-    "generatePost": "Generate Post",
-    "generating": "Generating…",
-    "generateImage": "Generate Image",
-    "generatingImage": "Creating image…",
-    "imageHeadline": "Image Headline",
-    "postPlaceholder": "Your LinkedIn post text will appear here after generation…",
-    "noImage": "Click \"Generate Image\" to create an AI image for your post",
-    "regenerate": "Regenerate",
-    "connect": "Connect LinkedIn",
-    "postToLinkedIn": "Post to LinkedIn",
-    "posting": "Posting…",
-    "posted": "Successfully posted!",
-    "viewPost": "View Post",
-    "generatePostFirst": "Please generate the post text first.",
-    "tokenExpired": "LinkedIn session expired. Please reconnect.",
-    "notConfigured": "LinkedIn is not configured for this deployment.",
-    "connectedOk": "LinkedIn connected.",
-    "connectFailed": "LinkedIn connection failed:",
-    "confirmQuestion": "Publish this post publicly on LinkedIn now?",
-    "confirmNow": "Yes, post publicly"
-  },
   "api": {
     "unauthorized": "Authentication required",
     "accessDenied": "Access denied",
@@ -464,7 +443,14 @@
     "wishThanks": "Thanks! Your request has been received and feeds into the prioritisation of new scenarios.",
     "resumeTimeLeft": "~{min} min left",
     "resumeTimeUp": "Time is up",
-    "dropWrongType": "Only PDF is accepted here — use the analysis page for text."
+    "dropWrongType": "Only PDF is accepted here — use the analysis page for text.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "from role-play",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "What will you concretely do differently next time?",
     "studioBridgeTitle": "Tackle this topic more fundamentally?",
     "studioBridgeBody": "Create a course in the Learning Studio — tailored to {c}.",
-    "studioBridgeCta": "Create course in Studio"
+    "studioBridgeCta": "Create course in Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profile",

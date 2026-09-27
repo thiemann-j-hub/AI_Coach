@@ -40,13 +40,53 @@ export function groundForm(s: string): string {
 }
 
 /** Evidenz-Zitat auf den belegbaren Kern reduzieren (Sprecher-Prefix/Quotes entfernen).
- *  Strippt einen beliebigen führenden Sprecher-Prefix ("Lead:", "Führungskraft:", "FK:" …),
- *  damit der Grounding-Check den Zitat-Körper wörtlich im Transkript findet. */
+ *  Strippt einen beliebigen führenden Sprecher-Prefix ("Lead:", "Führungskraft:", "FK:",
+ *  "Teilnehmer:in:", "Dr. Robin Vance:", "Führungskraft (FK):" …), damit der Grounding-
+ *  Check den Zitat-Körper wörtlich im Transkript findet.
+ *  N4-84 (27.09.2026): Die alte Regel ließ bei „Teilnehmer:in:“ den Rest „in “ stehen —
+ *  jedes Zitat aus der Mitte eines Beitrags galt als fabriziert. Die Klasse erlaubt jetzt
+ *  Doppelpunkte und Klammern im Prefix; zusätzlich vergleicht isQuoteGrounded tolerant. */
 export function evidenceNeedle(q: string): string {
   return norm(String(q))
-    .replace(/^[\p{L}][\p{L}\d _.\-]{0,24}:\s*/u, "")
+    .replace(/^[\p{L}][\p{L}\d _.\-:()/]{0,30}:\s*/u, "")
     .replace(/[„“”"»«›‹]/g, "")
     .trim();
+}
+
+/** Mindestlänge (Wörter) eines Zitat-Teils, der allein als Beleg zählen darf. */
+const MIN_FRAGMENT_WORDS = 6;
+/** So viele führende Wörter dürfen fehlen (Label-Reste, Anführungs-Artefakte). */
+const MAX_LEADING_DROP = 4;
+
+/**
+ * Prefix-agnostischer Wortlaut-Vergleich (Gemini-Sparring 27.09., Zu 1): Sprecher-
+ * Präfixe sind Metadaten — verglichen wird nur der gesprochene Wortlaut.
+ * - Auslassungen („…“ / „...“) zerlegen das Zitat in Teilstücke; JEDES Teilstück
+ *   muss wörtlich vorkommen (das Modell darf kürzen, nicht erfinden).
+ * - Fehlt ein Label-Rest am Anfang, dürfen bis zu MAX_LEADING_DROP führende Wörter
+ *   entfallen — der Rest muss weiter ≥ MIN_FRAGMENT_WORDS Wörter lang sein und
+ *   wörtlich sitzen. So kann kein Zitat über einen langen echten Schwanz mit
+ *   erfundenem Kopf durchrutschen.
+ * Beide Seiten in groundForm (klein, ohne Interpunktion).
+ */
+export function isQuoteGrounded(hayGround: string, needleRaw: string): boolean {
+  const hay = String(hayGround ?? "");
+  // Auslassungen VOR groundForm zerlegen — groundForm entfernt „…“/„...“.
+  const fragments = String(needleRaw ?? "")
+    .split(/(?:\.{3}|…)/)
+    .map((f) => groundForm(f))
+    .filter((f) => f.length >= 8);
+  if (fragments.length === 0) return false;
+  return fragments.every((frag) => {
+    if (hay.includes(frag)) return true;
+    const words = frag.split(" ").filter(Boolean);
+    for (let drop = 1; drop <= MAX_LEADING_DROP; drop++) {
+      const rest = words.slice(drop);
+      if (rest.length < MIN_FRAGMENT_WORDS) break;
+      if (hay.includes(rest.join(" "))) return true;
+    }
+    return false;
+  });
 }
 
 /**
@@ -69,10 +109,10 @@ export function checkEvidenceGrounding(
     let checkable = 0;
     let ungrounded = 0;
     for (const q of c.evidence ?? []) {
-      const needle = groundForm(evidenceNeedle(q));
-      if (needle.length < 8) continue;
+      const needleRaw = evidenceNeedle(q);
+      if (groundForm(needleRaw).length < 8) continue;
       checkable++;
-      if (!hay.includes(needle)) {
+      if (!isQuoteGrounded(hay, needleRaw)) {
         ungrounded++;
         notes.push({
           code: "EVIDENCE_NOT_GROUNDED",

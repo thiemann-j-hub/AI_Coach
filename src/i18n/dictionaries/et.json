@@ -24,7 +24,8 @@
     "watchVideo": "Vaata videot",
     "expandSidebar": "Laienda külgriba",
     "collapseSidebar": "Ahenda külgriba",
-    "balanceEmptyMember": "Sinu ettevõtte kvoot on otsas — administraatorit on teavitatud."
+    "balanceEmptyMember": "Sinu ettevõtte kvoot on otsas — administraatorit on teavitatud.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Transkriptsioonianalüüs",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Logi sisse",
@@ -404,32 +409,6 @@
     "badgeSolid": "Kindel",
     "badgeNeedsWork": "Vajab fookust"
   },
-  "linkedin": {
-    "title": "Jaga LinkedInis",
-    "subtitle": "Loo tehisintellekti postitus koos pildiga ja avalda see otse",
-    "step1": "1. Loo postituse tekst",
-    "step2": "2. Loo pilt (NanoBanana Pro)",
-    "generatePost": "Loo postitus",
-    "generating": "Loomine…",
-    "generateImage": "Loo pilt",
-    "generatingImage": "Pildi loomine…",
-    "imageHeadline": "Pildi pealkiri",
-    "postPlaceholder": "Sinu LinkedIni postituse tekst ilmub siia pärast loomist…",
-    "noImage": "Klõpsa \"Loo pilt\", et luua oma postitusele tehisintellekti pilt",
-    "regenerate": "Loo uuesti",
-    "connect": "Ühenda LinkedIn",
-    "postToLinkedIn": "Postita LinkedIni",
-    "posting": "Postitamine…",
-    "posted": "Edukalt postitatud!",
-    "viewPost": "Vaata postitust",
-    "generatePostFirst": "Palun loo kõigepealt postituse tekst.",
-    "tokenExpired": "LinkedIni seanss on aegunud. Palun ühenda uuesti.",
-    "notConfigured": "LinkedIn pole selle keskkonna jaoks seadistatud.",
-    "connectedOk": "LinkedIn ühendatud.",
-    "connectFailed": "LinkedIni ühendus ebaõnnestus:",
-    "confirmQuestion": "Kas avaldada see postitus nüüd LinkedInis avalikult?",
-    "confirmNow": "Jah, avalda avalikult"
-  },
   "api": {
     "unauthorized": "Vajalik on sisselogimine",
     "accessDenied": "Ligipääs keelatud",
@@ -464,7 +443,14 @@
     "wishThanks": "Aitäh! Sinu soov on kohal ja läheb uute stsenaariumide prioriseerimisse.",
     "resumeTimeLeft": "~{min} min jäänud",
     "resumeTimeUp": "Aeg läbi",
-    "dropWrongType": "Siin võetakse vastu ainult PDF — teksti jaoks kasuta analüüsilehte."
+    "dropWrongType": "Siin võetakse vastu ainult PDF — teksti jaoks kasuta analüüsilehte.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "rollimängust",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Mida teed järgmisel korral konkreetselt teisiti?",
     "studioBridgeTitle": "Käsitle seda teemat põhjalikumalt?",
     "studioBridgeBody": "Loo kursus Learning Studios — rätsepatööna kompetentsile {c}.",
-    "studioBridgeCta": "Loo kursus Studios"
+    "studioBridgeCta": "Loo kursus Studios",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profiil",

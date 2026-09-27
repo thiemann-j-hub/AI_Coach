@@ -24,7 +24,8 @@
     "watchVideo": "Vezi videoclipul",
     "expandSidebar": "Extinde bara laterală",
     "collapseSidebar": "Restrânge bara laterală",
-    "balanceEmptyMember": "Cota companiei tale s-a epuizat — adminul tău a fost informat."
+    "balanceEmptyMember": "Cota companiei tale s-a epuizat — adminul tău a fost informat.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Analiza transcriptului",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Conectare",
@@ -404,32 +409,6 @@
     "badgeSolid": "Solid",
     "badgeNeedsWork": "Necesită focus"
   },
-  "linkedin": {
-    "title": "Distribuie pe LinkedIn",
-    "subtitle": "Generează o postare AI cu imagine și publică direct",
-    "step1": "1. Generează textul postării",
-    "step2": "2. Generează imaginea (NanoBanana Pro)",
-    "generatePost": "Generează postarea",
-    "generating": "Se generează…",
-    "generateImage": "Generează imaginea",
-    "generatingImage": "Se creează imaginea…",
-    "imageHeadline": "Titlul imaginii",
-    "postPlaceholder": "Textul postării tale LinkedIn apare aici după generare…",
-    "noImage": "Apasă pe „Generează imaginea” pentru a crea o imagine AI pentru postarea ta",
-    "regenerate": "Regenerează",
-    "connect": "Conectează LinkedIn",
-    "postToLinkedIn": "Postează pe LinkedIn",
-    "posting": "Se postează…",
-    "posted": "Postat cu succes!",
-    "viewPost": "Vezi postarea",
-    "generatePostFirst": "Te rugăm să generezi mai întâi textul postării.",
-    "tokenExpired": "Sesiunea LinkedIn a expirat. Reconectează-te.",
-    "notConfigured": "LinkedIn nu este configurat pentru acest mediu.",
-    "connectedOk": "LinkedIn conectat.",
-    "connectFailed": "Conectarea la LinkedIn a eșuat:",
-    "confirmQuestion": "Publici acum această postare public pe LinkedIn?",
-    "confirmNow": "Da, postează public"
-  },
   "api": {
     "unauthorized": "Autentificare necesară",
     "accessDenied": "Acces refuzat",
@@ -464,7 +443,14 @@
     "wishThanks": "Mulțumim! Dorința ta a ajuns și intră în prioritizarea noilor scenarii.",
     "resumeTimeLeft": "încă ~{min} min",
     "resumeTimeUp": "Timp expirat",
-    "dropWrongType": "Aici se acceptă doar PDF — pentru text folosește pagina de analiză."
+    "dropWrongType": "Aici se acceptă doar PDF — pentru text folosește pagina de analiză.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "din joc de rol",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Ce vei face concret altfel data viitoare?",
     "studioBridgeTitle": "Abordezi tema mai în profunzime?",
     "studioBridgeBody": "Creează un curs în Learning Studio — croit pe {c}.",
-    "studioBridgeCta": "Creează curs în Studio"
+    "studioBridgeCta": "Creează curs în Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Profil",

@@ -24,7 +24,8 @@
     "watchVideo": "Ver el vídeo",
     "expandSidebar": "Expandir la barra lateral",
     "collapseSidebar": "Contraer la barra lateral",
-    "balanceEmptyMember": "El contingente de tu empresa está agotado; tu administrador ha sido informado."
+    "balanceEmptyMember": "El contingente de tu empresa está agotado; tu administrador ha sido informado.",
+    "newVersion": "Hay una nueva versión del Coach."
   },
   "nav": {
     "analyze": "Análisis de transcripción",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "Está entrenando con un agente de IA. El personaje, la voz y las respuestas son generados por ordenador.",
     "coachCardLabel": "Tarjeta de coaching",
-    "coachCardsTitle": "Tarjetas que apoyan su próximo paso"
+    "coachCardsTitle": "Tarjetas que apoyan su próximo paso",
+    "builderVoice": "Voz",
+    "voiceSeraphina": "Seraphina (femenina, alemán)",
+    "voiceFlorian": "Florian (masculina, alemán)",
+    "voiceEmma": "Emma (femenina, inglés)"
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -404,32 +409,6 @@
     "badgeSolid": "Sólido",
     "badgeNeedsWork": "Necesita foco"
   },
-  "linkedin": {
-    "title": "Compartir en LinkedIn",
-    "subtitle": "Genera un post con IA e imagen y publícalo directamente",
-    "step1": "1. Generar texto del post",
-    "step2": "2. Generar imagen (NanoBanana Pro)",
-    "generatePost": "Generar post",
-    "generating": "Generando…",
-    "generateImage": "Generar imagen",
-    "generatingImage": "Creando imagen…",
-    "imageHeadline": "Título de la imagen",
-    "postPlaceholder": "El texto de tu post de LinkedIn aparecerá aquí después de la generación…",
-    "noImage": "Haz clic en \"Generar imagen\" para crear una imagen IA para tu post",
-    "regenerate": "Regenerar",
-    "connect": "Conectar LinkedIn",
-    "postToLinkedIn": "Publicar en LinkedIn",
-    "posting": "Publicando…",
-    "posted": "¡Publicado con éxito!",
-    "viewPost": "Ver post",
-    "generatePostFirst": "Por favor, genera primero el texto del post.",
-    "tokenExpired": "Sesión de LinkedIn expirada. Por favor, reconéctate.",
-    "notConfigured": "LinkedIn no está configurado para este entorno.",
-    "connectedOk": "LinkedIn conectado.",
-    "connectFailed": "Error al conectar con LinkedIn:",
-    "confirmQuestion": "¿Publicar este post públicamente en LinkedIn ahora?",
-    "confirmNow": "Sí, publicar públicamente"
-  },
   "api": {
     "unauthorized": "Se requiere autenticación",
     "accessDenied": "Acceso denegado",
@@ -464,7 +443,14 @@
     "wishThanks": "¡Gracias! Tu petición ha llegado y alimenta la priorización de nuevos escenarios.",
     "resumeTimeLeft": "quedan ~{min} min",
     "resumeTimeUp": "Tiempo agotado",
-    "dropWrongType": "Aquí solo se acepta PDF — usa la página de análisis para texto."
+    "dropWrongType": "Aquí solo se acepta PDF — usa la página de análisis para texto.",
+    "transferTitle": "Su propósito de la última conversación",
+    "transferQuestion": "¿Cómo fue en el día a día?",
+    "transferDone": "Hecho",
+    "transferPartly": "En parte",
+    "transferNot": "No lo logré",
+    "transferDismiss": "No volver a preguntar",
+    "transferThanks": "Gracias — esto se incluirá en su próxima evaluación."
   },
   "evaluation": {
     "sourceSim": "de juego de rol",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "¿Qué harás concretamente diferente la próxima vez?",
     "studioBridgeTitle": "¿Abordar este tema más a fondo?",
     "studioBridgeBody": "Crea un curso en el Learning Studio — a medida de {c}.",
-    "studioBridgeCta": "Crear curso en el Studio"
+    "studioBridgeCta": "Crear curso en el Studio",
+    "microTransferTitle": "Su paso para el día a día"
   },
   "profilePage": {
     "title": "Perfil",

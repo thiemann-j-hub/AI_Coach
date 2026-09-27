@@ -5,7 +5,7 @@ import { getCentralMemberInfo } from "@/lib/server/credits/member-info";
 import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
 import { getScenario } from "@/lib/simulation/scenarios";
 import { validateScenario } from "@/lib/simulation/scenario-schema";
-import type { SimulationScenario } from "@/lib/simulation/types";
+import type { PersonaVoice, SimulationScenario } from "@/lib/simulation/types";
 import { logger } from "@/lib/logger";
 
 /**
@@ -192,4 +192,29 @@ export async function listScenariosForUser(
     logger.apiError("scenario-store/listScenariosForUser", e);
     return [];
   }
+}
+
+/**
+ * O5a (Blueprint COACH-OPTIMIERUNG 27.09.2026): Stimme der Persona eines
+ * Workspace-Szenarios setzen — bisher sprachen alle Kundenszenarien mit der
+ * Standardstimme. Nur Admin (Route), nur bekannte Stimmen (Route-Schema).
+ */
+export async function setWorkspaceScenarioVoice(
+  workspaceId: string,
+  scenarioId: string,
+  voice: PersonaVoice
+): Promise<ScenarioDoc | null> {
+  const existing = await readItem<ScenarioDoc>(
+    runsContainer(),
+    scenarioId,
+    scenarioPartitionKey(workspaceId)
+  );
+  if (!existing || existing.docType !== SCENARIO_DOC_TYPE) return null;
+  const doc: ScenarioDoc = {
+    ...existing,
+    scenario: { ...existing.scenario, persona: { ...existing.scenario.persona, voice } },
+    updatedAt: new Date().toISOString(),
+  };
+  await upsertItem(runsContainer(), doc);
+  return doc;
 }

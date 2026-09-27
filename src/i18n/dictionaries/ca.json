@@ -24,7 +24,8 @@
     "watchVideo": "Mira el vídeo",
     "expandSidebar": "Desplega la barra lateral",
     "collapseSidebar": "Replega la barra lateral",
-    "balanceEmptyMember": "El contingent de la teva empresa s'ha esgotat — el teu admin n'ha estat informat."
+    "balanceEmptyMember": "El contingent de la teva empresa s'ha esgotat — el teu admin n'ha estat informat.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Anàlisi de transcripció",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Inicia la sessió",
@@ -404,32 +409,6 @@
     "badgeSolid": "Sòlid",
     "badgeNeedsWork": "Cal focus"
   },
-  "linkedin": {
-    "title": "Comparteix a LinkedIn",
-    "subtitle": "Genera un post amb IA i imatge i publica'l directament",
-    "step1": "1. Genera el text del post",
-    "step2": "2. Genera la imatge (NanoBanana Pro)",
-    "generatePost": "Genera el post",
-    "generating": "S'està generant…",
-    "generateImage": "Genera la imatge",
-    "generatingImage": "S'està creant la imatge…",
-    "imageHeadline": "Títol de la imatge",
-    "postPlaceholder": "El text del teu post de LinkedIn apareixerà aquí després de la generació…",
-    "noImage": "Fes clic a \"Genera la imatge\" per crear una imatge IA per al teu post",
-    "regenerate": "Torna a generar",
-    "connect": "Connecta LinkedIn",
-    "postToLinkedIn": "Publica a LinkedIn",
-    "posting": "S'està publicant…",
-    "posted": "Publicat amb èxit!",
-    "viewPost": "Mostra el post",
-    "generatePostFirst": "Genera primer el text del post.",
-    "tokenExpired": "La sessió de LinkedIn ha caducat. Torna a connectar-te.",
-    "notConfigured": "LinkedIn no està configurat per a aquest entorn.",
-    "connectedOk": "LinkedIn connectat.",
-    "connectFailed": "Ha fallat la connexió amb LinkedIn:",
-    "confirmQuestion": "Vols publicar aquest post públicament a LinkedIn ara?",
-    "confirmNow": "Sí, publica'l públicament"
-  },
   "api": {
     "unauthorized": "Cal autenticació",
     "accessDenied": "Accés denegat",
@@ -464,7 +443,14 @@
     "wishThanks": "Gràcies! La teva petició ha arribat i alimenta la priorització de nous escenaris.",
     "resumeTimeLeft": "queden ~{min} min",
     "resumeTimeUp": "Temps esgotat",
-    "dropWrongType": "Aquí només s'accepta PDF — fes servir la pàgina d'anàlisi per a text."
+    "dropWrongType": "Aquí només s'accepta PDF — fes servir la pàgina d'anàlisi per a text.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "de joc de rol",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Què faràs de manera concreta diferent la propera vegada?",
     "studioBridgeTitle": "Abordar aquest tema més a fons?",
     "studioBridgeBody": "Crea un curs al Learning Studio — a mida de {c}.",
-    "studioBridgeCta": "Crear curs a l'Studio"
+    "studioBridgeCta": "Crear curs a l'Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Perfil",

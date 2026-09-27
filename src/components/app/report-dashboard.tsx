@@ -20,7 +20,6 @@ import {
   clamp,
   toNumber,
 } from '@/lib/report-utils';
-import { LinkedInPostCard } from './linkedin-post-card';
 
 type AnyObj = Record<string, any>;
 
@@ -252,8 +251,6 @@ function RatingCard({
 export default function ReportDashboard({
   result,
   metaChips,
-  conversationType,
-  lang,
   sessionId,
   runId,
   initialRating,
@@ -615,15 +612,8 @@ export default function ReportDashboard({
           </div>
         </div>
 
-        {/* LINKEDIN POST */}
-        <LinkedInPostCard
-          summary={summary}
-          strengths={strengths}
-          improvements={improvements}
-          scoreOverall={pct}
-          conversationType={conversationType ?? ''}
-          lang={lang ?? 'de'}
-        />
+        {/* LinkedIn-Block entfernt (Owner-Entscheid E-3, 27.09.2026): Posten gehört
+            in die Post Machine, nicht auf die Ergebnisseite eines Kritikgesprächs. */}
 
         {/* TRANSCRIPT */}
         <div className="glass-panel rounded-2xl overflow-hidden">

@@ -24,7 +24,8 @@
     "watchVideo": "Παρακολούθηση βίντεο",
     "expandSidebar": "Ανάπτυξη πλαϊνής μπάρας",
     "collapseSidebar": "Σύμπτυξη πλαϊνής μπάρας",
-    "balanceEmptyMember": "Το όριο της εταιρείας σας εξαντλήθηκε — ο διαχειριστής σας ενημερώθηκε."
+    "balanceEmptyMember": "Το όριο της εταιρείας σας εξαντλήθηκε — ο διαχειριστής σας ενημερώθηκε.",
+    "newVersion": "A new version of the Coach is available."
   },
   "nav": {
     "analyze": "Ανάλυση απομαγνητοφώνησης",
@@ -241,7 +242,11 @@
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
     "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step"
+    "coachCardsTitle": "Cards that support your next step",
+    "builderVoice": "Voice",
+    "voiceSeraphina": "Seraphina (female, German)",
+    "voiceFlorian": "Florian (male, German)",
+    "voiceEmma": "Emma (female, English)"
   },
   "auth": {
     "signIn": "Σύνδεση",
@@ -404,32 +409,6 @@
     "badgeSolid": "Στέρεο",
     "badgeNeedsWork": "Χρειάζεται εστίαση"
   },
-  "linkedin": {
-    "title": "Κοινοποίηση στο LinkedIn",
-    "subtitle": "Δημιούργησε μια ανάρτηση με AI και εικόνα και δημοσίευσέ την απευθείας",
-    "step1": "1. Δημιουργία κειμένου ανάρτησης",
-    "step2": "2. Δημιουργία εικόνας (NanoBanana Pro)",
-    "generatePost": "Δημιουργία ανάρτησης",
-    "generating": "Δημιουργία σε εξέλιξη…",
-    "generateImage": "Δημιουργία εικόνας",
-    "generatingImage": "Η εικόνα δημιουργείται…",
-    "imageHeadline": "Τίτλος εικόνας",
-    "postPlaceholder": "Το κείμενο της ανάρτησής σου στο LinkedIn θα εμφανιστεί εδώ μετά τη δημιουργία…",
-    "noImage": "Πάτησε «Δημιουργία εικόνας» για να φτιάξεις μια εικόνα AI για την ανάρτησή σου",
-    "regenerate": "Δημιουργία ξανά",
-    "connect": "Σύνδεση LinkedIn",
-    "postToLinkedIn": "Δημοσίευση στο LinkedIn",
-    "posting": "Δημοσίευση σε εξέλιξη…",
-    "posted": "Δημοσιεύτηκε με επιτυχία!",
-    "viewPost": "Προβολή ανάρτησης",
-    "generatePostFirst": "Δημιούργησε πρώτα το κείμενο της ανάρτησης.",
-    "tokenExpired": "Η συνεδρία LinkedIn έληξε. Συνδέσου ξανά.",
-    "notConfigured": "Το LinkedIn δεν έχει ρυθμιστεί για αυτό το περιβάλλον.",
-    "connectedOk": "Το LinkedIn συνδέθηκε.",
-    "connectFailed": "Η σύνδεση με το LinkedIn απέτυχε:",
-    "confirmQuestion": "Να δημοσιευτεί αυτή η ανάρτηση δημόσια στο LinkedIn τώρα;",
-    "confirmNow": "Ναι, δημόσια δημοσίευση"
-  },
   "api": {
     "unauthorized": "Απαιτείται σύνδεση",
     "accessDenied": "Η πρόσβαση απορρίφθηκε",
@@ -464,7 +443,14 @@
     "wishThanks": "Ευχαριστούμε! Η επιθυμία σου έφτασε και μπαίνει στην ιεράρχηση νέων σεναρίων.",
     "resumeTimeLeft": "ακόμη ~{min} λεπτά",
     "resumeTimeUp": "Ο χρόνος τελείωσε",
-    "dropWrongType": "Εδώ γίνεται δεκτό μόνο PDF — για κείμενο χρησιμοποίησε τη σελίδα ανάλυσης."
+    "dropWrongType": "Εδώ γίνεται δεκτό μόνο PDF — για κείμενο χρησιμοποίησε τη σελίδα ανάλυσης.",
+    "transferTitle": "Your intention from the last conversation",
+    "transferQuestion": "How did it go in real life?",
+    "transferDone": "Did it",
+    "transferPartly": "Partly",
+    "transferNot": "Didn't get to it",
+    "transferDismiss": "Don't ask again",
+    "transferThanks": "Thanks — this feeds into your next debrief."
   },
   "evaluation": {
     "sourceSim": "από παιχνίδι ρόλων",
@@ -478,7 +464,8 @@
     "commitmentQuestion": "Τι θα κάνεις συγκεκριμένα διαφορετικά την επόμενη φορά;",
     "studioBridgeTitle": "Να πιάσεις το θέμα πιο θεμελιωδώς;",
     "studioBridgeBody": "Δημιούργησε ένα μάθημα στο Learning Studio — κομμένο και ραμμένο στο {c}.",
-    "studioBridgeCta": "Δημιουργία μαθήματος στο Studio"
+    "studioBridgeCta": "Δημιουργία μαθήματος στο Studio",
+    "microTransferTitle": "Your step for real life"
   },
   "profilePage": {
     "title": "Προφίλ",
