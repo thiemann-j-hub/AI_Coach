@@ -17,6 +17,7 @@ import {
 import { buildAnalyzeRoleLabels } from '@/lib/analyze-payload';
 import { takePendingFile } from '@/lib/pending-file';
 import { useTranslation } from '@/i18n/useTranslation';
+import { maxEurHint } from '@/lib/pricing-display';
 import Link from 'next/link';
 import {
   History,
@@ -48,7 +49,7 @@ async function readErrorText(res: Response) {
 export default function AnalyzeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const [sessionId, setSessionId] = useState<string>('');
   const [lang, setLang] = useState<'de' | 'en'>('de');
@@ -724,6 +725,10 @@ export default function AnalyzeClient() {
                 )}
                 {loading ? t.analyze.analyzing : t.analyze.startAnalysis}
               </button>
+              {/* Preis vor dem Klick (29.09.): 1 Credit, Maximalpreis wie Studio/Jobmap. */}
+              <div className="mt-2 text-center text-xs text-muted-foreground" data-testid="analyze-cost-note">
+                {t.analyze.costNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
+              </div>
 
               {step && (
                 <div className="mt-2 text-center text-xs text-muted-foreground">{step}</div>

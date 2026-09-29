@@ -45,6 +45,7 @@ import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { withBasePath } from '@/lib/base-path';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
+import { maxEurHint } from '@/lib/pricing-display';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
 import { recommendScenarios } from '@/lib/simulation/empfehlung';
 
@@ -1430,7 +1431,7 @@ export default function SimulationClient() {
           </section>
 
           {/* Preiszeile — EINMAL unter dem Raster, nicht je Karte (W2-4-Vorgriff). */}
-          <p className="text-xs text-muted-foreground text-center">{t.entry.priceNote}</p>
+          <p className="text-xs text-muted-foreground text-center">{ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</p>
         </div>
 
         {/* ── Wunsch-Dialog (Geister-Karte) ── */}
@@ -1668,7 +1669,7 @@ export default function SimulationClient() {
                     </span>
                   </div>
                   {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog. */}
-                  <div className="text-[11px] text-white/65">{t.entry.priceNote}</div>
+                  <div className="text-[11px] text-white/65">{ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</div>
                   {/* EU-KI-VO Art. 50 (T1.5, Owner-GO 25.09.): Interaktions-Hinweis VOR dem Start —
                       sichtbar, nicht wegklickbar; der Fusszeilen-Hinweis im Chat bleibt zusaetzlich. */}
                   <div className="text-[11px] text-white/85 inline-flex items-center justify-center gap-1.5">
@@ -2368,6 +2369,10 @@ export default function SimulationClient() {
             <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg">{ts.confirmTitle}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{ts.confirmBody}</p>
+              {/* Preis vor dem Klick (29.09.): die Auswertung ist der einzige kostenpflichtige Schritt. */}
+              <p className="text-xs text-muted-foreground" data-testid="finish-cost-note">
+                {ts.finishCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
+              </p>
               {userTurnCount < 3 && (
                 <p className="text-sm text-amber-400">{ts.notEnoughTurns}</p>
               )}

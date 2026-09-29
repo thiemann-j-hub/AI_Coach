@@ -28,6 +28,7 @@ import {
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
+import { maxEurHint } from '@/lib/pricing-display';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 
 interface BuilderScenario {
@@ -72,7 +73,7 @@ function cx(...parts: Array<string | false | null | undefined>) {
 }
 
 export default function BuilderClient() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const ts = t.simulation;
   const router = useRouter();
 
@@ -354,7 +355,7 @@ export default function BuilderClient() {
               )}
               {ts.builderGenerateCta}
             </button>
-            <span className="text-xs text-muted-foreground">{ts.builderCostNote}</span>
+            <span className="text-xs text-muted-foreground">{ts.builderCostNote} ({maxEurHint(t.common.maxEurHint, locale)})</span>
           </div>
           {generating && !busyId && (
             <p className="text-xs text-muted-foreground">{ts.builderGenerating}</p>
