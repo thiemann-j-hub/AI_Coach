@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { MAX_EUR_PER_CREDIT, RUN_CREDITS, formatMaxEur, maxEurHint } from "./pricing-display";
 
+// Intl setzt vor dem €-Zeichen ein geschütztes Leerzeichen (U+00A0) — für den Vergleich normalisieren.
+const plain = (s: string) => s.replace(/ /g, " ");
+
 describe("pricing-display (Preis vor dem Klick, 29.09.2026)", () => {
   it("fester Maximalkurs 4,90 € je Credit, ein Lauf = 1 Credit", () => {
     expect(MAX_EUR_PER_CREDIT).toBe(4.9);
@@ -8,13 +11,13 @@ describe("pricing-display (Preis vor dem Klick, 29.09.2026)", () => {
   });
 
   it("formatiert den Maximalpreis in der Sprache der Oberfläche", () => {
-    expect(formatMaxEur(1, "de")).toBe("4,90 €");
+    expect(plain(formatMaxEur(1, "de"))).toBe("4,90 €");
     expect(formatMaxEur(1, "en")).toBe("€4.90");
-    expect(formatMaxEur(3, "de")).toBe("14,70 €");
+    expect(plain(formatMaxEur(3, "de"))).toBe("14,70 €");
   });
 
   it("setzt den Betrag in die übersetzte Vorlage ein", () => {
-    expect(maxEurHint("bis zu {eur}", "de")).toBe("bis zu 4,90 €");
+    expect(plain(maxEurHint("bis zu {eur}", "de"))).toBe("bis zu 4,90 €");
     expect(maxEurHint("up to {eur}", "en")).toBe("up to €4.90");
   });
 
