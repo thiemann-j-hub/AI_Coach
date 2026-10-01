@@ -206,7 +206,7 @@ export default function CreditsClient() {
         <div>
           <h2 className="text-lg font-semibold mb-1">{de ? 'Rechnungen' : 'Invoices'}</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {de ? 'Deine §14-Rechnungen als PDF.' : 'Your §14 invoices as PDF.'}
+            {de ? 'Deine Rechnungen als PDF.' : 'Your invoices as PDF.'}
           </p>
           {invoices.length === 0 ? (
             <div className="glass-panel rounded-xl p-6 text-sm text-muted-foreground">

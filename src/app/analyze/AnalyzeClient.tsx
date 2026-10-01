@@ -7,7 +7,7 @@ import { parsePdfToText } from '@/lib/pdf/parsePdfToText';
 import { authFetch } from '@/lib/api-client';
 import { signInWithMicrosoft } from '@/lib/auth-service';
 import { STORAGE_KEY_SESSION, migrateLegacyStorageKeys } from '@/lib/storage-keys';
-import { newSessionId, shortId } from '@/lib/session-utils';
+import { newSessionId } from '@/lib/session-utils';
 import {
   cleanTeamsTranscript,
   detectSpeakers,
@@ -324,7 +324,6 @@ export default function AnalyzeClient() {
   return (
     <AppShell
       title={t.analyze.title}
-      subtitle={`Session: ${shortId(sessionId)}`}
       actions={headerActions}
     >
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-8xl mx-auto">

@@ -35,7 +35,7 @@
     "workspace": "Team",
     "simulation": "Roleplay Session",
     "practice": "Practice",
-    "mainGroup": "MAIN",
+    "mainGroup": "Menu",
     "home": "Home",
     "settings": "Settings",
     "profile": "Profile"
@@ -288,7 +288,7 @@
     "goalPlaceholder": "e.g. clear and fair, without escalation",
     "conversationType": "Conversation type",
     "employeeConversation": "Employee conversation",
-    "conversationTypeNote": "(Conversation type is currently fixed for stable RAG.)",
+    "conversationTypeNote": "The evaluation is tuned for employee conversations. More conversation types will follow.",
     "roles": "Roles in conversation",
     "rolesHint": "Choose the manager (employee will be set automatically)",
     "manager": "Manager (I)",

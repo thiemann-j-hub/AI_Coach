@@ -9,8 +9,7 @@ import {
   RefreshCw,
   AlertCircle,
   History,
-  PlusCircle,
-  Fingerprint,
+  PlusCircle,
   CalendarDays,
   ArrowRight,
   Banknote,
@@ -303,8 +302,6 @@ export default function RunsDashboardClient() {
   return (
     <AppShell
       title={t.dashboard.title}
-      subtitle={`Session: ${shortId(sessionId)}`}
-      actions={headerActions}
     >
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Search & Sort */}
@@ -320,6 +317,8 @@ export default function RunsDashboardClient() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* UX-W2 (01.10.): Hauptaktion gehört in den Seiteninhalt, nicht in die Topbar (Shell-Standard §2). */}
+            {headerActions}
             <div className="relative">
               <select
                 className="appearance-none rounded-xl bg-card border border-border pl-4 pr-10 py-3 text-sm text-foreground outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/20 cursor-pointer transition-all"
@@ -418,9 +417,10 @@ export default function RunsDashboardClient() {
         <div className="space-y-4">
           {filtered.map((it) => {
             const isRun = it.kind === 'run';
+            // UX-W2 (01.10.): ohne Ziel kein Rohwert ("feedback · mitarbeitendengespräch"), sondern Klartext.
             const title = isRun
               ? (it.run.goal && it.run.goal.trim()) ||
-                [it.run.conversationType, it.run.conversationSubType].filter(Boolean).join(' · ') ||
+                t.analyze.employeeConversation ||
                 t.nav.analyze
               : it.sim.scenarioTitle;
             const scoreStr = it.pct !== null ? `${it.pct} %` : '—';
@@ -468,11 +468,8 @@ export default function RunsDashboardClient() {
                             </span>
                           </div>
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1 font-mono">
-                            <div className="flex items-center gap-1">
-                              <Fingerprint className="h-3.5 w-3.5" />
-                              <span>{shortId(isRun ? it.run.id : it.sim.id, 8)}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
+                            {/* UX-W2 (01.10.): Kennung nicht mehr sichtbar, bleibt als Tooltip erreichbar (Support). */}
+                            <div className="flex items-center gap-1" title={`ID ${isRun ? it.run.id : it.sim.id}`}>
                               <CalendarDays className="h-3.5 w-3.5" />
                               <span>{fmtDateTime(createdAt)}</span>
                             </div>

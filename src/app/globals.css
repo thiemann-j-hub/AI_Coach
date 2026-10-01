@@ -37,8 +37,9 @@
     --primary-glow: 0 4px 14px rgba(0, 145, 255, 0.15);
 
     /* Glass backgrounds */
-    --glass-panel-bg: rgba(255, 255, 255, 0.8);
-    --glass-header-bg: rgba(255, 255, 255, 0.9);
+    
+    /* UX-W2 (01.10., Shell-Standard Teil 2.4): weicher Kartenschatten, zwei Ebenen */
+    --shadow-card: 0 1px 2px rgba(10, 25, 47, 0.06), 0 6px 18px rgba(10, 25, 47, 0.08);
     --glass-panel-bg-alt: rgba(0, 0, 0, 0.02);
 
     /* Scrollbar */
@@ -79,8 +80,8 @@
     --primary-glow: 0 0 20px rgba(0, 145, 255, 0.3);
 
     /* Glass backgrounds */
-    --glass-panel-bg: rgba(17, 34, 64, 0.7);
-    --glass-header-bg: rgba(10, 25, 47, 0.85);
+    
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
     --glass-panel-bg-alt: rgba(255, 255, 255, 0.02);
 
     /* Scrollbar */
@@ -102,6 +103,7 @@
   .glass-panel {
     @apply backdrop-blur-md border;
     background: var(--glass-panel-bg);
+    box-shadow: var(--shadow-card);
   }
 
   .glass-header {
