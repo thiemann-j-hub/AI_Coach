@@ -1244,6 +1244,11 @@ export default function SimulationClient() {
             </p>
           )}
 
+          {/* UX-W4 (01.10., Preis vor dem Klick): Kostenhinweis oben, nicht erst nach dem Katalog. */}
+          <p className="text-xs text-muted-foreground" data-testid="start-cost-note-top">
+            {ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
+          </p>
+
           {/* ── Fortsetzen-Streifen: nur bei offener Simulation ── */}
           {activeSims.length > 0 && (
             <section className="space-y-2">
