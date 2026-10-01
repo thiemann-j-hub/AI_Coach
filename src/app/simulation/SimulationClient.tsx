@@ -764,7 +764,7 @@ export default function SimulationClient() {
 
   async function handleApiFailure(res: Response) {
     let code = '';
-    let body: { code?: string; topUpUrl?: string } = {};
+    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean } = {};
     try {
       body = await res.json();
       code = body.code ?? '';
@@ -772,8 +772,10 @@ export default function SimulationClient() {
       /* kein JSON */
     }
     if (res.status === 402 || code === 'INSUFFICIENT_CREDITS') {
-      setTopUpUrl(body.topUpUrl ?? null);
-      setError(ts.paywall);
+      // B13 (01.10.2026): Mitglieder bekommen keinen Kauf-Link — Credits kauft der Admin.
+      const memberOnly = body.canTopUp === false;
+      setTopUpUrl(memberOnly ? null : body.topUpUrl ?? null);
+      setError(memberOnly ? t.common.balanceEmptyMember : ts.paywall);
     } else if (code === 'CENTRAL_REAUTH') {
       setError(ts.reauth);
     } else if (code === 'CENTRAL_UNAVAILABLE' || res.status === 503) {

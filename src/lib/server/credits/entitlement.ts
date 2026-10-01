@@ -49,15 +49,37 @@ function topUpUrl(): string | undefined {
   return process.env.CREDIT_TOPUP_URL || "https://pulsenorth.ai/preise";
 }
 
-function paywall(workspaceId: string): NextResponse {
+/**
+ * B13 (01.10.2026): Credits kauft nur der Admin (der CreditService erzwingt es am
+ * Checkout). Wer zentral nur Mitglied ist, bekommt deshalb KEINEN Kauf-Link, sondern
+ * `canTopUp: false` — die Oberfläche zeigt dann den vorhandenen Mitglieder-Text.
+ * Gleiche Regel wie /api/credits (Welle F). Fail-soft: ist die Rolle nicht ermittelbar,
+ * bleibt es beim bisherigen Verhalten (Link an).
+ */
+async function memberCanTopUp(): Promise<boolean> {
+  try {
+    const { auth } = await import("@/auth");
+    const oid = ((await auth())?.user as { oid?: string } | undefined)?.oid;
+    if (!oid) return true;
+    const { getCentralMemberInfo } = await import("./member-info");
+    const central = await getCentralMemberInfo(oid);
+    return central?.role !== "member";
+  } catch {
+    return true;
+  }
+}
+
+function paywall(workspaceId: string, canTopUp: boolean): NextResponse {
   return NextResponse.json(
     {
       ok: false,
       code: "INSUFFICIENT_CREDITS",
-      error:
-        "Kostenloses Kontingent aufgebraucht. Bitte Credits kaufen, um weitere Analysen zu starten.",
+      error: canTopUp
+        ? "Kostenloses Kontingent aufgebraucht. Bitte Credits kaufen, um weitere Analysen zu starten."
+        : "Das Kontingent deines Unternehmens ist aufgebraucht — dein Admin ist informiert.",
       workspaceId,
-      ...(topUpUrl() ? { topUpUrl: topUpUrl() } : {}),
+      canTopUp,
+      ...(canTopUp && topUpUrl() ? { topUpUrl: topUpUrl() } : {}),
     },
     { status: 402 } // Payment Required
   );
@@ -78,7 +100,7 @@ export async function reserveEntitlement(opts: {
   const c = await centralReserve({ runId });
   if (!c.ok) {
     if (c.reason === "insufficient") {
-      return { ok: false, response: paywall(c.workspaceId) };
+      return { ok: false, response: paywall(c.workspaceId, await memberCanTopUp()) };
     }
     if (c.reason === "no_token") {
       // Kein nutzbares CreditService-Token: Refresh fehlgeschlagen

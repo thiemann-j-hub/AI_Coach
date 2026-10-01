@@ -86,7 +86,7 @@ export default function AnalyzeClient() {
   const [step, setStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Paywall: 402 INSUFFICIENT_CREDITS -> CTA zur Credits-Seite (nur bei PAYMENTS_ENABLED aktiv)
-  const [paywall, setPaywall] = useState<{ workspaceId?: string; topUpUrl?: string } | null>(null);
+  const [paywall, setPaywall] = useState<{ workspaceId?: string; topUpUrl?: string; canTopUp?: boolean } | null>(null);
   // 401 CENTRAL_REAUTH: Token-Refresh fehlgeschlagen -> Re-Login statt generischem Fehler
   const [reauth, setReauth] = useState(false);
 
@@ -236,7 +236,8 @@ export default function AnalyzeClient() {
       // Paywall: kein Guthaben -> CTA zur Credits-Seite statt generischem Fehler
       if (res.status === 402) {
         const pj = await res.json().catch(() => ({} as any));
-        setPaywall({ workspaceId: pj?.workspaceId, topUpUrl: pj?.topUpUrl });
+        // B13 (01.10.2026): canTopUp === false → Mitglied, Credits kauft der Admin.
+        setPaywall({ workspaceId: pj?.workspaceId, topUpUrl: pj?.topUpUrl, canTopUp: pj?.canTopUp !== false });
         return;
       }
       // Sitzung abgelaufen (Token-Refresh fehlgeschlagen) -> Re-Login statt
@@ -680,11 +681,14 @@ export default function AnalyzeClient() {
                     {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
                   </div>
                   <p className="text-amber-200/80">
-                    {lang === 'de'
-                      ? 'Dein kostenloses Kontingent ist aufgebraucht. Kaufe Credits, um weitere Analysen zu starten.'
-                      : 'Your free quota is used up. Buy credits to start more analyses.'}
+                    {paywall.canTopUp === false
+                      ? t.common.balanceEmptyMember
+                      : lang === 'de'
+                        ? 'Dein kostenloses Kontingent ist aufgebraucht. Kaufe Credits, um weitere Analysen zu starten.'
+                        : 'Your free quota is used up. Buy credits to start more analyses.'}
                   </p>
-                  {paywall.topUpUrl ? (
+                  {/* B13 (01.10.2026): Mitglieder sehen keinen Kauf-Knopf — Credits kauft der Admin. */}
+                  {paywall.canTopUp === false ? null : paywall.topUpUrl ? (
                     <a
                       href={paywall.topUpUrl}
                       className="self-start px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"

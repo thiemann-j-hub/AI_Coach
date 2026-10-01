@@ -3,6 +3,7 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getApiMessages } from "./server/get-request-locale";
+import { isMagicLinkOid } from "./magic-link-oid";
 
 /**
  * Auth-Helfer für API-Routen — NextAuth-Session (HTTP-only-Cookie) statt
@@ -43,6 +44,18 @@ export function unauthorizedResponse(message = "Authentication required") {
 export async function requireAuth(req: NextRequest | Request) {
   const decoded = await verifyAuthToken(req);
   if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
+
+  // B12 (01.10.2026): Magic-Link-Lernende des Hubs (oid "ml:…") haben keine
+  // App-Freigabe. Ohne Entra-Token liefert das zentrale Register für sie keine
+  // Auskunft — das Tor unten wurde übersprungen und der Coach stand ihnen offen.
+  // Die Kennung ist eindeutig (Entra-oids sind GUIDs), deshalb hier hart und ohne
+  // Dienst-Aufruf abweisen.
+  if (isMagicLinkOid(decoded.oid) || isMagicLinkOid(decoded.uid)) {
+    return NextResponse.json(
+      { ok: false, error: "Der KI-Coach ist für dieses Konto nicht freigeschaltet. Wende dich an deine:n Admin.", code: "APP_NOT_ENABLED" },
+      { status: 403 }
+    );
+  }
 
   // P3 App-Freigaben (ROLLEN-Blueprint 15.08.): das zentrale Mandanten-
   // Register entscheidet, ob der Coach fuer dieses Konto freigeschaltet und
