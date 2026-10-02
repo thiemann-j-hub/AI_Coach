@@ -40,6 +40,33 @@ afterEach(() => {
   delete process.env.REQUIRE_VALID_LOGIN;
   delete process.env.PN_SERVICE_SECRET;
   delete process.env.PN_SERVICE_AUTH;
+  delete process.env.MAIL_LINK_PN_ONLY;
+});
+
+describe("requireAuth — Sitzung aus einem Mail-Link", () => {
+  it("zählt mit einer Microsoft-Kennung nicht: 401, Register nicht gefragt", async () => {
+    authMock.mockResolvedValue({ user: { id: OID, email: "a@example.com", oid: OID, provider: "magic-link" } });
+    const res = await requireAuth(req());
+    expect((res as Response).status).toBe(401);
+    expect((await body(res)).code).toBe("UNAUTHORIZED");
+    expect(stateMock).not.toHaveBeenCalled();
+  });
+
+  it("hat einen Rückweg (MAIL_LINK_PN_ONLY=off): dann wie eine Microsoft-Sitzung", async () => {
+    process.env.MAIL_LINK_PN_ONLY = "off";
+    authMock.mockResolvedValue({ user: { id: OID, email: "a@example.com", oid: OID, provider: "magic-link" } });
+    stateMock.mockResolvedValue(info());
+    const res = await requireAuth(req());
+    expect(res).toMatchObject({ uid: OID, oid: OID });
+  });
+
+  it("gilt nicht für Microsoft-Sitzungen ohne Anmeldeweg und nicht für ml:-Kennungen", async () => {
+    stateMock.mockResolvedValue(info());
+    expect(await requireAuth(req())).toMatchObject({ oid: OID });
+    process.env.PN_SERVICE_SECRET = "test-dienst-geheimnis-0123456789-abcdef";
+    authMock.mockResolvedValue({ user: { id: "ml:konto-1", email: "a@example.com", oid: "ml:konto-1", provider: "magic-link" } });
+    expect(await requireAuth(req())).toMatchObject({ uid: "ml:konto-1", oid: "ml:konto-1" });
+  });
 });
 
 describe("requireAuth", () => {

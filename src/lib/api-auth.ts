@@ -15,16 +15,28 @@ import { isPnMemberId, pnAccountsEnabled } from "./server/credits/cs-credential"
  */
 export async function verifyAuthToken(_req: NextRequest | Request) {
   const session = await auth();
-  const uid = (session?.user as { id?: string } | undefined)?.id;
+  const user = session?.user as { id?: string; oid?: string; provider?: string } | undefined;
+  const uid = user?.id;
   if (!uid) return null;
+  const oid = user?.oid ?? null;
+  // Eine Sitzung aus einem Mail-Link gehört nur zu Konten mit der Kennung „ml:…" (der Hub
+  // stellt seit dem 02.10.2026 keine anderen mehr aus). Trägt eine ältere Sitzung dieser Art
+  // eine Microsoft-Kennung, zählt sie hier nicht — sonst käme man per Mail-Link an Microsofts
+  // Anmeldung vorbei an das Token dieses Kontos. Die Person meldet sich neu an (mit
+  // Microsoft). Rückweg: MAIL_LINK_PN_ONLY=off.
+  if (user?.provider === "magic-link" && !isMagicLinkOid(oid) && mailLinkPnOnly()) return null;
   return {
     uid,
     email: session?.user?.email ?? null,
     // App-uebergreifend stabile Entra Object-ID = Schluessel in den Server-Token-Store
     // (entra-token-store). Das Access-Token liegt NICHT mehr in der Session.
     // PulseNorth-Konto (Anmeldung ohne Microsoft): uid und oid sind die Kennung "ml:…".
-    oid: (session?.user as { oid?: string } | undefined)?.oid ?? null,
+    oid,
   };
+}
+
+function mailLinkPnOnly(): boolean {
+  return (process.env.MAIL_LINK_PN_ONLY ?? "on").toLowerCase() !== "off";
 }
 
 /**

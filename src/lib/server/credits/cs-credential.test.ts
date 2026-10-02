@@ -297,7 +297,9 @@ describe("Leitplanken: ein Helfer, ein Ort für Token und Geheimnis", () => {
 
   it("what the Hub froze into the JWT (mlRole, mlApps, mlWorkspaceId) is never used", () => {
     expect(filesWith(/\b(mlRole|mlApps|mlWorkspaceId)\b/)).toEqual([]);
-    // Auch die Herkunft der Sitzung („provider") entscheidet hier nichts — nur die Kennung.
-    expect(filesWith(/["']magic-link["']/)).toEqual([]);
+    // Die Herkunft der Sitzung („provider") öffnet hier nie etwas — nur die Kennung zählt.
+    // Genau zwei Stellen dürfen sie lesen, und beide nur, um ABZUWEISEN: auth.ts reicht sie
+    // durch, api-auth.ts lehnt eine Mail-Link-Sitzung mit Microsoft-Kennung ab (02.10.2026).
+    expect(filesWith(/["']magic-link["']/)).toEqual(["auth.ts", "lib/api-auth.ts"]);
   });
 });

@@ -130,6 +130,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user && token.oid) {
         (session.user as { oid?: string }).oid = String(token.oid);
       }
+      // Anmeldeweg weiterreichen: Der Hub setzt „magic-link" für jede Anmeldung per E-Mail
+      // (Link oder Passwort). api-auth.ts prüft damit, dass so eine Sitzung nur zu einem
+      // Konto mit der Kennung „ml:…" gehört.
+      if (session.user && token.provider === "magic-link") {
+        (session.user as { provider?: string }).provider = "magic-link";
+      }
       return session;
     },
   },
