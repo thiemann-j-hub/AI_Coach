@@ -311,7 +311,7 @@
     "extraTerms": "Πρόσθετοι όροι (χωρισμένοι με κόμμα)",
     "extraTermsPlaceholder": "π.χ. Εταιρεία XY, Έργο Z",
     "startAnalysis": "Έναρξη ανάλυσης",
-    "costNote": "Η ανάλυση κοστίζει 1 credit ({eur}) – μόνο αν ολοκληρωθεί επιτυχώς.",
+    "costNote": "Η ανάλυση κοστίζει 1 credit ({eur}). Σε περίπτωση τεχνικού σφάλματος, το credit επιστρέφεται.",
     "analyzing": "Ανάλυση σε εξέλιξη...",
     "errorPdfUpload": "Σφάλμα κατά τη μεταφόρτωση του PDF",
     "errorSessionMissing": "Λείπει το SessionId.",

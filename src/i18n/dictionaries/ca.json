@@ -311,7 +311,7 @@
     "extraTerms": "Termes addicionals (separats per comes)",
     "extraTermsPlaceholder": "p. ex. Empresa XY, Projecte Z",
     "startAnalysis": "Inicia l'anàlisi",
-    "costNote": "L'anàlisi costa 1 crèdit ({eur}) – només si es completa correctament.",
+    "costNote": "L'anàlisi costa 1 crèdit ({eur}). Si falla per un error tècnic, el crèdit es retorna.",
     "analyzing": "S'està analitzant...",
     "errorPdfUpload": "Error en carregar el PDF",
     "errorSessionMissing": "Falta el SessionId.",

@@ -311,7 +311,7 @@
     "extraTerms": "Dodatkowe terminy (oddzielone przecinkami)",
     "extraTermsPlaceholder": "np. Firma XY, Projekt Z",
     "startAnalysis": "Rozpocznij analizę",
-    "costNote": "Analiza kosztuje 1 kredyt ({eur}) – tylko jeśli się powiedzie.",
+    "costNote": "Analiza kosztuje 1 kredyt ({eur}). W razie błędu technicznego kredyt zostanie zwrócony.",
     "analyzing": "Analizowanie...",
     "errorPdfUpload": "Błąd podczas przesyłania PDF",
     "errorSessionMissing": "Brak SessionId.",

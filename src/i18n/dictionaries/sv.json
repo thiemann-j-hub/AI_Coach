@@ -311,7 +311,7 @@
     "extraTerms": "Ytterligare begrepp (kommaseparerade)",
     "extraTermsPlaceholder": "t.ex. Företag XY, Projekt Z",
     "startAnalysis": "Starta analys",
-    "costNote": "Analysen kostar 1 credit ({eur}) – bara om den lyckas.",
+    "costNote": "Analysen kostar 1 credit ({eur}). Vid ett tekniskt fel återbetalas crediten.",
     "analyzing": "Analyserar...",
     "errorPdfUpload": "Fel vid PDF-uppladdning",
     "errorSessionMissing": "SessionId saknas.",

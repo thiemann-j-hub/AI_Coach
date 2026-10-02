@@ -311,7 +311,7 @@
     "extraTerms": "Termes supplémentaires (séparés par des virgules)",
     "extraTermsPlaceholder": "ex. Entreprise XY, Projet Z",
     "startAnalysis": "Démarrer l'analyse",
-    "costNote": "L'analyse coûte 1 crédit ({eur}) – uniquement si elle aboutit.",
+    "costNote": "L'analyse coûte 1 crédit ({eur}). En cas d'erreur technique, le crédit est remboursé.",
     "analyzing": "Analyse en cours...",
     "errorPdfUpload": "Erreur lors du téléchargement du PDF",
     "errorSessionMissing": "SessionId manquant.",

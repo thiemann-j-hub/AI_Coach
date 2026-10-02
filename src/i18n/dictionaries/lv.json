@@ -311,7 +311,7 @@
     "extraTerms": "Papildu termini (atdalīti ar komatiem)",
     "extraTermsPlaceholder": "piem., Uzņēmums XY, Projekts Z",
     "startAnalysis": "Sākt analīzi",
-    "costNote": "Analīze maksā 1 kredītu ({eur}) – tikai tad, ja tā izdodas.",
+    "costNote": "Analīze maksā 1 kredītu ({eur}). Tehniskas kļūdas gadījumā kredīts tiek atmaksāts.",
     "analyzing": "Notiek analīze...",
     "errorPdfUpload": "Kļūda PDF augšupielādē",
     "errorSessionMissing": "Trūkst SessionId.",

@@ -311,7 +311,7 @@
     "extraTerms": "Lisamõisted (komadega eraldatud)",
     "extraTermsPlaceholder": "nt Ettevõte XY, Projekt Z",
     "startAnalysis": "Alusta analüüsi",
-    "costNote": "Analüüs maksab 1 krediidi ({eur}) – ainult siis, kui see õnnestub.",
+    "costNote": "Analüüs maksab 1 krediidi ({eur}). Tehnilise vea korral krediit tagastatakse.",
     "analyzing": "Analüüsimine...",
     "errorPdfUpload": "Viga PDF-i üleslaadimisel",
     "errorSessionMissing": "SessionId puudub.",

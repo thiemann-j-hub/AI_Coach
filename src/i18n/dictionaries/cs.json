@@ -311,7 +311,7 @@
     "extraTerms": "Další termíny (oddělené čárkami)",
     "extraTermsPlaceholder": "např. Firma XY, Projekt Z",
     "startAnalysis": "Spustit analýzu",
-    "costNote": "Analýza stojí 1 kredit ({eur}) – pouze pokud se zdaří.",
+    "costNote": "Analýza stojí 1 kredit ({eur}). Při technické chybě se kredit vrátí.",
     "analyzing": "Analyzuji...",
     "errorPdfUpload": "Chyba při nahrávání PDF",
     "errorSessionMissing": "Chybí SessionId.",

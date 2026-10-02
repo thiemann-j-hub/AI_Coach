@@ -311,7 +311,7 @@
     "extraTerms": "Lisätermit (pilkuilla eroteltuna)",
     "extraTermsPlaceholder": "esim. Yritys XY, Projekti Z",
     "startAnalysis": "Aloita analyysi",
-    "costNote": "Analyysi maksaa 1 krediitin ({eur}) – vain jos se onnistuu.",
+    "costNote": "Analyysi maksaa 1 krediitin ({eur}). Teknisen virheen sattuessa krediitti palautetaan.",
     "analyzing": "Analysoidaan...",
     "errorPdfUpload": "Virhe PDF-latauksessa",
     "errorSessionMissing": "SessionId puuttuu.",

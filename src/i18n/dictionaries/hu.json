@@ -311,7 +311,7 @@
     "extraTerms": "További kifejezések (vesszővel elválasztva)",
     "extraTermsPlaceholder": "pl. XY Kft., Z projekt",
     "startAnalysis": "Elemzés indítása",
-    "costNote": "Az elemzés 1 kreditbe kerül ({eur}) – csak ha sikerül.",
+    "costNote": "Az elemzés 1 kreditbe kerül ({eur}). Technikai hiba esetén a kredit visszajár.",
     "analyzing": "Elemzés folyamatban...",
     "errorPdfUpload": "Hiba a PDF feltöltésekor",
     "errorSessionMissing": "Hiányzik a SessionId.",

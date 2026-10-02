@@ -311,7 +311,7 @@
     "extraTerms": "Zusätzliche Begriffe (kommagetrennt)",
     "extraTermsPlaceholder": "z.B. Firma XY, Projekt Z",
     "startAnalysis": "Analyse starten",
-    "costNote": "Die Analyse kostet 1 Credit ({eur}) – nur, wenn sie gelingt.",
+    "costNote": "Die Analyse kostet 1 Credit ({eur}). Bei einem technischen Fehler wird er erstattet.",
     "analyzing": "Wird analysiert...",
     "errorPdfUpload": "Fehler beim PDF-Upload",
     "errorSessionMissing": "SessionId fehlt.",

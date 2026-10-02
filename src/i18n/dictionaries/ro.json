@@ -311,7 +311,7 @@
     "extraTerms": "Termeni suplimentari (separați prin virgulă)",
     "extraTermsPlaceholder": "de ex. Firma XY, Proiectul Z",
     "startAnalysis": "Începe analiza",
-    "costNote": "Analiza costă 1 credit ({eur}) – doar dacă reușește.",
+    "costNote": "Analiza costă 1 credit ({eur}). În cazul unei erori tehnice, creditul este returnat.",
     "analyzing": "Se analizează...",
     "errorPdfUpload": "Eroare la încărcarea PDF-ului",
     "errorSessionMissing": "Lipsește SessionId.",

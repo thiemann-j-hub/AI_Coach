@@ -311,7 +311,7 @@
     "extraTerms": "Extra termen (gescheiden door komma's)",
     "extraTermsPlaceholder": "bijv. Bedrijf XY, Project Z",
     "startAnalysis": "Analyse starten",
-    "costNote": "De analyse kost 1 credit ({eur}) – alleen als ze slaagt.",
+    "costNote": "De analyse kost 1 credit ({eur}). Bij een technische fout wordt de credit teruggeboekt.",
     "analyzing": "Bezig met analyseren...",
     "errorPdfUpload": "Fout bij het uploaden van de PDF",
     "errorSessionMissing": "SessionId ontbreekt.",

@@ -311,7 +311,7 @@
     "extraTerms": "Additional terms (comma-separated)",
     "extraTermsPlaceholder": "e.g. Company XY, Project Z",
     "startAnalysis": "Start analysis",
-    "costNote": "The analysis costs 1 credit ({eur}) – only if it succeeds.",
+    "costNote": "The analysis costs 1 credit ({eur}). If it fails for technical reasons, the credit is refunded.",
     "analyzing": "Analyzing...",
     "errorPdfUpload": "Error uploading PDF",
     "errorSessionMissing": "SessionId missing.",

@@ -311,7 +311,7 @@
     "extraTerms": "Términos adicionales (separados por comas)",
     "extraTermsPlaceholder": "ej. Empresa XY, Proyecto Z",
     "startAnalysis": "Iniciar análisis",
-    "costNote": "El análisis cuesta 1 crédito ({eur}) – solo si se completa con éxito.",
+    "costNote": "El análisis cuesta 1 crédito ({eur}). Si falla por un error técnico, el crédito se devuelve.",
     "analyzing": "Analizando...",
     "errorPdfUpload": "Error al subir el PDF",
     "errorSessionMissing": "Falta el SessionId.",

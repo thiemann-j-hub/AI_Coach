@@ -311,7 +311,7 @@
     "extraTerms": "Téarmaí breise (scartha le camóga)",
     "extraTermsPlaceholder": "m.sh. Comhlacht XY, Tionscadal Z",
     "startAnalysis": "Tosaigh an anailís",
-    "costNote": "Cosnaíonn an anailís 1 chreidmheas ({eur}) – ach amháin má éiríonn léi.",
+    "costNote": "Cosnaíonn an anailís 1 chreidmheas ({eur}). Má theipeann uirthi de bharr earráid theicniúil, tugtar an creidmheas ar ais.",
     "analyzing": "Ag déanamh anailíse...",
     "errorPdfUpload": "Earráid agus an PDF á uaslódáil",
     "errorSessionMissing": "SessionId ar iarraidh.",
