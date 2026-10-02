@@ -2,6 +2,7 @@
 
 import { signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "next-auth/react";
 import { withBasePath } from "@/lib/base-path";
+import { hubLoginEnabled, markAccountChoice } from "@/lib/hub-login";
 
 /**
  * Auth-Aktionen (NextAuth v5 + Microsoft Entra ID).
@@ -19,7 +20,10 @@ export async function signInWithMicrosoft() {
 
 export async function signOut() {
   try {
-    await nextAuthSignOut({ redirectTo: withBasePath("/analyze") });
+    // Eine Anmeldung im Hub (02.10.2026): nach dem Abmelden zur Anmeldekarte dort; die
+    // nächste Anmeldung fragt nach dem Konto.
+    markAccountChoice();
+    await nextAuthSignOut({ redirectTo: hubLoginEnabled() ? "/" : withBasePath("/analyze") });
     return { error: null };
   } catch (error) {
     return { error: error as Error };

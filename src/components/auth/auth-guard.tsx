@@ -2,12 +2,13 @@
 
 import { useAuth } from "@/providers/auth-provider";
 import { useTranslation } from "@/i18n/useTranslation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, MessagesSquare, ArrowRight, BarChart3, ShieldCheck } from "lucide-react";
 import { signInWithMicrosoft } from "@/lib/auth-service";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PulscraftWordmark } from "@/components/pulscraft-wordmark";
+import { clearAccountChoice, goToHubLogin, hubLoginEnabled } from "@/lib/hub-login";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -17,7 +18,17 @@ interface AuthGuardProps {
 export function AuthGuard({ children, fallback }: AuthGuardProps) {
   const { user, loading } = useAuth();
 
-  if (loading) {
+  // Eine Anmeldung im Hub (Owner-GO 02.10.2026): Hinter der gemeinsamen Adresse gehen
+  // abgemeldete Besucher zur Anmeldekarte im Hub und kommen danach auf diese Seite zurück.
+  // Im Direktbetrieb bleibt die eigene Anmeldeseite (LoginScreen) zuständig.
+  const viaHub = hubLoginEnabled();
+  useEffect(() => {
+    if (loading) return;
+    if (user) clearAccountChoice();
+    else if (viaHub && !fallback) goToHubLogin();
+  }, [loading, user, viaHub, fallback]);
+
+  if (loading || (!user && viaHub && !fallback)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
