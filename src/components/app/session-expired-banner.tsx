@@ -8,15 +8,21 @@
  * Ereignis; dieser Streifen im App-Rahmen sagt, was los ist, und bietet den Weg zurück:
  * „Neu anmelden" startet die Microsoft-Anmeldung, danach geht es auf derselben Seite
  * weiter. Bewusst kein automatischer Sprung — eine angefangene Eingabe bleibt stehen.
+ *
+ * Anmeldung-Umbau Schritt 2c (02.10.2026): Ein PulseNorth-Konto (Anmeldung ohne Microsoft)
+ * bekommt diese Meldung vom Tor nicht. Sähe es den Streifen doch, führt „Neu anmelden" zur
+ * Anmeldekarte im Hub, nie zu Microsoft (signInAgain).
  */
 import { useEffect, useState } from 'react';
 import { LogIn } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
-import { signInWithMicrosoft } from '@/lib/auth-service';
+import { signInAgain } from '@/lib/auth-service';
 import { SESSION_EXPIRED_EVENT, wasSessionExpiredSeen } from '@/lib/api-client';
+import { useAuth } from '@/providers/auth-provider';
 
 export function SessionExpiredBanner() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [expired, setExpired] = useState(false);
 
   useEffect(() => {
@@ -41,7 +47,7 @@ export function SessionExpiredBanner() {
       <button
         type="button"
         onClick={() => {
-          void signInWithMicrosoft();
+          void signInAgain(user?.uid);
         }}
         className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-semibold text-amber-950 transition-colors hover:bg-amber-400"
       >

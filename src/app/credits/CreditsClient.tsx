@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { withBasePath } from '@/lib/base-path';
-import { signInWithMicrosoft } from '@/lib/auth-service';
+import { signInAgain } from '@/lib/auth-service';
+import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
 import { Download, FileText, LogIn } from 'lucide-react';
 
@@ -40,6 +41,7 @@ type Invoice = {
 
 export default function CreditsClient() {
   const { locale } = useTranslation();
+  const { user } = useAuth();
   const de = locale.startsWith('de');
   const searchParams = useSearchParams();
   const status = searchParams.get('status'); // success | cancelled
@@ -101,7 +103,8 @@ export default function CreditsClient() {
 
   async function relogin() {
     try {
-      await signInWithMicrosoft();
+      // PulseNorth-Konto: zur Anmeldekarte im Hub, nie direkt zu Microsoft (signInAgain).
+      await signInAgain(user?.uid);
     } catch {
       setError(de ? 'Anmeldung fehlgeschlagen.' : 'Sign-in failed.');
     }

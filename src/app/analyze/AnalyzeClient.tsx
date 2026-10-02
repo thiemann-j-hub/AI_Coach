@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import AppShell from '@/components/app/app-shell';
 import { parsePdfToText } from '@/lib/pdf/parsePdfToText';
 import { authFetch } from '@/lib/api-client';
-import { signInWithMicrosoft } from '@/lib/auth-service';
+import { signInAgain } from '@/lib/auth-service';
+import { useAuth } from '@/providers/auth-provider';
 import { STORAGE_KEY_SESSION, migrateLegacyStorageKeys } from '@/lib/storage-keys';
 import { newSessionId } from '@/lib/session-utils';
 import {
@@ -50,6 +51,7 @@ export default function AnalyzeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, locale } = useTranslation();
+  const { user } = useAuth();
 
   const [sessionId, setSessionId] = useState<string>('');
   const [lang, setLang] = useState<'de' | 'en'>('de');
@@ -665,7 +667,7 @@ export default function AnalyzeClient() {
                       : 'Your session has expired. Please sign in again — no credit was used.'}
                   </p>
                   <button
-                    onClick={() => { void signInWithMicrosoft(); }}
+                    onClick={() => { void signInAgain(user?.uid); }}
                     className="self-start inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"
                   >
                     <LogIn className="h-4 w-4" />

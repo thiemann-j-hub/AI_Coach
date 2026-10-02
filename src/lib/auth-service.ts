@@ -2,7 +2,7 @@
 
 import { signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "next-auth/react";
 import { withBasePath } from "@/lib/base-path";
-import { hubLoginEnabled, markAccountChoice } from "@/lib/hub-login";
+import { goToHubLogin, hubLoginEnabled, markAccountChoice, reLoginViaHub } from "@/lib/hub-login";
 
 /**
  * Auth-Aktionen (NextAuth v5 + Microsoft Entra ID).
@@ -16,6 +16,20 @@ export async function signInWithMicrosoft() {
   } catch (error) {
     return { error: error as Error };
   }
+}
+
+/**
+ * „Neu anmelden" (Streifen „Sitzung abgelaufen", Analyse, Credits-Seite). `uid` ist die
+ * Kennung der laufenden Sitzung. Ein PulseNorth-Konto (Anmeldung ohne Microsoft) geht
+ * dafür NIE direkt zu Microsoft, sondern zur Anmeldekarte im Hub und kommt danach auf
+ * diese Seite zurück. Microsoft-Konten: unverändert.
+ */
+export async function signInAgain(uid: string | null | undefined) {
+  if (reLoginViaHub(uid)) {
+    goToHubLogin();
+    return { error: null };
+  }
+  return signInWithMicrosoft();
 }
 
 export async function signOut() {

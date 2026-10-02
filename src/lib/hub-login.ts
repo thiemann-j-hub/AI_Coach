@@ -10,9 +10,27 @@
  * Anmeldeseite des Coach zuständig.
  */
 import { BASE_PATH } from "@/lib/base-path";
+import { isMagicLinkOid } from "@/lib/magic-link-oid";
 
 export function hubLoginEnabled(basePath: string = BASE_PATH): boolean {
   return basePath.length > 0;
+}
+
+/**
+ * „Neu anmelden": über die Anmeldekarte im Hub statt direkt bei Microsoft?
+ * (Anmeldung-Umbau Schritt 2c, 02.10.2026)
+ *  - PulseNorth-Konto (Kennung "ml:…", Anmeldung ohne Microsoft): IMMER über den Hub —
+ *    es hat kein Microsoft-Konto.
+ *  - keine Sitzung bekannt: hinter der gemeinsamen Adresse ebenfalls über den Hub (dort
+ *    stehen beide Wege zur Wahl).
+ *  - Microsoft-Konto: wie bisher direkt zu Microsoft.
+ */
+export function reLoginViaHub(
+  uid: string | null | undefined,
+  basePath: string = BASE_PATH
+): boolean {
+  if (isMagicLinkOid(uid)) return true;
+  return !uid && hubLoginEnabled(basePath);
 }
 
 /**

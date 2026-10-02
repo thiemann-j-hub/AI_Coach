@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { getApiMessages } from "./server/get-request-locale";
 import { isMagicLinkOid } from "./magic-link-oid";
 import { requireValidLoginEnabled } from "./server/credits/login-gate";
+import { isPnMemberId, pnAccountsEnabled } from "./server/credits/cs-credential";
 
 /**
  * Auth-Helfer für API-Routen — NextAuth-Session (HTTP-only-Cookie) statt
@@ -21,6 +22,7 @@ export async function verifyAuthToken(_req: NextRequest | Request) {
     email: session?.user?.email ?? null,
     // App-uebergreifend stabile Entra Object-ID = Schluessel in den Server-Token-Store
     // (entra-token-store). Das Access-Token liegt NICHT mehr in der Session.
+    // PulseNorth-Konto (Anmeldung ohne Microsoft): uid und oid sind die Kennung "ml:…".
     oid: (session?.user as { oid?: string } | undefined)?.oid ?? null,
   };
 }
@@ -47,6 +49,35 @@ export function loginRequiredResponse(req: NextRequest | Request) {
 }
 
 /**
+ * Antworten des Tors für PulseNorth-Konten. Wortlaut und Code wie für Microsoft-Konten
+ * (unten in requireAuth) — ein PulseNorth-Konto ohne Freigabe sieht dasselbe.
+ */
+function appNotEnabledResponse() {
+  return NextResponse.json(
+    { ok: false, error: "Der KI-Coach ist für dieses Konto nicht freigeschaltet. Wende dich an deine:n Admin.", code: "APP_NOT_ENABLED" },
+    { status: 403 }
+  );
+}
+
+function accountDisabledResponse() {
+  return NextResponse.json(
+    { ok: false, error: "Dieses Konto wurde deaktiviert. Wende dich an deine:n Admin.", code: "ACCOUNT_DISABLED" },
+    { status: 403 }
+  );
+}
+
+/**
+ * 503, wenn das Register für ein PulseNorth-Konto gerade keine Auskunft gibt. Code und
+ * Wortlaut wie beim Guthaben-Tor (entitlement.ts) — die Oberfläche kennt beides.
+ */
+function registerUnavailableResponse() {
+  return NextResponse.json(
+    { ok: false, code: "CENTRAL_UNAVAILABLE", error: "Guthaben-Dienst nicht erreichbar. Bitte erneut versuchen." },
+    { status: 503 }
+  );
+}
+
+/**
  * Convenience: verify session and return uid, or send 401.
  * Usage in API routes:
  *   const auth = await requireAuth(req);
@@ -63,16 +94,37 @@ export async function requireAuth(
   const decoded = await verifyAuthToken(req);
   if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
 
-  // B12 (01.10.2026): Magic-Link-Lernende des Hubs (oid "ml:…") haben keine
-  // App-Freigabe. Ohne Entra-Token liefert das zentrale Register für sie keine
-  // Auskunft — das Tor unten wurde übersprungen und der Coach stand ihnen offen.
-  // Die Kennung ist eindeutig (Entra-oids sind GUIDs), deshalb hier hart und ohne
-  // Dienst-Aufruf abweisen.
+  // PulseNorth-Konto (Anmeldung ohne Microsoft): Der Hub stellt die Sitzung mit der Kennung
+  // "ml:…" in uid UND oid aus. Die Kennung ist eindeutig (Entra-oids sind GUIDs).
   if (isMagicLinkOid(decoded.oid) || isMagicLinkOid(decoded.uid)) {
-    return NextResponse.json(
-      { ok: false, error: "Der KI-Coach ist für dieses Konto nicht freigeschaltet. Wende dich an deine:n Admin.", code: "APP_NOT_ENABLED" },
-      { status: 403 }
-    );
+    // B12 (01.10.2026): Diese Konten haben kein Entra-Token. Das zentrale Register gab für
+    // sie keine Auskunft — das Tor wurde übersprungen und der Coach stand ihnen offen.
+    // Deshalb hart und ohne Dienst-Aufruf abweisen. Seit dem Anmeldung-Umbau Schritt 2c
+    // (02.10.2026) gilt das nur noch, wenn PulseNorth-Konten NICHT eingeschaltet sind
+    // (PN_SERVICE_AUTH=off oder kein PN_SERVICE_SECRET) oder die Sitzung nicht die EINE
+    // gültige Kennung in uid und oid trägt.
+    if (!(pnAccountsEnabled() && isPnMemberId(decoded.oid) && decoded.uid === decoded.oid)) {
+      return appNotEnabledResponse();
+    }
+
+    // Eingeschaltet: dasselbe zentrale Tor wie für Microsoft-Mitglieder (Abruf mit dem
+    // Dienst-Ausweis) — aber NIE fail-soft. Hinein kommt nur, wem das Register es
+    // ausdrücklich bestätigt: Mitglied vorhanden, nicht deaktiviert, Coach freigegeben.
+    // Was beim Anmelden im JWT eingefroren wurde (mlRole, mlApps, mlWorkspaceId), zählt
+    // nie. Weder allowExpiredLogin noch REQUIRE_VALID_LOGIN=off öffnen dieses Tor, und
+    // „neu anmelden" gibt es hier nicht: ein PulseNorth-Konto hat kein Token, das abläuft.
+    const { getCentralMemberState } = await import("@/lib/server/credits/member-info");
+    const state = await getCentralMemberState(decoded.oid);
+    if (state.kind === "unavailable") return registerUnavailableResponse();
+    if (state.kind !== "info") return appNotEnabledResponse();
+    if (state.info.disabled) return accountDisabledResponse();
+    if (!state.info.apps.includes("coach")) return appNotEnabledResponse();
+    return {
+      uid: decoded.uid,
+      email: decoded.email,
+      oid: decoded.oid,
+      decoded,
+    };
   }
 
   // P3 App-Freigaben (ROLLEN-Blueprint 15.08.): das zentrale Mandanten-

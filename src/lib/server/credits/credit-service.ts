@@ -3,7 +3,13 @@ import "server-only";
 import { auth } from "@/auth";
 import { withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
-import { getValid, type CreditTokenResult } from "./entra-token-store";
+import {
+  PN_MEMBER_PREFIX,
+  csAuthHeaders,
+  csCredentialFor,
+  type CsCredential,
+  type CsCredentialResult,
+} from "./cs-credential";
 import { loginRequired, requireValidLoginEnabled } from "./login-gate";
 
 /**
@@ -17,6 +23,10 @@ import { loginRequired, requireValidLoginEnabled } from "./login-gate";
  *
  * CREDITS_CENTRAL=off: komplett inert — Coach laeuft unveraendert auf dem lokalen
  * Ledger (kein zentraler Call). Diese Helfer werden dann nirgends aufgerufen.
+ *
+ * Anmeldung-Umbau Schritt 2c (02.10.2026): Jeder Abruf zeigt den AUSWEIS des Nutzers aus
+ * cs-credential — Microsoft-Token aus dem Server-Store (wie bisher) oder, für
+ * PulseNorth-Konten (Kennung `ml:…`, Anmeldung ohne Microsoft), den Dienst-Ausweis.
  */
 
 export function creditsCentralEnabled(): boolean {
@@ -45,13 +55,13 @@ interface RequestOpts {
 }
 
 async function request<T>(
-  token: string,
+  cred: CsCredential,
   method: "GET" | "POST",
   path: string,
   opts: RequestOpts = {}
 ): Promise<T> {
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
+    ...csAuthHeaders(cred),
     Accept: "application/json",
   };
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
@@ -77,17 +87,17 @@ async function request<T>(
 }
 
 // ---------------------------------------------------------------------------
-// Low-level API (token explizit -> pur + testbar)
+// Low-level API (Ausweis explizit -> pur + testbar)
 // ---------------------------------------------------------------------------
 
-/** Zentrale Wahrheit: welcher Workspace gehoert diesem Token-Subjekt (oid). */
-export async function resolveWorkspace(token: string): Promise<{ workspaceId: string }> {
-  return request<{ workspaceId: string }>(token, "GET", "/resolve-workspace");
+/** Zentrale Wahrheit: welcher Workspace gehoert dem Subjekt dieses Ausweises (oid). */
+export async function resolveWorkspace(cred: CsCredential): Promise<{ workspaceId: string }> {
+  return request<{ workspaceId: string }>(cred, "GET", "/resolve-workspace");
 }
 
 /** Liefert den zentralen Saldo. Contract: GET /credits -> { credits }. */
-export async function getBalance(token: string, workspaceId: string): Promise<{ credits: number }> {
-  return request<{ credits: number }>(token, "GET", `/workspaces/${encodeURIComponent(workspaceId)}/credits`);
+export async function getBalance(cred: CsCredential, workspaceId: string): Promise<{ credits: number }> {
+  return request<{ credits: number }>(cred, "GET", `/workspaces/${encodeURIComponent(workspaceId)}/credits`);
 }
 
 /**
@@ -95,11 +105,11 @@ export async function getBalance(token: string, workspaceId: string): Promise<{ 
  * { amount: positive GANZE Zahl, description? }, Header Idempotency-Key (Pflicht).
  */
 export async function spend(
-  token: string,
+  cred: CsCredential,
   workspaceId: string,
   opts: { amount: number; idempotencyKey: string; description?: string }
 ): Promise<{ balance?: number; transactionId?: string; idempotent?: boolean }> {
-  return request(token, "POST", `/workspaces/${encodeURIComponent(workspaceId)}/credits/spend`, {
+  return request(cred, "POST", `/workspaces/${encodeURIComponent(workspaceId)}/credits/spend`, {
     body: { amount: opts.amount, description: opts.description },
     idempotencyKey: opts.idempotencyKey,
   });
@@ -108,43 +118,50 @@ export async function spend(
 /**
  * Erstattet Credits (Gegenstueck zu spend). FIXIERTER zentraler Contract:
  *   POST /workspaces/{id}/credits/refund
- *     Header: Authorization: Bearer <User-Token> ; Idempotency-Key (Pflicht)
+ *     Header: Ausweis des Nutzers (cs-credential) ; Idempotency-Key (Pflicht)
  *     Body:   { amount: positive GANZE Zahl, description, spendTransactionId }
  *             spendTransactionId = transactionId aus der spend-Antwort (PFLICHT!).
  *     200 ->  { balance, transactionId, idempotent? }
  *     422 no_matching_charge / refund_exceeds_charge ; 400 missing_spend_reference ; 403
  */
 export async function refund(
-  token: string,
+  cred: CsCredential,
   workspaceId: string,
   opts: { amount: number; idempotencyKey: string; description: string; spendTransactionId: string }
 ): Promise<{ balance?: number; transactionId?: string; idempotent?: boolean }> {
-  return request(token, "POST", `/workspaces/${encodeURIComponent(workspaceId)}/credits/refund`, {
+  return request(cred, "POST", `/workspaces/${encodeURIComponent(workspaceId)}/credits/refund`, {
     body: { amount: opts.amount, description: opts.description, spendTransactionId: opts.spendTransactionId },
     idempotencyKey: opts.idempotencyKey,
   });
 }
 
 // ---------------------------------------------------------------------------
-// Cutover-Helfer (CREDITS_CENTRAL=on): direkt, awaited, gating. Token kommt
-// AUSSCHLIESSLICH aus dem Server-Store (getValid(oid), refresht bei Bedarf) —
+// Cutover-Helfer (CREDITS_CENTRAL=on): direkt, awaited, gating. Der Ausweis kommt
+// AUSSCHLIESSLICH serverseitig aus cs-credential (Microsoft-Token aus dem
+// Server-Store, refresht bei Bedarf — oder der Dienst-Ausweis fuer PulseNorth-Konten),
 // nie aus der Session; workspaceId IMMER aus /resolve-workspace.
 // ---------------------------------------------------------------------------
 
 /**
- * Holt das (ggf. refreshte) CreditService-Token aus dem Server-Store. Die oid
- * stammt IMMER aus der verifizierten Session (kein Client-Input → kein IDOR).
- * Kein oid → no-token (inert); refresh-failed → Re-Login (expired). Siehe §5.
+ * Kennung aus der verifizierten Session (kein Client-Input → kein IDOR);
+ * null = keine Session / keine oid.
  */
-async function getCreditToken(): Promise<CreditTokenResult> {
-  let oid: string | undefined;
+async function sessionOid(): Promise<string | null> {
   try {
-    oid = (await auth())?.user?.oid;
+    return (await auth())?.user?.oid ?? null;
   } catch {
-    return { ok: false, reason: "no-token" };
+    return null;
   }
-  if (!oid) return { ok: false, reason: "no-token" };
-  return getValid(oid);
+}
+
+/**
+ * Holt den Ausweis des Nutzers fuer den CreditService (cs-credential): das (ggf.
+ * refreshte) Microsoft-Token aus dem Server-Store oder den Dienst-Ausweis eines
+ * PulseNorth-Kontos. Kein oid → no-token (inert); refresh-failed → Re-Login (expired).
+ * Siehe §5.
+ */
+async function getCsCredential(): Promise<CsCredentialResult> {
+  return csCredentialFor(await sessionOid());
 }
 
 export type CentralReserveResult =
@@ -160,22 +177,22 @@ export type CentralReserveResult =
  * Die zurueckgegebene transactionId MUSS je runId gespeichert werden (Refund-Bindung).
  */
 export async function centralReserve(opts: { runId: string }): Promise<CentralReserveResult> {
-  const tok = await getCreditToken();
+  const tok = await getCsCredential();
   // no-token (nie mit Scope eingeloggt) UND refresh-failed (Token tot) → beide
   // bedeuten am Gate: Re-Auth noetig, kein Gratis-Run (fail-closed).
   if (!tok.ok) return { ok: false, reason: "no_token" };
-  const token = tok.accessToken;
+  const cred = tok.credential;
 
   let workspaceId: string;
   try {
-    ({ workspaceId } = await resolveWorkspace(token));
+    ({ workspaceId } = await resolveWorkspace(cred));
   } catch (e) {
     logger.apiError("credit-service/centralReserve/resolve", e, { runId: opts.runId });
     return { ok: false, reason: "error", status: e instanceof CreditServiceError ? e.status : undefined };
   }
 
   try {
-    const r = await spend(token, workspaceId, {
+    const r = await spend(cred, workspaceId, {
       amount: 1,
       idempotencyKey: `spend:${opts.runId}`,
       description: `coach:consume:${opts.runId}`,
@@ -201,15 +218,15 @@ export async function centralRefund(opts: {
   spendTransactionId: string;
   idempotencyKey: string;
 }): Promise<{ ok: boolean }> {
-  const tok = await getCreditToken();
+  const tok = await getCsCredential();
   if (!tok.ok) {
     logger.apiError("credit-service/centralRefund", new Error(`no usable token (${tok.reason})`), { key: opts.idempotencyKey });
     return { ok: false };
   }
-  const token = tok.accessToken;
+  const cred = tok.credential;
   try {
-    const { workspaceId } = await resolveWorkspace(token);
-    await refund(token, workspaceId, {
+    const { workspaceId } = await resolveWorkspace(cred);
+    await refund(cred, workspaceId, {
       amount: opts.amount,
       description: opts.description,
       spendTransactionId: opts.spendTransactionId,
@@ -228,6 +245,8 @@ export async function centralRefund(opts: {
  *  - inert   = keine oid / no-token (z. B. Bestandssession vor dem Re-Login) ODER
  *              transienter resolve/getBalance-Hiccup → UI rendert nichts (fail-open).
  *  - expired = Token tot (refresh-failed) ODER CreditService-401 → Re-Login-CTA.
+ *              NIE fuer ein PulseNorth-Konto (Kennung `ml:…`): es hat kein Token, das
+ *              ablaufen kann — dort ist beides inert.
  *  - active  = { workspaceId, credits }.
  */
 export type CentralWalletStatus =
@@ -236,23 +255,31 @@ export type CentralWalletStatus =
   | { state: "active"; workspaceId: string; credits: number };
 
 export async function centralWalletStatus(): Promise<CentralWalletStatus> {
-  const tok = await getCreditToken();
+  const oid = await sessionOid();
+  const tok = await csCredentialFor(oid);
   if (!tok.ok) {
+    // PulseNorth-Konto ohne Dienst-Ausweis (Schalter aus): „Neu anmelden" hilft ihm
+    // nicht — kein abgelaufen, nur inert.
+    if (oid?.startsWith(PN_MEMBER_PREFIX)) return { state: "inert" };
     // B26 (02.10.2026): Mit dem Login-Tor zaehlt auch „nie ein Token hinterlegt" als
     // abgelaufen (die Oberflaeche bietet „Neu anmelden" an); eine Stoerung von
     // Token-Speicher oder Entra (transient) bleibt inert. Schalter aus = wie frueher.
     if (requireValidLoginEnabled()) return loginRequired(tok) ? { state: "expired" } : { state: "inert" };
     return tok.reason === "refresh-failed" ? { state: "expired" } : { state: "inert" };
   }
-  const token = tok.accessToken;
+  const cred = tok.credential;
   try {
-    const { workspaceId } = await resolveWorkspace(token);
-    const { credits } = await getBalance(token, workspaceId);
+    const { workspaceId } = await resolveWorkspace(cred);
+    const { credits } = await getBalance(cred, workspaceId);
     return { state: "active", workspaceId, credits };
   } catch (e) {
     // CreditService-401 → Token zentral abgelehnt → expired (Re-Login). Sonst
     // transienter Hiccup → inert (fail-open, kein 500, kein still-0).
-    if (e instanceof CreditServiceError && e.status === 401) return { state: "expired" };
+    // PulseNorth-Konto: 401 heisst „Konto nicht (mehr) im Register" oder „Dienst-Ausweis
+    // stimmt nicht" — kein Neu-Anmelden-Hinweis, sondern inert (wie im Hub).
+    if (e instanceof CreditServiceError && e.status === 401) {
+      return cred.kind === "pn" ? { state: "inert" } : { state: "expired" };
+    }
     logger.apiError("credit-service/centralWalletStatus", e);
     return { state: "inert" };
   }

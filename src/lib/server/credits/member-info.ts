@@ -1,13 +1,19 @@
 import "server-only";
 
-import { getValid } from "@/lib/server/credits/entra-token-store";
+import { csAuthHeaders, csCredentialFor } from "@/lib/server/credits/cs-credential";
 import { loginRequired } from "@/lib/server/credits/login-gate";
+import { logger } from "@/lib/logger";
 
 /**
  * P3 App-Freigaben (ROLLEN-Blueprint 15.08.) — zentrale Mitglieds-Info aus
  * resolve-workspace (liefert seit P1 role/apps/disabled). 60s-Cache je oid;
  * Dienststoerung/inert -> null (fail-soft: der Aufrufer laesst die lokale
  * Wahrheit gelten — Verfuegbarkeit vor Strenge, wie der Charge-Pfad).
+ *
+ * Anmeldung-Umbau Schritt 2c (02.10.2026): Der Abruf zeigt den Ausweis aus cs-credential —
+ * Microsoft-Token wie bisher oder, für PulseNorth-Konten (Kennung `ml:…`), den
+ * Dienst-Ausweis. Für PulseNorth-Konten gilt fail-soft NICHT: requireAuth lässt sie nur
+ * mit einer Auskunft des Registers hinein.
  */
 
 export interface CentralMemberInfo {
@@ -40,10 +46,15 @@ const TTL_MS = 60_000;
  *                     uebersprungen — auch fuer deaktivierte Personen. Jetzt: neu anmelden.
  *  - unavailable    = Zentrale aus, Token-Speicher oder Dienst gestoert → wie bisher
  *                     fail-soft (Verfuegbarkeit vor Strenge).
+ *  - denied         = NUR PulseNorth-Konten (02.10.2026): Das Register hat den
+ *                     Dienst-Ausweis abgewiesen (401) — es kennt die Kennung nicht (mehr),
+ *                     oder das Geheimnis stimmt nicht. Kein Zugang, und kein „neu anmelden":
+ *                     ein PulseNorth-Konto hat kein Token, das ablaufen kann.
  */
 export type CentralMemberState =
   | { kind: "info"; info: CentralMemberInfo }
   | { kind: "login-required" }
+  | { kind: "denied" }
   | { kind: "unavailable" };
 
 export async function getCentralMemberInfo(oid: string): Promise<CentralMemberInfo | null> {
@@ -56,14 +67,26 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
   const hit = cache.get(oid);
   if (hit && Date.now() - hit.at < TTL_MS) return { kind: "info", info: hit.info };
   try {
-    const tok = await getValid(oid);
+    const tok = await csCredentialFor(oid);
     if (!tok.ok) return loginRequired(tok) ? { kind: "login-required" } : { kind: "unavailable" };
     const res = await fetch(`${BASE_URL}/resolve-workspace`, {
-      headers: { Authorization: `Bearer ${tok.accessToken}`, Accept: "application/json" },
+      headers: { ...csAuthHeaders(tok.credential), Accept: "application/json" },
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) return { kind: "unavailable" };
+    if (!res.ok) {
+      if (tok.credential.kind === "pn" && res.status === 401) {
+        // Sichtbar machen (ohne Geheimnis): Bei einem falschen PN_SERVICE_SECRET träfe das
+        // ALLE PulseNorth-Konten — im Protokoll muss stehen, warum niemand hineinkommt.
+        logger.apiError(
+          "member-info/resolve-workspace",
+          new Error("register rejected the service credential (401)"),
+          { oid }
+        );
+        return { kind: "denied" };
+      }
+      return { kind: "unavailable" };
+    }
     const j = (await res.json()) as {
       workspaceId?: string | null;
       role?: string;
@@ -98,12 +121,12 @@ export async function setCentralSelfProfile(
 ): Promise<boolean> {
   if (!centralOn()) return false;
   try {
-    const tok = await getValid(oid);
+    const tok = await csCredentialFor(oid);
     if (!tok.ok) return false;
     const res = await fetch(`${BASE_URL}/me/profile`, {
       method: "PUT",
       headers: {
-        Authorization: `Bearer ${tok.accessToken}`,
+        ...csAuthHeaders(tok.credential),
         "Content-Type": "application/json",
       },
       body: JSON.stringify(patch),

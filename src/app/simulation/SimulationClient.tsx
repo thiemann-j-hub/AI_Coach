@@ -691,6 +691,15 @@ export default function SimulationClient() {
     try {
       const res = await authFetch('/api/simulation/scenarios');
       if (res.status === 503) {
+        // 503 heißt hier zweierlei: Simulation nicht freigeschaltet — oder (PulseNorth-
+        // Konto, 02.10.2026) das Register gibt gerade keine Auskunft. Das zweite ist eine
+        // Störung: Meldung „nicht erreichbar" statt „noch nicht freigeschaltet".
+        const refusal = await res.clone().json().catch(() => null);
+        if (refusal?.code === 'CENTRAL_UNAVAILABLE') {
+          setError(ts.unavailable);
+          setView('list');
+          return;
+        }
         setView('disabled');
         return;
       }

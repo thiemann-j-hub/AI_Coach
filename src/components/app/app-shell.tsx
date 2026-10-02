@@ -23,6 +23,7 @@ import {
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
 import { signOut } from '@/lib/auth-service';
+import { goToHubLogin, hubLoginEnabled } from '@/lib/hub-login';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -371,6 +372,17 @@ export default function AppShell(props: {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+              ) : hubLoginEnabled() ? (
+                /* Eine Anmeldung im Hub (02.10.2026): hinter der gemeinsamen Adresse führt
+                    auch dieser Knopf zur Anmeldekarte dort — nie direkt zu Microsoft
+                    (PulseNorth-Konten haben kein Microsoft-Konto). */
+                <button
+                  type="button"
+                  onClick={() => goToHubLogin()}
+                  className="w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors"
+                >
+                  ?
+                </button>
               ) : (
                 <LoginModal>
                   <button className="w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors">
