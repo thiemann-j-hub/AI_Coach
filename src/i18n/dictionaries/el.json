@@ -26,7 +26,9 @@
     "expandSidebar": "Ανάπτυξη πλαϊνής μπάρας",
     "collapseSidebar": "Σύμπτυξη πλαϊνής μπάρας",
     "balanceEmptyMember": "Το όριο της εταιρείας σας εξαντλήθηκε — ο διαχειριστής σας ενημερώθηκε.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Η συνεδρία έληξε – παρακαλούμε συνδεθείτε ξανά",
+    "reLogin": "Νέα σύνδεση"
   },
   "nav": {
     "analyze": "Ανάλυση απομαγνητοφώνησης",
@@ -418,7 +420,8 @@
     "accessDenied": "Η πρόσβαση απορρίφθηκε",
     "notFound": "Δεν βρέθηκε",
     "internalError": "Εσωτερικό σφάλμα διακομιστή",
-    "rateLimited": "Πάρα πολλά αιτήματα. Δοκίμασε ξανά αργότερα."
+    "rateLimited": "Πάρα πολλά αιτήματα. Δοκίμασε ξανά αργότερα.",
+    "sessionExpired": "Η συνεδρία έληξε – παρακαλούμε συνδεθείτε ξανά"
   },
   "entry": {
     "title": "Εξάσκηση",

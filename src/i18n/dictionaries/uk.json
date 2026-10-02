@@ -26,7 +26,9 @@
     "expandSidebar": "Розгорнути бічну панель",
     "collapseSidebar": "Згорнути бічну панель",
     "balanceEmptyMember": "Квоту вашої компанії вичерпано — вашого адміністратора повідомлено.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Сеанс завершився — увійдіть знову",
+    "reLogin": "Увійти знову"
   },
   "nav": {
     "analyze": "Аналіз транскрипту",
@@ -418,7 +420,8 @@
     "accessDenied": "Доступ заборонено",
     "notFound": "Не знайдено",
     "internalError": "Внутрішня помилка сервера",
-    "rateLimited": "Забагато запитів. Спробуй пізніше."
+    "rateLimited": "Забагато запитів. Спробуй пізніше.",
+    "sessionExpired": "Сеанс завершився — увійдіть знову"
   },
   "entry": {
     "title": "Практика",

@@ -36,6 +36,7 @@ import { LoginModal } from '@/components/auth/login-modal';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { BrandSwitcher } from '@/components/app/app-switcher';
 import { VersionWatcher } from '@/components/app/version-watcher';
+import { SessionExpiredBanner } from '@/components/app/session-expired-banner';
 import { CreditBalance } from '@/components/app/credit-balance';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -293,6 +294,8 @@ export default function AppShell(props: {
         <main id="main-content" className="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
           {/* O4: Hinweis + Auto-Reload, wenn der Tab ein älteres Bündel als der Server trägt. */}
           <VersionWatcher />
+          {/* B26 (02.10.2026): „Sitzung abgelaufen" mit „Neu anmelden", wenn die API das meldet. */}
+          <SessionExpiredBanner />
           {/* Decorative Background Blobs */}
           <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
             <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />

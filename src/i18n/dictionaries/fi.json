@@ -26,7 +26,9 @@
     "expandSidebar": "Laajenna sivupalkki",
     "collapseSidebar": "Pienennä sivupalkki",
     "balanceEmptyMember": "Yrityksesi kiintiö on käytetty — ylläpitäjällesi on ilmoitettu.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Istunto on vanhentunut – kirjaudu uudelleen",
+    "reLogin": "Kirjaudu uudelleen"
   },
   "nav": {
     "analyze": "Transkriptioanalyysi",
@@ -418,7 +420,8 @@
     "accessDenied": "Pääsy evätty",
     "notFound": "Ei löytynyt",
     "internalError": "Sisäinen palvelinvirhe",
-    "rateLimited": "Liian monta pyyntöä. Yritä myöhemmin uudelleen."
+    "rateLimited": "Liian monta pyyntöä. Yritä myöhemmin uudelleen.",
+    "sessionExpired": "Istunto on vanhentunut – kirjaudu uudelleen"
   },
   "entry": {
     "title": "Harjoittele",

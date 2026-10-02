@@ -26,7 +26,9 @@
     "expandSidebar": "Fäll ut sidofältet",
     "collapseSidebar": "Fäll ihop sidofältet",
     "balanceEmptyMember": "Ditt företags saldo är slut — din admin har informerats.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Sessionen har gått ut – logga in igen",
+    "reLogin": "Logga in igen"
   },
   "nav": {
     "analyze": "Transkriptanalys",
@@ -418,7 +420,8 @@
     "accessDenied": "Åtkomst nekad",
     "notFound": "Hittades inte",
     "internalError": "Internt serverfel",
-    "rateLimited": "För många förfrågningar. Försök igen senare."
+    "rateLimited": "För många förfrågningar. Försök igen senare.",
+    "sessionExpired": "Sessionen har gått ut – logga in igen"
   },
   "entry": {
     "title": "Öva",

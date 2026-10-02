@@ -26,7 +26,9 @@
     "expandSidebar": "Espandi la barra laterale",
     "collapseSidebar": "Comprimi la barra laterale",
     "balanceEmptyMember": "Il contingente della tua azienda è esaurito — il tuo admin è stato informato.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Sessione scaduta — accedi di nuovo",
+    "reLogin": "Accedi di nuovo"
   },
   "nav": {
     "analyze": "Analisi della trascrizione",
@@ -418,7 +420,8 @@
     "accessDenied": "Accesso negato",
     "notFound": "Non trovato",
     "internalError": "Errore interno del server",
-    "rateLimited": "Troppe richieste. Riprova più tardi."
+    "rateLimited": "Troppe richieste. Riprova più tardi.",
+    "sessionExpired": "Sessione scaduta — accedi di nuovo"
   },
   "entry": {
     "title": "Allenati",

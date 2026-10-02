@@ -26,7 +26,9 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "balanceEmptyMember": "Your company's quota is used up — your admin has been notified.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Session expired — please sign in again",
+    "reLogin": "Sign in again"
   },
   "nav": {
     "analyze": "Transcript Analysis",
@@ -418,7 +420,8 @@
     "accessDenied": "Access denied",
     "notFound": "Not found",
     "internalError": "Internal server error",
-    "rateLimited": "Too many requests. Please try again later."
+    "rateLimited": "Too many requests. Please try again later.",
+    "sessionExpired": "Session expired — please sign in again"
   },
   "entry": {
     "title": "Practice",

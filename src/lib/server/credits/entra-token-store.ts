@@ -35,9 +35,17 @@ export interface StoredEntraToken {
   updatedAt?: number;
 }
 
+/**
+ * `transient` (B26, 02.10.2026): der Fehlschlag ist eine STOERUNG (Token-Speicher nicht
+ * lesbar, Entra nicht erreichbar, 5xx, Konfigurationsfehler) und kein abgelehntes Token.
+ * Nur OHNE `transient` steht fest, dass die Person sich neu anmelden muss: `no-token` =
+ * nie ein Token hinterlegt, `refresh-failed` = Entra hat das Refresh-Token abgelehnt.
+ * Das Login-Tor (api-auth) verlangt nur dann eine neue Anmeldung; bei einer Stoerung
+ * bleibt es beim bisherigen fail-soft.
+ */
 export type CreditTokenResult =
   | { ok: true; accessToken: string }
-  | { ok: false; reason: "no-token" | "refresh-failed" };
+  | { ok: false; reason: "no-token" | "refresh-failed"; transient?: true };
 
 /** Refreshe, sobald < 60 s Restlaufzeit (Clock-Skew-Marge). */
 const SKEW_MS = 60_000;
@@ -90,7 +98,13 @@ export function tokenEndpoint(): string {
   return issuer.replace(/\/v2\.0\/?$/, "") + "/oauth2/v2.0/token";
 }
 
-/** Entra v2 Refresh-Grant. Liefert null → fail-closed beim Aufrufer. */
+/** Hat Entra das Refresh-Token selbst abgelehnt (4xx mit invalid_grant / interaction_required)? */
+export function isRejectedGrant(status: number, data: { error?: unknown } | null | undefined): boolean {
+  if (!(status >= 400 && status < 500)) return false;
+  return data?.error === "invalid_grant" || data?.error === "interaction_required";
+}
+
+/** Entra v2 Refresh-Grant. Liefert null → fail-closed beim Aufrufer; wirft bei einer Stoerung. */
 async function callRefresh(
   refreshToken: string
 ): Promise<{ accessToken: string; refreshToken: string; expires: number } | null> {
@@ -113,7 +127,14 @@ async function callRefresh(
     cache: "no-store",
   });
   const data: any = await res.json().catch(() => ({}));
-  if (!res.ok || !data.access_token) return null; // → fail-closed
+  if (!res.ok || !data.access_token) {
+    // Endgueltig ist nur ein von Entra ABGELEHNTES Refresh-Token (abgelaufen, widerrufen,
+    // neue Anmeldung verlangt) → null → fail-closed. Alles andere (5xx, 429, falsche
+    // App-Konfiguration, unlesbare Antwort) ist eine Stoerung → werfen, der Aufrufer
+    // meldet sie als `transient`.
+    if (isRejectedGrant(res.status, data)) return null;
+    throw new Error(`token endpoint ${res.status} ${String(data?.error ?? "")}`.trim());
+  }
   return {
     accessToken: data.access_token,
     refreshToken: data.refresh_token ?? refreshToken, // Fallback: alter RT, falls Entra keinen neuen liefert
@@ -127,7 +148,9 @@ async function refreshAndStore(oid: string): Promise<CreditTokenResult> {
     stored = await io.read(oid);
   } catch (e) {
     logger.apiError("credit-token-store/read", e, { oid });
-    return { ok: false, reason: "no-token" }; // fail-open beim Read (kein Crash)
+    // fail-open beim Read (kein Crash). `transient`: der Speicher war nicht lesbar —
+    // das sagt nichts ueber die Anmeldung der Person.
+    return { ok: false, reason: "no-token", transient: true };
   }
 
   // Frischeste Quelle: ein voriger Refresh kann schon rotiert haben, ODER unser
@@ -137,9 +160,11 @@ async function refreshAndStore(oid: string): Promise<CreditTokenResult> {
   if (!best?.refreshToken) return { ok: false, reason: "no-token" };
 
   let refreshed: Awaited<ReturnType<typeof callRefresh>> = null;
+  let transient = false;
   try {
     refreshed = await callRefresh(best.refreshToken);
   } catch (e) {
+    transient = true; // Netz / 5xx / Konfiguration: Stoerung, kein abgelehntes Token
     logger.apiError("credit-token-store/refresh", e, { oid });
   }
 
@@ -157,7 +182,9 @@ async function refreshAndStore(oid: string): Promise<CreditTokenResult> {
     } catch {
       /* Cache haelt den dead-Marker auch ohne Persist */
     }
-    return { ok: false, reason: "refresh-failed" };
+    return transient
+      ? { ok: false, reason: "refresh-failed", transient: true }
+      : { ok: false, reason: "refresh-failed" };
   }
 
   const next: StoredEntraToken = {

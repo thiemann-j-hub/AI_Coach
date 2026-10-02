@@ -26,7 +26,9 @@
     "expandSidebar": "Déplier la barre latérale",
     "collapseSidebar": "Replier la barre latérale",
     "balanceEmptyMember": "Le quota de votre entreprise est épuisé — votre admin a été informé.",
-    "newVersion": "Une nouvelle version du Coach est disponible."
+    "newVersion": "Une nouvelle version du Coach est disponible.",
+    "sessionExpired": "Session expirée — veuillez vous reconnecter",
+    "reLogin": "Se reconnecter"
   },
   "nav": {
     "analyze": "Analyse de transcription",
@@ -418,7 +420,8 @@
     "accessDenied": "Accès refusé",
     "notFound": "Introuvable",
     "internalError": "Erreur interne du serveur",
-    "rateLimited": "Trop de requêtes. Veuillez réessayer plus tard."
+    "rateLimited": "Trop de requêtes. Veuillez réessayer plus tard.",
+    "sessionExpired": "Session expirée — veuillez vous reconnecter"
   },
   "entry": {
     "title": "S'entraîner",

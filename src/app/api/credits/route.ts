@@ -15,7 +15,11 @@ export const dynamic = "force-dynamic";
  */
 /** Saldo + Paket-Katalog fuer die Credits-Seite (CREDITS_CENTRAL: Saldo kommt zentral). */
 export async function GET(req: NextRequest) {
-  const authResult = await requireAuth(req);
+  // B26 (02.10.2026): Diese Route meldet der Oberflaeche selbst „Sitzung abgelaufen"
+  // (sessionExpired unten) und bleibt deshalb auch ohne gueltiges Entra-Token erreichbar.
+  // Sie gibt in dem Zustand keinen Saldo heraus. Deaktivierung und fehlende Coach-Freigabe
+  // sperren weiterhin.
+  const authResult = await requireAuth(req, { allowExpiredLogin: true });
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 

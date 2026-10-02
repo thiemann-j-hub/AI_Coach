@@ -26,7 +26,9 @@
     "expandSidebar": "Desplega la barra lateral",
     "collapseSidebar": "Replega la barra lateral",
     "balanceEmptyMember": "El contingent de la teva empresa s'ha esgotat — el teu admin n'ha estat informat.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "La sessió ha caducat — torni a iniciar la sessió",
+    "reLogin": "Torna a iniciar la sessió"
   },
   "nav": {
     "analyze": "Anàlisi de transcripció",
@@ -418,7 +420,8 @@
     "accessDenied": "Accés denegat",
     "notFound": "No s'ha trobat",
     "internalError": "Error intern del servidor",
-    "rateLimited": "Massa sol·licituds. Torneu-ho a provar més tard."
+    "rateLimited": "Massa sol·licituds. Torneu-ho a provar més tard.",
+    "sessionExpired": "La sessió ha caducat — torni a iniciar la sessió"
   },
   "entry": {
     "title": "Practicar",

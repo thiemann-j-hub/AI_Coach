@@ -26,7 +26,9 @@
     "expandSidebar": "Expandir la barra lateral",
     "collapseSidebar": "Contraer la barra lateral",
     "balanceEmptyMember": "El contingente de tu empresa está agotado; tu administrador ha sido informado.",
-    "newVersion": "Hay una nueva versión del Coach."
+    "newVersion": "Hay una nueva versión del Coach.",
+    "sessionExpired": "Sesión caducada: vuelve a iniciar sesión",
+    "reLogin": "Volver a iniciar sesión"
   },
   "nav": {
     "analyze": "Análisis de transcripción",
@@ -418,7 +420,8 @@
     "accessDenied": "Acceso denegado",
     "notFound": "No encontrado",
     "internalError": "Error interno del servidor",
-    "rateLimited": "Demasiadas solicitudes. Inténtelo de nuevo más tarde."
+    "rateLimited": "Demasiadas solicitudes. Inténtelo de nuevo más tarde.",
+    "sessionExpired": "Sesión caducada: vuelve a iniciar sesión"
   },
   "entry": {
     "title": "Practicar",

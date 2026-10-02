@@ -26,7 +26,9 @@
     "expandSidebar": "Laienda külgriba",
     "collapseSidebar": "Ahenda külgriba",
     "balanceEmptyMember": "Sinu ettevõtte kvoot on otsas — administraatorit on teavitatud.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Seanss on aegunud – palun logige uuesti sisse",
+    "reLogin": "Logi uuesti sisse"
   },
   "nav": {
     "analyze": "Transkriptsioonianalüüs",
@@ -418,7 +420,8 @@
     "accessDenied": "Ligipääs keelatud",
     "notFound": "Ei leitud",
     "internalError": "Serveri sisemine viga",
-    "rateLimited": "Liiga palju päringuid. Palun proovi hiljem uuesti."
+    "rateLimited": "Liiga palju päringuid. Palun proovi hiljem uuesti.",
+    "sessionExpired": "Seanss on aegunud – palun logige uuesti sisse"
   },
   "entry": {
     "title": "Harjuta",

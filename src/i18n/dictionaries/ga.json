@@ -26,7 +26,9 @@
     "expandSidebar": "Leathnaigh an barra taoibh",
     "collapseSidebar": "Laghdaigh an barra taoibh",
     "balanceEmptyMember": "Tá cuóta do chuideachta ídithe — cuireadh do riarthóir ar an eolas.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Seisiún imithe in éag – logáil isteach arís, le do thoil",
+    "reLogin": "Logáil isteach arís"
   },
   "nav": {
     "analyze": "Anailís tras-scríbhinne",
@@ -418,7 +420,8 @@
     "accessDenied": "Rochtain diúltaithe",
     "notFound": "Níor aimsíodh é",
     "internalError": "Earráid inmheánach freastalaí",
-    "rateLimited": "An iomarca iarratas. Bain triail eile as ar ball, le do thoil."
+    "rateLimited": "An iomarca iarratas. Bain triail eile as ar ball, le do thoil.",
+    "sessionExpired": "Seisiún imithe in éag – logáil isteach arís, le do thoil"
   },
   "entry": {
     "title": "Cleachtadh",

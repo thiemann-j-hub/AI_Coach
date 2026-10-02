@@ -26,7 +26,9 @@
     "expandSidebar": "Izvērst sānjoslu",
     "collapseSidebar": "Sakļaut sānjoslu",
     "balanceEmptyMember": "Jūsu uzņēmuma kvota ir iztērēta — administrators ir informēts.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Sesija beigusies — lūdzu, pierakstieties vēlreiz",
+    "reLogin": "Pierakstīties vēlreiz"
   },
   "nav": {
     "analyze": "Transkripta analīze",
@@ -418,7 +420,8 @@
     "accessDenied": "Piekļuve liegta",
     "notFound": "Nav atrasts",
     "internalError": "Iekšēja servera kļūda",
-    "rateLimited": "Pārāk daudz pieprasījumu. Lūdzu, mēģini vēlāk."
+    "rateLimited": "Pārāk daudz pieprasījumu. Lūdzu, mēģini vēlāk.",
+    "sessionExpired": "Sesija beigusies — lūdzu, pierakstieties vēlreiz"
   },
   "entry": {
     "title": "Trenējies",

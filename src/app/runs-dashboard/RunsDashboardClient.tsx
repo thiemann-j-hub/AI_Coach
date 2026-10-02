@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, useDeferredValue } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Plus,
@@ -9,7 +9,7 @@ import {
   RefreshCw,
   AlertCircle,
   History,
-  PlusCircle,
+  PlusCircle,
   CalendarDays,
   ArrowRight,
   Banknote,
@@ -23,6 +23,7 @@ import {
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { STORAGE_KEY_SESSION as STORAGE_KEY, migrateLegacyStorageKeys } from '@/lib/storage-keys';
+import { shouldRotateSession } from '@/lib/runs-session-rotation';
 import { useTranslation } from '@/i18n/useTranslation';
 
 type RunsListItem = {
@@ -137,6 +138,8 @@ export default function RunsDashboardClient() {
   const deferredQuery = useDeferredValue(query);
   const [sortKey, setSortKey] = useState<'date_desc' | 'date_asc' | 'score_desc' | 'score_asc'>('date_desc');
   const [refresh, setRefresh] = useState(0);
+  // B30: höchstens EIN stiller Wechsel der Sitzungs-Kennung je Seitenaufruf (kein Endlos-Abruf).
+  const rotatedRef = useRef(false);
 
   useEffect(() => {
     migrateLegacyStorageKeys(); // Alt-Key (commscoach_sessionId) -> coach_sessionId, damit laufende Sessions nicht abreißen
@@ -168,7 +171,20 @@ export default function RunsDashboardClient() {
         // Fremde oder ungueltige Session (Owner-Fund 04.08.: alter localStorage-
         // Wert eines anderen Kontos → dauerhaft rote "Zugriff verweigert"-Wand):
         // still auf eine FRISCHE Session rotieren statt in der Sackgasse zu enden.
+        //
+        // B30 (02.10.2026): NUR dann rotieren. Vorher loeste JEDES 403/400 die
+        // Rotation aus — auch „Konto deaktiviert" und „Coach nicht freigeschaltet".
+        // Die frische Session bekam dieselbe Absage, rotierte wieder, und die Seite
+        // fragte ohne Ende nach, statt die Sperre zu zeigen. Jetzt: Sperre → Meldung
+        // des Servers anzeigen; und hoechstens EINE Rotation je Seitenaufruf.
         if (res.status === 403 || res.status === 400) {
+          const refusal = await res.clone().json().catch(() => null);
+          if (!shouldRotateSession(res.status, refusal?.code, rotatedRef.current)) {
+            throw new Error(
+              typeof refusal?.error === 'string' && refusal.error ? refusal.error : t.dashboard.errorLoading
+            );
+          }
+          rotatedRef.current = true;
           const fresh = newSessionId();
           try { localStorage.setItem(STORAGE_KEY, fresh); } catch {}
           if (!cancelled) {

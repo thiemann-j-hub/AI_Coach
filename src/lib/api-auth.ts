@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getApiMessages } from "./server/get-request-locale";
 import { isMagicLinkOid } from "./magic-link-oid";
+import { requireValidLoginEnabled } from "./server/credits/login-gate";
 
 /**
  * Auth-Helfer für API-Routen — NextAuth-Session (HTTP-only-Cookie) statt
@@ -35,13 +36,30 @@ export function unauthorizedResponse(message = "Authentication required") {
 }
 
 /**
+ * 401 „Sitzung abgelaufen". Code CENTRAL_REAUTH = derselbe, den die Analyse seit jeher
+ * fuer ein totes Token sendet — die Oberflaeche zeigt dazu „Neu anmelden".
+ */
+export function loginRequiredResponse(req: NextRequest | Request) {
+  return NextResponse.json(
+    { ok: false, error: getApiMessages(req).sessionExpired, code: "CENTRAL_REAUTH" },
+    { status: 401 }
+  );
+}
+
+/**
  * Convenience: verify session and return uid, or send 401.
  * Usage in API routes:
  *   const auth = await requireAuth(req);
  *   if (auth instanceof NextResponse) return auth;
  *   const { uid } = auth;
+ *
+ * `allowExpiredLogin`: nur fuer /api/credits — die Route meldet der Oberflaeche selbst,
+ * dass die Anmeldung abgelaufen ist (sessionExpired), und muss dafuer erreichbar bleiben.
  */
-export async function requireAuth(req: NextRequest | Request) {
+export async function requireAuth(
+  req: NextRequest | Request,
+  opts: { allowExpiredLogin?: boolean } = {}
+) {
   const decoded = await verifyAuthToken(req);
   if (!decoded) return unauthorizedResponse(getApiMessages(req).unauthorized);
 
@@ -62,8 +80,21 @@ export async function requireAuth(req: NextRequest | Request) {
   // das Konto aktiv ist. 60s-Cache; Dienststoerung -> fail-soft (Verfueg-
   // barkeit vor Strenge). Inert ohne CREDITS_CENTRAL/oid.
   if (decoded.oid) {
-    const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
-    const central = await getCentralMemberInfo(decoded.oid);
+    const { getCentralMemberState } = await import("@/lib/server/credits/member-info");
+    const state = await getCentralMemberState(decoded.oid);
+    // B26 (02.10.2026): Ohne gueltiges Entra-Token gab das Register keine Auskunft, und
+    // das Tor wurde uebersprungen — eine deaktivierte Person oder jemand ohne Coach-
+    // Freigabe kam mit abgelaufener Anmeldung weiter an die kostenlosen Funktionen.
+    // Jetzt: erst neu anmelden (danach greift das Tor wieder). Eine STOERUNG von
+    // Token-Speicher oder Dienst bleibt fail-soft.
+    if (
+      state.kind === "login-required" &&
+      !opts.allowExpiredLogin &&
+      requireValidLoginEnabled()
+    ) {
+      return loginRequiredResponse(req);
+    }
+    const central = state.kind === "info" ? state.info : null;
     if (central) {
       if (central.disabled) {
         return NextResponse.json(

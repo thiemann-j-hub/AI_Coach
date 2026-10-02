@@ -26,7 +26,9 @@
     "expandSidebar": "Seitenleiste ausklappen",
     "collapseSidebar": "Seitenleiste einklappen",
     "balanceEmptyMember": "Das Kontingent deines Unternehmens ist aufgebraucht — dein Admin ist informiert.",
-    "newVersion": "Eine neue Version des Coaches ist da."
+    "newVersion": "Eine neue Version des Coaches ist da.",
+    "sessionExpired": "Sitzung abgelaufen – bitte neu anmelden",
+    "reLogin": "Neu anmelden"
   },
   "nav": {
     "analyze": "Transkript-Analyse",
@@ -418,7 +420,8 @@
     "accessDenied": "Zugriff verweigert",
     "notFound": "Nicht gefunden",
     "internalError": "Interner Serverfehler",
-    "rateLimited": "Zu viele Anfragen. Bitte versuch es später noch einmal."
+    "rateLimited": "Zu viele Anfragen. Bitte versuch es später noch einmal.",
+    "sessionExpired": "Sitzung abgelaufen – bitte neu anmelden"
   },
   "entry": {
     "title": "Üben",

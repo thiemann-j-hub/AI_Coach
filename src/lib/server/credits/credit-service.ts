@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
 import { getValid, type CreditTokenResult } from "./entra-token-store";
+import { loginRequired, requireValidLoginEnabled } from "./login-gate";
 
 /**
  * Client + Cutover-Helfer fuer den zentralen, app-uebergreifenden CreditService.
@@ -236,7 +237,13 @@ export type CentralWalletStatus =
 
 export async function centralWalletStatus(): Promise<CentralWalletStatus> {
   const tok = await getCreditToken();
-  if (!tok.ok) return tok.reason === "refresh-failed" ? { state: "expired" } : { state: "inert" };
+  if (!tok.ok) {
+    // B26 (02.10.2026): Mit dem Login-Tor zaehlt auch „nie ein Token hinterlegt" als
+    // abgelaufen (die Oberflaeche bietet „Neu anmelden" an); eine Stoerung von
+    // Token-Speicher oder Entra (transient) bleibt inert. Schalter aus = wie frueher.
+    if (requireValidLoginEnabled()) return loginRequired(tok) ? { state: "expired" } : { state: "inert" };
+    return tok.reason === "refresh-failed" ? { state: "expired" } : { state: "inert" };
+  }
   const token = tok.accessToken;
   try {
     const { workspaceId } = await resolveWorkspace(token);

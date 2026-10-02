@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getValid } from "@/lib/server/credits/entra-token-store";
+import { loginRequired } from "@/lib/server/credits/login-gate";
 
 /**
  * P3 App-Freigaben (ROLLEN-Blueprint 15.08.) — zentrale Mitglieds-Info aus
@@ -31,19 +32,38 @@ function centralOn(): boolean {
 const cache = new Map<string, { at: number; info: CentralMemberInfo }>();
 const TTL_MS = 60_000;
 
+/**
+ * B26 (02.10.2026): Warum es KEINE Mitglieds-Info gibt, entscheidet jetzt mit.
+ *  - info           = Auskunft des Registers liegt vor.
+ *  - login-required = die Sitzung hat kein gueltiges Entra-Token mehr (abgelaufen,
+ *                     widerrufen oder nie hinterlegt). Vorher wurde das Tor dann
+ *                     uebersprungen — auch fuer deaktivierte Personen. Jetzt: neu anmelden.
+ *  - unavailable    = Zentrale aus, Token-Speicher oder Dienst gestoert → wie bisher
+ *                     fail-soft (Verfuegbarkeit vor Strenge).
+ */
+export type CentralMemberState =
+  | { kind: "info"; info: CentralMemberInfo }
+  | { kind: "login-required" }
+  | { kind: "unavailable" };
+
 export async function getCentralMemberInfo(oid: string): Promise<CentralMemberInfo | null> {
-  if (!centralOn()) return null;
+  const state = await getCentralMemberState(oid);
+  return state.kind === "info" ? state.info : null;
+}
+
+export async function getCentralMemberState(oid: string): Promise<CentralMemberState> {
+  if (!centralOn()) return { kind: "unavailable" };
   const hit = cache.get(oid);
-  if (hit && Date.now() - hit.at < TTL_MS) return hit.info;
+  if (hit && Date.now() - hit.at < TTL_MS) return { kind: "info", info: hit.info };
   try {
     const tok = await getValid(oid);
-    if (!tok.ok) return null;
+    if (!tok.ok) return loginRequired(tok) ? { kind: "login-required" } : { kind: "unavailable" };
     const res = await fetch(`${BASE_URL}/resolve-workspace`, {
       headers: { Authorization: `Bearer ${tok.accessToken}`, Accept: "application/json" },
       cache: "no-store",
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { kind: "unavailable" };
     const j = (await res.json()) as {
       workspaceId?: string | null;
       role?: string;
@@ -61,9 +81,9 @@ export async function getCentralMemberInfo(oid: string): Promise<CentralMemberIn
       displayName: typeof j.displayName === "string" ? j.displayName : null,
     };
     cache.set(oid, { at: Date.now(), info });
-    return info;
+    return { kind: "info", info };
   } catch {
-    return null;
+    return { kind: "unavailable" };
   }
 }
 

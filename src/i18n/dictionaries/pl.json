@@ -26,7 +26,9 @@
     "expandSidebar": "Rozwiń pasek boczny",
     "collapseSidebar": "Zwiń pasek boczny",
     "balanceEmptyMember": "Limit Twojej firmy został wyczerpany — administrator został poinformowany.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Sesja wygasła — zaloguj się ponownie",
+    "reLogin": "Zaloguj ponownie"
   },
   "nav": {
     "analyze": "Analiza transkryptu",
@@ -418,7 +420,8 @@
     "accessDenied": "Odmowa dostępu",
     "notFound": "Nie znaleziono",
     "internalError": "Wewnętrzny błąd serwera",
-    "rateLimited": "Zbyt wiele żądań. Spróbuj ponownie później."
+    "rateLimited": "Zbyt wiele żądań. Spróbuj ponownie później.",
+    "sessionExpired": "Sesja wygasła — zaloguj się ponownie"
   },
   "entry": {
     "title": "Ćwicz",

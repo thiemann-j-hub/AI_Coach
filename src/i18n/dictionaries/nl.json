@@ -26,7 +26,9 @@
     "expandSidebar": "Zijbalk uitklappen",
     "collapseSidebar": "Zijbalk inklappen",
     "balanceEmptyMember": "Het tegoed van je bedrijf is op — je admin is geïnformeerd.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Sessie verlopen – meld u opnieuw aan",
+    "reLogin": "Opnieuw aanmelden"
   },
   "nav": {
     "analyze": "Transcriptanalyse",
@@ -418,7 +420,8 @@
     "accessDenied": "Toegang geweigerd",
     "notFound": "Niet gevonden",
     "internalError": "Interne serverfout",
-    "rateLimited": "Te veel verzoeken. Probeer het later opnieuw."
+    "rateLimited": "Te veel verzoeken. Probeer het later opnieuw.",
+    "sessionExpired": "Sessie verlopen – meld u opnieuw aan"
   },
   "entry": {
     "title": "Oefenen",

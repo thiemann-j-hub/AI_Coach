@@ -26,7 +26,9 @@
     "expandSidebar": "Utvid sidefeltet",
     "collapseSidebar": "Skjul sidefeltet",
     "balanceEmptyMember": "Bedriftens kvote er brukt opp — administratoren din er informert.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Økten er utløpt – logg inn på nytt",
+    "reLogin": "Logg inn på nytt"
   },
   "nav": {
     "analyze": "Transkripsjonsanalyse",
@@ -418,7 +420,8 @@
     "accessDenied": "Tilgang nektet",
     "notFound": "Ikke funnet",
     "internalError": "Intern serverfeil",
-    "rateLimited": "For mange forespørsler. Prøv igjen senere."
+    "rateLimited": "For mange forespørsler. Prøv igjen senere.",
+    "sessionExpired": "Økten er utløpt – logg inn på nytt"
   },
   "entry": {
     "title": "Øv",

@@ -163,3 +163,59 @@ describe("entra-token-store: Rotation", () => {
     expect(reads).toBe(readsAfterPut); // kein Store-Read (Fast-Path)
   });
 });
+
+/**
+ * B26 (02.10.2026): `transient` trennt die STOERUNG vom abgelehnten Token. Nur ohne
+ * `transient` verlangt das Login-Tor eine neue Anmeldung.
+ */
+describe("entra-token-store: endgueltig oder Stoerung", () => {
+  it("9) von Entra abgelehnt (invalid_grant) → endgueltig, KEIN transient", async () => {
+    store[OID] = { accessToken: "AT", refreshToken: "RT", accessTokenExpires: now() - 1000 };
+    setFetch([{ ok: false, status: 400, json: { error: "invalid_grant" } }]);
+    const r = await getValid(OID);
+    expect(r).toEqual({ ok: false, reason: "refresh-failed" });
+  });
+
+  it("10) neue Anmeldung verlangt (interaction_required) → endgueltig", async () => {
+    store[OID] = { accessToken: "AT", refreshToken: "RT", accessTokenExpires: now() - 1000 };
+    setFetch([{ ok: false, status: 400, json: { error: "interaction_required" } }]);
+    expect(await getValid(OID)).toEqual({ ok: false, reason: "refresh-failed" });
+  });
+
+  it("11) Entra 5xx → refresh-failed MIT transient", async () => {
+    store[OID] = { accessToken: "AT", refreshToken: "RT", accessTokenExpires: now() - 1000 };
+    setFetch([{ ok: false, status: 503, json: {} }]);
+    expect(await getValid(OID)).toEqual({ ok: false, reason: "refresh-failed", transient: true });
+  });
+
+  it("12) falsche App-Konfiguration (invalid_client) → transient, nicht alle aussperren", async () => {
+    store[OID] = { accessToken: "AT", refreshToken: "RT", accessTokenExpires: now() - 1000 };
+    setFetch([{ ok: false, status: 401, json: { error: "invalid_client" } }]);
+    expect(await getValid(OID)).toEqual({ ok: false, reason: "refresh-failed", transient: true });
+  });
+
+  it("13) Netzfehler beim Refresh → transient, und der naechste Aufruf heilt", async () => {
+    store[OID] = { accessToken: "AT", refreshToken: "RT", accessTokenExpires: now() - 1000 };
+    globalThis.fetch = vi.fn(async () => {
+      throw new Error("ECONNRESET");
+    }) as any;
+    expect(await getValid(OID)).toEqual({ ok: false, reason: "refresh-failed", transient: true });
+
+    // Entra wieder da: derselbe RT wird erneut eingeloest → gueltig.
+    setFetch([{ ok: true, json: { access_token: "AT1", refresh_token: "RT1", expires_in: 3600 } }]);
+    const again = await getValid(OID);
+    expect(again.ok && again.accessToken).toBe("AT1");
+    expect(fetchBodies[0].get("refresh_token")).toBe("RT");
+  });
+
+  it("14) Token-Speicher nicht lesbar → no-token MIT transient", async () => {
+    io.read = async () => {
+      throw new Error("cosmos read error");
+    };
+    expect(await getValid(OID)).toEqual({ ok: false, reason: "no-token", transient: true });
+  });
+
+  it("15) nie ein Token hinterlegt → no-token OHNE transient", async () => {
+    expect(await getValid(OID)).toEqual({ ok: false, reason: "no-token" });
+  });
+});

@@ -26,7 +26,9 @@
     "expandSidebar": "Extinde bara laterală",
     "collapseSidebar": "Restrânge bara laterală",
     "balanceEmptyMember": "Cota companiei tale s-a epuizat — adminul tău a fost informat.",
-    "newVersion": "A new version of the Coach is available."
+    "newVersion": "A new version of the Coach is available.",
+    "sessionExpired": "Sesiune expirată – vă rugăm să vă conectați din nou",
+    "reLogin": "Reconectare"
   },
   "nav": {
     "analyze": "Analiza transcriptului",
@@ -418,7 +420,8 @@
     "accessDenied": "Acces refuzat",
     "notFound": "Nu a fost găsit",
     "internalError": "Eroare internă de server",
-    "rateLimited": "Prea multe cereri. Încearcă din nou mai târziu."
+    "rateLimited": "Prea multe cereri. Încearcă din nou mai târziu.",
+    "sessionExpired": "Sesiune expirată – vă rugăm să vă conectați din nou"
   },
   "entry": {
     "title": "Exersează",
