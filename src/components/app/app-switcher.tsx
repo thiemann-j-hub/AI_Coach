@@ -26,12 +26,43 @@ const APPS: Array<{ key: string; href: string; name?: string; suffix?: string }>
 ];
 
 /**
+ * Owner-Entscheid 02.10.2026: Das Team-Radar sieht nur der Admin. Ob der Eintrag
+ * erscheint, sagt der Hub — EINE Stelle für alle Apps, der Rückweg-Schalter sitzt dort.
+ * Der Pfad liegt an der Wurzel der Domain (Hub), bewusst NICHT unter dem basePath
+ * dieser App. Bis zur Antwort und bei jedem Fehler bleibt der Eintrag verborgen; die
+ * Seite /team prüft ohnehin selbst.
+ */
+const HUB_NAV_URL = "/api/nav";
+
+function useTeamRadarVisible(): boolean {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(HUB_NAV_URL, { credentials: "same-origin", cache: "no-store" });
+        const body = res.ok ? ((await res.json()) as { teamRadar?: unknown }) : null;
+        if (!cancelled) setVisible(body?.teamRadar === true);
+      } catch {
+        /* Eintrag bleibt verborgen */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return visible;
+}
+
+/**
  * Brand-Block der Sidebar als Umschalter: Logo + Wortmarke + App-Name,
  * Klick öffnet die App-Liste — jeder Eintrag mit dem Puls-Logo davor.
  */
 export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const teamRadarVisible = useTeamRadarVisible();
+  const apps = APPS.filter((app) => app.key !== "team" || teamRadarVisible);
 
   useEffect(() => {
     if (!open) return;
@@ -84,7 +115,7 @@ export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
           role="menu"
           className="absolute left-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-background/95 p-1.5 shadow-xl backdrop-blur"
         >
-          {APPS.map((app) => {
+          {apps.map((app) => {
             const active = app.key === CURRENT;
             return (
               <a
