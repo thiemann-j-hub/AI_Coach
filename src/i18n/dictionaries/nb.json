@@ -26,6 +26,7 @@
     "expandSidebar": "Utvid sidefeltet",
     "collapseSidebar": "Skjul sidefeltet",
     "balanceEmptyMember": "Bedriftens kvote er brukt opp — administratoren din er informert.",
+    "adminBuys": "Credits kjøpes av bedriftens admin. Du er logget på som medlem. Gi beskjed til adminen din.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Økten er utløpt – logg inn på nytt",
     "reLogin": "Logg inn på nytt"

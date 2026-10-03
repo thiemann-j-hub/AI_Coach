@@ -68,7 +68,9 @@ export function CreditBalance() {
 
   // Welle F (IA-Masterplan 15.08.): OHNE topUpUrl (zentrale Rolle member) gibt
   // es KEINE Kauf-Handlung — der Chip wird rein informativ; bei knappem
-  // Guthaben traegt er die neutrale "Admin ist informiert"-Botschaft.
+  // Guthaben sagt er, wer kauft. B20 (03.10.2026): Vorher stand hier „dein Admin ist
+  // informiert" — das stimmt erst, wenn eine Abbuchung am leeren Guthaben scheitert (dann
+  // mailt der Credit-Dienst die Admins), nicht schon unter der Schwelle.
   const canTopUp = !!state.topUpUrl;
   const href = state.topUpUrl || withBasePath("/credits");
   const external = /^https?:\/\//i.test(href);
@@ -79,7 +81,7 @@ export function CreditBalance() {
     if (!canTopUp) {
       return (
         <span
-          title={t.common.balanceEmptyMember}
+          title={t.common.adminBuys}
           className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-400"
         >
           <Coins className="h-4 w-4" />

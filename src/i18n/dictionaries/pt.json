@@ -26,6 +26,7 @@
     "expandSidebar": "Expandir a barra lateral",
     "collapseSidebar": "Recolher a barra lateral",
     "balanceEmptyMember": "A quota da tua empresa está esgotada — o teu admin foi informado.",
+    "adminBuys": "Os créditos são comprados pelo administrador da sua empresa. Tem sessão iniciada como membro. Avise o seu administrador, por favor.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Sessão expirada — inicie sessão novamente",
     "reLogin": "Iniciar sessão novamente"

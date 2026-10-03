@@ -26,6 +26,7 @@
     "expandSidebar": "Desplega la barra lateral",
     "collapseSidebar": "Replega la barra lateral",
     "balanceEmptyMember": "El contingent de la teva empresa s'ha esgotat — el teu admin n'ha estat informat.",
+    "adminBuys": "Els crèdits els compra l'administrador de la seva empresa. Ha iniciat la sessió com a membre. Avisi el seu administrador, si us plau.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "La sessió ha caducat — torni a iniciar la sessió",
     "reLogin": "Torna a iniciar la sessió"

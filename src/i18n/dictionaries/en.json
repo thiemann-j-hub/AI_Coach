@@ -26,6 +26,7 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "balanceEmptyMember": "Your company's quota is used up — your admin has been notified.",
+    "adminBuys": "Credits are purchased by your company's admin. You are signed in as a member. Please let your admin know.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Session expired — please sign in again",
     "reLogin": "Sign in again"

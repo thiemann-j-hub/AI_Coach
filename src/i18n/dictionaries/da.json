@@ -26,6 +26,7 @@
     "expandSidebar": "Udvid sidepanelet",
     "collapseSidebar": "Skjul sidepanelet",
     "balanceEmptyMember": "Din virksomheds kontingent er opbrugt — din admin er informeret.",
+    "adminBuys": "Credits købes af din virksomheds admin. Du er logget på som medlem. Giv din admin besked.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Sessionen er udløbet – log ind igen",
     "reLogin": "Log ind igen"

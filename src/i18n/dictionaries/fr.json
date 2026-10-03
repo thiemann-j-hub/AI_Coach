@@ -26,6 +26,7 @@
     "expandSidebar": "Déplier la barre latérale",
     "collapseSidebar": "Replier la barre latérale",
     "balanceEmptyMember": "Le quota de votre entreprise est épuisé — votre admin a été informé.",
+    "adminBuys": "Les crédits sont achetés par l'administrateur de votre entreprise. Vous êtes connecté en tant que membre. Merci d'en informer votre administrateur.",
     "newVersion": "Une nouvelle version du Coach est disponible.",
     "sessionExpired": "Session expirée — veuillez vous reconnecter",
     "reLogin": "Se reconnecter"

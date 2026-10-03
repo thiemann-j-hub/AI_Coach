@@ -40,7 +40,7 @@ type Invoice = {
 // sind ersatzlos durch EINEN zentralen Top-up-CTA ersetzt.
 
 export default function CreditsClient() {
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const { user } = useAuth();
   const de = locale.startsWith('de');
   const searchParams = useSearchParams();
@@ -196,13 +196,22 @@ export default function CreditsClient() {
               ? 'Credits gelten in allen PulseNorth-Apps (1 Credit = 1 Analyse).'
               : 'Credits work across all PulseNorth apps (1 credit = 1 analysis).'}
           </p>
-          <button
-            className="py-2.5 px-6 rounded-xl btn-gradient text-white font-semibold disabled:opacity-50 disabled:pointer-events-none"
-            onClick={() => buy('topup')}
-            disabled={!state?.enabled}
-          >
-            {de ? 'Guthaben aufladen' : 'Top up credits'}
-          </button>
+          {/* B28 (03.10.2026): Credits kauft nur der Admin (der Credit-Dienst erzwingt es).
+              Ein Mitglied bekommt zentral keinen Kauf-Link (topUpUrl fehlt) — dann steht hier
+              kein Knopf, der ins Leere führt, sondern wer kauft. */}
+          {state?.central && !state.topUpUrl && !state.sessionExpired && !loading ? (
+            <p className="text-sm text-muted-foreground" data-testid="credits-admin-buys">
+              {t.common.adminBuys}
+            </p>
+          ) : (
+            <button
+              className="py-2.5 px-6 rounded-xl btn-gradient text-white font-semibold disabled:opacity-50 disabled:pointer-events-none"
+              onClick={() => buy('topup')}
+              disabled={!state?.enabled}
+            >
+              {de ? 'Guthaben aufladen' : 'Top up credits'}
+            </button>
+          )}
         </div>
 
         {/* Rechnungen */}

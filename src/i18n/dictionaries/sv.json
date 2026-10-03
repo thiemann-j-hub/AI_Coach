@@ -26,6 +26,7 @@
     "expandSidebar": "Fäll ut sidofältet",
     "collapseSidebar": "Fäll ihop sidofältet",
     "balanceEmptyMember": "Ditt företags saldo är slut — din admin har informerats.",
+    "adminBuys": "Credits köps av ditt företags admin. Du är inloggad som medlem. Meddela din admin.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Sessionen har gått ut – logga in igen",
     "reLogin": "Logga in igen"

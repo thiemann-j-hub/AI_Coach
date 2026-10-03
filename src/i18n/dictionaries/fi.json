@@ -26,6 +26,7 @@
     "expandSidebar": "Laajenna sivupalkki",
     "collapseSidebar": "Pienennä sivupalkki",
     "balanceEmptyMember": "Yrityksesi kiintiö on käytetty — ylläpitäjällesi on ilmoitettu.",
+    "adminBuys": "Krediitit ostaa yrityksesi ylläpitäjä. Olet kirjautunut jäsenenä. Kerro asiasta ylläpitäjällesi.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Istunto on vanhentunut – kirjaudu uudelleen",
     "reLogin": "Kirjaudu uudelleen"

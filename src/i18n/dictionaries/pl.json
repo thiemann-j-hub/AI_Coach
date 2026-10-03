@@ -26,6 +26,7 @@
     "expandSidebar": "Rozwiń pasek boczny",
     "collapseSidebar": "Zwiń pasek boczny",
     "balanceEmptyMember": "Limit Twojej firmy został wyczerpany — administrator został poinformowany.",
+    "adminBuys": "Kredyty kupuje administrator Państwa firmy. Są Państwo zalogowani jako członek. Prosimy poinformować administratora.",
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Sesja wygasła — zaloguj się ponownie",
     "reLogin": "Zaloguj ponownie"

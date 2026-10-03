@@ -26,6 +26,7 @@
     "expandSidebar": "Seitenleiste ausklappen",
     "collapseSidebar": "Seitenleiste einklappen",
     "balanceEmptyMember": "Das Kontingent deines Unternehmens ist aufgebraucht — dein Admin ist informiert.",
+    "adminBuys": "Credits kauft der Admin Deines Unternehmens. Du bist als Mitglied angemeldet. Gib Deinem Admin bitte Bescheid.",
     "newVersion": "Eine neue Version des Coaches ist da.",
     "sessionExpired": "Sitzung abgelaufen – bitte neu anmelden",
     "reLogin": "Neu anmelden"

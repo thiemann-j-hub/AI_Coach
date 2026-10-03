@@ -26,6 +26,7 @@
     "expandSidebar": "Expandir la barra lateral",
     "collapseSidebar": "Contraer la barra lateral",
     "balanceEmptyMember": "El contingente de tu empresa está agotado; tu administrador ha sido informado.",
+    "adminBuys": "Los créditos los compra el administrador de su empresa. Ha iniciado sesión como miembro. Avise a su administrador, por favor.",
     "newVersion": "Hay una nueva versión del Coach.",
     "sessionExpired": "Sesión caducada: vuelve a iniciar sesión",
     "reLogin": "Volver a iniciar sesión"
