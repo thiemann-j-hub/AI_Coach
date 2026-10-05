@@ -42,11 +42,12 @@ const BEHAELTER = new Set([
   "Link", "NextLink", "Card",
   // Knöpfe mit Rahmen: normaler Knopf = pn-none, Auswahl-/Szenario-Karte = pn-tile, feldartiger Auslöser = pn-field
   "button", "motion.button",
+  "p", // umrandeter Absatz: Hinweis-/Zitat-Kästchen = pn-none, feldartige Anzeige = pn-field
   "motion.div", "motion.section", "motion.li", "motion.a", "motion.article", "motion.aside",
 ]);
 const FELD_ROH = new Set(["input", "textarea", "select"]);
 const FELD_BAUSTEIN = new Set(["Input", "Textarea", "SelectTrigger", "CommandInput"]);
-const KEIN_TEXTFELD = new Set(["checkbox", "radio", "range", "hidden", "file", "color", "submit", "button", "reset", "image"]);
+const KEIN_TEXTFELD = new Set(["checkbox", "radio", "range", "hidden", "file", "submit", "button", "reset", "image"]); // color = Eingabe
 
 const ohneVariante = (t) => t.split(":").pop().replace(/^!/, "");
 const istVollrand = (t) => {
