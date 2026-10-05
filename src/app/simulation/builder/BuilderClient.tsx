@@ -225,7 +225,7 @@ export default function BuilderClient() {
   const backAction = (
     <button
       onClick={() => router.push('/')}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
     >
       <ArrowLeft className="h-4 w-4" />
       <span className="hidden sm:inline">{ts.builderBack}</span>
@@ -245,7 +245,7 @@ export default function BuilderClient() {
   if (role === 'member') {
     return (
       <AppShell title={ts.builderTitle} actions={backAction}>
-        <div className="glass-panel max-w-xl rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm flex items-start gap-2">
+        <div className="pn-none glass-panel max-w-xl rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm flex items-start gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
           <p>{ts.builderAdminOnly}</p>
         </div>
@@ -257,14 +257,14 @@ export default function BuilderClient() {
     <AppShell title={ts.builderTitle} subtitle={ts.builderSubtitle} actions={backAction}>
       <div className="max-w-3xl mx-auto space-y-6">
         {error && (
-          <div className="glass-panel rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 flex items-start gap-2 text-sm">
+          <div className="pn-none glass-panel rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 flex items-start gap-2 text-sm">
             <AlertTriangle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* ── Neues Szenario ── */}
-        <section className="glass-panel rounded-2xl border border-border p-5 space-y-4">
+        <section className="pn-surface glass-panel rounded-2xl border border-border p-5 space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-1.5">
             <Wand2 className="h-4 w-4 text-primary" /> {ts.builderNewTitle}
           </h2>
@@ -279,7 +279,7 @@ export default function BuilderClient() {
               rows={5}
               maxLength={4000}
               placeholder={ts.builderBriefPlaceholder}
-              className="mt-1 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="pn-field mt-1 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div>
@@ -293,7 +293,7 @@ export default function BuilderClient() {
               rows={4}
               maxLength={20000}
               placeholder={ts.builderMaterialPlaceholder}
-              className="mt-1 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="pn-field mt-1 w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div className="flex flex-wrap gap-4">
@@ -308,7 +308,7 @@ export default function BuilderClient() {
                     onClick={() => setCategory(c)}
                     aria-pressed={category === c}
                     className={cx(
-                      'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                      'pn-none rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
                       category === c
                         ? 'border-primary/60 bg-primary/10 text-primary'
                         : 'border-border text-muted-foreground hover:text-foreground'
@@ -330,7 +330,7 @@ export default function BuilderClient() {
                     onClick={() => setDifficulty(d)}
                     aria-pressed={difficulty === d}
                     className={cx(
-                      'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                      'pn-none rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                       difficulty === d
                         ? 'border-primary/60 bg-primary/10 text-primary'
                         : 'border-border text-muted-foreground hover:text-foreground'
@@ -374,7 +374,7 @@ export default function BuilderClient() {
             const isOpen = openId === item.id;
             const s = item.scenario;
             return (
-              <div key={item.id} className="glass-panel rounded-xl border border-border">
+              <div key={item.id} className="pn-surface glass-panel rounded-xl border border-border">
                 <div className="p-4 flex items-center gap-3 flex-wrap">
                   <button
                     onClick={() => {
@@ -415,7 +415,7 @@ export default function BuilderClient() {
                         value={s.persona.voice ?? 'florian-hd'}
                         disabled={busyId === item.id}
                         onChange={(e) => void setVoice(item.id, e.target.value)}
-                        className="rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground"
+                        className="pn-field rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground"
                         data-testid="builder-voice"
                       >
                         <option value="seraphina-hd">{ts.voiceSeraphina}</option>
@@ -461,7 +461,7 @@ export default function BuilderClient() {
                         {dnaOpen ? ts.builderDnaHide : ts.builderDnaShow}
                       </button>
                       {dnaOpen && (
-                        <div className="mt-2 space-y-2 rounded-xl border border-border bg-muted/40 p-3 text-xs leading-relaxed">
+                        <div className="pn-tile mt-2 space-y-2 rounded-xl border border-border bg-muted/40 p-3 text-xs leading-relaxed">
                           <p className="text-amber-400 font-semibold">{ts.builderDnaWarning}</p>
                           <p>
                             <span className="font-semibold">{ts.builderDnaHidden}:</span>{' '}
@@ -501,7 +501,7 @@ export default function BuilderClient() {
                         rows={2}
                         maxLength={2000}
                         placeholder={ts.builderRevisePlaceholder}
-                        className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                       />
                     </div>
 
@@ -509,7 +509,7 @@ export default function BuilderClient() {
                       <button
                         onClick={() => void generate(item.id)}
                         disabled={generating || reviseNote.trim().length < 5}
-                        className="rounded-lg border border-primary/40 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                        className="pn-none rounded-lg border border-primary/40 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                       >
                         {busyId === item.id && generating ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -520,7 +520,7 @@ export default function BuilderClient() {
                       </button>
                       <button
                         onClick={() => router.push(`/?szenario=${encodeURIComponent(item.id)}`)}
-                        className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                        className="pn-none rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
                       >
                         <Play className="h-3.5 w-3.5" /> {ts.builderTestCta}
                       </button>
@@ -528,7 +528,7 @@ export default function BuilderClient() {
                         <button
                           onClick={() => void setStatus(item.id, 'published')}
                           disabled={busyId === item.id}
-                          className="rounded-lg border border-emerald-500/40 px-3 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                          className="pn-none rounded-lg border border-emerald-500/40 px-3 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" /> {ts.builderPublishCta}
                         </button>
@@ -536,7 +536,7 @@ export default function BuilderClient() {
                         <button
                           onClick={() => void setStatus(item.id, 'draft')}
                           disabled={busyId === item.id}
-                          className="rounded-lg border border-amber-500/40 px-3 py-2 text-xs font-semibold text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                          className="pn-none rounded-lg border border-amber-500/40 px-3 py-2 text-xs font-semibold text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
                           <EyeOff className="h-3.5 w-3.5" /> {ts.builderUnpublishCta}
                         </button>
@@ -545,7 +545,7 @@ export default function BuilderClient() {
                         <button
                           onClick={() => void remove(item.id)}
                           disabled={busyId === item.id}
-                          className="rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-400 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                          className="pn-none rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-400 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
                           {busyId === item.id ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -557,7 +557,7 @@ export default function BuilderClient() {
                       ) : (
                         <button
                           onClick={() => setConfirmDeleteId(item.id)}
-                          className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-rose-500/30 hover:text-rose-400 transition-colors flex items-center gap-1.5"
+                          className="pn-none rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-rose-500/30 hover:text-rose-400 transition-colors flex items-center gap-1.5"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> {ts.builderDeleteCta}
                         </button>

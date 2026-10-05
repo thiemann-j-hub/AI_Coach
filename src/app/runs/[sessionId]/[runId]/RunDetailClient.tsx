@@ -186,13 +186,13 @@ export default function RunDetailClient({
           </div>
 
           {loading && (
-            <div className="glass-panel rounded-2xl p-8 text-sm text-muted-foreground animate-pulse">
+            <div className="pn-none glass-panel rounded-2xl p-8 text-sm text-muted-foreground animate-pulse">
               {t.report.loadingRun}
             </div>
           )}
 
           {!loading && errorText && (
-            <div className="glass-panel rounded-2xl p-8 text-sm text-red-400 border border-red-500/20">
+            <div className="pn-none glass-panel rounded-2xl p-8 text-sm text-red-400 border border-red-500/20">
               {errorText}
             </div>
           )}

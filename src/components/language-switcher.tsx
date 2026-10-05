@@ -60,7 +60,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         <ul
           role="listbox"
           aria-label={t.common.selectLanguage}
-          className="absolute right-0 z-50 mt-1.5 max-h-80 w-44 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-xl"
+          className="pn-none absolute right-0 z-50 mt-1.5 max-h-80 w-44 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-xl"
         >
           {locales.map((l) => (
             <li key={l}>

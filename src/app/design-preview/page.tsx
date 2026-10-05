@@ -88,7 +88,7 @@ export default function DesignPreviewPage() {
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
           <button
             type="button"
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition"
+            className="pn-none w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition"
             onClick={toggleTheme}
           >
             {dark ? 'Light Mode' : 'Dark Mode'}
@@ -110,7 +110,7 @@ export default function DesignPreviewPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition">
+            <button className="pn-none hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 transition">
               Exportieren
             </button>
             <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 transition" title="Benachrichtigungen">

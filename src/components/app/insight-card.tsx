@@ -19,7 +19,7 @@ export function InsightCard({
   const ToneIcon = tone === 'success' ? BadgeCheck : tone === 'warning' ? TrendingUp : AlertTriangle;
 
   return (
-    <div className="glass-panel rounded-2xl relative overflow-hidden">
+    <div className="pn-tile glass-panel rounded-2xl relative overflow-hidden">
       <div className={`absolute top-0 left-0 w-1 ${toneBar} h-full`} />
       <div className="p-6">
         <div className="flex items-center gap-3 mb-5">

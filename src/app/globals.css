@@ -40,7 +40,7 @@
     --glass-panel-bg: rgba(255, 255, 255, 0.8);
     --glass-header-bg: rgba(255, 255, 255, 0.9);
     /* UX-W2 (01.10., Shell-Standard Teil 2.4): weicher Kartenschatten, zwei Ebenen */
-    --shadow-card: 0 1px 2px rgba(10, 25, 47, 0.06), 0 6px 18px rgba(10, 25, 47, 0.08);
+    --shadow-card: 4px 4px 10px -2px rgba(10, 25, 47, 0.16); /* Rahmen-Regel 2: rechts + unten */
     --glass-panel-bg-alt: rgba(0, 0, 0, 0.02);
 
     /* Scrollbar */
@@ -83,7 +83,7 @@
     /* Glass backgrounds */
     --glass-panel-bg: rgba(17, 34, 64, 0.7);
     --glass-header-bg: rgba(10, 25, 47, 0.85);
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+    --shadow-card: 4px 4px 12px -2px rgba(0, 0, 0, 0.6); /* Rahmen-Regel 2: rechts + unten */
     --glass-panel-bg-alt: rgba(255, 255, 255, 0.02);
 
     /* Scrollbar */
@@ -186,5 +186,47 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Rahmen-Regel (Owner-Vorgabe 05.10.2026 · pulsenorth-ops SHELL-STANDARD-LOOK-AND-FEEL.md Teil 2.7) ──
+   Jeder umrandete Kasten bekommt genau EINE dieser Klassen:
+   pn-field   Eingabefeld (tippen, auswählen, ablegen): grauer Rahmen, KEIN Schatten.
+              Fokus- und Fehler-Ringe bleiben erhalten (sie sind kein Schatten, sondern Zustand).
+   pn-tile    Kachel (zeigt Inhalte, Ergebnisse, Daten): grauer Rahmen + Schatten rechts und unten.
+              Mouse-over (und Tastatur-Fokus): blauer Rahmen + blauer Schatten rundum, gleiche Stärke.
+   pn-surface Fläche, die Kacheln oder Eingabefelder umrahmt: Rahmen + Schatten rechts und unten,
+              KEIN Mouse-over (sonst leuchten zwei Rahmen gleichzeitig).
+   pn-none    bewusste Ausnahme: Knopf, Plakette, farbiger Hinweis-Kasten, Menü, Dialog, Balken …
+   Wächter: scripts/rahmen-regel.mjs läuft vor jedem Bau (npm run build → prebuild).
+   Unlayered am Dateiende, damit die Regel gegen einzelne shadow-*/hover:*-Klassen gewinnt. */
+:root {
+  --pn-shadow-ruhe: 4px 4px 10px -2px rgba(10, 25, 47, 0.16);
+  --pn-rand-hover: rgba(0, 145, 255, 0.75);
+  --pn-shadow-hover: 0 0 10px 1px rgba(0, 145, 255, 0.3);
+}
+.dark {
+  --pn-shadow-ruhe: 4px 4px 12px -2px rgba(0, 0, 0, 0.6);
+  --pn-rand-hover: rgba(58, 168, 255, 0.85);
+  --pn-shadow-hover: 0 0 12px 1px rgba(58, 168, 255, 0.45);
+}
+.pn-field {
+  box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000);
+}
+.pn-surface,
+.pn-tile {
+  box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--pn-shadow-ruhe);
+}
+.pn-tile {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+.pn-tile:hover,
+.pn-tile:focus-visible {
+  border-color: var(--pn-rand-hover);
+  box-shadow: var(--tw-inset-shadow, 0 0 #0000), var(--tw-inset-ring-shadow, 0 0 #0000), var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--pn-shadow-hover);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pn-tile {
+    transition: none;
   }
 }

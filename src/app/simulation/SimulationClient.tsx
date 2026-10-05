@@ -264,7 +264,7 @@ function KpiTiles({ v }: { v: Extract<FactVisual, { kind: 'kpis' }> }) {
   return (
     <div className="flex flex-wrap gap-3">
       {v.items.map((it, i) => (
-        <div key={i} className="min-w-[110px] flex-1 rounded-lg border border-border bg-background/40 px-3 py-2.5">
+        <div key={i} className="pn-none min-w-[110px] flex-1 rounded-lg border border-border bg-background/40 px-3 py-2.5">
           <div className="text-xl font-bold tabular-nums leading-tight">{it.value}</div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">{it.label}</div>
           {it.sub && <div className="text-[10px] text-muted-foreground/70">{it.sub}</div>}
@@ -276,7 +276,7 @@ function KpiTiles({ v }: { v: Extract<FactVisual, { kind: 'kpis' }> }) {
 
 function FactChart({ v }: { v: FactVisual }) {
   return (
-    <div className="rounded-xl border border-border bg-muted/30 p-4">
+    <div className="pn-tile rounded-xl border border-border bg-muted/30 p-4">
       <div className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
         {v.title}
       </div>
@@ -1047,7 +1047,7 @@ export default function SimulationClient() {
   /* ---------- Teil-Ansichten ---------- */
 
   const errorBanner = error && (
-    <div className="glass-panel rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 flex items-start gap-2 text-sm">
+    <div className="pn-none glass-panel rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 flex items-start gap-2 text-sm">
       <AlertTriangle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
       <div>
         <span>{error}</span>
@@ -1075,7 +1075,7 @@ export default function SimulationClient() {
   if (view === 'disabled') {
     return (
       <AppShell title={ts.title} subtitle={ts.subtitle}>
-        <div className="glass-panel rounded-xl p-6 max-w-xl text-sm text-muted-foreground">
+        <div className="pn-none glass-panel rounded-xl p-6 max-w-xl text-sm text-muted-foreground">
           {ts.disabled}
         </div>
       </AppShell>
@@ -1115,10 +1115,10 @@ export default function SimulationClient() {
         key={s.id}
         onClick={() => openBriefing(s)}
         className={cx(
-          'glass-panel rounded-2xl p-5 text-left border transition-colors flex flex-col gap-3',
+          'pn-tile glass-panel rounded-2xl p-5 text-left border transition-colors flex flex-col gap-3',
           highlighted
-            ? 'border-primary/40 hover:border-primary/70'
-            : 'border-border hover:border-primary/40'
+            ? 'border-primary/40'
+            : 'border-border'
         )}
       >
         <div className="flex items-center justify-between gap-2">
@@ -1200,7 +1200,7 @@ export default function SimulationClient() {
           {/* ── O2: die eine Nachfrage zum Vorsatz (Gemini Zu 4 / Owner E-4: nur beim Login) ── */}
           {transfer && (
             <section
-              className="glass-panel rounded-xl p-4 border border-primary/30 bg-primary/5 space-y-3"
+              className="pn-none glass-panel rounded-xl p-4 border border-primary/30 bg-primary/5 space-y-3"
               data-testid="transfer-check"
             >
               <div className="flex items-start gap-3">
@@ -1234,7 +1234,7 @@ export default function SimulationClient() {
                     type="button"
                     disabled={transferBusy}
                     onClick={() => void answerTransfer(o)}
-                    className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors disabled:opacity-50"
+                    className="pn-none rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors disabled:opacity-50"
                   >
                     {o === 'done' ? t.entry.transferDone : o === 'partly' ? t.entry.transferPartly : t.entry.transferNot}
                   </button>
@@ -1281,7 +1281,7 @@ export default function SimulationClient() {
                     // Weiter-Bereich und der Mülleimer sind Geschwister.
                     <div
                       key={r.id}
-                      className="w-full glass-panel rounded-xl p-3 flex items-center justify-between gap-3 hover:border-primary/40 border border-border transition-colors"
+                      className="pn-tile w-full glass-panel rounded-xl p-3 flex items-center justify-between gap-3 border border-border transition-colors"
                     >
                       <button
                         onClick={() => void resumeSimulation(r)}
@@ -1319,7 +1319,7 @@ export default function SimulationClient() {
                               disabled={deletingId === r.id}
                               title={ts.deleteSim}
                               aria-label={ts.deleteSim}
-                              className="rounded-lg border border-rose-500/50 bg-rose-500/15 p-1.5 text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
+                              className="pn-none rounded-lg border border-rose-500/50 bg-rose-500/15 p-1.5 text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
                             >
                               {deletingId === r.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1331,7 +1331,7 @@ export default function SimulationClient() {
                               onClick={() => setPendingDeleteId(null)}
                               title={t.common.cancel}
                               aria-label={t.common.cancel}
-                              className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                              className="pn-none rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:text-foreground"
                             >
                               <X className="h-4 w-4" />
                             </button>
@@ -1384,7 +1384,7 @@ export default function SimulationClient() {
                 onClick={() => setCategoryFilter('all')}
                 aria-pressed={categoryFilter === 'all'}
                 className={cx(
-                  'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                  'pn-none rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
                   categoryFilter === 'all'
                     ? 'border-primary/60 bg-primary/10 text-primary'
                     : 'border-border text-muted-foreground hover:text-foreground'
@@ -1398,7 +1398,7 @@ export default function SimulationClient() {
                   onClick={() => setCategoryFilter(c)}
                   aria-pressed={categoryFilter === c}
                   className={cx(
-                    'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                    'pn-none rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors',
                     categoryFilter === c
                       ? 'border-primary/60 bg-primary/10 text-primary'
                       : 'border-border text-muted-foreground hover:text-foreground'
@@ -1418,7 +1418,7 @@ export default function SimulationClient() {
             {isWorkspaceAdmin && (
               <button
                 onClick={() => router.push('/simulation/builder')}
-                className="rounded-2xl p-5 text-left border-2 border-dashed border-accent/40 hover:border-accent transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
+                className="pn-none rounded-2xl p-5 text-left border-2 border-dashed border-accent/40 hover:border-accent transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
               >
                 <Sparkles className="h-6 w-6 text-accent" />
                 <h3 className="font-semibold leading-snug text-foreground">
@@ -1435,7 +1435,7 @@ export default function SimulationClient() {
                 setWishDone(false);
                 setWishOpen(true);
               }}
-              className="rounded-2xl p-5 text-left border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
+              className="pn-none rounded-2xl p-5 text-left border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
             >
               <Lightbulb className="h-6 w-6 text-primary" />
               <h3 className="font-semibold leading-snug text-foreground">
@@ -1455,7 +1455,7 @@ export default function SimulationClient() {
         {/* ── Wunsch-Dialog (Geister-Karte) ── */}
         {wishOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-primary" /> {t.entry.wishTitle}
               </h3>
@@ -1482,12 +1482,12 @@ export default function SimulationClient() {
                     rows={4}
                     maxLength={500}
                     placeholder={t.entry.wishPlaceholder}
-                    className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                   <div className="flex gap-2 justify-end">
                     <button
                       onClick={() => setWishOpen(false)}
-                      className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                      className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
                     >
                       {t.common.cancel}
                     </button>
@@ -1551,7 +1551,7 @@ export default function SimulationClient() {
                 <button
                   onClick={() => setBriefStep((s) => Math.max(0, s - 1))}
                   disabled={briefStep === 0}
-                  className="rounded-xl px-4 py-2.5 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-40 flex items-center gap-1"
+                  className="pn-none rounded-xl px-4 py-2.5 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-40 flex items-center gap-1"
                 >
                   <ArrowLeft className="h-4 w-4" /> {ts.stepBack}
                 </button>
@@ -1577,7 +1577,7 @@ export default function SimulationClient() {
                       onClick={() => setConvoLocale(l.code)}
                       aria-pressed={convoLocale === l.code}
                       className={cx(
-                        'inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
+                        'pn-none inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
                         convoLocale === l.code
                           ? 'border-primary/60 bg-primary/10 text-primary'
                           : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
@@ -1602,7 +1602,7 @@ export default function SimulationClient() {
                       onClick={() => setSimMode(m)}
                       aria-pressed={simMode === m}
                       className={cx(
-                        'inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
+                        'pn-none inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
                         simMode === m
                           ? 'border-primary/60 bg-primary/10 text-primary'
                           : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
@@ -1630,7 +1630,7 @@ export default function SimulationClient() {
                       onClick={() => setSimHardness(h)}
                       aria-pressed={simHardness === h}
                       className={cx(
-                        'rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
+                        'pn-none rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors',
                         simHardness === h
                           ? 'border-primary/60 bg-primary/10 text-primary'
                           : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
@@ -1646,7 +1646,7 @@ export default function SimulationClient() {
 
             {/* ── Rechte Spalte: Hero-Porträt mit Overlay (Synthesia-Muster) ── */}
             <div className="order-1 lg:order-2 lg:sticky lg:top-4">
-              <div className="relative overflow-hidden rounded-3xl border border-border shadow-neon aspect-[4/5] bg-muted">
+              <div className="pn-none relative overflow-hidden rounded-3xl border border-border shadow-neon aspect-[4/5] bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={withBasePath(`/personas/${scenario.id}.jpg`)}
@@ -1713,7 +1713,7 @@ export default function SimulationClient() {
                 key={i}
                 onClick={() => setBriefStep(i)}
                 className={cx(
-                  'flex-1 flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
+                  'pn-none flex-1 flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
                   i === briefStep
                     ? 'border-primary/50 bg-primary/10 text-primary'
                     : i < briefStep
@@ -1728,7 +1728,7 @@ export default function SimulationClient() {
             ))}
           </div>
 
-          <div className="glass-panel rounded-2xl p-6 min-h-[280px]">
+          <div className="pn-surface glass-panel rounded-2xl p-6 min-h-[280px]">
             {briefStep === 0 && (
               <div className="space-y-4">
                 <section>
@@ -1772,7 +1772,7 @@ export default function SimulationClient() {
                     <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                       {ts.factSheet}
                     </h3>
-                    <ul className="space-y-1 rounded-lg border border-border bg-muted/40 p-3">
+                    <ul className="pn-tile space-y-1 rounded-lg border border-border bg-muted/40 p-3">
                       {b.factSheet.map((f, idx) => (
                         <li key={idx} className="text-xs font-mono leading-relaxed">
                           {f}
@@ -1790,7 +1790,7 @@ export default function SimulationClient() {
                 </h3>
                 <ol className="space-y-3">
                   {b.goals.map((g, idx) => (
-                    <li key={idx} className="text-sm leading-relaxed flex gap-3 rounded-xl border border-border bg-muted/30 p-3">
+                    <li key={idx} className="pn-tile text-sm leading-relaxed flex gap-3 rounded-xl border border-border bg-muted/30 p-3">
                       <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
                       <span>{g}</span>
                     </li>
@@ -1816,7 +1816,7 @@ export default function SimulationClient() {
                   </section>
                 )}
                 {b.expectation && (
-                  <section className="rounded-xl border border-accent/30 bg-accent/5 p-4">
+                  <section className="pn-none rounded-xl border border-accent/30 bg-accent/5 p-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-accent mb-1 flex items-center gap-1">
                       <Lightbulb className="h-3.5 w-3.5" /> {ts.expectationTitle}
                     </h3>
@@ -1871,7 +1871,7 @@ export default function SimulationClient() {
             {/* W2-3: Ausgang aus dem Chat — der Lauf bleibt offen. */}
             <button
               onClick={() => setLeaveOpen(true)}
-              className="text-sm font-semibold rounded-lg px-3 py-2 border border-border text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+              className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-border text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
               title={ts.backToList}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -1900,7 +1900,7 @@ export default function SimulationClient() {
                   setSpeakReplies((v) => !v);
                 }}
                 className={cx(
-                  'text-sm font-semibold rounded-lg px-3 py-2 border transition-colors flex items-center gap-1.5',
+                  'pn-none text-sm font-semibold rounded-lg px-3 py-2 border transition-colors flex items-center gap-1.5',
                   speakReplies
                     ? 'border-primary/40 text-primary bg-primary/10'
                     : 'border-border text-muted-foreground hover:text-foreground'
@@ -1914,7 +1914,7 @@ export default function SimulationClient() {
             <button
               onClick={() => setTimeoutOpen(true)}
               disabled={userTurnCount < 1 || timeoutsLeft === 0}
-              className="text-sm font-semibold rounded-lg px-3 py-2 border border-accent/40 text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-accent/40 text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
               title={ts.timeoutHint}
             >
               <Pause className="h-4 w-4" /> {ts.timeoutCta}
@@ -1936,7 +1936,7 @@ export default function SimulationClient() {
               <button
                 onClick={() => setConfirmOpen(true)}
                 disabled={finishing || userTurnCount < 3}
-                className="text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                 title={userTurnCount < 3 ? ts.finishNeedsTurns : undefined}
               >
                 <Flag className="h-4 w-4" /> {ts.finishCta}
@@ -2030,7 +2030,7 @@ export default function SimulationClient() {
                   ) : b.factSheet && b.factSheet.length > 0 ? (
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.factSheet}</div>
-                      <ul className="space-y-1 rounded-lg border border-border bg-muted/40 p-3">
+                      <ul className="pn-tile space-y-1 rounded-lg border border-border bg-muted/40 p-3">
                         {b.factSheet.map((f, idx) => (
                           <li key={idx} className="text-xs font-mono leading-relaxed">
                             {f}
@@ -2053,7 +2053,7 @@ export default function SimulationClient() {
                     </div>
                   )}
                   {b.expectation && (
-                    <div className="rounded-xl border border-accent/30 bg-accent/5 p-3">
+                    <div className="pn-none rounded-xl border border-accent/30 bg-accent/5 p-3">
                       <div className="text-xs font-semibold uppercase tracking-wide text-accent mb-1">{ts.expectationTitle}</div>
                       <p className="leading-relaxed">{b.expectation}</p>
                     </div>
@@ -2083,7 +2083,7 @@ export default function SimulationClient() {
                   {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />}
                   <div
                     className={cx(
-                      'rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap',
+                      'pn-none rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap',
                       turn.role === 'user'
                         ? 'bg-primary text-primary-foreground rounded-br-sm'
                         : 'glass-panel border border-border rounded-bl-sm'
@@ -2096,7 +2096,7 @@ export default function SimulationClient() {
               {sending && (
                 <div className="flex items-end gap-2 justify-start">
                   <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
-                  <div className="glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
+                  <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     {scenario.persona.name} {ts.personaTyping}
                   </div>
@@ -2117,7 +2117,7 @@ export default function SimulationClient() {
             {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
                 Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
             {effTimeUp && !deadEnd && (
-              <div className="max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+              <div className="pn-none max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
                   <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
                 </span>
@@ -2152,13 +2152,13 @@ export default function SimulationClient() {
                 rows={2}
                 placeholder={effTimeUp ? ts.timeUpPlaceholder : ts.inputPlaceholder}
                 disabled={effTimeUp}
-                className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+                className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
               {speechSupported && !effTimeUp && (
                 <button
                   onClick={() => (micActive ? stopMic() : startMic())}
                   className={cx(
-                    'relative rounded-xl p-3 border transition-colors',
+                    'pn-none relative rounded-xl p-3 border transition-colors',
                     micActive
                       ? 'border-primary/60 text-primary bg-primary/15 shadow-neon'
                       : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
@@ -2192,7 +2192,7 @@ export default function SimulationClient() {
             keine Historien-Karteileiche (Abort statt Debrief). */}
         {deadEnd && !leaveOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-amber-500/40 p-6 max-w-md w-full space-y-4 bg-card">
+            <div className="pn-none glass-panel rounded-2xl border border-amber-500/40 p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <Clock className="h-5 w-5 text-amber-500" /> {ts.deadEndTitle}
               </h3>
@@ -2202,7 +2202,7 @@ export default function SimulationClient() {
                 <button
                   onClick={() => void abortSimulation()}
                   disabled={aborting || starting}
-                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50 flex items-center gap-2"
+                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   {aborting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
                   {ts.deadEndToList}
@@ -2239,7 +2239,7 @@ export default function SimulationClient() {
         {/* W2-3: Verlassen-Dialog — der Lauf bleibt offen, die Uhr läuft weiter. */}
         {leaveOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg">{ts.leaveTitle}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {ts.leaveBody}
@@ -2252,7 +2252,7 @@ export default function SimulationClient() {
               <div className="flex gap-2 justify-end">
                 <button
                   onClick={() => setLeaveOpen(false)}
-                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
                 >
                   {ts.leaveStay}
                 </button>
@@ -2270,7 +2270,7 @@ export default function SimulationClient() {
         {/* Time-out-Coach (D3) — Szene angehalten */}
         {timeoutOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-accent/40 p-6 max-w-lg w-full space-y-4 bg-card max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div className="pn-none glass-panel rounded-2xl border border-accent/40 p-6 max-w-lg w-full space-y-4 bg-card max-h-[85vh] overflow-y-auto custom-scrollbar">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   <Pause className="h-5 w-5 text-accent" /> {ts.timeoutTitle}
@@ -2284,11 +2284,11 @@ export default function SimulationClient() {
               {coachNotes.map((n, idx) => (
                 <div key={idx} className="space-y-2">
                   {n.question && (
-                    <div className="text-sm rounded-xl bg-primary/10 border border-primary/20 px-3 py-2">
+                    <div className="pn-none text-sm rounded-xl bg-primary/10 border border-primary/20 px-3 py-2">
                       {n.question}
                     </div>
                   )}
-                  <div className="text-sm rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 leading-relaxed whitespace-pre-wrap">
+                  <div className="pn-none text-sm rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 leading-relaxed whitespace-pre-wrap">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-accent mb-1">
                       Coach
                     </div>
@@ -2296,7 +2296,7 @@ export default function SimulationClient() {
                     {/* V3 (Owner-GO 25.09.): die Merkkarte, auf der der Impuls aufbaut. */}
                     {n.card && (
                       <div
-                        className="mt-2 rounded-lg border border-border bg-background/70 px-3 py-2 text-left"
+                        className="pn-none mt-2 rounded-lg border border-border bg-background/70 px-3 py-2 text-left"
                         data-testid="coach-card"
                       >
                         <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
@@ -2324,12 +2324,12 @@ export default function SimulationClient() {
                     onChange={(e) => setTimeoutQuestion(e.target.value)}
                     rows={2}
                     placeholder={ts.timeoutPlaceholder}
-                    className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
+                    className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40"
                   />
                   <button
                     onClick={() => void requestTimeout()}
                     disabled={timeoutBusy}
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold border border-accent/40 text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
+                    className="pn-none rounded-xl px-4 py-2.5 text-sm font-semibold border border-accent/40 text-accent hover:bg-accent/10 transition-colors disabled:opacity-50"
                   >
                     {ts.timeoutAsk}
                   </button>
@@ -2352,13 +2352,13 @@ export default function SimulationClient() {
         {/* CP-3.4 (M21 Option 1) — Aufklärung vor der ersten Mikrofon-Nutzung. */}
         {micNoticeOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg">{ts.micNoticeTitle}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{ts.micNoticeBody}</p>
               <div className="flex gap-2 justify-end">
                 <button
                   onClick={() => setMicNoticeOpen(false)}
-                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
                 >
                   {ts.micNoticeDecline}
                 </button>
@@ -2384,7 +2384,7 @@ export default function SimulationClient() {
 
         {confirmOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg">{ts.confirmTitle}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{ts.confirmBody}</p>
               {/* Preis vor dem Klick (29.09.): die Auswertung ist der einzige kostenpflichtige Schritt. */}
@@ -2398,7 +2398,7 @@ export default function SimulationClient() {
               <div className="flex gap-2 justify-end">
                 <button
                   onClick={() => setConfirmOpen(false)}
-                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
                 >
                   {t.common.cancel}
                 </button>
@@ -2427,7 +2427,7 @@ export default function SimulationClient() {
             zusätzlicher Credit, keine zusätzliche Latenz. */}
         {checkinOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
               <div className="flex items-center gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
                   <GraduationCap className="h-5 w-5" />
@@ -2442,14 +2442,14 @@ export default function SimulationClient() {
                   rows={4}
                   maxLength={500}
                   placeholder={ts.checkinPlaceholder}
-                  className="flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   autoFocus
                 />
                 {speechSupported && (
                   <button
                     onClick={() => (micActive ? stopMic() : startMic())}
                     className={cx(
-                      'relative rounded-xl p-3 border transition-colors',
+                      'pn-none relative rounded-xl p-3 border transition-colors',
                       micActive
                         ? 'border-primary/60 text-primary bg-primary/15 shadow-neon'
                         : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
@@ -2466,7 +2466,7 @@ export default function SimulationClient() {
                 <button
                   onClick={() => void finishSimulation()}
                   disabled={finishing}
-                  className="rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50"
+                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50"
                 >
                   {ts.checkinSkip}
                 </button>

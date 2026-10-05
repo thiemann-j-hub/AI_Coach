@@ -121,7 +121,7 @@ export default function ProfilePage() {
     <AppShell title={p.title}>
       <div className="mx-auto max-w-2xl space-y-6">
         {/* ── Profilbild ── */}
-        <Card>
+        <Card className="pn-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Camera className="h-4 w-4 text-muted-foreground" /> {p.photo}
@@ -143,7 +143,7 @@ export default function ProfilePage() {
             <div>
               <button
                 onClick={() => fileRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/50 px-3 py-2 text-sm transition hover:border-primary/40 hover:text-foreground"
+                className="pn-none inline-flex items-center gap-2 rounded-lg border border-border bg-card/50 px-3 py-2 text-sm transition hover:border-primary/40 hover:text-foreground"
               >
                 <Camera className="h-4 w-4" /> {p.changePhoto}
               </button>
@@ -154,7 +154,7 @@ export default function ProfilePage() {
         </Card>
 
         {/* ── Persoenliche Daten ── */}
-        <Card>
+        <Card className="pn-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <User className="h-4 w-4 text-muted-foreground" /> {p.personal}
@@ -166,7 +166,7 @@ export default function ProfilePage() {
               <input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                className="pn-field w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
             <div>
@@ -176,7 +176,7 @@ export default function ProfilePage() {
               <input
                 value={user?.email ?? ""}
                 disabled
-                className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
+                className="pn-field w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
               />
               <p className="mt-1 text-xs text-muted-foreground">{p.emailLocked}</p>
             </div>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
                 <input
                   value={role === "admin" ? p.roleAdmin : p.roleMember}
                   disabled
-                  className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
+                  className="pn-field w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground"
                 />
               </div>
             )}
@@ -196,14 +196,14 @@ export default function ProfilePage() {
         </Card>
 
         {/* ── Erscheinungsbild ── */}
-        <Card>
+        <Card className="pn-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Palette className="h-4 w-4 text-muted-foreground" /> {p.appearance}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-1">
+            <div className="pn-none inline-flex rounded-lg border border-border bg-muted/40 p-1">
               {themeOptions.map(({ value, label, Icon }) => {
                 // Alles ausser "light" gilt als dunkel (raeumt gespeicherte
                 // "system"-Werte still auf).

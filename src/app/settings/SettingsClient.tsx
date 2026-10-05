@@ -87,7 +87,7 @@ export default function SettingsClient() {
       </div>
 
       {/* Lern-Historie löschen */}
-      <Card>
+      <Card className="pn-surface">
         <CardHeader>
           <CardTitle>Lern-Historie löschen</CardTitle>
           <CardDescription>
@@ -120,7 +120,7 @@ export default function SettingsClient() {
       </Card>
 
       {/* Account & alle Daten löschen */}
-      <Card className="border-destructive/40">
+      <Card className="pn-none border-destructive/40">
         <CardHeader>
           <CardTitle className="text-destructive">Account &amp; alle Daten löschen</CardTitle>
           <CardDescription>

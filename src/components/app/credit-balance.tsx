@@ -94,7 +94,7 @@ export function CreditBalance() {
         href={href}
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         title={t.common.topUp}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-1.5 text-sm font-semibold text-amber-400 transition-colors hover:bg-amber-500/25 hover:border-amber-400/70"
+        className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-1.5 text-sm font-semibold text-amber-400 transition-colors hover:bg-amber-500/25 hover:border-amber-400/70"
       >
         <Coins className="h-4 w-4" />
         <span className="tabular-nums">{state.balance}</span>
@@ -121,7 +121,7 @@ export function CreditBalance() {
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       title="Credits"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:text-primary"
+      className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-card/50 px-3 py-1.5 text-sm font-medium transition-colors hover:border-primary/30 hover:text-primary"
     >
       <Coins className="h-4 w-4 text-primary" />
       <span>{state.balance}</span>

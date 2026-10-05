@@ -62,7 +62,7 @@ function StudioRecommendationCard({ competencies }: { competencies: any[] }) {
   const href = `/studio/${studioLocale}/projects/new?title=${encodeURIComponent(title)}&goal=${encodeURIComponent(goal)}&src=coach`;
 
   return (
-    <div className="glass-panel rounded-2xl p-5">
+    <div className="pn-tile glass-panel rounded-2xl p-5">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
           <GraduationCap className="h-5 w-5" />
@@ -134,7 +134,7 @@ export function CompetencyPanel({ competencies }: { competencies: any[] }) {
           return (
             <details
               key={`${id}-${idx}`}
-              className={`glass-panel rounded-xl overflow-hidden ${pct === null ? 'opacity-70' : ''}`}
+              className={`pn-tile glass-panel rounded-xl overflow-hidden ${pct === null ? 'opacity-70' : ''}`}
               open={idx === 0}
             >
               <summary className="cursor-pointer list-none p-3 flex items-center justify-between bg-foreground/[0.02]">
@@ -220,7 +220,7 @@ function RatingCard({
   const shown = hover ?? rating ?? 0;
 
   return (
-    <div className="glass-panel rounded-2xl p-5">
+    <div className="pn-surface glass-panel rounded-2xl p-5">
       <h3 className="font-bold text-sm text-foreground mb-3">{t.report.rateTitle}</h3>
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((v) => (
@@ -413,19 +413,19 @@ export default function ReportDashboard({
       {(ragError || competencyError || groundingWarnings > 0) && (
         <div className="xl:col-span-12 space-y-2">
           {ragError && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.ragDegraded}
             </div>
           )}
           {competencyError && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.competencyDegraded}
             </div>
           )}
           {groundingWarnings > 0 && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.groundingWarning.replace('{count}', String(groundingWarnings))}
             </div>
@@ -443,7 +443,7 @@ export default function ReportDashboard({
       {/* LEFT MAIN COLUMN */}
       <div className="xl:col-span-8 space-y-6">
         {/* HERO */}
-        <div className="glass-panel rounded-2xl p-6 md:p-8">
+        <div className="pn-tile glass-panel rounded-2xl p-6 md:p-8">
           {/* Herkunfts-Pill (W1-8): woher diese Messung stammt */}
           <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <BarChart3 className="h-3.5 w-3.5" />
@@ -479,7 +479,7 @@ export default function ReportDashboard({
               <div className="mt-4 flex justify-center md:justify-start">
                 <button
                   type="button"
-                  className="px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors flex items-center gap-1.5"
+                  className="pn-none px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors flex items-center gap-1.5"
                   onClick={handleDownload}
                 >
                   <Download className="h-4 w-4" />
@@ -495,7 +495,7 @@ export default function ReportDashboard({
           <InsightCard tone="success" title={t.report.strengths} items={strengths} />
           <InsightCard tone="warning" title={t.report.potential} items={improvements} />
 
-          <div className="glass-panel rounded-2xl relative overflow-hidden">
+          <div className="pn-tile glass-panel rounded-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 bg-red-500 h-full" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-5">
@@ -529,7 +529,7 @@ export default function ReportDashboard({
         {/* PRACTICE + REWRITES */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-8">
           {/* 7-Day Practice */}
-          <div className="lg:col-span-1 glass-panel rounded-2xl p-6 flex flex-col border-primary/10">
+          <div className="pn-tile lg:col-span-1 glass-panel rounded-2xl p-6 flex flex-col border-border">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-primary rounded-lg text-white shadow-neon">
                 <span className="text-sm font-bold">7</span>
@@ -541,7 +541,7 @@ export default function ReportDashboard({
 
             <button
               type="button"
-              className="w-full py-3 bg-secondary text-primary text-sm font-semibold rounded-xl border border-border hover:bg-primary/10 hover:shadow-primary-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="pn-none w-full py-3 bg-secondary text-primary text-sm font-semibold rounded-xl border border-border hover:bg-primary/10 hover:shadow-primary-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               onClick={handleReminder}
               disabled={!practice}
             >
@@ -565,7 +565,7 @@ export default function ReportDashboard({
           </div>
 
           {/* Rewrites */}
-          <div className="lg:col-span-2 glass-panel rounded-2xl overflow-hidden flex flex-col">
+          <div className="pn-surface lg:col-span-2 glass-panel rounded-2xl overflow-hidden flex flex-col">
             <div className="p-5 border-b border-border bg-foreground/[0.02] flex justify-between items-center">
               <div>
                 <h3 className="font-bold text-lg text-foreground">{t.report.rewritesTitle}</h3>
@@ -616,7 +616,7 @@ export default function ReportDashboard({
             in die Post Machine, nicht auf die Ergebnisseite eines Kritikgesprächs. */}
 
         {/* TRANSCRIPT */}
-        <div className="glass-panel rounded-2xl overflow-hidden">
+        <div className="pn-tile glass-panel rounded-2xl overflow-hidden">
           <div className="p-5 border-b border-border bg-foreground/[0.02] flex items-start justify-between gap-4">
             <div>
               <h3 className="font-bold text-lg text-foreground">{t.report.transcriptTitle}</h3>
@@ -631,7 +631,7 @@ export default function ReportDashboard({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  className="px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors"
+                  className="pn-none px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors"
                   onClick={() => copyText(transcript)}
                   title={t.common.copy}
                 >
@@ -641,7 +641,7 @@ export default function ReportDashboard({
 
                 <button
                   type="button"
-                  className="px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors"
+                  className="pn-none px-3 py-2 rounded-xl text-xs font-semibold border border-border bg-secondary hover:bg-primary/10 text-foreground transition-colors"
                   onClick={() => setShowTranscript((v) => !v)}
                 >
                   {showTranscript ? t.common.hide : t.common.show}
@@ -670,7 +670,7 @@ export default function ReportDashboard({
 
       {/* RIGHT COLUMN (SIDEBAR) */}
       <div className="xl:col-span-4 w-full space-y-6 sticky top-24">
-        <div className="glass-panel rounded-2xl p-4">
+        <div className="pn-surface glass-panel rounded-2xl p-4">
           <div className="mb-4 px-2">
             <h3 className="font-bold text-lg text-foreground">{t.report.competencies}</h3>
             <p className="text-xs text-muted-foreground">{t.report.competenciesSubtitle}</p>

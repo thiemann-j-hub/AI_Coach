@@ -316,7 +316,7 @@ export default function AnalyzeClient() {
 
   const headerActions = (
     <button
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition-colors"
+      className="pn-none flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition-colors"
       onClick={() => sessionId && router.push(`/runs-dashboard?sessionId=${encodeURIComponent(sessionId)}`)}
     >
       <History className="h-4 w-4" />
@@ -332,14 +332,14 @@ export default function AnalyzeClient() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-8xl mx-auto">
         {/* Left Column - Transcript */}
         <div className="xl:col-span-2 flex flex-col gap-6">
-          <div className="glass-panel rounded-2xl p-6 flex flex-col">
+          <div className="pn-surface glass-panel rounded-2xl p-6 flex flex-col">
             <div className="mb-4">
               <h3 className="text-xl font-semibold text-foreground mb-1">{t.analyze.transcript}</h3>
               <p className="text-sm text-muted-foreground">{t.analyze.transcriptSubtitle}</p>
             </div>
 
             {/* PDF Import */}
-            <div className="bg-secondary/50 rounded-xl p-5 mb-5 border border-border">
+            <div className="pn-surface bg-secondary/50 rounded-xl p-5 mb-5 border border-border">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
                   <h4 className="font-bold text-foreground">{t.analyze.pdfImport}</h4>
@@ -348,7 +348,7 @@ export default function AnalyzeClient() {
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <select
-                      className="appearance-none bg-card border border-border text-foreground text-sm rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
+                      className="pn-field appearance-none bg-card border border-border text-foreground text-sm rounded-lg px-3 py-2 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer"
                       value={uploadMode}
                       onChange={(e) => setUploadMode(e.target.value as any)}
                       disabled={uploadBusy || loading}
@@ -369,7 +369,7 @@ export default function AnalyzeClient() {
                     <span className="text-xs font-medium text-foreground">{t.analyze.cleanTeams}</span>
                   </label>
                   <button
-                    className="bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors text-xs font-medium py-2 px-4 rounded-lg"
+                    className="pn-none bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors text-xs font-medium py-2 px-4 rounded-lg"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadBusy || loading}
                   >
@@ -379,7 +379,7 @@ export default function AnalyzeClient() {
                 </div>
               </div>
               <div
-                className="border-2 border-dashed border-border bg-background/50 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all hover:border-primary/30 group cursor-pointer"
+                className="pn-field border-2 border-dashed border-border bg-background/50 rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all group cursor-pointer"
                 onDrop={onDrop}
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onClick={() => fileInputRef.current?.click()}
@@ -449,7 +449,7 @@ export default function AnalyzeClient() {
             {/* Text Area */}
             <div className="flex-1 relative">
               <textarea
-                className="w-full h-full bg-background/60 text-foreground placeholder-muted-foreground/50 border border-border rounded-xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none min-h-[300px] custom-scrollbar"
+                className="pn-field w-full h-full bg-background/60 text-foreground placeholder-muted-foreground/50 border border-border rounded-xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none min-h-[300px] custom-scrollbar"
                 placeholder={t.analyze.textPlaceholder}
                 value={transcriptText}
                 onChange={(e) => setTranscriptText(e.target.value)}
@@ -462,14 +462,14 @@ export default function AnalyzeClient() {
         {/* Right Column - Settings */}
         <div className="flex flex-col gap-6">
           {/* Settings Card */}
-          <div className="glass-panel rounded-2xl p-6">
+          <div className="pn-surface glass-panel rounded-2xl p-6">
             <h3 className="text-lg font-bold text-foreground mb-5">{t.analyze.settings}</h3>
             <div className="space-y-6">
               <div>
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.language}</label>
                 <div className="relative">
                   <select
-                    className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    className="pn-field w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={lang}
                     onChange={(e) => setLang(e.target.value as any)}
                     disabled={loading}
@@ -484,14 +484,14 @@ export default function AnalyzeClient() {
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.goalOptional}</label>
                 <input
                   type="text"
-                  className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 placeholder-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                  className="pn-field w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 placeholder-muted-foreground/50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                   placeholder={t.analyze.goalPlaceholder}
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   disabled={loading}
                 />
               </div>
-              <div className="p-4 rounded-xl border border-border bg-secondary/50">
+              <div className="pn-tile p-4 rounded-xl border border-border bg-secondary/50">
                 <span className="block text-xs font-medium text-muted-foreground mb-1">{t.analyze.conversationType}</span>
                 <div className="font-bold text-foreground mb-1">{t.analyze.employeeConversation}</div>
                 <p className="text-xs text-muted-foreground leading-snug">
@@ -502,7 +502,7 @@ export default function AnalyzeClient() {
           </div>
 
           {/* Roles Card */}
-          <div className="glass-panel rounded-2xl p-6 flex-1">
+          <div className="pn-surface glass-panel rounded-2xl p-6 flex-1">
             <h3 className="text-lg font-bold text-foreground mb-4">{t.analyze.roles}</h3>
             <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
               {t.analyze.rolesHint}
@@ -513,7 +513,7 @@ export default function AnalyzeClient() {
                 {manualRoles ? (
                   <input
                     type="text"
-                    className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    className="pn-field w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={leaderLabel}
                     onChange={(e) => setLeaderLabel(e.target.value)}
                     placeholder={t.analyze.leaderPlaceholder}
@@ -522,7 +522,7 @@ export default function AnalyzeClient() {
                 ) : (
                   <div className="relative">
                     <select
-                      className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                      className="pn-field w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                       value={leaderLabel}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -551,20 +551,20 @@ export default function AnalyzeClient() {
                 {manualRoles ? (
                   <input
                     type="text"
-                    className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    className="pn-field w-full bg-background border border-border text-foreground rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     value={employeeLabel}
                     onChange={(e) => setEmployeeLabel(e.target.value)}
                     placeholder={t.analyze.employeePlaceholder}
                     disabled={loading}
                   />
                 ) : detectedSpeakers.length <= 2 ? (
-                  <div className="w-full bg-background border border-border text-muted-foreground rounded-lg px-4 py-3 opacity-70">
+                  <div className="pn-field w-full bg-background border border-border text-muted-foreground rounded-lg px-4 py-3 opacity-70">
                     {employeeLabel || t.analyze.selectManagerFirst}
                   </div>
                 ) : (
                   <div className="relative">
                     <select
-                      className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                      className="pn-field w-full appearance-none bg-background border border-border text-foreground rounded-lg px-4 py-3 pr-8 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                       value={employeeLabel}
                       onChange={(e) => setEmployeeLabel(e.target.value)}
                       disabled={loading || !leaderLabel.trim()}
@@ -640,7 +640,7 @@ export default function AnalyzeClient() {
                   <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">{t.analyze.extraTerms}</label>
                   <input
                     type="text"
-                    className="w-full bg-background border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
+                    className="pn-field w-full bg-background border border-border text-foreground rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow"
                     placeholder={t.analyze.extraTermsPlaceholder}
                     value={extraTerms}
                     onChange={(e) => setExtraTerms(e.target.value)}
@@ -650,13 +650,13 @@ export default function AnalyzeClient() {
               )}
 
               {error && (
-                <div className="p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                <div className="pn-none p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   {error}
                 </div>
               )}
 
               {reauth && (
-                <div className="p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
+                <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
                     <LogIn className="h-4 w-4" />
                     {lang === 'de' ? 'Sitzung abgelaufen' : 'Session expired'}
@@ -677,7 +677,7 @@ export default function AnalyzeClient() {
               )}
 
               {paywall && (
-                <div className="p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
+                <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
                     <Lock className="h-4 w-4" />
                     {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
@@ -710,7 +710,7 @@ export default function AnalyzeClient() {
 
               {pendingSave && !loading && (
                 <button
-                  className="w-full mb-4 py-3 rounded-xl text-sm font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2"
+                  className="pn-none w-full mb-4 py-3 rounded-xl text-sm font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2"
                   onClick={onRetrySave}
                 >
                   <Save className="h-4 w-4" />

@@ -48,10 +48,10 @@ export function TranscriptDropBar() {
         go();
       }}
       className={[
-        'w-full flex items-center gap-3 rounded-xl border border-dashed px-4 py-2.5 text-left transition-colors',
+        'pn-field w-full flex items-center gap-3 rounded-xl border border-dashed px-4 py-2.5 text-left transition-colors',
         over
           ? 'border-primary bg-primary/10'
-          : 'border-border bg-card/50 hover:border-primary/50 hover:bg-primary/5',
+          : 'border-border bg-card/50 hover:bg-primary/5',
       ].join(' ')}
     >
       <Upload className="h-4 w-4 shrink-0 text-primary" />

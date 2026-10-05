@@ -215,7 +215,7 @@ export default function AppShell(props: {
                       href={item.href}
                       title={collapsed ? item.label : undefined}
                       className={cx(
-                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors group',
+                        'pn-none flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors group',
                         collapsed && 'justify-center',
                         active
                           ? 'border border-primary/20 bg-primary/10 text-primary font-semibold'
@@ -252,7 +252,7 @@ export default function AppShell(props: {
             <button
               onClick={toggleCollapsed}
               aria-label={collapsed ? t.common.expandSidebar : t.common.collapseSidebar}
-              className="hidden md:flex w-full items-center justify-center rounded-lg border border-border bg-muted py-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="pn-none hidden md:flex w-full items-center justify-center rounded-lg border border-border bg-muted py-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
@@ -379,13 +379,13 @@ export default function AppShell(props: {
                 <button
                   type="button"
                   onClick={() => goToHubLogin()}
-                  className="w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors"
+                  className="pn-none w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors"
                 >
                   ?
                 </button>
               ) : (
                 <LoginModal>
-                  <button className="w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors">
+                  <button className="pn-none w-9 h-9 rounded-full bg-secondary border border-white/10 flex items-center justify-center text-muted-foreground text-sm font-bold hover:bg-foreground/10 transition-colors">
                     ?
                   </button>
                 </LoginModal>

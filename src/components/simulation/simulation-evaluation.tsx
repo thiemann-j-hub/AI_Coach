@@ -360,7 +360,7 @@ export function SimulationEvaluation(props: {
 
       {/* ── Debrief-Held: Score, Urteil, größter Hebel ── */}
       {debrief && (
-        <section className="glass-panel rounded-2xl p-6 border border-border">
+        <section className="pn-tile glass-panel rounded-2xl p-6 border border-border">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <ScoreRing
               value={debrief.overall}
@@ -397,14 +397,14 @@ export function SimulationEvaluation(props: {
               <p className="text-xs text-muted-foreground">
                 {observedCount}/{debrief.anchors.length} {ts.coverageNote} · {debrief.checkpointsHit}/{debrief.checkpointsTotal} {ts.checkpointsTitle}
               </p>
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-left">
+              <div className="pn-none rounded-xl border border-primary/30 bg-primary/5 p-3 text-left">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-primary mb-1 flex items-center gap-1">
                   <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
                 </div>
                 <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
                 {/* O2 (27.09.): der EINE Schritt für den Alltag — nach ihm wird beim nächsten Login gefragt. */}
                 {feedback.microTransfer?.step && (
-                  <div className="mt-3 rounded-lg border border-primary/40 bg-background/70 px-3 py-2" data-testid="micro-transfer">
+                  <div className="pn-none mt-3 rounded-lg border border-primary/40 bg-background/70 px-3 py-2" data-testid="micro-transfer">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1">
                       <ArrowRight className="h-3 w-3" aria-hidden /> {t.evaluation.microTransferTitle}
                       {feedback.microTransfer.when && (
@@ -421,7 +421,7 @@ export function SimulationEvaluation(props: {
                       {ts.coachCardsTitle}
                     </div>
                     {feedback.cards.map((c) => (
-                      <div key={c.id} className="rounded-lg border border-border bg-background/70 px-3 py-2">
+                      <div key={c.id} className="pn-none rounded-lg border border-border bg-background/70 px-3 py-2">
                         <div className="text-sm font-medium">{c.title}</div>
                         {c.hint && <div className="text-xs text-muted-foreground leading-snug">{c.hint}</div>}
                       </div>
@@ -436,7 +436,7 @@ export function SimulationEvaluation(props: {
 
       {/* A3: Verlaufskurve — erst ab dem zweiten bewerteten Versuch. */}
       {debrief && (props.history?.filter((p) => p.overall != null).length ?? 0) >= 2 && (
-        <section className="glass-panel rounded-2xl p-5 border border-border space-y-2">
+        <section className="pn-tile glass-panel rounded-2xl p-5 border border-border space-y-2">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
             <History className="h-4 w-4" /> {ts.historyTitle}
           </h2>
@@ -454,7 +454,7 @@ export function SimulationEvaluation(props: {
       {feedback.selfReview && props.selfAssessment && (
         <section
           className={cx(
-            'glass-panel rounded-2xl p-4 border flex items-start gap-3',
+            'pn-none glass-panel rounded-2xl p-4 border flex items-start gap-3',
             feedback.selfReview.agreement === 'confirms'
               ? 'border-emerald-500/30 bg-emerald-500/5'
               : feedback.selfReview.agreement === 'partly'
@@ -488,7 +488,7 @@ export function SimulationEvaluation(props: {
       {feedback.focusReview && focus && (
         <section
           className={cx(
-            'glass-panel rounded-2xl p-4 border flex items-start gap-3',
+            'pn-none glass-panel rounded-2xl p-4 border flex items-start gap-3',
             feedback.focusReview.addressed
               ? 'border-emerald-500/30 bg-emerald-500/5'
               : 'border-amber-500/30 bg-amber-500/5'
@@ -509,7 +509,7 @@ export function SimulationEvaluation(props: {
         </section>
       )}
 
-      <section className="glass-panel rounded-2xl p-6 space-y-2">
+      <section className="pn-tile glass-panel rounded-2xl p-6 space-y-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {ts.summaryTitle}
         </h2>
@@ -528,7 +528,7 @@ export function SimulationEvaluation(props: {
           const anchorDelta = deltaByKey.get(r.key) ?? null;
           const isOpen = openEvidence[r.key] ?? false;
           return (
-            <div key={r.key} className="glass-panel rounded-xl border border-border p-4 space-y-3">
+            <div key={r.key} className="pn-tile glass-panel rounded-xl border border-border p-4 space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <h3 className="text-sm font-semibold">{r.label}</h3>
                 <div className="flex items-center gap-2">
@@ -593,7 +593,7 @@ export function SimulationEvaluation(props: {
         </h2>
         <div className="space-y-2">
           {feedback.checkpoints.map((c) => (
-            <div key={c.id} className="glass-panel rounded-xl border border-border p-3 flex gap-3">
+            <div key={c.id} className="pn-tile glass-panel rounded-xl border border-border p-3 flex gap-3">
               {c.hit ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
               ) : (
@@ -618,7 +618,7 @@ export function SimulationEvaluation(props: {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
             <Activity className="h-4 w-4" /> {ts.deliveryTitle}
           </h2>
-          <div className="glass-panel rounded-xl border border-border p-4 space-y-3">
+          <div className="pn-tile glass-panel rounded-xl border border-border p-4 space-y-3">
             <p className="text-xs text-muted-foreground">{ts.deliveryHint}</p>
 
             <div className="flex items-center justify-between gap-3">
@@ -740,7 +740,7 @@ export function SimulationEvaluation(props: {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             {ts.c10Title}
           </h2>
-          <div className="glass-panel rounded-xl border border-border p-4 space-y-2">
+          <div className="pn-tile glass-panel rounded-xl border border-border p-4 space-y-2">
             <p className="text-xs text-muted-foreground">{ts.c10Hint}</p>
             {ratings.map((r) => (
               <div
@@ -764,7 +764,7 @@ export function SimulationEvaluation(props: {
 
       {/* W3-1: Delta als Auslöser — Satz + Handlung statt stummem Tag. */}
       {deltaCta && (
-        <section className="glass-panel rounded-2xl p-5 border border-primary/30 bg-primary/5">
+        <section className="pn-none glass-panel rounded-2xl p-5 border border-primary/30 bg-primary/5">
           <p className="text-sm leading-relaxed">
             <span className="font-semibold">
               {(deltaCta.mode === 'dropped'
@@ -779,7 +779,7 @@ export function SimulationEvaluation(props: {
           {deltaCta.scenarioId && props.onOpenScenario && (
             <button
               onClick={() => props.onOpenScenario!(deltaCta.scenarioId!)}
-              className="mt-3 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+              className="pn-none mt-3 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
             >
               {t.evaluation.deltaCtaButton} <ArrowRight className="h-4 w-4" />
             </button>
@@ -788,7 +788,7 @@ export function SimulationEvaluation(props: {
       )}
 
       {/* W3-2: selbstgeschriebenes Commitment — kein stummes nextStep.slice mehr. */}
-      <section className="glass-panel rounded-2xl p-5 border border-border space-y-3">
+      <section className="pn-surface glass-panel rounded-2xl p-5 border border-border space-y-3">
         <label
           htmlFor="commitment"
           className="text-sm font-semibold flex items-center gap-1.5"
@@ -801,7 +801,7 @@ export function SimulationEvaluation(props: {
           onChange={(e) => setCommitment(e.target.value)}
           rows={3}
           maxLength={300}
-          className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
         />
         <div className="flex flex-wrap items-center gap-3">
           <button
@@ -814,7 +814,7 @@ export function SimulationEvaluation(props: {
           </button>
           <button
             onClick={props.onNew}
-            className="rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
+            className="pn-none rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
           >
             <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
           </button>
@@ -823,7 +823,7 @@ export function SimulationEvaluation(props: {
 
       {/* W3-3: Studio-Brücke — nur bei echter Schwäche (≤ 2), neuer Tab. */}
       {studioBridge && (
-        <section className="glass-panel rounded-2xl p-5 border border-accent/30 bg-accent/5">
+        <section className="pn-none glass-panel rounded-2xl p-5 border border-accent/30 bg-accent/5">
           <div className="flex items-start gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
               <GraduationCap className="h-5 w-5" />
@@ -840,7 +840,7 @@ export function SimulationEvaluation(props: {
                 href={studioBridge.href}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex items-center gap-2 rounded-lg border border-accent/40 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors"
+                className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg border border-accent/40 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors"
               >
                 <GraduationCap className="h-4 w-4" /> {t.evaluation.studioBridgeCta}
                 <ArrowRight className="h-4 w-4" />

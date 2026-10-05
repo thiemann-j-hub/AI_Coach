@@ -92,7 +92,7 @@ export function VersionWatcher() {
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="inline-flex items-center gap-1 rounded-md border border-primary/40 px-2 py-0.5 font-semibold text-primary hover:bg-primary/10"
+        className="pn-none inline-flex items-center gap-1 rounded-md border border-primary/40 px-2 py-0.5 font-semibold text-primary hover:bg-primary/10"
       >
         <RefreshCw className="h-3 w-3" aria-hidden /> {t.common.reload}
       </button>

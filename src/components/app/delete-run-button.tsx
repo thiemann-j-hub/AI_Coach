@@ -123,8 +123,8 @@ export function DeleteRunButton({
         }
         className={
           refundable
-            ? "inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
-            : "inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive hover:border-destructive/30"
+            ? "pn-none inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
+            : "pn-none inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive hover:border-destructive/30"
         }
       >
         {refundable ? <RotateCcw className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}

@@ -197,7 +197,7 @@ export default function EvalClient() {
           <button
             onClick={() => void deleteSim()}
             disabled={deleting}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-1.5 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
+            className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-1.5 text-sm font-medium text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
           >
             {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
             {ts.deleteSim}
@@ -214,7 +214,7 @@ export default function EvalClient() {
           onClick={() => setConfirmDelete(true)}
           title={ts.deleteSim}
           aria-label={ts.deleteSim}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-rose-500/30 hover:text-rose-400"
+          className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-rose-500/30 hover:text-rose-400"
         >
           <Trash2 className="h-4 w-4" />
           <span className="hidden sm:inline">{ts.deleteSim}</span>
@@ -236,7 +236,7 @@ export default function EvalClient() {
   if (state !== 'ready' || !sim) {
     return (
       <AppShell title={ts.feedbackTitle}>
-        <div className="glass-panel max-w-xl rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm flex items-start gap-2">
+        <div className="pn-none glass-panel max-w-xl rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm flex items-start gap-2">
           <AlertTriangle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
           <div>
             <p>{state === 'notfound' ? t.evaluation.notFound : ts.genericError}</p>

@@ -113,7 +113,7 @@ export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
       {open && (
         <div
           role="menu"
-          className="absolute left-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-background/95 p-1.5 shadow-xl backdrop-blur"
+          className="pn-none absolute left-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-background/95 p-1.5 shadow-xl backdrop-blur"
         >
           {apps.map((app) => {
             const active = app.key === CURRENT;

@@ -77,7 +77,7 @@ export function DeltaCard({
   }
 
   return (
-    <div className="glass-panel rounded-2xl p-5 border border-primary/15">
+    <div className="pn-tile glass-panel rounded-2xl p-5 border border-border">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">

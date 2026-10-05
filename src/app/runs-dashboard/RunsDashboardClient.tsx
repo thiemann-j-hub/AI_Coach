@@ -303,7 +303,7 @@ export default function RunsDashboardClient() {
 
   const headerActions = (
     <button
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition-colors"
+      className="pn-none flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-muted-foreground text-sm hover:border-primary/30 hover:text-foreground transition-colors"
       onClick={() => {
         const sid = newSessionId();
         try { localStorage.setItem(STORAGE_KEY, sid); } catch {}
@@ -325,7 +325,7 @@ export default function RunsDashboardClient() {
           <div className="relative flex-1">
             <Search className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
-              className="w-full rounded-xl bg-card border border-border pl-12 pr-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
+              className="pn-field w-full rounded-xl bg-card border border-border pl-12 pr-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
               placeholder={t.dashboard.searchPlaceholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -337,7 +337,7 @@ export default function RunsDashboardClient() {
             {headerActions}
             <div className="relative">
               <select
-                className="appearance-none rounded-xl bg-card border border-border pl-4 pr-10 py-3 text-sm text-foreground outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/20 cursor-pointer transition-all"
+                className="pn-field appearance-none rounded-xl bg-card border border-border pl-4 pr-10 py-3 text-sm text-foreground outline-none focus:border-primary/30 focus:ring-1 focus:ring-primary/20 cursor-pointer transition-all"
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as any)}
                 aria-label={t.dashboard.sort}
@@ -351,7 +351,7 @@ export default function RunsDashboardClient() {
             </div>
 
             <button
-              className="inline-flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all"
+              className="pn-none inline-flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all"
               onClick={() => setRefresh((x) => x + 1)}
             >
               <RefreshCw className="h-4 w-4" />
@@ -362,14 +362,14 @@ export default function RunsDashboardClient() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-red-400">
+          <div className="pn-none bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-red-400">
             <div className="font-semibold mb-1 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               {t.common.error}
             </div>
             <div className="text-sm opacity-90 whitespace-pre-wrap">{error}</div>
             <button
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-foreground/5 border border-red-500/20 px-4 py-2 text-sm hover:bg-white/10 transition-colors"
+              className="pn-none mt-4 inline-flex items-center gap-2 rounded-xl bg-foreground/5 border border-red-500/20 px-4 py-2 text-sm hover:bg-white/10 transition-colors"
               onClick={() => setRefresh((x) => x + 1)}
             >
               <RefreshCw className="h-4 w-4" />
@@ -382,7 +382,7 @@ export default function RunsDashboardClient() {
         {loading && (
           <div className="space-y-4" aria-busy="true" aria-label={t.dashboard.loadingHistory}>
             {[1, 2, 3].map((i) => (
-              <div key={i} className="glass-panel rounded-2xl overflow-hidden animate-pulse">
+              <div key={i} className="pn-none glass-panel rounded-2xl overflow-hidden animate-pulse">
                 <div className="p-6 pb-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4 flex-1">
@@ -396,7 +396,7 @@ export default function RunsDashboardClient() {
                   </div>
                 </div>
                 <div className="px-6 pb-4">
-                  <div className="bg-background/50 rounded-xl p-4 border border-border space-y-2">
+                  <div className="pn-none bg-background/50 rounded-xl p-4 border border-border space-y-2">
                     <div className="h-3 bg-foreground/5 rounded w-full" />
                     <div className="h-3 bg-foreground/5 rounded w-4/5" />
                   </div>
@@ -411,7 +411,7 @@ export default function RunsDashboardClient() {
 
         {/* Empty */}
         {!loading && !error && filtered.length === 0 && (
-          <div className="glass-panel rounded-2xl p-10 text-center">
+          <div className="pn-none glass-panel rounded-2xl p-10 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
               <History className="h-7 w-7" />
             </div>
@@ -459,13 +459,13 @@ export default function RunsDashboardClient() {
             return (
               <div
                 key={it.id}
-                className="group glass-panel rounded-2xl overflow-hidden transition-all hover:border-primary/20 hover:shadow-primary-glow"
+                className="pn-tile group glass-panel rounded-2xl overflow-hidden transition-all"
               >
                 <div className="p-6 pb-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-4 mb-2">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary border border-primary/10 flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <div className="pn-none inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary border border-primary/10 flex-shrink-0 group-hover:scale-105 transition-transform">
                           <IconComp className="h-6 w-6" />
                         </div>
                         <div className="min-w-0">
@@ -496,7 +496,7 @@ export default function RunsDashboardClient() {
 
                     <div className="flex flex-col items-center">
                       <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">{t.dashboard.score}</div>
-                      <div className={`inline-flex items-center justify-center min-w-10 h-10 px-1.5 rounded-full text-xs font-bold border tabular-nums ${scoreClass}`}>
+                      <div className={`pn-none inline-flex items-center justify-center min-w-10 h-10 px-1.5 rounded-full text-xs font-bold border tabular-nums ${scoreClass}`}>
                         {scoreStr}
                       </div>
                     </div>
@@ -504,7 +504,7 @@ export default function RunsDashboardClient() {
                 </div>
 
                 <div className="px-6 pb-4">
-                  <div className="bg-background/50 rounded-xl p-4 border border-border">
+                  <div className="pn-none bg-background/50 rounded-xl p-4 border border-border">
                     <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                       {summary}
                     </p>
@@ -547,7 +547,7 @@ export default function RunsDashboardClient() {
         {!loading && !error && hasMore && (
           <div className="flex justify-center pt-2">
             <button
-              className="inline-flex items-center gap-2 rounded-xl bg-card border border-border px-6 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all disabled:opacity-60"
+              className="pn-none inline-flex items-center gap-2 rounded-xl bg-card border border-border px-6 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/20 transition-all disabled:opacity-60"
               onClick={loadMore}
               disabled={loadingMore}
             >

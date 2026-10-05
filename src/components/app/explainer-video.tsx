@@ -39,7 +39,7 @@ export function ExplainerVideoButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+        className="pn-none inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
       >
         <Play className="h-3.5 w-3.5 fill-current" />
         {t.common.watchVideo}
@@ -53,7 +53,7 @@ export function ExplainerVideoButton() {
           aria-label={t.common.watchVideo}
         >
           <div
-            className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-black shadow-2xl"
+            className="pn-none relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-black shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button

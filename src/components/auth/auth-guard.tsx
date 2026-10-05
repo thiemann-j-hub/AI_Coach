@@ -123,7 +123,7 @@ function LoginScreen() {
 
       {/* Hero */}
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card shadow-neon">
+        <div className="pn-none flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card shadow-neon">
           <MessagesSquare className="h-7 w-7 text-primary" />
         </div>
         <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -152,7 +152,7 @@ function LoginScreen() {
           {features.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-border bg-card p-5 text-center shadow-card-light dark:shadow-card-dark"
+              className="pn-tile rounded-2xl border border-border bg-card p-5 text-center"
             >
               <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <f.Icon className="h-5 w-5" />

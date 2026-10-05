@@ -127,24 +127,24 @@ export default function CreditsClient() {
     <AppShell title={de ? 'Credits' : 'Credits'} subtitle={de ? 'Guthaben & Kauf' : 'Balance & purchase'}>
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
         {status === 'success' && (
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+          <div className="pn-none p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
             {de
               ? 'Zahlung erfolgreich — deine Credits wurden gutgeschrieben. Die Rechnung findest du in deiner Übersicht.'
               : 'Payment successful — your credits have been added. Your invoice is available in your overview.'}
           </div>
         )}
         {status === 'cancelled' && (
-          <div className="p-4 rounded-xl bg-muted/30 border border-border text-muted-foreground text-sm">
+          <div className="pn-none p-4 rounded-xl bg-muted/30 border border-border text-muted-foreground text-sm">
             {de ? 'Kauf abgebrochen — es wurde nichts berechnet.' : 'Purchase cancelled — nothing was charged.'}
           </div>
         )}
         {error && (
-          <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
+          <div className="pn-none p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>
         )}
 
         {/* Sitzung abgelaufen -> Re-Login statt stiller „0". */}
         {state?.sessionExpired && (
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-wrap items-center justify-between gap-3">
+          <div className="pn-none p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-wrap items-center justify-between gap-3">
             <span>
               {de
                 ? 'Sitzung abgelaufen — bitte melde dich neu an, um dein Guthaben zu sehen.'
@@ -152,7 +152,7 @@ export default function CreditsClient() {
             </span>
             <button
               onClick={relogin}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400/40 px-3 py-1.5 text-sm font-medium text-amber-200 transition-colors hover:bg-amber-400/10"
+              className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-400/40 px-3 py-1.5 text-sm font-medium text-amber-200 transition-colors hover:bg-amber-400/10"
             >
               <LogIn className="h-4 w-4" />
               {de ? 'Neu anmelden' : 'Sign in again'}
@@ -161,7 +161,7 @@ export default function CreditsClient() {
         )}
 
         {/* Saldo */}
-        <div className="p-6 rounded-2xl bg-card border border-border">
+        <div className="pn-tile p-6 rounded-2xl bg-card border border-border">
           <div className="text-sm text-muted-foreground">{de ? 'Aktuelles Guthaben' : 'Current balance'}</div>
           <div className="mt-1 text-4xl font-bold">
             {loading
@@ -221,11 +221,11 @@ export default function CreditsClient() {
             {de ? 'Deine Rechnungen als PDF.' : 'Your invoices as PDF.'}
           </p>
           {invoices.length === 0 ? (
-            <div className="glass-panel rounded-xl p-6 text-sm text-muted-foreground">
+            <div className="pn-none glass-panel rounded-xl p-6 text-sm text-muted-foreground">
               {de ? 'Noch keine Rechnungen.' : 'No invoices yet.'}
             </div>
           ) : (
-            <div className="glass-panel rounded-xl divide-y divide-white/5">
+            <div className="pn-surface glass-panel rounded-xl divide-y divide-white/5">
               {invoices.map((inv) => {
                 const reverseCharge = inv.taxTreatment === 'reverse_charge';
                 return (
@@ -254,7 +254,7 @@ export default function CreditsClient() {
                       target="_blank"
                       rel="noopener noreferrer"
                       title={de ? 'PDF herunterladen' : 'Download PDF'}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground hover:border-primary/30"
+                      className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground hover:border-primary/30"
                     >
                       <Download className="h-4 w-4" />
                       PDF
