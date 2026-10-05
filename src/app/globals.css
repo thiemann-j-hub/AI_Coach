@@ -199,7 +199,7 @@
               KEIN Mouse-over (sonst leuchten zwei Rahmen gleichzeitig).
    pn-none    bewusste Ausnahme: Knopf, Plakette, farbiger Hinweis-Kasten, Menü, Dialog, Balken …
    Wächter: scripts/rahmen-regel.mjs läuft vor jedem Bau (npm run build → prebuild).
-   Unlayered am Dateiende, damit die Regel gegen einzelne shadow-*/hover:*-Klassen gewinnt. */
+   Unlayered am Dateiende, damit die Regel gegen einzelne shadow- und hover:-Klassen gewinnt. */
 :root {
   --pn-shadow-ruhe: 4px 4px 10px -2px rgba(10, 25, 47, 0.16);
   --pn-rand-hover: rgba(0, 145, 255, 0.75);
