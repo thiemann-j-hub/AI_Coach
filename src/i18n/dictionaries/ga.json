@@ -40,6 +40,7 @@
     "practice": "Cleachtadh",
     "mainGroup": "MAIN",
     "home": "Baile",
+    "lernbereich": "Mo Limistéar Foghlama",
     "settings": "Socruithe",
     "profile": "Próifíl"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Teanga",
     "languageHint": "Baineann sé le gach téacs agus comhéadan."
+  },
+  "noAccess": {
+    "title": "Gan rochtain ar Cóitseálaí comhrá IS",
+    "body": "Níl Cóitseálaí comhrá IS cumasaithe le haghaidh do chuntais. Deonaíonn riarthóir do chuideachta rochtain faoi “Foireann & rochtain”. Gheobhaidh tú na cúrsaí atá sannta duit i “Mo Limistéar Foghlama”.",
+    "cta": "Téigh chuig “Mo Limistéar Foghlama”"
   }
 }

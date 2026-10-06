@@ -40,6 +40,7 @@
     "practice": "Oefenen",
     "mainGroup": "MAIN",
     "home": "Home",
+    "lernbereich": "Mijn leergebied",
     "settings": "Instellingen",
     "profile": "Profiel"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Taal",
     "languageHint": "Geldt voor alle teksten en schermen."
+  },
+  "noAccess": {
+    "title": "Geen toegang tot AI-gesprekscoach",
+    "body": "AI-gesprekscoach is niet geactiveerd voor uw account. De toegang wordt verleend door de beheerder van uw bedrijf onder “Team & toegang”. De cursussen die aan u zijn toegewezen, vindt u in “Mijn leergebied”.",
+    "cta": "Naar “Mijn leergebied”"
   }
 }

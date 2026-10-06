@@ -17,6 +17,7 @@ import {
   LogOut,
   Settings,
   Home as HomeIcon,
+  Radar,
   UserRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -198,6 +199,20 @@ export default function AppShell(props: {
             >
               <HomeIcon className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
               {!collapsed && <span className="font-medium">{t.nav.home}</span>}
+            </a>
+            {/* Lernenden-Sicht S5 (Owner-GO 06.10.2026): „Mein Lernbereich" in jedem Werkzeug —
+                der Rückweg zu den eigenen Kursen, ohne das Aufklapp-Menü. Liegt im Hub an der Wurzel. */}
+            <a
+              href="/radar"
+              title={collapsed ? t.nav.lernbereich : undefined}
+              data-testid="nav-lernbereich"
+              className={cx(
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors group text-muted-foreground hover:bg-muted hover:text-foreground',
+                collapsed && 'justify-center'
+              )}
+            >
+              <Radar className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
+              {!collapsed && <span className="font-medium">{t.nav.lernbereich}</span>}
             </a>
             {groups.map((group) => (
               <div key={group.label} className="space-y-1">

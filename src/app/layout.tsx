@@ -11,6 +11,9 @@ import { getDictionary } from "@/i18n/dictionaries";
 // Chatbot Blueprint Teil C, SSOT pulsenorth-ops/chat-widget-kit,
 // ruft /api/chat root-absolut = Hub-Catch-all
 import ChatWidget from "@/components/chatbot/ChatWidget";
+// Lernenden-Sicht S5 (Owner-GO 06.10.2026): ohne Häkchen „KI-Coach" eine klare Seite statt der App.
+import { coachNotEnabled } from "@/lib/server/coach-access";
+import { NoAccess } from "@/components/app/no-access";
 
 const sans = Inter({ subsets: ["latin", "latin-ext", "cyrillic", "greek"], variable: "--font-geist-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin", "latin-ext", "cyrillic", "greek"], variable: "--font-geist-mono" });
@@ -37,6 +40,9 @@ export default async function RootLayout({
   const locale =
     resolveLocale(cookieStore.get("NEXT_LOCALE")?.value) ?? defaultLocale;
   const t = getDictionary(locale);
+  // S5: Dieselbe Entscheidung wie das Tor der API (requireAuth → APP_NOT_ENABLED). Ohne Sitzung
+  // oder bei anderen Ablehnungen bleibt alles wie bisher (Anmeldung, Sperre, Störung).
+  const denied = await coachNotEnabled();
 
   return (
     <html
@@ -64,7 +70,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
+            {denied ? <NoAccess texts={t.noAccess} /> : children}
             <ChatWidget surface="coach" lang={locale === "de" ? "de" : "en"} />
             <Toaster />
           </AuthProvider>

@@ -40,6 +40,7 @@
     "practice": "Harjoittele",
     "mainGroup": "MAIN",
     "home": "Etusivu",
+    "lernbereich": "Oma oppimisalue",
     "settings": "Asetukset",
     "profile": "Profiili"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Kieli",
     "languageHint": "Koskee kaikkia tekstejä ja näkymiä."
+  },
+  "noAccess": {
+    "title": "Ei käyttöoikeutta Tekoäly-keskusteluvalmentaja-sovellukseen",
+    "body": "Tekoäly-keskusteluvalmentaja-sovellusta ei ole otettu käyttöön tilillesi. Käyttöoikeuden myöntää yrityksesi pääkäyttäjä kohdassa ”Tiimi & käyttöoikeudet”. Sinulle määritetyt kurssit löydät kohdasta ”Oma oppimisalue”.",
+    "cta": "Siirry kohtaan ”Oma oppimisalue”"
   }
 }

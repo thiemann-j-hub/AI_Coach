@@ -40,6 +40,7 @@
     "practice": "Üben",
     "mainGroup": "Menü",
     "home": "Start",
+    "lernbereich": "Mein Lernbereich",
     "settings": "Einstellungen",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Sprache",
     "languageHint": "Gilt für alle Texte und Oberflächen."
+  },
+  "noAccess": {
+    "title": "Kein Zugang zu KI-Gesprächs-Coach",
+    "body": "Für Dein Konto ist KI-Gesprächs-Coach nicht freigeschaltet. Den Zugang vergibt der Admin Deines Unternehmens unter „Team & Zugänge“. Deine zugewiesenen Kurse findest Du in „Mein Lernbereich“.",
+    "cta": "Zu „Mein Lernbereich“"
   }
 }

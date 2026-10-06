@@ -40,6 +40,7 @@
     "practice": "Exersează",
     "mainGroup": "MAIN",
     "home": "Acasă",
+    "lernbereich": "Spațiul meu de învățare",
     "settings": "Setări",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Limbă",
     "languageHint": "Se aplică tuturor textelor și interfețelor."
+  },
+  "noAccess": {
+    "title": "Fără acces la Coach de conversație cu AI",
+    "body": "Accesul la Coach de conversație cu AI nu este activat pentru contul dumneavoastră. Administratorul companiei dumneavoastră acordă accesul în secțiunea „Echipă și accese”. Cursurile care v-au fost atribuite le găsiți în „Spațiul meu de învățare”.",
+    "cta": "Către „Spațiul meu de învățare”"
   }
 }

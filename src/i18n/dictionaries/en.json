@@ -40,6 +40,7 @@
     "practice": "Practice",
     "mainGroup": "Menu",
     "home": "Home",
+    "lernbereich": "My learning area",
     "settings": "Settings",
     "profile": "Profile"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Language",
     "languageHint": "Applies to all texts and interfaces."
+  },
+  "noAccess": {
+    "title": "No access to AI Conversation Coach",
+    "body": "AI Conversation Coach is not enabled for your account. Access is granted by your company’s admin under “Team & access”. You will find your assigned courses in “My learning area”.",
+    "cta": "Go to “My learning area”"
   }
 }

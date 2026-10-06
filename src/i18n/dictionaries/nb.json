@@ -40,6 +40,7 @@
     "practice": "Øv",
     "mainGroup": "MAIN",
     "home": "Hjem",
+    "lernbereich": "Mitt læringsområde",
     "settings": "Innstillinger",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Språk",
     "languageHint": "Gjelder alle tekster og grensesnitt."
+  },
+  "noAccess": {
+    "title": "Ingen tilgang til AI-samtalecoach",
+    "body": "AI-samtalecoach er ikke aktivert for kontoen din. Tilgang tildeles av administratoren i bedriften din under «Team & tilgang». Kursene som er tildelt deg, finner du i «Mitt læringsområde».",
+    "cta": "Gå til «Mitt læringsområde»"
   }
 }

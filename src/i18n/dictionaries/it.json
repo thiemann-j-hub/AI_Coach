@@ -40,6 +40,7 @@
     "practice": "Allenati",
     "mainGroup": "MAIN",
     "home": "Home",
+    "lernbereich": "La mia area di apprendimento",
     "settings": "Impostazioni",
     "profile": "Profilo"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Lingua",
     "languageHint": "Vale per tutti i testi e le interfacce."
+  },
+  "noAccess": {
+    "title": "Nessun accesso a Coach di conversazione IA",
+    "body": "Lo strumento Coach di conversazione IA non è abilitato per il Suo account. L’accesso viene concesso dall’amministratore della Sua azienda nella sezione “Team e accessi”. I corsi a Lei assegnati si trovano in “La mia area di apprendimento”.",
+    "cta": "Vai a “La mia area di apprendimento”"
   }
 }

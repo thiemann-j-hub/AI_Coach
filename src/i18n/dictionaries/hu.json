@@ -40,6 +40,7 @@
     "practice": "Gyakorlás",
     "mainGroup": "MAIN",
     "home": "Kezdőlap",
+    "lernbereich": "Az Ön tanulási területe",
     "settings": "Beállítások",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Nyelv",
     "languageHint": "Minden szövegre és felületre érvényes."
+  },
+  "noAccess": {
+    "title": "Nincs hozzáférés a MI-beszélgetéscoach alkalmazáshoz",
+    "body": "A MI-beszélgetéscoach alkalmazás nincs engedélyezve az Ön fiókja számára. A hozzáférést az Ön vállalatának adminisztrátora adja meg a „Csapat és hozzáférés” menüpontban. Az Önhöz rendelt tanfolyamokat „Az Ön tanulási területe” menüpontban találja.",
+    "cta": "Ugrás ide: „Az Ön tanulási területe”"
   }
 }

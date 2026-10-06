@@ -34,24 +34,44 @@ const APPS: Array<{ key: string; href: string; name?: string; suffix?: string }>
  */
 const HUB_NAV_URL = "/api/nav";
 
-function useTeamRadarVisible(): boolean {
-  const [visible, setVisible] = useState(false);
+/**
+ * Lernenden-Sicht S5 (Owner-GO 06.10.2026): Die Häkchen aus „Team & Zugänge“ gelten auch
+ * hier. Der Hub nennt in derselben Antwort die Werkzeuge, die diese Sitzung sehen darf
+ * (`apps`). Fehlt die Angabe (Störung, Schalter dort aus), bleiben alle Werkzeuge sichtbar
+ * wie bisher — die Apps prüfen den Zugang ohnehin selbst.
+ */
+type AppKey = "coach" | "jobmap" | "studio";
+const TOOL_KEYS: readonly string[] = ["coach", "jobmap", "studio"];
+
+function useHubNav(): { teamRadar: boolean; apps: AppKey[] | null } {
+  const [nav, setNav] = useState<{ teamRadar: boolean; apps: AppKey[] | null }>({
+    teamRadar: false,
+    apps: null,
+  });
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch(HUB_NAV_URL, { credentials: "same-origin", cache: "no-store" });
-        const body = res.ok ? ((await res.json()) as { teamRadar?: unknown }) : null;
-        if (!cancelled) setVisible(body?.teamRadar === true);
+        const body = res.ok
+          ? ((await res.json()) as { teamRadar?: unknown; apps?: unknown })
+          : null;
+        if (cancelled) return;
+        setNav({
+          teamRadar: body?.teamRadar === true,
+          apps: Array.isArray(body?.apps)
+            ? (body.apps.filter((a) => TOOL_KEYS.includes(a as string)) as AppKey[])
+            : null,
+        });
       } catch {
-        /* Eintrag bleibt verborgen */
+        /* Team-Radar bleibt verborgen, Werkzeuge bleiben sichtbar */
       }
     })();
     return () => {
       cancelled = true;
     };
   }, []);
-  return visible;
+  return nav;
 }
 
 /**
@@ -61,8 +81,15 @@ function useTeamRadarVisible(): boolean {
 export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const teamRadarVisible = useTeamRadarVisible();
-  const apps = APPS.filter((app) => app.key !== "team" || teamRadarVisible);
+  const nav = useHubNav();
+  const apps = APPS.filter((app) => {
+    if (app.key === "team") return nav.teamRadar;
+    // Diese App selbst bleibt immer in der Liste (Standort); die anderen Werkzeuge nur mit Häkchen.
+    if (app.key !== CURRENT && TOOL_KEYS.includes(app.key) && nav.apps) {
+      return nav.apps.includes(app.key as AppKey);
+    }
+    return true;
+  });
 
   useEffect(() => {
     if (!open) return;

@@ -40,6 +40,7 @@
     "practice": "Öva",
     "mainGroup": "MAIN",
     "home": "Hem",
+    "lernbereich": "Mitt lärandeområde",
     "settings": "Inställningar",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Språk",
     "languageHint": "Gäller alla texter och gränssnitt."
+  },
+  "noAccess": {
+    "title": "Ingen åtkomst till AI-samtalscoach",
+    "body": "AI-samtalscoach har inte aktiverats för ditt konto. Åtkomst tilldelas av ditt företags administratör under ”Team & åtkomst”. Dina tilldelade kurser hittar du i ”Mitt lärandeområde”.",
+    "cta": "Till ”Mitt lärandeområde”"
   }
 }

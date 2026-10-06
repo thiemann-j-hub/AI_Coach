@@ -40,6 +40,7 @@
     "practice": "Practicar",
     "mainGroup": "MAIN",
     "home": "Inicio",
+    "lernbereich": "Mi área de aprendizaje",
     "settings": "Configuración",
     "profile": "Perfil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Idioma",
     "languageHint": "Se aplica a todos los textos e interfaces."
+  },
+  "noAccess": {
+    "title": "Sin acceso a Coach de conversación con IA",
+    "body": "La herramienta Coach de conversación con IA no está habilitada para su cuenta. El acceso lo concede el administrador de su empresa en «Equipo y accesos». Encontrará sus cursos asignados en «Mi área de aprendizaje».",
+    "cta": "Ir a «Mi área de aprendizaje»"
   }
 }

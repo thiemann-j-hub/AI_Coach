@@ -40,6 +40,7 @@
     "practice": "Trénovat",
     "mainGroup": "MAIN",
     "home": "Domů",
+    "lernbereich": "Můj vzdělávací prostor",
     "settings": "Nastavení",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Jazyk",
     "languageHint": "Platí pro všechny texty a obrazovky."
+  },
+  "noAccess": {
+    "title": "Nemáte přístup k nástroji AI kouč rozhovorů",
+    "body": "Nástroj AI kouč rozhovorů není pro Váš účet zpřístupněn. Přístup uděluje správce Vaší společnosti v části „Tým a přístupy“. Kurzy, které Vám byly přiřazeny, najdete v části „Můj vzdělávací prostor“.",
+    "cta": "Přejít na „Můj vzdělávací prostor“"
   }
 }

@@ -40,6 +40,7 @@
     "practice": "Harjuta",
     "mainGroup": "MAIN",
     "home": "Avaleht",
+    "lernbereich": "Minu õppimisala",
     "settings": "Seaded",
     "profile": "Profiil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Keel",
     "languageHint": "Kehtib kõigile tekstidele ja vaadetele."
+  },
+  "noAccess": {
+    "title": "Ligipääs rakendusele AI-vestlustreener puudub",
+    "body": "Rakendus AI-vestlustreener ei ole teie konto jaoks aktiveeritud. Ligipääsu annab teie ettevõtte administraator jaotises „Meeskond ja ligipääs“. Teile määratud kursused leiate jaotisest „Minu õppimisala“.",
+    "cta": "Mine jaotisse „Minu õppimisala“"
   }
 }

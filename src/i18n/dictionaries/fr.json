@@ -40,6 +40,7 @@
     "practice": "S'entraîner",
     "mainGroup": "MAIN",
     "home": "Accueil",
+    "lernbereich": "Mon espace d’apprentissage",
     "settings": "Paramètres",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Langue",
     "languageHint": "S'applique à tous les textes et interfaces."
+  },
+  "noAccess": {
+    "title": "Aucun accès à Coach de conversation IA",
+    "body": "L’outil Coach de conversation IA n’est pas activé pour votre compte. L’accès est accordé par l’administrateur de votre entreprise sous « Équipe & accès ». Vous trouverez vos cours attribués dans « Mon espace d’apprentissage ».",
+    "cta": "Aller à « Mon espace d’apprentissage »"
   }
 }

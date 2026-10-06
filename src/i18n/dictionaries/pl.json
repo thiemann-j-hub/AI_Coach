@@ -40,6 +40,7 @@
     "practice": "Ćwicz",
     "mainGroup": "MAIN",
     "home": "Strona główna",
+    "lernbereich": "Mój obszar nauki",
     "settings": "Ustawienia",
     "profile": "Profil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Język",
     "languageHint": "Dotyczy wszystkich tekstów i interfejsów."
+  },
+  "noAccess": {
+    "title": "Brak dostępu do narzędzia Coach rozmów AI",
+    "body": "Narzędzie Coach rozmów AI nie jest włączone dla Państwa konta. Dostęp przyznaje administrator Państwa firmy w sekcji „Zespół i dostępy”. Przypisane Państwu kursy znajdą Państwo w sekcji „Mój obszar nauki”.",
+    "cta": "Przejść do sekcji „Mój obszar nauki”"
   }
 }

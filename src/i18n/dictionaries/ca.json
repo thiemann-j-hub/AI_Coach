@@ -40,6 +40,7 @@
     "practice": "Practicar",
     "mainGroup": "MAIN",
     "home": "Inici",
+    "lernbereich": "El meu espai d'aprenentatge",
     "settings": "Configuració",
     "profile": "Perfil"
   },
@@ -497,5 +498,10 @@
   "settingsPage": {
     "language": "Idioma",
     "languageHint": "S'aplica a tots els textos i interfícies."
+  },
+  "noAccess": {
+    "title": "Sense accés a Coach de conversa amb IA",
+    "body": "L'eina Coach de conversa amb IA no està habilitada per al seu compte. L'accés el concedeix l'administrador de la seva empresa a l'apartat «Equip i accessos». Trobarà els seus cursos assignats a «El meu espai d'aprenentatge».",
+    "cta": "Anar a «El meu espai d'aprenentatge»"
   }
 }
