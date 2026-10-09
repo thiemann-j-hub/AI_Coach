@@ -43,10 +43,31 @@ const HUB_NAV_URL = "/api/nav";
 type AppKey = "coach" | "jobmap" | "studio";
 const TOOL_KEYS: readonly string[] = ["coach", "jobmap", "studio"];
 
-function useHubNav(): { teamRadar: boolean; apps: AppKey[] | null } {
-  const [nav, setNav] = useState<{ teamRadar: boolean; apps: AppKey[] | null }>({
+export interface HubSubNav {
+  href: string;
+  label: string;
+}
+
+export interface HubNav {
+  teamRadar: boolean;
+  apps: AppKey[] | null;
+  /**
+   * Einfaches Menü (Lernbereich A, Owner-GO 09.10.2026): Der Hub sagt, ob diese Sitzung die
+   * Lernenden-Seitenleiste bekommt — kein App-Umschalter, kein „Start“, Sprungmarken unter
+   * „Mein Lernbereich“. Der Coach zeigt dann dieselbe Leiste wie der Hub. Rückweg im Hub: LEARNER_MENU=off.
+   */
+  simpleMenu: boolean;
+  subNav: HubSubNav[];
+  lernbereichLabel: string | null;
+}
+
+export function useHubNav(): HubNav {
+  const [nav, setNav] = useState<HubNav>({
     teamRadar: false,
     apps: null,
+    simpleMenu: false,
+    subNav: [],
+    lernbereichLabel: null,
   });
   useEffect(() => {
     let cancelled = false;
@@ -54,14 +75,22 @@ function useHubNav(): { teamRadar: boolean; apps: AppKey[] | null } {
       try {
         const res = await fetch(HUB_NAV_URL, { credentials: "same-origin", cache: "no-store" });
         const body = res.ok
-          ? ((await res.json()) as { teamRadar?: unknown; apps?: unknown })
+          ? ((await res.json()) as { teamRadar?: unknown; apps?: unknown; simpleMenu?: unknown; subNav?: unknown; lernbereichLabel?: unknown })
           : null;
         if (cancelled) return;
+        const subNav = Array.isArray(body?.subNav)
+          ? (body.subNav as Array<{ href?: unknown; label?: unknown }>)
+              .filter((s) => typeof s?.href === "string" && typeof s?.label === "string" && (s.href as string).startsWith("/"))
+              .map((s) => ({ href: s.href as string, label: s.label as string }))
+          : [];
         setNav({
           teamRadar: body?.teamRadar === true,
           apps: Array.isArray(body?.apps)
             ? (body.apps.filter((a) => TOOL_KEYS.includes(a as string)) as AppKey[])
             : null,
+          simpleMenu: body?.simpleMenu === true,
+          subNav,
+          lernbereichLabel: typeof body?.lernbereichLabel === "string" ? body.lernbereichLabel : null,
         });
       } catch {
         /* Team-Radar bleibt verborgen, Werkzeuge bleiben sichtbar */
@@ -106,6 +135,31 @@ export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
+
+  if (nav.simpleMenu) {
+    // Lernende (einfaches Menü): nichts zu wechseln — die Marke führt in „Mein Lernbereich“ (Hub, Wurzel).
+    return (
+      <a
+        href="/radar"
+        aria-label={nav.lernbereichLabel ?? "Mein Lernbereich"}
+        title={nav.lernbereichLabel ?? "Mein Lernbereich"}
+        data-testid="brand-learner"
+        className="flex items-start rounded-lg transition-opacity hover:opacity-85"
+      >
+        {collapsed ? (
+          <PulscraftMark />
+        ) : (
+          <span className="flex items-start gap-2.5">
+            <PulscraftMark />
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-foreground">PulseNorth</span>
+              <span className="text-primary">.AI</span>
+            </span>
+          </span>
+        )}
+      </a>
+    );
+  }
 
   return (
     <div ref={ref} className="relative">

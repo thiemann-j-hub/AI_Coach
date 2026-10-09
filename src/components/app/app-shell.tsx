@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LoginModal } from '@/components/auth/login-modal';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { BrandSwitcher } from '@/components/app/app-switcher';
+import { BrandSwitcher, useHubNav } from '@/components/app/app-switcher';
 import { VersionWatcher } from '@/components/app/version-watcher';
 import { SessionExpiredBanner } from '@/components/app/session-expired-banner';
 import { CreditBalance } from '@/components/app/credit-balance';
@@ -134,6 +134,12 @@ export default function AppShell(props: {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Einfaches Menü (Lernbereich A, Owner-GO 09.10.2026): Der Hub entscheidet, der Coach zeigt
+  // dieselbe Leiste — Marke ohne Umschalter, kein „Start“, „Mein Lernbereich“ mit den
+  // Sprungmarken des Hubs; „Üben“ ist hier markiert, weil wir im Coach sind.
+  const hubNav = useHubNav();
+  const simple = hubNav.simpleMenu;
+
   const isActive = (href: string) => {
     // »Üben« ist der Einstieg — aktiv auch für beide Zuflüsse (W1-3).
     if (href === '/') {
@@ -189,6 +195,7 @@ export default function AppShell(props: {
           <nav className="flex-1 space-y-6 p-3 overflow-y-auto custom-scrollbar">
             {/* Home (Synthesia-Muster): fuehrt zur PulseNorth-Startseite (Hub).
                 ROOT-absolutes <a> — next/link wuerde den basePath /coach anhaengen. */}
+            {!simple && (
             <a
               href="/"
               title={collapsed ? t.nav.home : undefined}
@@ -200,6 +207,7 @@ export default function AppShell(props: {
               <HomeIcon className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
               {!collapsed && <span className="font-medium">{t.nav.home}</span>}
             </a>
+            )}
             {/* Lernenden-Sicht S5 (Owner-GO 06.10.2026): „Mein Lernbereich" in jedem Werkzeug —
                 der Rückweg zu den eigenen Kursen, ohne das Aufklapp-Menü. Liegt im Hub an der Wurzel. */}
             <a
@@ -212,9 +220,32 @@ export default function AppShell(props: {
               )}
             >
               <Radar className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
-              {!collapsed && <span className="font-medium">{t.nav.lernbereich}</span>}
+              {!collapsed && <span className="font-medium">{hubNav.lernbereichLabel ?? t.nav.lernbereich}</span>}
             </a>
-            {groups.map((group) => (
+            {simple && !collapsed && hubNav.subNav.length > 0 && (
+              <ul className="-mt-4 space-y-0.5 pl-7" data-testid="learner-subnav">
+                {hubNav.subNav.map((s) => {
+                  const active = s.href.includes("#ueben");
+                  return (
+                    <li key={s.href}>
+                      <a
+                        href={s.href}
+                        aria-current={active ? "page" : undefined}
+                        className={cx(
+                          'pn-none block rounded-md px-3 py-1.5 text-[13px] transition-colors',
+                          active
+                            ? 'border border-primary/20 bg-primary/10 font-semibold text-primary'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        {s.label}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {!simple && groups.map((group) => (
               <div key={group.label} className="space-y-1">
                 {!collapsed && (
                   <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
