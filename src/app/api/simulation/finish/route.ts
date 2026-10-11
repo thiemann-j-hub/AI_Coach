@@ -37,7 +37,7 @@ import {
   latestTransferReview,
   saveSimulation,
 } from "@/lib/server/simulation-store";
-import { buildTransferReviewText } from "@/lib/simulation/transfer";
+import { buildTransferReviewText, commitmentExplicitOn } from "@/lib/simulation/transfer";
 import {
   CHECK_PASS_THRESHOLD,
   computeDebrief,
@@ -351,10 +351,12 @@ export async function POST(req: NextRequest) {
     doc.qualityNotes = qualityNotes;
     // Provenienz (27.09.): welches Schreiber-Modell diese Auswertung erzeugt hat.
     doc.modelId = GENKIT_MODEL_ID;
-    // O2: Der Vorschlag des Debriefs ist ab sofort der Vorsatz (Gemini Zu 3: ein
-    // Schritt, keine Auswahl). Der Lernende kann ihn über /api/simulation/commit
-    // mit eigenen Worten überschreiben.
-    if (feedback.microTransfer?.step) {
+    // O2: Der Vorschlag des Debriefs war ab sofort der Vorsatz (Gemini Zu 3: ein
+    // Schritt, keine Auswahl). Seit 11.10.2026 (N17/B8, Owner-GO) zählt er erst mit
+    // „Übernehmen“ in der Auswertung (/api/simulation/commit, source "model") — sonst
+    // fragt der Coach nach drei Tagen nach etwas, das nie gewählt wurde.
+    // Rückweg: COMMITMENT_EXPLICIT=off → alter Weg (stilles Setzen).
+    if (feedback.microTransfer?.step && !commitmentExplicitOn()) {
       doc.commitment = {
         text: feedback.microTransfer.step,
         source: "model",

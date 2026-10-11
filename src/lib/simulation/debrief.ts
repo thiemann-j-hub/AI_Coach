@@ -60,6 +60,9 @@ export interface Debrief {
   checkpointsTotal: number;
   /** Anteil Kompetenz- vs. Schlüsselmoment-Wertung an overall. */
   weights: { anchors: number; checkpoints: number };
+  /** Rechenweg (N17, 11.10.2026): die beiden Teilwerte, gerundet; fehlt bei Alt-Läufen. */
+  anchorPct?: number | null;
+  checkpointPct?: number | null;
 }
 
 export interface DebriefDelta {
@@ -166,6 +169,8 @@ export function computeDebrief(args: {
     checkpointsHit,
     checkpointsTotal,
     weights: { anchors: ANCHOR_WEIGHT, checkpoints: CHECKPOINT_WEIGHT },
+    anchorPct: anchorPct == null ? null : Math.round(anchorPct),
+    checkpointPct: checkpointPct == null ? null : Math.round(checkpointPct),
   };
 }
 

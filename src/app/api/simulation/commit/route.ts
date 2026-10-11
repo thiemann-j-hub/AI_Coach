@@ -13,6 +13,8 @@ export const dynamic = "force-dynamic";
 const requestSchema = z.object({
   simId: z.string().min(8).max(64).regex(/^[A-Za-z0-9-]+$/),
   text: z.string().min(1).max(COMMITMENT_MAX_CHARS),
+  /** N17 (11.10.2026): "model" = Vorschlag des Coachs unverändert übernommen, "user" = eigene Worte. */
+  source: z.enum(["model", "user"]).optional(),
 });
 
 /**
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
     const text = parsed.data.text.trim().slice(0, COMMITMENT_MAX_CHARS);
     doc.commitment = {
       text,
-      source: "user",
+      source: parsed.data.source ?? "user",
       createdAt: new Date().toISOString(),
       dueHint: doc.commitment?.dueHint ?? null,
     };

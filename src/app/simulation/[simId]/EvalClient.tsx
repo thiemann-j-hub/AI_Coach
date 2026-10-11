@@ -275,12 +275,12 @@ export default function EvalClient() {
             `/?szenario=${encodeURIComponent(sim.scenarioId)}&fokus=${encodeURIComponent(focusText)}`
           )
         }
-        initialCommitment={sim.commitment?.source === 'user' ? sim.commitment.text : null}
-        onCommit={(text) => {
-          // O2: eigene Worte des Lernenden speichern — best effort, kein Fehler-UI.
+        initialCommitment={sim.commitment?.text ?? null}
+        onCommit={(text, source) => {
+          // N17 (11.10.2026): Vorsatz erst mit dem Klick — übernommen (model) oder eigene Worte (user).
           void authFetch('/api/simulation/commit', {
             method: 'POST',
-            body: JSON.stringify({ simId, text }),
+            body: JSON.stringify({ simId, text, source }),
           }).catch(() => undefined);
         }}
         onNew={() => router.push('/')}

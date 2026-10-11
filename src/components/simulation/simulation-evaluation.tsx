@@ -11,13 +11,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   ArrowRight,
+  BookOpen,
+  Check,
   CheckCircle2,
   ChevronDown,
   GraduationCap,
   History,
+  Lightbulb,
   Loader2,
   MessagesSquare,
   Minus,
+  Pencil,
   RotateCcw,
   Sparkles,
   TrendingDown,
@@ -25,7 +29,10 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ScoreRing } from '@/components/app/score-ring';
+import { useHubNav } from '@/components/app/app-switcher';
 import { computeDeltaCta, computeStudioBridge } from '@/lib/simulation/endscreen';
+import { rechenweg } from '@/lib/simulation/rechenweg';
+import { matchCourse, type CourseMatch, type HubCourseLike, type HubRecommendationLike } from '@/lib/simulation/kurs-match';
 import { computeDelivery, type DeliveryReport } from '@/lib/simulation/delivery';
 import { useTranslation } from '@/i18n/useTranslation';
 
@@ -68,6 +75,27 @@ export interface SimEvalDebrief {
   anchors: SimEvalDebriefAnchor[];
   checkpointsHit: number;
   checkpointsTotal: number;
+  /** Rechenweg (N17): Teilwerte und Gewichte; fehlen bei Alt-Läufen. */
+  anchorPct?: number | null;
+  checkpointPct?: number | null;
+  weights?: { anchors: number; checkpoints: number };
+}
+
+/** Hub `/api/lernbereich/courses` (same-origin, Sitzungs-Cookie): eigene Kurse mit Kompetenz-Tags. */
+interface HubCoursesResponse {
+  ok?: boolean;
+  courses?: HubCourseLike[];
+  recommendations?: HubRecommendationLike[];
+}
+let hubCoursesCache: Promise<HubCoursesResponse> | null = null;
+function fetchHubCourses(): Promise<HubCoursesResponse> {
+  if (!hubCoursesCache) {
+    // Hub-Wurzel, bewusst OHNE basePath /coach (wie /api/nav im App-Umschalter).
+    hubCoursesCache = fetch('/api/lernbereich/courses', { credentials: 'same-origin', cache: 'no-store' })
+      .then(async (r) => (r.ok ? ((await r.json()) as HubCoursesResponse) : {}))
+      .catch(() => ({}));
+  }
+  return hubCoursesCache;
 }
 
 export interface SimEvalDelta {
@@ -262,10 +290,10 @@ export function SimulationEvaluation(props: {
   /** Fokus-Retry: startet dasselbe Szenario mit diesem Fokus (W3-2: selbst geschrieben). */
   onRetry: (focusText: string) => void;
   retryBusy?: boolean;
-  /** O2: gespeicherter Vorsatz (vom Lernenden angepasst) — Vorrang vor dem Modellvorschlag. */
+  /** Gespeicherter Vorsatz (übernommen oder selbst formuliert); null = noch keiner. */
   initialCommitment?: string | null;
-  /** O2: speichert den angepassten Vorsatz (entprellt; Modellvorschlag ist serverseitig schon gesetzt). */
-  onCommit?: (text: string) => void;
+  /** N17 (11.10.2026): speichert den Vorsatz — erst mit dem Klick „Übernehmen“ oder „Vorsatz speichern“. */
+  onCommit?: (text: string, source: 'model' | 'user') => void;
   /** Zurück zum Einstieg. */
   onNew: () => void;
 }) {
@@ -274,25 +302,34 @@ export function SimulationEvaluation(props: {
   const { feedback, debrief, delta, attempt, focus, ratings } = props;
 
   const [openEvidence, setOpenEvidence] = useState<Record<string, boolean>>({});
-  // W3-2: der Vorsatz ist SELBST geschrieben — vorbefüllt mit dem
-  // nextStep-Vorschlag, frei editierbar (kein stummes slice mehr).
-  // An der WORTGRENZE kürzen (Test-Fund 11.08.: der harte 280-Schnitt endete
-  // mitten im Wort — »… statt alles zu bündeln« wurde zu »… sta«).
-  // O2: Vorsatz = gespeicherter Text > Micro-Transfer des Debriefs > (Alt-Läufe) größter Hebel.
-  const defaultCommitment =
-    props.initialCommitment?.trim() ||
-    feedback.microTransfer?.step?.trim() ||
-    truncateAtWord(feedback.nextStep, 280);
-  const [commitment, setCommitment] = useState(defaultCommitment);
-  // Entprellt speichern, nur wenn der Lernende den Text wirklich verändert hat.
-  useEffect(() => {
-    if (!props.onCommit) return;
-    const text = commitment.trim();
-    if (!text || text === defaultCommitment.trim()) return;
-    const id = window.setTimeout(() => props.onCommit?.(text.slice(0, 300)), 900);
-    return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commitment]);
+  // Vorsatz als bewusster Klick (N17 / B8, Owner-GO 11.10.2026): Der Coach schlägt EINEN Schritt vor
+  // (Micro-Transfer, bei Alt-Läufen der größte Hebel, an der Wortgrenze gekürzt). Erst „Übernehmen“
+  // oder ein eigener Text macht daraus den Vorsatz — nichts wird mehr still gespeichert.
+  const suggestion = feedback.microTransfer?.step?.trim() || truncateAtWord(feedback.nextStep, 280);
+  const [saved, setSaved] = useState<string | null>(props.initialCommitment?.trim() || null);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  // Für „Nochmal üben — mit Fokus“: der gespeicherte Vorsatz, sonst der Vorschlag.
+  const commitment = saved ?? suggestion;
+  function adoptSuggestion() {
+    const text = suggestion.slice(0, 300);
+    setSaved(text);
+    setEditing(false);
+    props.onCommit?.(text, 'model');
+  }
+  function startOwn(prefill: string) {
+    setDraft(prefill);
+    setEditing(true);
+  }
+  function saveOwn() {
+    const text = draft.trim().slice(0, 300);
+    if (!text) return;
+    setSaved(text);
+    setEditing(false);
+    props.onCommit?.(text, 'user');
+  }
+  // Rechenweg (N17 / C4): aufklappbar unter dem Ring.
+  const [calcOpen, setCalcOpen] = useState(false);
 
   // W3-1: Erkenntnis → Handlung (pure, getestet).
   const deltaCta = useMemo(
@@ -307,6 +344,22 @@ export function SimulationEvaluation(props: {
   );
   // W3-3: Studio-Brücke nur bei echter Schwäche (≤ 2).
   const studioBridge = useMemo(() => computeStudioBridge(ratings), [ratings]);
+  // N17 / C8 (11.10.2026): erst einen vorhandenen passenden Kurs zeigen, dann „Kurs wünschen“;
+  // „Kurs im Studio erstellen“ nur, wenn die Person das Studio hat (Häkchen aus dem Hub).
+  const hubNav = useHubNav();
+  const hasStudio = hubNav.apps === null || hubNav.apps.includes('studio');
+  const [courseMatch, setCourseMatch] = useState<CourseMatch | 'loading'>('loading');
+  useEffect(() => {
+    if (!studioBridge) return;
+    let aktiv = true;
+    fetchHubCourses().then((j) => {
+      if (!aktiv) return;
+      setCourseMatch(matchCourse(studioBridge.cKey, j.courses ?? [], j.recommendations ?? []));
+    });
+    return () => {
+      aktiv = false;
+    };
+  }, [studioBridge]);
   // A2: Delivery deterministisch aus den Turns — pure, kostenlos, auch für Alt-Läufe.
   const delivery: DeliveryReport | null = useMemo(
     () => (props.turns && props.turns.length ? computeDelivery(props.turns, props.convoLocale) : null),
@@ -397,6 +450,34 @@ export function SimulationEvaluation(props: {
               <p className="text-xs text-muted-foreground">
                 {observedCount}/{debrief.anchors.length} {ts.coverageNote} · {debrief.checkpointsHit}/{debrief.checkpointsTotal} {ts.checkpointsTitle}
               </p>
+              {/* Rechenweg (N17 / C4, 11.10.2026): jede Zahl sagt, was sie zählt. */}
+              <div className="text-left">
+                <button
+                  type="button"
+                  onClick={() => setCalcOpen((v) => !v)}
+                  aria-expanded={calcOpen}
+                  className="pn-none inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  data-testid="calc-toggle"
+                >
+                  <ChevronDown className={cx('h-3.5 w-3.5 transition-transform', calcOpen && 'rotate-180')} /> {t.evaluation.calcToggle}
+                </button>
+                {calcOpen && (
+                  <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground" data-testid="calc-lines">
+                    {rechenweg(debrief, {
+                      scale: t.evaluation.calcScale,
+                      anchors: t.evaluation.calcAnchors,
+                      checkpoints: t.evaluation.calcCheckpoints,
+                      sum: t.evaluation.calcSum,
+                      onlyAnchors: t.evaluation.calcOnlyAnchors,
+                      onlyCheckpoints: t.evaluation.calcOnlyCheckpoints,
+                      pass: t.evaluation.calcPass,
+                      unrated: t.evaluation.calcUnrated,
+                    }).map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               <div className="pn-none rounded-xl border border-primary/30 bg-primary/5 p-3 text-left">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-primary mb-1 flex items-center gap-1">
                   <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
@@ -787,22 +868,89 @@ export function SimulationEvaluation(props: {
         </section>
       )}
 
-      {/* W3-2: selbstgeschriebenes Commitment — kein stummes nextStep.slice mehr. */}
-      <section className="pn-surface glass-panel rounded-2xl p-5 border border-border space-y-3">
-        <label
-          htmlFor="commitment"
-          className="text-sm font-semibold flex items-center gap-1.5"
-        >
+      {/* Vorsatz als bewusster Klick (N17 / B8, 11.10.2026): Vorschlag → „Übernehmen“ oder „Selbst formulieren“. */}
+      <section className="pn-surface glass-panel rounded-2xl p-5 border border-border space-y-3" data-testid="commitment-section" data-state={saved ? 'saved' : 'open'}>
+        <p className="text-sm font-semibold flex items-center gap-1.5">
           <Sparkles className="h-4 w-4 text-primary" /> {t.evaluation.commitmentQuestion}
-        </label>
-        <textarea
-          id="commitment"
-          value={commitment}
-          onChange={(e) => setCommitment(e.target.value)}
-          rows={3}
-          maxLength={300}
-          className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-        />
+        </p>
+        {saved && !editing ? (
+          <div className="pn-none rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5" data-testid="commitment-saved">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <Check className="h-3 w-3" aria-hidden /> {t.evaluation.commitSavedTitle} · {t.evaluation.commitSaved}
+            </div>
+            <p className="text-sm font-medium leading-snug">{saved}</p>
+            <button
+              type="button"
+              onClick={() => startOwn(saved)}
+              className="pn-none mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              data-testid="commitment-edit"
+            >
+              <Pencil className="h-3 w-3" /> {t.evaluation.commitEdit}
+            </button>
+          </div>
+        ) : editing ? (
+          <div className="space-y-2" data-testid="commitment-editor">
+            <textarea
+              id="commitment"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={t.evaluation.commitPlaceholder}
+              rows={3}
+              maxLength={300}
+              autoFocus
+              className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={saveOwn}
+                disabled={draft.trim().length === 0}
+                className="pn-none inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                data-testid="commitment-save"
+              >
+                <Check className="h-4 w-4" /> {t.evaluation.commitSave}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="pn-none rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted"
+              >
+                {t.common.cancel}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2" data-testid="commitment-suggestion">
+            <div className="pn-none rounded-xl border border-primary/40 bg-background/70 px-3 py-2.5">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1">
+                <ArrowRight className="h-3 w-3" aria-hidden /> {t.evaluation.commitSuggestionTitle}
+                {feedback.microTransfer?.when && (
+                  <span className="normal-case tracking-normal text-muted-foreground">· {feedback.microTransfer.when}</span>
+                )}
+              </div>
+              <p className="text-sm font-medium leading-snug">{suggestion}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={adoptSuggestion}
+                className="pn-none inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                data-testid="commitment-adopt"
+              >
+                <Check className="h-4 w-4" /> {t.evaluation.commitAdopt}
+              </button>
+              <button
+                type="button"
+                onClick={() => startOwn('')}
+                className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                data-testid="commitment-own"
+              >
+                <Pencil className="h-4 w-4" /> {t.evaluation.commitOwn}
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">{t.evaluation.commitHint}</p>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => props.onRetry(commitment.trim().slice(0, 300))}
@@ -821,8 +969,54 @@ export function SimulationEvaluation(props: {
         </div>
       </section>
 
-      {/* W3-3: Studio-Brücke — nur bei echter Schwäche (≤ 2), neuer Tab. */}
-      {studioBridge && (
+      {/* N17 / C8 (11.10.2026): bei echter Schwäche zuerst ein vorhandener Kurs, sonst „Kurs wünschen“. */}
+      {studioBridge && courseMatch !== 'loading' && (
+        <section
+          className="pn-none glass-panel rounded-2xl p-5 border border-primary/30 bg-primary/5"
+          data-testid="course-bridge"
+          data-kind={courseMatch ? courseMatch.kind : 'wish'}
+        >
+          <div className="flex items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+              {courseMatch?.kind === 'course' ? <BookOpen className="h-5 w-5" /> : <Lightbulb className="h-5 w-5" />}
+            </span>
+            <div className="min-w-0">
+              {courseMatch?.kind === 'course' ? (
+                <>
+                  <h3 className="text-sm font-semibold">{t.evaluation.courseMatchTitle}</h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
+                    {t.evaluation.courseMatchBody.replace('{c}', studioBridge.cName ?? studioBridge.cKey).replace('{title}', courseMatch.title)}
+                  </p>
+                  <a
+                    href={courseMatch.learnUrl}
+                    className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-colors"
+                    data-testid="course-open"
+                  >
+                    <BookOpen className="h-4 w-4" /> {courseMatch.refresh ? t.evaluation.courseRefresh : t.evaluation.courseOpen}
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-sm font-semibold">{t.evaluation.courseWishTitle}</h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">{t.evaluation.courseWishBody}</p>
+                  <a
+                    href={`/radar?wunsch${courseMatch?.kind === 'recommendation' ? `=${encodeURIComponent(courseMatch.title)}` : `Text=${encodeURIComponent(t.evaluation.courseWishText.replace('{c}', studioBridge.cName ?? studioBridge.cKey))}`}#lernwuensche`}
+                    className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+                    data-testid="course-wish"
+                  >
+                    <Lightbulb className="h-4 w-4" /> {t.evaluation.courseWishCta}
+                    <ArrowRight className="h-4 w-4" />
+                  </a>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* W3-3: Studio-Brücke — nur bei echter Schwäche (≤ 2), neuer Tab; seit 11.10.2026 nur mit Studio-Häkchen. */}
+      {studioBridge && hasStudio && (
         <section className="pn-none glass-panel rounded-2xl p-5 border border-accent/30 bg-accent/5">
           <div className="flex items-start gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
