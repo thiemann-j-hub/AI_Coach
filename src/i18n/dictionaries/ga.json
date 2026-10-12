@@ -244,7 +244,7 @@
     "builderCardCta": "Oscail an tógálaí",
     "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
     "micNoticeTitle": "About voice input",
-    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeBody": "Déantar téacs de do ghuth inár n-ionad sonraí in Iarthar na hEorpa (Microsoft Azure) agus ní stóráiltear ansin é. Mura bhfuil an tseirbhís seo ar fáil, úsáideann do bhrabhsálaí a aithint cainte féin agus seolann sé an taifeadadh chuig a dhéantóir (Chrome: Google). Mura mian leat é sin, clóscríobh do fhreagra.",
     "micNoticeAccept": "Got it, use the microphone",
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",

@@ -244,7 +244,7 @@
     "builderCardCta": "Készítő megnyitása",
     "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
     "micNoticeTitle": "About voice input",
-    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeBody": "A hangját a nyugat-európai adatközpontunkban (Microsoft Azure) alakítjuk szöveggé, és ott nem tároljuk. Ha a szolgáltatás nem elérhető, a böngészője a saját beszédfelismerését használja, és a felvételt a gyártójának küldi (Chrome: Google). Ha ezt nem szeretné, gépelje be a válaszát.",
     "micNoticeAccept": "Got it, use the microphone",
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",

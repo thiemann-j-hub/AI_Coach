@@ -244,7 +244,7 @@
     "builderCardCta": "Bouwer openen",
     "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
     "micNoticeTitle": "About voice input",
-    "micNoticeBody": "Your browser's speech recognition converts your voice to text. In doing so, your browser transmits the recording to its vendor (for Chrome: Google). If you prefer not to, type your answer instead.",
+    "micNoticeBody": "Uw stem wordt in ons datacenter in West-Europa (Microsoft Azure) omgezet in tekst en daar niet opgeslagen. Is deze dienst niet beschikbaar, dan gebruikt uw browser zijn eigen spraakherkenning en stuurt de opname naar zijn maker (Chrome: Google). Wilt u dat niet, typ dan uw antwoord.",
     "micNoticeAccept": "Got it, use the microphone",
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",

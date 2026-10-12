@@ -486,10 +486,15 @@ export default function SimulationClient() {
   const [goalsOpen, setGoalsOpen] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
-  const speechSupported =
+  // EU-Hosting Weg B (11.10.2026): Spracheingabe zuerst über Azure Speech (West-Europa, Token von
+  // /api/speech-token), die Browser-Erkennung (Chrome: Google) nur noch als Notnagel.
+  const browserSpeechSupported =
     typeof window !== 'undefined' &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const speechSupported =
+    typeof window !== 'undefined' &&
+    (browserSpeechSupported || Boolean(navigator.mediaDevices?.getUserMedia));
   // Owner-GO 19.09.: Persona-Antworten spricht der Server (Azure-HD, /api/tts);
   // die Browserstimme („Microsoft Hedda") ist nur noch der Notnagel bei 503/Netzfehler.
   const browserTtsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -513,6 +518,33 @@ export default function SimulationClient() {
     recognitionRef.current = null;
     setMicActive(false);
   }, []);
+
+  /** Azure-Diktat (EU): Token holen, SDK laden, erkennen; null = nicht verfügbar → Browser-Notnagel. */
+  const startAzureMic = useCallback(async (): Promise<boolean> => {
+    try {
+      const res = await authFetch('/api/speech-token');
+      if (!res.ok) return false;
+      const j = (await res.json()) as { ok?: boolean; token?: string; region?: string };
+      if (!j.ok || !j.token || !j.region) return false;
+      const { startAzureDictation } = await import('@/lib/azure-stt');
+      const d = startAzureDictation({
+        token: j.token,
+        region: j.region,
+        lang: speechLang,
+        onText: (text) => setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text),
+        onEnd: () => {
+          if (recognitionRef.current === d) recognitionRef.current = null;
+          setMicActive(false);
+          wantMicRef.current = false;
+        },
+      });
+      recognitionRef.current = d;
+      setMicActive(true);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [speechLang]);
 
   // CP-3.4 (M21 Option 1, Compliance-Blueprint 31.08.): Aufklärung vor der
   // ERSTEN Mikrofon-Nutzung je Gerät. Die Browser-Spracherkennung überträgt
@@ -545,6 +577,19 @@ export default function SimulationClient() {
     wantMicRef.current = true;
     // Sprich-Modus: wer ins Mikro spricht, bekommt die Antwort auch zu hören.
     if (ttsSupported) setSpeakReplies(true);
+    void (async () => {
+      if (await startAzureMic()) return;
+      if (!browserSpeechSupported) {
+        wantMicRef.current = false;
+        setMicActive(false);
+        return;
+      }
+      startBrowserMic();
+    })();
+  }, [speechSupported, micActive, ttsSupported, startAzureMic, browserSpeechSupported, startBrowserMic]);
+
+  /** Notnagel: Browser-Spracherkennung (Chrome: Google) — nur wenn Azure gerade nicht kann. */
+  function startBrowserMic() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const rec = new Ctor();
@@ -580,7 +625,7 @@ export default function SimulationClient() {
     recognitionRef.current = rec;
     setMicActive(true);
     rec.start();
-  }, [speechSupported, micActive, speechLang, ttsSupported]);
+  }
 
   /** Laufende Sprachausgabe (Azure-Audio UND Browserstimme) stoppen. */
   const audioRef = useRef<HTMLAudioElement | null>(null);

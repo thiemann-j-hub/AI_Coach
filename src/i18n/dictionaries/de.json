@@ -244,7 +244,7 @@
     "builderCardCta": "Builder öffnen",
     "aiNotice": "Du sprichst mit einer KI. Deine Eingaben werden zur Auswertung an ein KI-Modell übertragen.",
     "micNoticeTitle": "Hinweis zur Spracheingabe",
-    "micNoticeBody": "Die Spracherkennung deines Browsers wandelt deine Stimme in Text um. Dabei überträgt dein Browser die Aufnahme an seinen Hersteller (bei Chrome: Google). Wenn du das nicht möchtest, tippe deine Antwort.",
+    "micNoticeBody": "Deine Stimme wird in unserem Rechenzentrum in West-Europa (Microsoft Azure) in Text umgewandelt und dort nicht gespeichert. Ist dieser Dienst gerade nicht erreichbar, nutzt dein Browser seine eigene Spracherkennung und überträgt die Aufnahme an seinen Hersteller (bei Chrome: Google). Wenn du das nicht möchtest, tippe deine Antwort.",
     "micNoticeAccept": "Verstanden, Mikro nutzen",
     "micNoticeDecline": "Lieber tippen",
     "aiStartNotice": "Du trainierst mit einem KI-Agenten. Person, Stimme und Antworten sind computergeneriert.",
