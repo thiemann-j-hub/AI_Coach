@@ -7,6 +7,7 @@
  * Studio gemini.ts (embedText).
  */
 import { GoogleGenAI } from "@google/genai";
+import { createGenAI } from "@/ai/gemini-backend";
 
 const EMBEDDING_MODEL = process.env.GEMINI_EMBEDDING_MODEL || "gemini-embedding-001";
 const DIM = 768;
@@ -14,9 +15,8 @@ const DIM = 768;
 let _ai: GoogleGenAI | null = null;
 function ai(): GoogleGenAI {
   if (_ai) return _ai;
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY not set");
-  _ai = new GoogleGenAI({ apiKey });
+  // Weg B: GEMINI_BACKEND=vertex → Vertex AI EU (gemini-backend.ts); sonst Entwickler-API wie bisher.
+  _ai = createGenAI(process.env.GEMINI_API_KEY);
   return _ai;
 }
 

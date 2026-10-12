@@ -1,6 +1,7 @@
 import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
+import {googleAI, vertexAI} from '@genkit-ai/google-genai';
 import {resolveWriterModelId} from './model-id';
+import {vertexOn, vertexLocation} from './gemini-backend';
 
 /**
  * Modell-ID als exportierte Konstante: der Reliabilitäts-Harness protokolliert
@@ -18,7 +19,21 @@ export const GENKIT_MODEL_ID = resolveWriterModelId();
 /** Keine explizite Temperatur konfiguriert → Provider-Default. */
 export const GENKIT_TEMPERATURE = 'provider-default';
 
+/**
+ * Weg B (Owner-GO 11.10.2026): GEMINI_BACKEND=vertex → Vertex AI EU (Dienstkonto aus GOOGLE_SA_KEY_JSON,
+ * Region VERTEX_LOCATION, Standard europe-west3); das Modell heißt dann vertexai/<name>. Rückweg: Variable weglassen.
+ */
+function vertexPlugin() {
+  const raw = (process.env.GOOGLE_SA_KEY_JSON ?? '').trim();
+  const credentials = raw ? (JSON.parse(raw) as Record<string, string>) : undefined;
+  return vertexAI({
+    projectId: (process.env.VERTEX_PROJECT ?? '').trim(),
+    location: vertexLocation(),
+    ...(credentials ? {googleAuth: {credentials}} : {}),
+  });
+}
+
 export const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [vertexOn() ? vertexPlugin() : googleAI()],
   model: GENKIT_MODEL_ID,
 });

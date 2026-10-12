@@ -8,7 +8,10 @@
 export const DEFAULT_WRITER_MODEL_ID = 'googleai/gemini-2.5-flash';
 
 export function resolveWriterModelId(env: NodeJS.ProcessEnv = process.env): string {
+  // Weg B (11.10.2026): mit GEMINI_BACKEND=vertex trägt das Modell den Vertex-Präfix.
+  const prefix = (env.GEMINI_BACKEND ?? '').trim().toLowerCase() === 'vertex' ? 'vertexai' : 'googleai';
   const raw = (env.GEMINI_TEXT_MODEL ?? '').trim();
-  if (!raw) return DEFAULT_WRITER_MODEL_ID;
-  return raw.includes('/') ? raw : `googleai/${raw}`;
+  if (!raw) return prefix === 'vertexai' ? 'vertexai/gemini-2.5-flash' : DEFAULT_WRITER_MODEL_ID;
+  if (raw.includes('/')) return raw;
+  return `${prefix}/${raw}`;
 }
