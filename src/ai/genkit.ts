@@ -2,6 +2,7 @@ import {genkit} from 'genkit';
 import {googleAI, vertexAI} from '@genkit-ai/google-genai';
 import {resolveWriterModelId} from './model-id';
 import {vertexOn, vertexLocation} from './gemini-backend';
+import {installVertexFetchShim} from './vertex-fetch-shim';
 
 /**
  * Modell-ID als exportierte Konstante: der Reliabilitäts-Harness protokolliert
@@ -24,12 +25,14 @@ export const GENKIT_TEMPERATURE = 'provider-default';
  * Region VERTEX_LOCATION, Standard europe-west3); das Modell heißt dann vertexai/<name>. Rückweg: Variable weglassen.
  */
 function vertexPlugin() {
+  installVertexFetchShim(vertexLocation());
   const raw = (process.env.GOOGLE_SA_KEY_JSON ?? '').trim();
   const credentials = raw ? (JSON.parse(raw) as Record<string, string>) : undefined;
   return vertexAI({
     projectId: (process.env.VERTEX_PROJECT ?? '').trim(),
     location: vertexLocation(),
-    ...(credentials ? {googleAuth: {credentials}} : {}),
+    // Scopes sind Pflicht: das Plugin reicht googleAuth unverändert an GoogleAuth weiter (sonst „Unable to authenticate“).
+    ...(credentials ? {googleAuth: {credentials, scopes: ['https://www.googleapis.com/auth/cloud-platform']}} : {}),
   });
 }
 

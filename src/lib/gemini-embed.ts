@@ -16,7 +16,7 @@ let _ai: GoogleGenAI | null = null;
 function ai(): GoogleGenAI {
   if (_ai) return _ai;
   // Weg B: GEMINI_BACKEND=vertex → Vertex AI EU (gemini-backend.ts); sonst Entwickler-API wie bisher.
-  _ai = createGenAI(process.env.GEMINI_API_KEY);
+  _ai = createGenAI(process.env.GEMINI_API_KEY, {embed: true});
   return _ai;
 }
 
