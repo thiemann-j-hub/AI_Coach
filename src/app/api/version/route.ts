@@ -32,9 +32,13 @@ export function GET() {
   return NextResponse.json(
     {
       service: "coach",
+      // W1-9-Nachfix (14.10.2026): die beim Build eingebackene Kennung zuerst — das App-Setting
+      // BUILD_SHA wird vom GitHub-Deploy nicht gepflegt und stand auf einem alten Stand (4ca30a9);
+      // damit hätte der Versions-Banner im Coach nie ausgelöst.
       sha:
+        (process.env.NEXT_PUBLIC_BUILD_SHA ? process.env.NEXT_PUBLIC_BUILD_SHA.slice(0, 7) : undefined) ??
         process.env.BUILD_SHA ??
-        (process.env.NEXT_PUBLIC_BUILD_SHA ? process.env.NEXT_PUBLIC_BUILD_SHA.slice(0, 7) : "unstamped"),
+        "unstamped",
       branch: process.env.BUILD_BRANCH ?? null,
       builtAt: process.env.BUILD_STAMPED_AT ?? null,
       diagnose,
