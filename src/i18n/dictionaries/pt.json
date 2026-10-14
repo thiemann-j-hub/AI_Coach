@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Está disponível uma nova versão. Por favor, recarregue a página para que tudo fique sincronizado.",
     "reload": "Recarregar agora"
+  },
+  "confirmDialog": {
+    "ok": "Continuar",
+    "cancel": "Cancelar",
+    "typeWord": "Escreva {word} para confirmar.",
+    "deleteWord": "ELIMINAR",
+    "deleteOk": "Eliminar permanentemente"
   }
 }

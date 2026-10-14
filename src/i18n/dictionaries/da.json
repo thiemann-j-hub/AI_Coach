@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Der er en ny version tilgængelig. Genindlæs venligst siden, så alt passer sammen.",
     "reload": "Genindlæs nu"
+  },
+  "confirmDialog": {
+    "ok": "Fortsæt",
+    "cancel": "Annuller",
+    "typeWord": "Skriv {word} for at bekræfte.",
+    "deleteWord": "SLET",
+    "deleteOk": "Slet permanent"
   }
 }

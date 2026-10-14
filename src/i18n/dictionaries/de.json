@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Es gibt eine neue Version. Bitte lade die Seite neu, damit alles zusammenpasst.",
     "reload": "Jetzt neu laden"
+  },
+  "confirmDialog": {
+    "ok": "Fortfahren",
+    "cancel": "Abbrechen",
+    "typeWord": "Gib zur Bestätigung {word} ein.",
+    "deleteWord": "LÖSCHEN",
+    "deleteOk": "Endgültig löschen"
   }
 }

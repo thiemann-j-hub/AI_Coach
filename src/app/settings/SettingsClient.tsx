@@ -3,19 +3,7 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { authFetch } from "@/lib/api-client";
 import { signOut } from "@/lib/auth-service";
 import { useToast } from "@/hooks/use-toast";
@@ -24,9 +12,17 @@ export default function SettingsClient() {
   const { toast } = useToast();
   const [busyHistory, setBusyHistory] = useState(false);
   const [busyAccount, setBusyAccount] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
+  // W1-10 (14.10.2026): Bestätigen als await confirm() mit Wort — Fokus auf „Abbrechen“.
+  const confirm = useConfirm();
 
   async function deleteHistory() {
+    const ok = await confirm({
+      title: "Lern-Historie wirklich löschen?",
+      description:
+        "Alle Analysen und Dein Fortschritts-Verlauf werden dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+      typeToConfirm: true,
+    });
+    if (!ok) return;
     setBusyHistory(true);
     try {
       const res = await authFetch("/api/account/history", { method: "DELETE" });
@@ -48,6 +44,13 @@ export default function SettingsClient() {
   }
 
   async function deleteAccount() {
+    const ok = await confirm({
+      title: "Account endgültig löschen?",
+      description: "Diese Aktion ist unwiderruflich. Lern-Historie, Sitzungen, Profil und gespeicherte Zugriffs-Token werden entfernt.",
+      confirmLabel: "Account löschen",
+      typeToConfirm: true,
+    });
+    if (!ok) return;
     setBusyAccount(true);
     try {
       const res = await authFetch("/api/account", {
@@ -96,26 +99,9 @@ export default function SettingsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={busyHistory}>
-                {busyHistory ? "Wird gelöscht…" : "Lern-Historie löschen"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Lern-Historie wirklich löschen?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Alle Analysen und dein Fortschritts-Verlauf werden dauerhaft entfernt. Diese
-                  Aktion kann nicht rückgängig gemacht werden.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                <AlertDialogAction onClick={deleteHistory}>Endgültig löschen</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button variant="outline" disabled={busyHistory} onClick={() => void deleteHistory()}>
+            {busyHistory ? "Wird gelöscht…" : "Lern-Historie löschen"}
+          </Button>
         </CardContent>
       </Card>
 
@@ -130,41 +116,9 @@ export default function SettingsClient() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <AlertDialog onOpenChange={() => setConfirmText("")}>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={busyAccount}>
-                {busyAccount ? "Wird gelöscht…" : "Account löschen"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Account endgültig löschen?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Diese Aktion ist unwiderruflich. Gib zur Bestätigung <strong>LÖSCHEN</strong> ein.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="space-y-2 py-2">
-                <Label htmlFor="confirm-delete">Bestätigung</Label>
-                <Input
-                  id="confirm-delete"
-                  value={confirmText}
-                  onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder="LÖSCHEN"
-                  autoComplete="off"
-                />
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={deleteAccount}
-                  disabled={confirmText !== "LÖSCHEN"}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Account löschen
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button variant="destructive" disabled={busyAccount} onClick={() => void deleteAccount()}>
+            {busyAccount ? "Wird gelöscht…" : "Account löschen"}
+          </Button>
         </CardContent>
       </Card>
     </div>

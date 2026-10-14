@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Uusi versio on saatavilla. Lataa sivu uudelleen, jotta kaikki tiedot päivittyvät.",
     "reload": "Lataa sivu uudelleen"
+  },
+  "confirmDialog": {
+    "ok": "Jatka",
+    "cancel": "Peruuta",
+    "typeWord": "Vahvista kirjoittamalla {word}.",
+    "deleteWord": "POISTA",
+    "deleteOk": "Poista pysyvästi"
   }
 }

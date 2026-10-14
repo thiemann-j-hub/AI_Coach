@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Er is een nieuwe versie beschikbaar. Vernieuw de pagina zodat alles goed aansluit.",
     "reload": "Nu vernieuwen"
+  },
+  "confirmDialog": {
+    "ok": "Doorgaan",
+    "cancel": "Annuleren",
+    "typeWord": "Typ {word} om te bevestigen.",
+    "deleteWord": "VERWIJDEREN",
+    "deleteOk": "Permanent verwijderen"
   }
 }

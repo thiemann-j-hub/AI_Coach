@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Ir pieejama jauna versija. Lūdzu, pārlādējiet lapu, lai viss darbotos pareizi.",
     "reload": "Pārlādēt tagad"
+  },
+  "confirmDialog": {
+    "ok": "Turpināt",
+    "cancel": "Atcelt",
+    "typeWord": "Ievadiet {word}, lai apstiprinātu.",
+    "deleteWord": "DZĒST",
+    "deleteOk": "Dzēst neatgriezeniski"
   }
 }

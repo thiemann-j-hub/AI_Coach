@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "En ny versjon er tilgjengelig. Last inn siden på nytt slik at alt blir oppdatert.",
     "reload": "Last inn på nytt nå"
+  },
+  "confirmDialog": {
+    "ok": "Fortsett",
+    "cancel": "Avbryt",
+    "typeWord": "Skriv inn {word} for å bekrefte.",
+    "deleteWord": "SLETT",
+    "deleteOk": "Slett permanent"
   }
 }

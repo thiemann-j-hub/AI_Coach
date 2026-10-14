@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Je k dispozici nová verze. Obnovte prosím stránku, aby vše odpovídalo.",
     "reload": "Načíst znovu"
+  },
+  "confirmDialog": {
+    "ok": "Pokračovat",
+    "cancel": "Zrušit",
+    "typeWord": "Napište {word} pro potvrzení.",
+    "deleteWord": "SMAZAT",
+    "deleteOk": "Trvale smazat"
   }
 }

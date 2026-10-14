@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "A new version is available. Please reload the page so everything matches.",
     "reload": "Reload now"
+  },
+  "confirmDialog": {
+    "ok": "Continue",
+    "cancel": "Cancel",
+    "typeWord": "Type {word} to confirm.",
+    "deleteWord": "DELETE",
+    "deleteOk": "Delete permanently"
   }
 }

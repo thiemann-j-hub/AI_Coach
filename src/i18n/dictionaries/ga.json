@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Tá leagan nua ar fáil. Athluchtaigh an leathanach chun gach rud a thabhairt chun dáta.",
     "reload": "Athluchtaigh anois"
+  },
+  "confirmDialog": {
+    "ok": "Lean ar aghaidh",
+    "cancel": "Cealaigh",
+    "typeWord": "Clóscríobh {word} chun é a dheimhniú.",
+    "deleteWord": "DELETE",
+    "deleteOk": "Scrios go buan"
   }
 }

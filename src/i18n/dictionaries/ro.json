@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Este disponibilă o nouă versiune. Vă rugăm să reîncărcați pagina pentru ca totul să fie sincronizat.",
     "reload": "Reîncarcă acum"
+  },
+  "confirmDialog": {
+    "ok": "Continuă",
+    "cancel": "Anulează",
+    "typeWord": "Tastați {word} pentru a confirma.",
+    "deleteWord": "ȘTERGE",
+    "deleteOk": "Șterge definitiv"
   }
 }

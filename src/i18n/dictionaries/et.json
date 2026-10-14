@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Saadaval on uus versioon. Palun värskendage lehte, et kõik toimiks õigesti.",
     "reload": "Värskenda kohe"
+  },
+  "confirmDialog": {
+    "ok": "Jätka",
+    "cancel": "Tühista",
+    "typeWord": "Kinnitamiseks sisestage {word}.",
+    "deleteWord": "KUSTUTA",
+    "deleteOk": "Kustuta jäädavalt"
   }
 }

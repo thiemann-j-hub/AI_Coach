@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Új verzió érhető el. Kérjük, frissítse az oldalt, hogy minden megfelelően működjön.",
     "reload": "Frissítés most"
+  },
+  "confirmDialog": {
+    "ok": "Tovább",
+    "cancel": "Mégse",
+    "typeWord": "A megerősítéshez írja be a következőt: {word}.",
+    "deleteWord": "TÖRLÉS",
+    "deleteOk": "Végleges törlés"
   }
 }

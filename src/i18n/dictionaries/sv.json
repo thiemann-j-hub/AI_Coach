@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "En ny version är tillgänglig. Ladda om sidan så att allt stämmer överens.",
     "reload": "Ladda om nu"
+  },
+  "confirmDialog": {
+    "ok": "Fortsätt",
+    "cancel": "Avbryt",
+    "typeWord": "Skriv {word} för att bekräfta.",
+    "deleteWord": "RADERA",
+    "deleteOk": "Radera permanent"
   }
 }

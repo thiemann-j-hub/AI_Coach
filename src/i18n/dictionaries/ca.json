@@ -589,5 +589,12 @@
   "version": {
     "newVersion": "Hi ha una nova versió disponible. Torneu a carregar la pàgina perquè tot estigui actualitzat.",
     "reload": "Tornar a carregar ara"
+  },
+  "confirmDialog": {
+    "ok": "Continuar",
+    "cancel": "Cancel·lar",
+    "typeWord": "Escrigui {word} per confirmar.",
+    "deleteWord": "ELIMINAR",
+    "deleteOk": "Suprimir permanentment"
   }
 }

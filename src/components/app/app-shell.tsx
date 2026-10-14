@@ -42,6 +42,7 @@ import { BrandSwitcher, useHubNav } from '@/components/app/app-switcher';
 import { VersionWatcher } from '@/components/app/version-watcher';
 import { SessionExpiredBanner } from '@/components/app/session-expired-banner';
 import { VersionBanner } from '@/components/app/version-banner';
+import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import { CreditBalance } from '@/components/app/credit-balance';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -158,6 +159,16 @@ export default function AppShell(props: {
   };
 
   return (
+    // W1-10 (14.10.2026): Bestätigen als await confirm() für alle Seiten; Texte aus dem Wörterbuch.
+    <ConfirmProvider
+      labels={{
+        ok: t.confirmDialog.ok,
+        cancel: t.confirmDialog.cancel,
+        typeWord: t.confirmDialog.typeWord,
+        deleteWord: t.confirmDialog.deleteWord,
+        deleteOk: t.confirmDialog.deleteOk,
+      }}
+    >
     <div className="min-h-screen bg-background text-foreground font-sans">
       <div className="flex h-screen overflow-hidden">
         {/* Mobile backdrop */}
@@ -460,5 +471,6 @@ export default function AppShell(props: {
         </main>
       </div>
     </div>
+    </ConfirmProvider>
   );
 }
