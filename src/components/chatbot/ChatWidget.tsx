@@ -14,6 +14,22 @@
  */
 import { useEffect, useRef, useState } from "react";
 
+/**
+ * W1-13 (14.10.2026): Die KI sagt in Ich-Form, was sie gerade tut (LXT Anhang F §4.4,
+ * `ai.chatBot.loadingState.*`): drei kurze Sätze nacheinander statt Punkte. Self-contained,
+ * damit das Widget byte-identisch in allen Repos bleibt.
+ */
+function WaitSteps({ steps, intervalMs = 4000 }: { steps: string[]; intervalMs?: number }) {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    setIndex(0);
+    const timer = setInterval(() => setIndex((i) => Math.min(i + 1, steps.length - 1)), intervalMs);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [steps.join("|"), intervalMs]);
+  return <span className="pnchat-steps" role="status" aria-live="polite">{steps[index] ?? ""}</span>;
+}
+
 type Msg = {
   role: "user" | "assistant";
   text: string;
@@ -68,6 +84,11 @@ const STRINGS = {
     fbOffer: "→ Als Hinweis an die Entwicklung senden",
     fbDoneMsg: "✅ Danke! Dein Hinweis ist angekommen (Referenz {ref}). Wir schauen ihn uns an — bei Rückfragen melden wir uns.",
     fbDoneNoShot: "Hinweis: Der Screenshot konnte nicht übertragen werden — dein Hinweis selbst ist angekommen.",
+    // W1-13 (14.10.2026): Ich-Form beim Warten (LXT Anhang F §4.4) + KI-Grenze in einem Satz.
+    thinking1: "Ich suche in den PulseNorth-Inhalten …",
+    thinking2: "Ich lese die passenden Stellen …",
+    thinking3: "Ich formuliere eine Antwort …",
+    aiLimit: "Ich kann mich irren – prüfe wichtige Angaben in den Quellen.",
   },
   en: {
     title: "PulseNorth Assistant",
@@ -102,6 +123,10 @@ const STRINGS = {
     fbOffer: "→ Send this as a note to the dev team",
     fbDoneMsg: "✅ Thanks! Your note has arrived (reference {ref}). We'll take a look — and get back to you if we have questions.",
     fbDoneNoShot: "Note: the screenshot could not be uploaded — your note itself has arrived.",
+    thinking1: "I am searching the PulseNorth content …",
+    thinking2: "I am reading the relevant passages …",
+    thinking3: "I am writing an answer …",
+    aiLimit: "I can be wrong – check important details in the sources.",
   },
 };
 
@@ -280,7 +305,8 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
                 next.offer = { category: guessCategory(q), title: q.slice(0, 120), problemDesc: q };
               }
             }
-            else if (ev.type === "error") next.text = next.text || t.error;
+            // W1-1/W1-2: der Server schickt den Du-Text je Fehlerart samt Fehler-Nr.
+            else if (ev.type === "error") next.text = next.text || ev.message || t.error;
             else return m;
             return [...m.slice(0, -1), next];
           });
@@ -299,7 +325,10 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
 
   return (
     <div className="pnchat-root" data-open={open}>
-      <style>{CSS}</style>
+      {/* Als Rohtext einsetzen: als Text-Kind maskiert React die Anführungszeichen
+          (&quot;) im Server-HTML, der Browser dekodiert sie in <style> nicht →
+          Hydrationswarnung auf jeder Seite (Befund 28.09.2026, Jobmap). */}
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {!open && (
         <button className="pnchat-launcher" aria-label={t.open} onClick={() => setOpen(true)}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
@@ -337,7 +366,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
               <div key={i} className={`pnchat-msg pnchat-${m.role}`}>
                 <div className="pnchat-bubble">
                   {(m.role === "assistant" ? m.text.replace(/\s*\[(?:Quelle|Source):[^\]]*\]/gi, "") : m.text) ||
-                    (m.role === "assistant" && busy && i === msgs.length - 1 ? <span className="pnchat-typing"><i /><i /><i /></span> : null)}
+                    (m.role === "assistant" && busy && i === msgs.length - 1 ? <WaitSteps steps={[t.thinking1, t.thinking2, t.thinking3]} /> : null)}
                 </div>
                 {m.role === "assistant" && m.offer && (
                   <button className="pnchat-offer" onClick={() => openFeedback(m.offer)}>{t.fbOffer}</button>
@@ -365,6 +394,7 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
               </div>
             ))}
           </div>
+          <p className="pnchat-ailimit">{t.aiLimit}</p>
           <form className="pnchat-input" onSubmit={(e) => { e.preventDefault(); send(input); }}>
             <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder={t.placeholder} disabled={busy} maxLength={2000} />
             <button type="submit" disabled={busy || !input.trim()} aria-label={t.send}>
@@ -445,6 +475,8 @@ const CSS = `
 .pnchat-rate button:hover:not(:disabled){color:#1f6feb;background:rgba(31,111,235,.08)}
 .pnchat-rate button[data-active="true"]{color:#1f6feb}
 .pnchat-rate button:disabled{cursor:default;opacity:.9}
+.pnchat-steps{margin:0;font-size:13px;color:#666;font-style:italic}
+.pnchat-ailimit{margin:0;padding:4px 12px 0;font-size:11px;color:#777}
 .pnchat-typing{display:inline-flex;gap:3px}
 .pnchat-typing i{width:6px;height:6px;border-radius:50%;background:#999;animation:pnbounce 1.2s infinite}
 .pnchat-typing i:nth-child(2){animation-delay:.2s}.pnchat-typing i:nth-child(3){animation-delay:.4s}

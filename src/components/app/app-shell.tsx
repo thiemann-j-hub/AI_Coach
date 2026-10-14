@@ -26,8 +26,7 @@ import { useTranslation } from '@/i18n/useTranslation';
 import { signOut } from '@/lib/auth-service';
 import { goToHubLogin, hubLoginEnabled } from '@/lib/hub-login';
 import { useToast } from '@/hooks/use-toast';
-import { DiagnoseReportDialog, openDiagnoseReport } from '@/components/app/diagnose-report-dialog';
-import { FileWarning } from 'lucide-react';
+import { DiagnoseReportDialog } from '@/components/app/diagnose-report-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -424,11 +423,7 @@ export default function AppShell(props: {
                         {t.nav.profile}
                       </Link>
                     </DropdownMenuItem>
-                    {/* W1-3 (14.10.2026): Fehlerbericht für den Support — Vorschau, dann Datei (auch Strg+Alt+D). */}
-                    <DropdownMenuItem onClick={() => openDiagnoseReport()} className="gap-2 cursor-pointer">
-                      <FileWarning className="h-4 w-4" />
-                      {t.diagnose.menu}
-                    </DropdownMenuItem>
+                    {/* W1-3: Fehlerbericht nur per Strg+Alt+D (Owner-Entscheid 14.10.: Menü = Profil + Abmelden). */}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={onSignOut}
