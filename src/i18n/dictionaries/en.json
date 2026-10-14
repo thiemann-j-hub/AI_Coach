@@ -530,5 +530,45 @@
     "title": "No access to AI Conversation Coach",
     "body": "AI Conversation Coach is not enabled for your account. Access is granted by your company’s admin under “Team & access”. You will find your assigned courses in “My learning area”.",
     "cta": "Go to “My learning area”"
+  },
+  "aiErrors": {
+    "errorNumber": "Error no. {id}",
+    "copy": "Copy number",
+    "quota_exhausted": {
+      "title": "Our AI quota is exhausted for the moment.",
+      "next": "Try again in a few minutes. Your progress is kept and nothing is charged twice."
+    },
+    "credits_empty": {
+      "title": "Your balance is empty.",
+      "next": "Top up credits and you continue right where you were."
+    },
+    "daily_limit": {
+      "title": "The daily limit for AI runs has been reached.",
+      "next": "It continues tomorrow. If you need more today, tell your admin."
+    },
+    "content_blocked": {
+      "title": "The AI declined this content.",
+      "next": "Rephrase the passage or have another part created first. Nothing was charged."
+    },
+    "model_not_enabled": {
+      "title": "This AI model is not available right now.",
+      "next": "We are on it. Try again later or use the default setting."
+    },
+    "timeout": {
+      "title": "The AI took too long.",
+      "next": "Try again right away; it usually works the second time."
+    },
+    "throttled": {
+      "title": "The AI service is busy right now.",
+      "next": "Wait a minute and try again. You do not need to change anything."
+    },
+    "ai_unavailable": {
+      "title": "The AI service is not reachable right now.",
+      "next": "Try again in a few minutes. Your progress is kept."
+    },
+    "ai_general": {
+      "title": "That did not work with the AI.",
+      "next": "Try again. If the error persists, send us the error number."
+    }
   }
 }

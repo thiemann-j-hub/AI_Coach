@@ -530,5 +530,45 @@
     "title": "Nemáte přístup k nástroji AI kouč rozhovorů",
     "body": "Nástroj AI kouč rozhovorů není pro Váš účet zpřístupněn. Přístup uděluje správce Vaší společnosti v části „Tým a přístupy“. Kurzy, které Vám byly přiřazeny, najdete v části „Můj vzdělávací prostor“.",
     "cta": "Přejít na „Můj vzdělávací prostor“"
+  },
+  "aiErrors": {
+    "errorNumber": "Chyba č. {id}",
+    "copy": "Kopírovat číslo",
+    "quota_exhausted": {
+      "title": "Náš limit pro KI je v tuto chvíli vyčerpán.",
+      "next": "Zkuste to znovu za několik minut. Váš postup zůstane uložen a nic nebude účtováno dvakrát."
+    },
+    "credits_empty": {
+      "title": "Váš zůstatek je vyčerpán.",
+      "next": "Doplňte kredity a můžete pokračovat přesně tam, kde jste skončili."
+    },
+    "daily_limit": {
+      "title": "Byl dosažen denní limit pro spuštění KI.",
+      "next": "Pokračovat můžete zítra. Pokud potřebujete více kreditů ještě dnes, kontaktujte svého správce."
+    },
+    "content_blocked": {
+      "title": "KI tento obsah odmítla.",
+      "next": "Přeformulujte danou pasáž nebo nechte nejprve vytvořit jinou část. Nic vám nebylo účtováno."
+    },
+    "model_not_enabled": {
+      "title": "Tento model AI není v tuto chvíli k dispozici.",
+      "next": "Pracujeme na tom. Zkuste to znovu později nebo použijte výchozí nastavení."
+    },
+    "timeout": {
+      "title": "Odpověď AI trvala příliš dlouho.",
+      "next": "Zkuste to znovu hned teď; napodruhé to obvykle funguje."
+    },
+    "throttled": {
+      "title": "Služba UI je v tuto chvíli vytížená.",
+      "next": "Počkejte minutu a zkuste to znovu. Nemusíte nic měnit."
+    },
+    "ai_unavailable": {
+      "title": "Služba AI není v tuto chvíli dostupná.",
+      "next": "Zkuste to znovu za několik minut. Váš postup zůstane uložen."
+    },
+    "ai_general": {
+      "title": "S tématem AI to nefungovalo.",
+      "next": "Zkuste to znovu. Pokud chyba přetrvává, pošlete nám číslo chyby."
+    }
   }
 }

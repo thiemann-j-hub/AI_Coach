@@ -530,5 +530,45 @@
     "title": "Brak dostępu do narzędzia Coach rozmów AI",
     "body": "Narzędzie Coach rozmów AI nie jest włączone dla Państwa konta. Dostęp przyznaje administrator Państwa firmy w sekcji „Zespół i dostępy”. Przypisane Państwu kursy znajdą Państwo w sekcji „Mój obszar nauki”.",
     "cta": "Przejść do sekcji „Mój obszar nauki”"
+  },
+  "aiErrors": {
+    "errorNumber": "Nr błędu: {id}",
+    "copy": "Kopiuj numer",
+    "quota_exhausted": {
+      "title": "Limit SI został obecnie wyczerpany.",
+      "next": "Proszę spróbować ponownie za kilka minut. Postęp zostanie zachowany, a opłata nie zostanie naliczona podwójnie."
+    },
+    "credits_empty": {
+      "title": "Kredyty zostały wykorzystane.",
+      "next": "Proszę doładować kredyty, aby kontynuować w tym samym miejscu."
+    },
+    "daily_limit": {
+      "title": "Dzienny limit uruchomień SI został osiągnięty.",
+      "next": "Kontynuacja będzie możliwa jutro. W przypadku zapotrzebowania na większy limit jeszcze dziś należy skontaktować się z administratorem."
+    },
+    "content_blocked": {
+      "title": "Sztuczna inteligencja odrzuciła tę treść.",
+      "next": "Proszę przeredagować ten fragment lub wygenerować najpierw inną część. Opłata nie została pobrana."
+    },
+    "model_not_enabled": {
+      "title": "Ten model SI jest w tej chwili niedostępny.",
+      "next": "Pracujemy nad tym. Proszę spróbować ponownie później lub użyć ustawienia domyślnego."
+    },
+    "timeout": {
+      "title": "Odpowiedź SI zajęła zbyt dużo czasu.",
+      "next": "Proszę spróbować ponownie za chwilę — zazwyczaj udaje się za drugim razem."
+    },
+    "throttled": {
+      "title": "Usługa SI jest w tej chwili przeciążona.",
+      "next": "Proszę odczekać minutę i spróbować ponownie. Nie trzeba niczego zmieniać."
+    },
+    "ai_unavailable": {
+      "title": "Usługa SI jest obecnie niedostępna.",
+      "next": "Proszę spróbować ponownie za kilka minut. Postęp zostanie zachowany."
+    },
+    "ai_general": {
+      "title": "Wystąpił błąd podczas przetwarzania przez SI.",
+      "next": "Proszę spróbować ponownie. Jeśli błąd nadal występuje, proszę przesłać nam numer błędu."
+    }
   }
 }

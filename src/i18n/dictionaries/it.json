@@ -530,5 +530,45 @@
     "title": "Nessun accesso a Coach di conversazione IA",
     "body": "Lo strumento Coach di conversazione IA non è abilitato per il Suo account. L’accesso viene concesso dall’amministratore della Sua azienda nella sezione “Team e accessi”. I corsi a Lei assegnati si trovano in “La mia area di apprendimento”.",
     "cta": "Vai a “La mia area di apprendimento”"
+  },
+  "aiErrors": {
+    "errorNumber": "N. errore {id}",
+    "copy": "Copia numero",
+    "quota_exhausted": {
+      "title": "La nostra quota per l’IA è al momento esaurita.",
+      "next": "Riprovi tra qualche minuto. I Suoi progressi verranno salvati e non Le verrà addebitato nulla due volte."
+    },
+    "credits_empty": {
+      "title": "Il Suo credito è esaurito.",
+      "next": "Ricarichi i crediti per riprendere esattamente da dove aveva interrotto."
+    },
+    "daily_limit": {
+      "title": "È stato raggiunto il limite giornaliero per le operazioni dell’IA.",
+      "next": "Potrà proseguire domani. Se ha bisogno di un limite maggiore per oggi, ne parli con il Suo amministratore."
+    },
+    "content_blocked": {
+      "title": "L’IA ha rifiutato questo contenuto.",
+      "next": "Riformuli il passaggio o generi prima un’altra parte. Non è stato addebitato alcun costo."
+    },
+    "model_not_enabled": {
+      "title": "Questo modello di IA non è al momento disponibile.",
+      "next": "Ce ne stiamo occupando. Riprovi più tardi o utilizzi l’impostazione predefinita."
+    },
+    "timeout": {
+      "title": "L’IA ha impiegato troppo tempo.",
+      "next": "Riprovi subito; di solito funziona al secondo tentativo."
+    },
+    "throttled": {
+      "title": "Il servizio IA è al momento sovraccarico.",
+      "next": "Attenda un minuto e riprovi. Non occorre modificare nulla."
+    },
+    "ai_unavailable": {
+      "title": "Il servizio IA non è al momento raggiungibile.",
+      "next": "Riprovi tra qualche minuto. I Suoi progressi verranno salvati."
+    },
+    "ai_general": {
+      "title": "Qualcosa non ha funzionato con l’IA.",
+      "next": "Riprovi. Se l’errore persiste, ci invii il numero di errore."
+    }
   }
 }

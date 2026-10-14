@@ -530,5 +530,45 @@
     "title": "Ligipääs rakendusele AI-vestlustreener puudub",
     "body": "Rakendus AI-vestlustreener ei ole teie konto jaoks aktiveeritud. Ligipääsu annab teie ettevõtte administraator jaotises „Meeskond ja ligipääs“. Teile määratud kursused leiate jaotisest „Minu õppimisala“.",
     "cta": "Mine jaotisse „Minu õppimisala“"
+  },
+  "aiErrors": {
+    "errorNumber": "Vea nr {id}",
+    "copy": "Kopeeri number",
+    "quota_exhausted": {
+      "title": "Meie KI maht on hetkel ammendatud.",
+      "next": "Proovige mõne minuti pärast uuesti. Teie edenemine säilitatakse ja teilt ei võeta midagi topelt."
+    },
+    "credits_empty": {
+      "title": "Teie saldo on tühi.",
+      "next": "Laadige krediiti juurde ja saate jätkata täpselt sealt, kus pooleli jäite."
+    },
+    "daily_limit": {
+      "title": "KI päevalimiit on täis saanud.",
+      "next": "Edasi saab jätkata homme. Kui vajate täna rohkem, andke sellest oma administraatorile teada."
+    },
+    "content_blocked": {
+      "title": "KI lükkas selle sisu tagasi.",
+      "next": "Sõnastage see lõik ümber või laske kõigepealt luua teine osa. Tasu ei võetud."
+    },
+    "model_not_enabled": {
+      "title": "See KI-mudel pole praegu saadaval.",
+      "next": "Töötame selle kallal. Proovige hiljem uuesti või kasutage vaikeseadistust."
+    },
+    "timeout": {
+      "title": "KI vastamine võttis liiga kaua aega.",
+      "next": "Proovige kohe uuesti, tavaliselt see teisel korral õnnestub."
+    },
+    "throttled": {
+      "title": "KI-teenus on hetkel ülekoormatud.",
+      "next": "Oodake minut ja proovige uuesti. Te ei pea midagi muutma."
+    },
+    "ai_unavailable": {
+      "title": "KI-teenus ei ole praegu kättesaadav.",
+      "next": "Proovige mõne minuti pärast uuesti. Teie edenemine säilitatakse."
+    },
+    "ai_general": {
+      "title": "KI-ga ei läinud see korda.",
+      "next": "Proovige uuesti. Kui viga püsib, saatke meile vea number."
+    }
   }
 }

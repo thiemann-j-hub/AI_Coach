@@ -530,5 +530,45 @@
     "title": "Ingen adgang til AI-samtalecoach",
     "body": "AI-samtalecoach er ikke aktiveret for din konto. Adgangen tildeles af din virksomheds administrator under „Team & adgang“. Dine tildelte kurser finder du i „Mit læringsområde“.",
     "cta": "Gå til „Mit læringsområde“"
+  },
+  "aiErrors": {
+    "errorNumber": "Fejlnr. {id}",
+    "copy": "Kopiér nummer",
+    "quota_exhausted": {
+      "title": "Vores AI-kvote er opbrugt i øjeblikket.",
+      "next": "Prøv igen om et par minutter. Dine fremskridt gemmes, og du bliver ikke opkrævet to gange."
+    },
+    "credits_empty": {
+      "title": "Din saldo er tom.",
+      "next": "Tank credits op, så fortsætter du præcis, hvor du slap."
+    },
+    "daily_limit": {
+      "title": "Den daglige grænse for AI-kørsler er nået.",
+      "next": "Det fortsætter i morgen. Hvis du har brug for mere i dag, skal du kontakte din administrator."
+    },
+    "content_blocked": {
+      "title": "AI'en afviste dette indhold.",
+      "next": "Omformuler afsnittet, eller få oprettet en anden del først. Intet er blevet opkrævet."
+    },
+    "model_not_enabled": {
+      "title": "Denne AI-model er ikke tilgængelig i øjeblikket.",
+      "next": "Vi arbejder på det. Prøv igen senere, eller brug standardindstillingen."
+    },
+    "timeout": {
+      "title": "AI'en var for længe om det.",
+      "next": "Prøv igen med det samme; det virker som regel anden gang."
+    },
+    "throttled": {
+      "title": "AI-tjenesten er optaget lige nu.",
+      "next": "Vent et minut, og prøv igen. Du behøver ikke at ændre noget."
+    },
+    "ai_unavailable": {
+      "title": "AI-tjenesten er ikke tilgængelig lige nu.",
+      "next": "Prøv igen om et par minutter. Dine fremskridt gemmes."
+    },
+    "ai_general": {
+      "title": "Det virkede ikke med AI'en.",
+      "next": "Prøv igen. Hvis fejlen fortsætter, bedes du sende os fejlnummeret."
+    }
   }
 }

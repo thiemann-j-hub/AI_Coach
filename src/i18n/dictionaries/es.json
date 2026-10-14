@@ -530,5 +530,45 @@
     "title": "Sin acceso a Coach de conversación con IA",
     "body": "La herramienta Coach de conversación con IA no está habilitada para su cuenta. El acceso lo concede el administrador de su empresa en «Equipo y accesos». Encontrará sus cursos asignados en «Mi área de aprendizaje».",
     "cta": "Ir a «Mi área de aprendizaje»"
+  },
+  "aiErrors": {
+    "errorNumber": "N.º de error {id}",
+    "copy": "Copiar número",
+    "quota_exhausted": {
+      "title": "Nuestro cupo de IA está agotado por el momento",
+      "next": "Inténtelo de nuevo en unos minutos. Su progreso se conserva y no se cobra nada por duplicado."
+    },
+    "credits_empty": {
+      "title": "Su saldo está agotado",
+      "next": "Recargue créditos y podrá continuar justo donde se quedó."
+    },
+    "daily_limit": {
+      "title": "Se ha alcanzado el límite diario de ejecuciones de IA",
+      "next": "Continuará mañana. Si necesita más hoy, póngase en contacto con su administrador."
+    },
+    "content_blocked": {
+      "title": "La IA ha rechazado este contenido",
+      "next": "Reformule el fragmento o solicite la creación de otra parte primero. No se ha realizado ningún cargo."
+    },
+    "model_not_enabled": {
+      "title": "Este modelo de IA no está disponible en este momento",
+      "next": "Estamos trabajando en ello. Inténtelo de nuevo más tarde o utilice la configuración predeterminada."
+    },
+    "timeout": {
+      "title": "La IA ha tardado demasiado",
+      "next": "Inténtelo de nuevo de inmediato; por lo general, funciona al segundo intento."
+    },
+    "throttled": {
+      "title": "El servicio de IA está ocupado en este momento",
+      "next": "Espere un minuto e inténtelo de nuevo. No necesita cambiar nada."
+    },
+    "ai_unavailable": {
+      "title": "El servicio de IA no está accesible en este momento",
+      "next": "Inténtelo de nuevo en unos minutos. Su progreso se conserva."
+    },
+    "ai_general": {
+      "title": "No se ha podido completar la acción con la IA",
+      "next": "Inténtelo de nuevo. Si el error persiste, envíenos el número de error."
+    }
   }
 }

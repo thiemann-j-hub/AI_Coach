@@ -530,5 +530,45 @@
     "title": "Gan rochtain ar Cóitseálaí comhrá IS",
     "body": "Níl Cóitseálaí comhrá IS cumasaithe le haghaidh do chuntais. Deonaíonn riarthóir do chuideachta rochtain faoi “Foireann & rochtain”. Gheobhaidh tú na cúrsaí atá sannta duit i “Mo Limistéar Foghlama”.",
     "cta": "Téigh chuig “Mo Limistéar Foghlama”"
+  },
+  "aiErrors": {
+    "errorNumber": "Earráid Uimh. {id}",
+    "copy": "Cóipeáil an uimhir",
+    "quota_exhausted": {
+      "title": "Tá ár gcuóta AI ídithe faoi láthair.",
+      "next": "Rinneadh an dul chun cinn a shábháil. Bain triail as arís i gceann cúpla nóiméad agus ní ngearrfar aon táille faoi dhó."
+    },
+    "credits_empty": {
+      "title": "Tá do chomhardú folamh.",
+      "next": "Maoiniú creidmheasanna agus is féidir leanúint ar aghaidh go díreach san áit a raibh tú."
+    },
+    "daily_limit": {
+      "title": "Baineadh amach an teorainn laethúil le haghaidh ritheanna AI.",
+      "next": "Leanfar leis amárach. Más gá níos mó a fháil inniu, cuir in iúl don riarthóir."
+    },
+    "content_blocked": {
+      "title": "Diúltaíodh an t-ábhar seo ag an AI.",
+      "next": "Athfhoclaigh an sliocht nó cuir tús le cuid eile a chruthú ar dtús. Níor gearradh aon táille."
+    },
+    "model_not_enabled": {
+      "title": "Níl an tsamhail AI seo ar fáil faoi láthair.",
+      "next": "Táimid ag obair air. Bain triail as arís níos déanaí nó bain úsáid as an socrú réamhshocraithe."
+    },
+    "timeout": {
+      "title": "Thóg an AI an-iomarca ama.",
+      "next": "Bain triail as arís láithreach; de ghnáth oibríonn sé an dara huair."
+    },
+    "throttled": {
+      "title": "Tá an tseirbhís AI gnóthach faoi láthair.",
+      "next": "Fan nóiméad agus bain triail as arís. Ní gá aon rud a athrú."
+    },
+    "ai_unavailable": {
+      "title": "Níl an tseirbhís AI inrochtana faoi láthair.",
+      "next": "Bain triail as arís i gceann cúpla nóiméad. Déantar do dhul chun cinn a chaomhnú."
+    },
+    "ai_general": {
+      "title": "Níor éirigh leis sin leis an AI.",
+      "next": "Bain triail as arís. Má leanann an earráid ar aghaidh, seol uimhir na hearráide chugainn."
+    }
   }
 }

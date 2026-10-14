@@ -530,5 +530,45 @@
     "title": "Ei käyttöoikeutta Tekoäly-keskusteluvalmentaja-sovellukseen",
     "body": "Tekoäly-keskusteluvalmentaja-sovellusta ei ole otettu käyttöön tilillesi. Käyttöoikeuden myöntää yrityksesi pääkäyttäjä kohdassa ”Tiimi & käyttöoikeudet”. Sinulle määritetyt kurssit löydät kohdasta ”Oma oppimisalue”.",
     "cta": "Siirry kohtaan ”Oma oppimisalue”"
+  },
+  "aiErrors": {
+    "errorNumber": "Virhenro {id}",
+    "copy": "Kopioi numero",
+    "quota_exhausted": {
+      "title": "Tekoälykiintiömme on tällä hetkellä täynnä.",
+      "next": "Yritä uudelleen muutaman minuutin kuluttua. Edistymisesi säilyy eikä sinua veloiteta kahdesti."
+    },
+    "credits_empty": {
+      "title": "Saldesi on loppunut.",
+      "next": "Lataa lisää saldoa ja voit jatkaa suoraan siitä, mihin jäit."
+    },
+    "daily_limit": {
+      "title": "Päivittäinen tekoälyajojen enimmäismäärä on saavutettu.",
+      "next": "Jatkuu huomenna. Jos tarvitset lisää tänään, ota yhteyttä ylläpitäjääsi."
+    },
+    "content_blocked": {
+      "title": "Tekoäly hylkäsi tämän sisällön.",
+      "next": "Muotoile kohta uudelleen tai luo ensin toinen osa. Mitään ei veloitettu."
+    },
+    "model_not_enabled": {
+      "title": "Tämä tekoälymalli ei ole juuri nyt saatavilla.",
+      "next": "Käsittelemme asiaa. Yritä myöhemmin uudelleen tai käytä oletusasetusta."
+    },
+    "timeout": {
+      "title": "Tekoälyltä kesti liian kauan.",
+      "next": "Yritä heti uudelleen; se onnistuu yleensä toisella kerralla."
+    },
+    "throttled": {
+      "title": "Tekoälypalvelu on tällä hetkellä varattu.",
+      "next": "Odota minuutti ja yritä uudelleen. Sinun ei tarvitse muuttaa mitään."
+    },
+    "ai_unavailable": {
+      "title": "Tekoälypalveluun ei saada juuri nyt yhteyttä.",
+      "next": "Yritä uudelleen muutaman minuutin kuluttua. Edistymisesi säilyy."
+    },
+    "ai_general": {
+      "title": "Tämä ei onnistunut tekoälyn kanssa.",
+      "next": "Yritä uudelleen. Jos virhe toistuu, lähetä meille virhenumero."
+    }
   }
 }

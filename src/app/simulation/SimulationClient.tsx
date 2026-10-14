@@ -42,6 +42,7 @@ import { ExplainerVideoButton } from '@/components/app/explainer-video';
 import { TranscriptDropBar } from '@/components/app/transcript-drop-bar';
 import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
+import { aiErrorMessage } from '@/lib/api-error-text';
 import { withBasePath } from '@/lib/base-path';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
@@ -818,7 +819,7 @@ export default function SimulationClient() {
 
   async function handleApiFailure(res: Response) {
     let code = '';
-    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean } = {};
+    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean; aiCode?: string; requestId?: string } = {};
     try {
       body = await res.json();
       code = body.code ?? '';
@@ -831,6 +832,9 @@ export default function SimulationClient() {
       setTopUpUrl(memberOnly ? null : body.topUpUrl ?? null);
       // S4-4: vor dem Start heißt der Satz anders als nach dem Rollenspiel.
       setError(memberOnly ? t.common.balanceEmptyMember : body.preflight ? ts.preflightPaywall : ts.paywall);
+    } else if (code === 'AI_ERROR' || body.aiCode) {
+      // W1-1/W1-2: Du-Text je KI-Fehlerart + Fehler-Nr.
+      setError(aiErrorMessage(t.aiErrors, body, res, ts.genericError) ?? ts.genericError);
     } else if (code === 'CENTRAL_REAUTH') {
       setError(ts.reauth);
     } else if (code === 'CENTRAL_UNAVAILABLE' || res.status === 503) {

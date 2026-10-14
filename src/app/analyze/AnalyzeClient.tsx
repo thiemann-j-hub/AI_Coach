@@ -37,6 +37,8 @@ import {
 
 type AnalyzeResult = any;
 
+import { aiErrorMessage } from '@/lib/api-error-text';
+
 async function readErrorText(res: Response) {
   const txt = await res.text();
   try {
@@ -251,7 +253,12 @@ export default function AnalyzeClient() {
           return;
         }
       }
-      if (!res.ok) throw new Error(await readErrorText(res));
+      if (!res.ok) {
+        // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. verständlich zeigen.
+        const ej = await res.clone().json().catch(() => null);
+        const nice = aiErrorMessage(t.aiErrors, ej, res);
+        throw new Error(nice ?? (await readErrorText(res)));
+      }
       const j = await res.json();
       if (!j?.ok) throw new Error(j?.error || 'Analysis failed');
       const result: AnalyzeResult = j.result;

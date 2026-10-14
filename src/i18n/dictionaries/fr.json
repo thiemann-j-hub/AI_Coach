@@ -530,5 +530,45 @@
     "title": "Aucun accès à Coach de conversation IA",
     "body": "L’outil Coach de conversation IA n’est pas activé pour votre compte. L’accès est accordé par l’administrateur de votre entreprise sous « Équipe & accès ». Vous trouverez vos cours attribués dans « Mon espace d’apprentissage ».",
     "cta": "Aller à « Mon espace d’apprentissage »"
+  },
+  "aiErrors": {
+    "errorNumber": "N° d'erreur {id}",
+    "copy": "Copier le numéro",
+    "quota_exhausted": {
+      "title": "Notre quota d'IA est actuellement épuisé.",
+      "next": "Réessayez dans quelques minutes. Votre progression est conservée et rien ne vous sera facturé deux fois."
+    },
+    "credits_empty": {
+      "title": "Votre solde est épuisé.",
+      "next": "Rechargez vos crédits pour reprendre exactement là où vous vous étiez arrêté."
+    },
+    "daily_limit": {
+      "title": "La limite quotidienne d'exécutions d'IA a été atteinte.",
+      "next": "Vous pourrez continuer demain. Si vous en avez besoin de plus aujourd'hui, contactez votre administrateur."
+    },
+    "content_blocked": {
+      "title": "L'IA a refusé ce contenu.",
+      "next": "Reformulez le passage ou faites générer une autre partie au préalable. Rien n'a été facturé."
+    },
+    "model_not_enabled": {
+      "title": "Ce modèle d'IA n'est pas disponible pour le moment.",
+      "next": "Nous y travaillons. Réessayez plus tard ou utilisez le paramètre par défaut."
+    },
+    "timeout": {
+      "title": "L'IA a mis trop de temps à répondre.",
+      "next": "Réessayez immédiatement ; cela fonctionne généralement la deuxième fois."
+    },
+    "throttled": {
+      "title": "Le service d'IA est actuellement très sollicité.",
+      "next": "Patientez une minute et réessayez. Vous n'avez rien à modifier."
+    },
+    "ai_unavailable": {
+      "title": "Le service d'IA n'est pas accessible pour le moment.",
+      "next": "Réessayez dans quelques minutes. Votre progression est conservée."
+    },
+    "ai_general": {
+      "title": "Une erreur est survenue avec l'IA.",
+      "next": "Réessayez. Si l'erreur persiste, veuillez nous transmettre le numéro d'erreur."
+    }
   }
 }

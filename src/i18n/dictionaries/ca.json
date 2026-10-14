@@ -530,5 +530,45 @@
     "title": "Sense accés a Coach de conversa amb IA",
     "body": "L'eina Coach de conversa amb IA no està habilitada per al seu compte. L'accés el concedeix l'administrador de la seva empresa a l'apartat «Equip i accessos». Trobarà els seus cursos assignats a «El meu espai d'aprenentatge».",
     "cta": "Anar a «El meu espai d'aprenentatge»"
+  },
+  "aiErrors": {
+    "errorNumber": "Núm. d'error {id}",
+    "copy": "Copiar el número",
+    "quota_exhausted": {
+      "title": "La nostra quota d'IA s'ha esgotat de moment.",
+      "next": "Torni-ho a provar d'aquí a uns minuts. El seu progrés es manté i no se li cobrarà res dos cops."
+    },
+    "credits_empty": {
+      "title": "El seu saldo s'ha acabat.",
+      "next": "Carregui crèdits i podrà continuar exactament on ho havia deixat."
+    },
+    "daily_limit": {
+      "title": "S'ha assolit el límit diari d'execucions d'IA.",
+      "next": "Continuarà demà. Si en necessita més per a avui, avisi el seu administrador."
+    },
+    "content_blocked": {
+      "title": "La IA ha rebutjat aquest contingut.",
+      "next": "Reformuli el fragment o faci generar una altra part primer. No se li ha cobrat res."
+    },
+    "model_not_enabled": {
+      "title": "Aquest model d'IA no està disponible en aquest moment.",
+      "next": "Hi estem treballant. Torni-ho a provar més tard o utilitzi la configuració per defecte."
+    },
+    "timeout": {
+      "title": "La IA ha trigat massa.",
+      "next": "Torni-ho a provar ara mateix; acostuma a funcionar a la segona."
+    },
+    "throttled": {
+      "title": "El servei d'IA està ocupat en aquest moment.",
+      "next": "Esperi un minut i torni-ho a provar. No cal que canviï res."
+    },
+    "ai_unavailable": {
+      "title": "El servei d'IA no està accessible en aquest moment.",
+      "next": "Torni-ho a provar d'aquí a uns minuts. El seu progrés es manté."
+    },
+    "ai_general": {
+      "title": "Això no ha funcionat amb la IA.",
+      "next": "Torni-ho a provar. Si l'error persisteix, enviï'ns el número d'error."
+    }
   }
 }

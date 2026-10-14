@@ -530,5 +530,45 @@
     "title": "Nav piekļuves rīkam MI sarunu treneris",
     "body": "Rīks MI sarunu treneris jūsu kontam nav aktivizēts. Piekļuvi piešķir jūsu uzņēmuma administrators sadaļā „Komanda un piekļuve“. Jums piešķirtos kursus atradīsiet sadaļā „Mana mācību zona“.",
     "cta": "Doties uz sadaļu „Mana mācību zona“"
+  },
+  "aiErrors": {
+    "errorNumber": "Kļūdas Nr. {id}",
+    "copy": "Kopēt numuru",
+    "quota_exhausted": {
+      "title": "Mūsu KI kvota šobrīd ir izsmelta.",
+      "next": "Mēģiniet vēlreiz pēc dažām minūtēm. Jūsu progress tiek saglabāts, un nekas netiek aprēķināts dubultā."
+    },
+    "credits_empty": {
+      "title": "Jūsu atlikums ir tukšs.",
+      "next": "Papildiniet kredītpunktus un turpiniet no tās pašas vietas."
+    },
+    "daily_limit": {
+      "title": "Dienas limits KI darbībām ir sasniegts.",
+      "next": "Turpinājums būs rīt. Ja jums šodien nepieciešams vairāk, sazinieties ar savu administratoru."
+    },
+    "content_blocked": {
+      "title": "KI noraidīja šo saturu.",
+      "next": "Pārfrāzējiet šo daļu vai vispirms ļaujiet izveidot citu daļu. Nekas netika apmaksāts."
+    },
+    "model_not_enabled": {
+      "title": "Šis KI modelis pašlaik nav pieejams.",
+      "next": "Mēs risinām šo jautājumu. Mēģiniet vēlreiz vēlāk vai izmantojiet noklusējuma iestatījumu."
+    },
+    "timeout": {
+      "title": "KI darbība prasīja pārāk daudz laika.",
+      "next": "Mēģiniet vēlreiz tūlīt; parasti ar otro reizi viss izdodas."
+    },
+    "throttled": {
+      "title": "KI pakalpojums šobrīd ir pārslogots.",
+      "next": "Uzgaidiet minūti un mēģiniet vēlreiz. Jums nekas nav jāmaina."
+    },
+    "ai_unavailable": {
+      "title": "KI pakalpojums šobrīd nav sasniedzams.",
+      "next": "Mēģiniet vēlreiz pēc dažām minūtēm. Jūsu progress tiek saglabāts."
+    },
+    "ai_general": {
+      "title": "Darbība ar KI neizdevās.",
+      "next": "Mēģiniet vēlreiz. Ja kļūda atkārtojas, nosūtiet mums kļūdas numuru."
+    }
   }
 }

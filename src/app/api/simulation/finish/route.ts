@@ -48,6 +48,7 @@ import { computeMeasurementDelta } from "@/lib/measurement-delta";
 import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
 import { withRetry, withTimeout, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
+import { aiErrorResponse } from "@/lib/server/request-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -413,10 +414,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     if (grant) await compensateEntitlement(grant);
-    logger.apiError("/api/simulation/finish", err);
-    return NextResponse.json(
-      { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
-      { status: 500 }
-    );
+    // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).
+    return aiErrorResponse(err, req, "/api/simulation/finish");
   }
 }

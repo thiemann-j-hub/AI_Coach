@@ -530,5 +530,45 @@
     "title": "Sem acesso a Coach de conversação com IA",
     "body": "O acesso a Coach de conversação com IA não está ativado para a sua conta. Quem concede o acesso é o administrador da sua empresa, em «Equipa e acessos». Os cursos que lhe foram atribuídos encontram-se em «A Minha Área de Aprendizagem».",
     "cta": "Ir para «A Minha Área de Aprendizagem»"
+  },
+  "aiErrors": {
+    "errorNumber": "N.º do erro {id}",
+    "copy": "Copiar número",
+    "quota_exhausted": {
+      "title": "A nossa quota de IA está esgotada de momento.",
+      "next": "Tente novamente dentro de alguns minutos. O seu progresso é mantido e nada será cobrado duas vezes."
+    },
+    "credits_empty": {
+      "title": "O seu saldo está vazio.",
+      "next": "Carregue créditos e poderá continuar exatamente onde estava."
+    },
+    "daily_limit": {
+      "title": "O limite diário de execuções de IA foi atingido.",
+      "next": "Continuará amanhã. Se precisar de mais hoje, informe o seu administrador."
+    },
+    "content_blocked": {
+      "title": "A IA recusou este conteúdo.",
+      "next": "Reformule a passagem ou peça para criar outra parte primeiro. Nada foi cobrado."
+    },
+    "model_not_enabled": {
+      "title": "Este modelo de IA não está disponível de momento.",
+      "next": "Estamos a tratar do assunto. Tente novamente mais tarde ou utilize a definição predefinida."
+    },
+    "timeout": {
+      "title": "A IA demorou demasiado tempo.",
+      "next": "Tente novamente de imediato; normalmente funciona à segunda tentativa."
+    },
+    "throttled": {
+      "title": "O serviço de IA está ocupado de momento.",
+      "next": "Aguarde um minuto e tente novamente. Não precisa de alterar nada."
+    },
+    "ai_unavailable": {
+      "title": "O serviço de IA não está acessível de momento.",
+      "next": "Tente novamente dentro de alguns minutos. O seu progresso é mantido."
+    },
+    "ai_general": {
+      "title": "Não foi possível concluir a ação com a IA.",
+      "next": "Tente novamente. Se o erro persistir, envie-nos o número do erro."
+    }
   }
 }

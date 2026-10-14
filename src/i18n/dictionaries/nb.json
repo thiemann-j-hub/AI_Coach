@@ -530,5 +530,45 @@
     "title": "Ingen tilgang til AI-samtalecoach",
     "body": "AI-samtalecoach er ikke aktivert for kontoen din. Tilgang tildeles av administratoren i bedriften din under «Team & tilgang». Kursene som er tildelt deg, finner du i «Mitt læringsområde».",
     "cta": "Gå til «Mitt læringsområde»"
+  },
+  "aiErrors": {
+    "errorNumber": "Feilnr. {id}",
+    "copy": "Kopier nummer",
+    "quota_exhausted": {
+      "title": "KI-kvoten vår er oppbrukt for øyeblikket.",
+      "next": "Prøv igjen om noen minutter. Fremdriften din blir lagret, og ingenting blir belastet dobbelt."
+    },
+    "credits_empty": {
+      "title": "Saldoen din er tom.",
+      "next": "Fyll på kreditter, så fortsetter du akkurat der du var."
+    },
+    "daily_limit": {
+      "title": "Den daglige grensen for KI-kjøringer er nådd.",
+      "next": "Du kan fortsette i morgen. Hvis du trenger mer i dag, kan du gi beskjed til administratoren din."
+    },
+    "content_blocked": {
+      "title": "KI-en avviste dette innholdet.",
+      "next": "Omformuler avsnittet eller få opprettet en annen del først. Du har ikke blitt belastet for noe."
+    },
+    "model_not_enabled": {
+      "title": "Denne KI-modellen er ikke tilgjengelig akkurat nå.",
+      "next": "Vi jobber med saken. Prøv igjen senere eller bruk standardinnstillingen."
+    },
+    "timeout": {
+      "title": "KI-en brukte for lang tid.",
+      "next": "Prøv igjen med en gang. Det fungerer som regel på andre forsøk."
+    },
+    "throttled": {
+      "title": "KI-tjenesten er overbelastet akkurat nå.",
+      "next": "Vent et minutt og prøv igjen. Du trenger ikke å endre noe."
+    },
+    "ai_unavailable": {
+      "title": "KI-tjenesten er ikke tilgjengelig akkurat nå.",
+      "next": "Prøv igjen om noen minutter. Fremdriften din blir lagret."
+    },
+    "ai_general": {
+      "title": "Det fungerte ikke med KI-en.",
+      "next": "Prøv igjen. Hvis feilen vedvarer, kan du sende oss feilnummeret."
+    }
   }
 }

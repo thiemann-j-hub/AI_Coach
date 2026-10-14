@@ -530,5 +530,45 @@
     "title": "Fără acces la Coach de conversație cu AI",
     "body": "Accesul la Coach de conversație cu AI nu este activat pentru contul dumneavoastră. Administratorul companiei dumneavoastră acordă accesul în secțiunea „Echipă și accese”. Cursurile care v-au fost atribuite le găsiți în „Spațiul meu de învățare”.",
     "cta": "Către „Spațiul meu de învățare”"
+  },
+  "aiErrors": {
+    "errorNumber": "Eroare nr. {id}",
+    "copy": "Copiază numărul",
+    "quota_exhausted": {
+      "title": "Cota noastră de IA este epuizată pentru moment.",
+      "next": "Reîncercați în câteva minute. Progresul dumneavoastră este păstrat și nimic nu este taxat de două ori."
+    },
+    "credits_empty": {
+      "title": "Soldul dumneavoastră este epuizat.",
+      "next": "Reîncărcați creditele și veți continua exact de unde ați rămas."
+    },
+    "daily_limit": {
+      "title": "Limita zilnică pentru rulările IA a fost atinsă.",
+      "next": "Procesul va continua mâine. Dacă aveți nevoie de mai mult astăzi, informați administratorul dumneavoastră."
+    },
+    "content_blocked": {
+      "title": "Asistentul IA a refuzat acest conținut.",
+      "next": "Reformulați pasajul sau solicitați mai întâi crearea unei alte părți. Nu s-a taxat nimic."
+    },
+    "model_not_enabled": {
+      "title": "Acest model IA nu este disponibil momentan.",
+      "next": "Ne ocupăm de acest lucru. Reîncercați mai târziu sau utilizați setarea implicită."
+    },
+    "timeout": {
+      "title": "Răspunsul asistentului IA a durat prea mult.",
+      "next": "Reîncercați imediat; de obicei funcționează a doua oară."
+    },
+    "throttled": {
+      "title": "Serviciul IA este ocupat în acest moment.",
+      "next": "Așteptați un minut și reîncercați. Nu este nevoie să modificați nimic."
+    },
+    "ai_unavailable": {
+      "title": "Serviciul IA nu este accesibil în acest moment.",
+      "next": "Reîncercați în câteva minute. Progresul dumneavoastră este păstrat."
+    },
+    "ai_general": {
+      "title": "Această acțiune nu a reușit cu asistentul IA.",
+      "next": "Reîncercați. Dacă eroarea persistă, trimiteți-ne numărul erorii."
+    }
   }
 }

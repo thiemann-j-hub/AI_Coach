@@ -530,5 +530,45 @@
     "title": "Ingen åtkomst till AI-samtalscoach",
     "body": "AI-samtalscoach har inte aktiverats för ditt konto. Åtkomst tilldelas av ditt företags administratör under ”Team & åtkomst”. Dina tilldelade kurser hittar du i ”Mitt lärandeområde”.",
     "cta": "Till ”Mitt lärandeområde”"
+  },
+  "aiErrors": {
+    "errorNumber": "Fel nr {id}",
+    "copy": "Kopiera nummer",
+    "quota_exhausted": {
+      "title": "Vår KI-kvot är för närvarande förbrukad.",
+      "next": "Försök igen om några minuter. Dina framsteg sparas och ingenting debiteras dubbelt."
+    },
+    "credits_empty": {
+      "title": "Ditt saldo är slut.",
+      "next": "Fyll på kredit så fortsätter du precis där du var."
+    },
+    "daily_limit": {
+      "title": "Den dagliga gränsen för KI-körningar har uppnåtts.",
+      "next": "Det fortsätter i morgon. Om du behöver mer i dag, kontakta din administratör."
+    },
+    "content_blocked": {
+      "title": "KI avvisade detta innehåll.",
+      "next": "Omformulera avsnittet eller skapa en annan del först. Ingenting debiterades."
+    },
+    "model_not_enabled": {
+      "title": "Denna KI-modell är inte tillgänglig just nu.",
+      "next": "Vi arbetar på det. Försök igen senare eller använd standardinställningen."
+    },
+    "timeout": {
+      "title": "KI tog för lång tid på sig.",
+      "next": "Försök igen direkt, det brukar fungera på andra försöket."
+    },
+    "throttled": {
+      "title": "KI-tjänsten är överbelastad just nu.",
+      "next": "Vänta en minut och försök igen. Du behöver inte ändra något."
+    },
+    "ai_unavailable": {
+      "title": "KI-tjänsten kan inte nås just nu.",
+      "next": "Försök igen om några minuter. Dina framsteg sparas."
+    },
+    "ai_general": {
+      "title": "Det fungerade inte med KI.",
+      "next": "Försök igen. Skicka felnumret till oss om felet kvarstår."
+    }
   }
 }

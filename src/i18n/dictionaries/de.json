@@ -530,5 +530,45 @@
     "title": "Kein Zugang zu KI-Gesprächs-Coach",
     "body": "Für Dein Konto ist KI-Gesprächs-Coach nicht freigeschaltet. Den Zugang vergibt der Admin Deines Unternehmens unter „Team & Zugänge“. Deine zugewiesenen Kurse findest Du in „Mein Lernbereich“.",
     "cta": "Zu „Mein Lernbereich“"
+  },
+  "aiErrors": {
+    "errorNumber": "Fehler-Nr. {id}",
+    "copy": "Nummer kopieren",
+    "quota_exhausted": {
+      "title": "Unser KI-Kontingent ist für den Moment erschöpft.",
+      "next": "Versuch es in einigen Minuten noch einmal. Dein Stand bleibt erhalten, es wird nichts doppelt berechnet."
+    },
+    "credits_empty": {
+      "title": "Dein Guthaben ist leer.",
+      "next": "Lade Credits auf, dann geht es an derselben Stelle weiter."
+    },
+    "daily_limit": {
+      "title": "Das Tageslimit für KI-Läufe ist erreicht.",
+      "next": "Morgen geht es weiter. Wenn Du heute mehr brauchst, sag Deinem Admin Bescheid."
+    },
+    "content_blocked": {
+      "title": "Die KI hat diesen Inhalt abgelehnt.",
+      "next": "Formuliere die Stelle um oder lass einen anderen Teil zuerst erstellen. Es wurde nichts berechnet."
+    },
+    "model_not_enabled": {
+      "title": "Dieses KI-Modell ist gerade nicht verfügbar.",
+      "next": "Wir kümmern uns darum. Versuch es später noch einmal oder nimm die Standard-Einstellung."
+    },
+    "timeout": {
+      "title": "Die KI hat zu lange gebraucht.",
+      "next": "Versuch es gleich noch einmal, meist klappt es beim zweiten Mal."
+    },
+    "throttled": {
+      "title": "Der KI-Dienst ist gerade ausgelastet.",
+      "next": "Warte eine Minute und versuch es dann wieder. Du musst nichts ändern."
+    },
+    "ai_unavailable": {
+      "title": "Der KI-Dienst ist gerade nicht erreichbar.",
+      "next": "Versuch es in ein paar Minuten noch einmal. Dein Stand bleibt erhalten."
+    },
+    "ai_general": {
+      "title": "Das hat bei der KI nicht geklappt.",
+      "next": "Versuch es noch einmal. Bleibt der Fehler, schick uns die Fehler-Nummer."
+    }
   }
 }

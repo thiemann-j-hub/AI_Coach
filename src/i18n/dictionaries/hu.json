@@ -530,5 +530,45 @@
     "title": "Nincs hozzáférés a MI-beszélgetéscoach alkalmazáshoz",
     "body": "A MI-beszélgetéscoach alkalmazás nincs engedélyezve az Ön fiókja számára. A hozzáférést az Ön vállalatának adminisztrátora adja meg a „Csapat és hozzáférés” menüpontban. Az Önhöz rendelt tanfolyamokat „Az Ön tanulási területe” menüpontban találja.",
     "cta": "Ugrás ide: „Az Ön tanulási területe”"
+  },
+  "aiErrors": {
+    "errorNumber": "Hibakód: {id}",
+    "copy": "Kód másolása",
+    "quota_exhausted": {
+      "title": "A KI-keretünk jelenleg kimerült.",
+      "next": "Próbálja meg újra néhány perc múlva. A folyamat állása megmarad, és semmi sem kerül kétszer felszámításra."
+    },
+    "credits_empty": {
+      "title": "Az Ön egyenlege elfogyott.",
+      "next": "Töltse fel kreditegyenlegét, és pontosan ott folytathatja, ahol abbahagyta."
+    },
+    "daily_limit": {
+      "title": "A KI-futtatások napi korlátja elérve.",
+      "next": "A folyamat holnap folytatódik. Ha még ma többre lenne szüksége, kérjük, értesítse az adminisztrátorát."
+    },
+    "content_blocked": {
+      "title": "A KI elutasította ezt a tartalmat.",
+      "next": "Fogalmazza át ezt a részt, vagy hozasson létre először egy másik részt. Semmi nem került felszámításra."
+    },
+    "model_not_enabled": {
+      "title": "Ez a KI-modell jelenleg nem érhető el.",
+      "next": "Már dolgozunk a megoldáson. Próbálja meg újra később, vagy használja az alapértelmezett beállítást."
+    },
+    "timeout": {
+      "title": "A KI válaszideje túl hosszú volt.",
+      "next": "Próbálja meg azonnal újra; második alkalommal általában sikerülni szokott."
+    },
+    "throttled": {
+      "title": "A KI-szolgáltatás jelenleg túlterhelt.",
+      "next": "Várjon egy percet, majd próbálja meg újra. Semmin nem kell módosítania."
+    },
+    "ai_unavailable": {
+      "title": "A KI-szolgáltatás jelenleg nem érhető el.",
+      "next": "Próbálja meg újra néhány perc múlva. A folyamat állása megmarad."
+    },
+    "ai_general": {
+      "title": "Ez a művelet nem sikerült a KI-vel.",
+      "next": "Próbálja meg újra. Ha a hiba továbbra is fennáll, kérjük, küldje el nekünk a hibakódot."
+    }
   }
 }

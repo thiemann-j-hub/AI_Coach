@@ -28,6 +28,16 @@ function allowedOrigin(): string | null {
   }
 }
 
+/** Kurze Kennung ohne verwechselbare Zeichen (Edge-sicher, Web Crypto). */
+function shortId(): string {
+  const alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let out = "";
+  for (const b of bytes) out += alphabet[b % alphabet.length];
+  return out;
+}
+
 export function middleware(request: NextRequest) {
   // R7 (Master-Blueprint §3.3): CSRF-Origin-Check (mutating-only) — vor allem
   // anderen, auch vor dem /api-Skip, damit mutierende API-Calls ihn durchlaufen.
@@ -47,7 +57,15 @@ export function middleware(request: NextRequest) {
 
   // Skip API routes and static assets (Locale-Handling nur für Seiten)
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    return NextResponse.next();
+    // W1-2 (14.10.2026): Fehler-Nummer — jede API-Anfrage bekommt eine x-request-id (vorhandene bleibt),
+    // Routen loggen sie, Fehlerantworten tragen sie. Rückweg REQUEST_ID_IN_UI=off: nur im Protokoll.
+    const incoming = request.headers.get("x-request-id")?.trim();
+    const rid = incoming && /^[A-Za-z0-9._-]{6,64}$/.test(incoming) ? incoming : shortId();
+    const headers = new Headers(request.headers);
+    headers.set("x-request-id", rid);
+    const res = NextResponse.next({ request: { headers } });
+    if ((process.env.REQUEST_ID_IN_UI ?? "").trim().toLowerCase() !== "off") res.headers.set("x-request-id", rid);
+    return res;
   }
 
   const nextLocale = request.cookies.get("NEXT_LOCALE")?.value;
