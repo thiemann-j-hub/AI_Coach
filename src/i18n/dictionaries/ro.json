@@ -79,6 +79,7 @@
     "notEnoughTurns": "Scrie cel puțin trei mesaje proprii înainte de evaluare.",
     "turnLimit": "Ai atins lungimea maximă a conversației — te rugăm să evaluezi acum.",
     "paywall": "Nu mai ai credite — încarcă credite pentru a evalua.",
+    "preflightPaywall": "Evaluarea necesită 1 credit. Soldul tău este gol. Reîncarcă acum, ca exercițiul tău să nu se piardă.",
     "topUp": "Încarcă credite",
     "reauth": "Autentifică-te din nou pentru a-ți folosi creditele.",
     "unavailable": "Serviciul este momentan indisponibil — încearcă din nou.",

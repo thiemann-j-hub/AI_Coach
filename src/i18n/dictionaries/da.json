@@ -79,6 +79,7 @@
     "notEnoughTurns": "Skriv mindst tre egne indlæg, før du evaluerer.",
     "turnLimit": "Maksimal samtalelængde nået — evaluer nu.",
     "paywall": "Ingen kreditter tilbage — optank for at evaluere.",
+    "preflightPaywall": "Evalueringen kræver 1 kredit. Din saldo er tom. Fyld op nu, så din øvelse ikke går tabt.",
     "topUp": "Optank kreditter",
     "reauth": "Log ind igen for at bruge dine kreditter.",
     "unavailable": "Tjenesten er midlertidigt utilgængelig — prøv igen.",

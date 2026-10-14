@@ -79,6 +79,7 @@
     "notEnoughTurns": "Escriu almenys tres missatges propis abans d'avaluar.",
     "turnLimit": "S'ha arribat a la longitud màxima de la conversa — avalua-la ara.",
     "paywall": "No et queden crèdits — recarrega'n per avaluar.",
+    "preflightPaywall": "L’avaluació necessita 1 crèdit. El teu saldo és buit. Recarrega ara perquè el teu exercici no es perdi.",
     "topUp": "Recarrega crèdits",
     "reauth": "Torna a iniciar la sessió per fer servir els teus crèdits.",
     "unavailable": "Servei no disponible temporalment — torna-ho a provar.",

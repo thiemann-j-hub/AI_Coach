@@ -79,6 +79,7 @@
     "notEnoughTurns": "Rédigez au moins trois messages avant de lancer l'évaluation.",
     "turnLimit": "Longueur maximale atteinte — veuillez évaluer maintenant.",
     "paywall": "Plus de crédits — veuillez recharger pour évaluer.",
+    "preflightPaywall": "L’évaluation nécessite 1 crédit. Votre solde est vide. Rechargez maintenant pour ne pas perdre votre exercice.",
     "topUp": "Recharger des crédits",
     "reauth": "Veuillez vous reconnecter pour utiliser vos crédits.",
     "unavailable": "Service momentanément indisponible — veuillez réessayer.",

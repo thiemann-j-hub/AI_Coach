@@ -79,6 +79,7 @@
     "notEnoughTurns": "Před vyhodnocením napište alespoň tři vlastní zprávy.",
     "turnLimit": "Dosažena maximální délka rozhovoru — vyhodnoťte jej nyní.",
     "paywall": "Žádné kredity — dobijte je pro vyhodnocení.",
+    "preflightPaywall": "K vyhodnocení je potřeba 1 kredit. Tvůj zůstatek je prázdný. Dobij si ho teď, aby tvé cvičení nepřišlo nazmar.",
     "topUp": "Dobít kredity",
     "reauth": "Přihlaste se znovu, abyste mohli použít kredity.",
     "unavailable": "Služba je dočasně nedostupná — zkuste to znovu.",

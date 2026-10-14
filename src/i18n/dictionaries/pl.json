@@ -79,6 +79,7 @@
     "notEnoughTurns": "Napisz co najmniej trzy własne wiadomości przed oceną.",
     "turnLimit": "Osiągnięto maksymalną długość rozmowy — oceń ją teraz.",
     "paywall": "Brak kredytów — doładuj, aby ocenić.",
+    "preflightPaywall": "Do oceny potrzebny jest 1 kredyt. Twoje saldo jest puste. Doładuj teraz, aby Twoje ćwiczenie nie przepadło.",
     "topUp": "Doładuj kredyty",
     "reauth": "Zaloguj się ponownie, aby użyć kredytów.",
     "unavailable": "Usługa chwilowo niedostępna — spróbuj ponownie.",

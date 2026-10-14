@@ -79,6 +79,7 @@
     "notEnoughTurns": "Scríobh ar a laghad trí theachtaireacht de do chuid féin sula ndéanann tú measúnú.",
     "turnLimit": "Uasfhad an chomhrá sroichte — déan measúnú anois, le do thoil.",
     "paywall": "Níl creidmheasanna fágtha — breisigh iad chun measúnú a dhéanamh.",
+    "preflightPaywall": "Teastaíonn 1 chreidmheas don mheastóireacht. Tá d’iarmhéid folamh. Breisigh anois ionas nach gcaillfear do chleachtadh.",
     "topUp": "Breisigh creidmheasanna",
     "reauth": "Sínigh isteach arís chun do chreidmheasanna a úsáid.",
     "unavailable": "Níl an tseirbhís ar fáil faoi láthair — bain triail eile as.",

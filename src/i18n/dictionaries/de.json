@@ -79,6 +79,7 @@
     "notEnoughTurns": "Schreibe mindestens drei eigene Beiträge, bevor du auswertest.",
     "turnLimit": "Maximale Gesprächslänge erreicht — bitte werte jetzt aus.",
     "paywall": "Kein Guthaben mehr — bitte lade Credits auf, um auszuwerten.",
+    "preflightPaywall": "Für die Auswertung brauchst Du 1 Credit. Dein Guthaben ist leer. Lade jetzt auf, dann geht Deine Übung nicht verloren.",
     "topUp": "Credits aufladen",
     "reauth": "Bitte melde dich neu an, um dein Guthaben zu nutzen.",
     "unavailable": "Dienst gerade nicht erreichbar — bitte versuche es erneut.",

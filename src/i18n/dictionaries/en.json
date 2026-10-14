@@ -79,6 +79,7 @@
     "notEnoughTurns": "Add at least three of your own messages before evaluating.",
     "turnLimit": "Maximum conversation length reached — please evaluate now.",
     "paywall": "No credits left — please top up to evaluate.",
+    "preflightPaywall": "The evaluation needs 1 credit. Your balance is empty. Top up now so your practice session is not lost.",
     "topUp": "Top up credits",
     "reauth": "Please sign in again to use your credits.",
     "unavailable": "Service temporarily unavailable — please try again.",

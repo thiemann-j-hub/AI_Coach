@@ -79,6 +79,7 @@
     "notEnoughTurns": "Skriv minst tre egna inlägg innan du utvärderar.",
     "turnLimit": "Maximal samtalslängd uppnådd — utvärdera nu.",
     "paywall": "Inga krediter kvar — fyll på för att utvärdera.",
+    "preflightPaywall": "Utvärderingen kräver 1 kredit. Ditt saldo är tomt. Fyll på nu så går din övning inte förlorad.",
     "topUp": "Fyll på krediter",
     "reauth": "Logga in igen för att använda dina krediter.",
     "unavailable": "Tjänsten är tillfälligt otillgänglig — försök igen.",

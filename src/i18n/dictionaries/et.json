@@ -79,6 +79,7 @@
     "notEnoughTurns": "Kirjuta enne hindamist vähemalt kolm oma sõnumit.",
     "turnLimit": "Vestluse maksimaalne pikkus on käes — palun hinda nüüd.",
     "paywall": "Krediit on otsas — palun lae juurde, et hinnata.",
+    "preflightPaywall": "Hindamiseks on vaja 1 krediiti. Sinu saldo on tühi. Lae kohe juurde, siis ei lähe su harjutus kaduma.",
     "topUp": "Lae krediite juurde",
     "reauth": "Palun logi uuesti sisse, et oma krediite kasutada.",
     "unavailable": "Teenus pole hetkel saadaval — palun proovi uuesti.",

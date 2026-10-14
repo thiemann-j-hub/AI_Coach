@@ -79,6 +79,7 @@
     "notEnoughTurns": "Schrijf minstens drie eigen berichten voordat je laat beoordelen.",
     "turnLimit": "Maximale gesprekslengte bereikt — beoordeel het gesprek nu.",
     "paywall": "Geen credits meer — waardeer je credits op om te beoordelen.",
+    "preflightPaywall": "Voor de evaluatie is 1 credit nodig. Je saldo is leeg. Laad nu op, dan gaat je oefening niet verloren.",
     "topUp": "Credits opwaarderen",
     "reauth": "Meld je opnieuw aan om je credits te gebruiken.",
     "unavailable": "Dienst tijdelijk niet beschikbaar — probeer het opnieuw.",

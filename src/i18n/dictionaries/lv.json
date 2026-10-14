@@ -79,6 +79,7 @@
     "notEnoughTurns": "Pirms novērtēšanas uzraksti vismaz trīs savas ziņas.",
     "turnLimit": "Sasniegts maksimālais sarunas garums — lūdzu, novērtē tagad.",
     "paywall": "Kredīti ir beigušies — lūdzu, papildini tos, lai varētu novērtēt.",
+    "preflightPaywall": "Novērtējumam nepieciešams 1 kredīts. Tavs atlikums ir tukšs. Papildini tagad, lai tavs vingrinājums nepazustu.",
     "topUp": "Papildināt kredītus",
     "reauth": "Lūdzu, pieraksties vēlreiz, lai izmantotu savus kredītus.",
     "unavailable": "Pakalpojums īslaicīgi nav pieejams — lūdzu, mēģini vēlreiz.",

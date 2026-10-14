@@ -818,7 +818,7 @@ export default function SimulationClient() {
 
   async function handleApiFailure(res: Response) {
     let code = '';
-    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean } = {};
+    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean } = {};
     try {
       body = await res.json();
       code = body.code ?? '';
@@ -829,7 +829,8 @@ export default function SimulationClient() {
       // B13 (01.10.2026): Mitglieder bekommen keinen Kauf-Link — Credits kauft der Admin.
       const memberOnly = body.canTopUp === false;
       setTopUpUrl(memberOnly ? null : body.topUpUrl ?? null);
-      setError(memberOnly ? t.common.balanceEmptyMember : ts.paywall);
+      // S4-4: vor dem Start heißt der Satz anders als nach dem Rollenspiel.
+      setError(memberOnly ? t.common.balanceEmptyMember : body.preflight ? ts.preflightPaywall : ts.paywall);
     } else if (code === 'CENTRAL_REAUTH') {
       setError(ts.reauth);
     } else if (code === 'CENTRAL_UNAVAILABLE' || res.status === 503) {

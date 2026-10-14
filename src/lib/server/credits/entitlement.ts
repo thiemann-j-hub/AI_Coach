@@ -1,7 +1,7 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
-import { creditsCentralEnabled, centralReserve, centralRefund } from "./credit-service";
+import { creditsCentralEnabled, centralReserve, centralRefund, centralWalletStatus } from "./credit-service";
 import { logger } from "@/lib/logger";
 
 /**
@@ -152,4 +152,49 @@ export async function compensateEntitlement(grant: EntitlementGrant): Promise<vo
     spendTransactionId: grant.centralTxId,
     idempotencyKey: `refund:tech:${grant.runId}`,
   });
+}
+
+/**
+ * S4-4 (Syren-Auftrag, Owner-GO 14.10.2026): Vorabprüfung VOR dem Rollenspiel.
+ * Vorher prüfte der Coach das Guthaben erst bei der Auswertung — ein Rollenspiel
+ * konnte vollständig laufen und scheiterte dann mit 402, die Übung war verloren.
+ * Jetzt liest der Start den zentralen Saldo (nur lesen, keine Buchung) und
+ * antwortet bei leerem Guthaben mit derselben 402-Form wie die Paywall, dazu
+ * `preflight: true` und dem Satz, der zum Zeitpunkt passt. Fail-open: Ist der
+ * Saldo nicht lesbar (abgelaufen/inert), startet das Rollenspiel wie bisher —
+ * das Tor bei der Auswertung bleibt. Betriebskonto (fester Saldo) wird nie
+ * gesperrt. Rückweg: COACH_PREFLIGHT=off.
+ */
+export function coachPreflightOn(): boolean {
+  return (process.env.COACH_PREFLIGHT ?? "").trim().toLowerCase() !== "off";
+}
+
+export const PREFLIGHT_TEXT =
+  "Für die Auswertung brauchst Du 1 Credit. Dein Guthaben ist leer. Lade jetzt auf, dann geht Deine Übung nicht verloren.";
+
+export async function preflightEntitlement(): Promise<NextResponse | null> {
+  if (!creditGateEnabled() || !coachPreflightOn()) return null;
+  let w: Awaited<ReturnType<typeof centralWalletStatus>>;
+  try {
+    w = await centralWalletStatus();
+  } catch (e) {
+    logger.apiError("entitlement/preflight", e);
+    return null;
+  }
+  if (w.state !== "active" || w.credits >= 1) return null;
+  const canTopUp = await memberCanTopUp();
+  return NextResponse.json(
+    {
+      ok: false,
+      code: "INSUFFICIENT_CREDITS",
+      preflight: true,
+      error: canTopUp
+        ? PREFLIGHT_TEXT
+        : "Das Kontingent deines Unternehmens ist aufgebraucht — dein Admin ist informiert.",
+      workspaceId: w.workspaceId,
+      canTopUp,
+      ...(canTopUp && topUpUrl() ? { topUpUrl: topUpUrl() } : {}),
+    },
+    { status: 402 }
+  );
 }

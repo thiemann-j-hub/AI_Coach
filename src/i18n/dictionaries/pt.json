@@ -79,6 +79,7 @@
     "notEnoughTurns": "Escreve pelo menos três mensagens tuas antes de avaliar.",
     "turnLimit": "Comprimento máximo da conversa atingido — avalia agora.",
     "paywall": "Sem créditos — carrega créditos para avaliar.",
+    "preflightPaywall": "A avaliação precisa de 1 crédito. O teu saldo está vazio. Carrega agora para não perderes o teu exercício.",
     "topUp": "Carregar créditos",
     "reauth": "Volta a iniciar sessão para usar os teus créditos.",
     "unavailable": "Serviço temporariamente indisponível — tenta novamente.",

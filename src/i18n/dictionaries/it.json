@@ -79,6 +79,7 @@
     "notEnoughTurns": "Scrivi almeno tre messaggi prima di avviare la valutazione.",
     "turnLimit": "Lunghezza massima raggiunta — valuta ora la conversazione.",
     "paywall": "Crediti esauriti — ricarica per valutare.",
+    "preflightPaywall": "La valutazione richiede 1 credito. Il tuo saldo è vuoto. Ricarica ora, così il tuo esercizio non andrà perso.",
     "topUp": "Ricarica crediti",
     "reauth": "Accedi di nuovo per usare i tuoi crediti.",
     "unavailable": "Servizio momentaneamente non disponibile — riprova.",

@@ -79,6 +79,7 @@
     "notEnoughTurns": "Kirjoita vähintään kolme omaa viestiä ennen arviointia.",
     "turnLimit": "Keskustelun enimmäispituus on saavutettu — arvioi keskustelu nyt.",
     "paywall": "Krediitit ovat lopussa — lataa lisää, jotta voit arvioida.",
+    "preflightPaywall": "Arviointi vaatii 1 krediitin. Saldosi on tyhjä. Lataa lisää nyt, niin harjoituksesi ei mene hukkaan.",
     "topUp": "Lataa krediittejä",
     "reauth": "Kirjaudu sisään uudelleen käyttääksesi krediittejäsi.",
     "unavailable": "Palvelu ei ole juuri nyt käytettävissä — yritä uudelleen.",

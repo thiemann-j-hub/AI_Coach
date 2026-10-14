@@ -7,6 +7,7 @@ import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
+import { preflightEntitlement } from "@/lib/server/credits/entitlement";
 import { withRetry, timeoutMs } from "@/lib/with-timeout";
 
 const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
@@ -71,6 +72,14 @@ export async function POST(req: NextRequest) {
         { ok: false, code: "UNKNOWN_SCENARIO" },
         { status: 404 }
       );
+    }
+
+    // S4-4: Guthaben VOR dem Start prüfen (nur lesen) — leer → 402 mit Hinweis,
+    // bevor die Übung beginnt. Rückweg COACH_PREFLIGHT=off.
+    const preflight = await preflightEntitlement();
+    if (preflight) {
+      logger.api("/api/simulation/start", "preflight-blocked", { uid: auth.uid, scenarioId: scenario.id });
+      return preflight;
     }
 
     // Versuchszählung fuer Historie/Delta (D2) — best effort, blockiert nie.

@@ -79,6 +79,7 @@
     "notEnoughTurns": "Írj legalább három saját üzenetet a kiértékelés előtt.",
     "turnLimit": "Elérted a maximális beszélgetéshosszt — most értékeld ki.",
     "paywall": "Elfogyott a kredited — tölts fel kreditet a kiértékeléshez.",
+    "preflightPaywall": "Az értékeléshez 1 kredit kell. Az egyenleged üres. Tölts fel most, így a gyakorlásod nem vész el.",
     "topUp": "Kredit feltöltése",
     "reauth": "Jelentkezz be újra, hogy használhasd a kreditjeidet.",
     "unavailable": "A szolgáltatás átmenetileg nem érhető el — próbáld újra.",
