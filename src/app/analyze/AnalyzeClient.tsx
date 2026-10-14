@@ -18,6 +18,7 @@ import {
 import { buildAnalyzeRoleLabels } from '@/lib/analyze-payload';
 import { takePendingFile } from '@/lib/pending-file';
 import { useTranslation } from '@/i18n/useTranslation';
+import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
 import { maxEurHint } from '@/lib/pricing-display';
 import Link from 'next/link';
 import {
@@ -742,9 +743,16 @@ export default function AnalyzeClient() {
                 {t.analyze.costNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
               </div>
 
-              {step && (
+              {/* W1-13 (14.10.2026): die KI sagt in Ich-Form, was sie gerade tut (LXT Anhang F §4.4). */}
+              {loading && step === t.analyze.statusAnalyzing ? (
+                <AiWaitSteps
+                  steps={[t.aiWait.analyzeStep1, t.aiWait.analyzeStep2, t.aiWait.analyzeStep3]}
+                  intervalMs={8000}
+                  className="mt-2 text-center text-xs text-muted-foreground"
+                />
+              ) : step ? (
                 <div className="mt-2 text-center text-xs text-muted-foreground">{step}</div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

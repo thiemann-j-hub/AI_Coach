@@ -399,6 +399,10 @@ export function SimulationEvaluation(props: {
           <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
           {t.analyze.aiNotice}
         </span>
+        {/* W1-13 (14.10.2026): KI-Grenze in einem Satz (LXT Anhang F §4.4, F-03). */}
+        <p className="mt-2 text-[11px] text-muted-foreground" data-testid="ai-limit">
+          {t.aiWait.aiLimit}
+        </p>
         {props.mode === 'check' && (
           <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400">
             {ts.modeCheckBadge}

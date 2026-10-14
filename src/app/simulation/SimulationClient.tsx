@@ -46,6 +46,7 @@ import { aiErrorMessage } from '@/lib/api-error-text';
 import { withBasePath } from '@/lib/base-path';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
+import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
 import { maxEurHint } from '@/lib/pricing-display';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
 import { recommendScenarios } from '@/lib/simulation/empfehlung';
@@ -2533,6 +2534,14 @@ export default function SimulationClient() {
                   {ts.checkinSubmit}
                 </button>
               </div>
+              {/* W1-13 (14.10.2026): die KI sagt in Ich-Form, was sie gerade tut (LXT Anhang F §4.4). */}
+              {finishing ? (
+                <AiWaitSteps
+                  steps={[t.aiWait.finishStep1, t.aiWait.finishStep2, t.aiWait.finishStep3]}
+                  intervalMs={8000}
+                  className="mt-3 text-center text-xs text-muted-foreground"
+                />
+              ) : null}
             </div>
           </div>
         )}
