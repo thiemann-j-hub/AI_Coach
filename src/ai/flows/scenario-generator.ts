@@ -1,3 +1,4 @@
+import { anredeBlock } from '@/lib/anrede';
 /**
  * B3b (Welle B, Synthesia-Vergleich §7) — Concierge-Generator:
  * Freitext-Brief + optionales Kunden-Dokument → vollständiger Szenario-Entwurf
@@ -119,6 +120,8 @@ export async function generateScenarioDraft(
   let previousIssues: string | undefined;
   for (let attempt = 1; attempt <= 2; attempt++) {
     const response = await ai.generate({
+      // W1-5: Briefing, Ziele, Hinweise in Du-Form; die Rede der Spielfigur folgt der Situation.
+      system: anredeBlock({ rollenspiel: true }),
       prompt: buildScenarioGeneratorPrompt({ ...args, previousIssues }),
       config: { maxOutputTokens: 16_384 },
     });

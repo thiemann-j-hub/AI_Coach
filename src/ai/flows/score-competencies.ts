@@ -1,3 +1,4 @@
+import { anredeBlock } from '@/lib/anrede';
 /**
  * @fileOverview Score leadership competencies (C1–C10) based on a transcript.
  * Output is anonymized: "Führungskraft" / "Mitarbeiter:in" in evidence.
@@ -125,6 +126,8 @@ export const ScoreCompetenciesOutputSchema = z.object({
 
 const prompt = ai.definePrompt({
   name: 'scoreCompetenciesPrompt',
+  // W1-5: Anrede-Regel (Du groß, nie Sie; Fremdsprachen höflich) für alles, was die App zur Person sagt.
+  system: anredeBlock(),
   input: { schema: ScoreCompetenciesInputSchema },
   output: { schema: ScoreCompetenciesOutputSchema },
   prompt: `

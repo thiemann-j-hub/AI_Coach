@@ -1,3 +1,4 @@
+import { anredeBlock } from '@/lib/anrede';
 /**
  * @fileOverview Generates tailored coaching feedback based on input text, conversation type, and defined goals.
  */
@@ -72,6 +73,8 @@ export async function generateTailoredFeedback(
 
 const generateTailoredFeedbackPrompt = ai.definePrompt({
   name: 'generateTailoredFeedbackPrompt',
+  // W1-5: Anrede-Regel (Du groß, nie Sie; Fremdsprachen höflich) für alles, was die App zur Person sagt.
+  system: anredeBlock(),
   input: { schema: GenerateTailoredFeedbackInputSchema },
   output: { schema: GenerateTailoredFeedbackOutputSchema },
   prompt: `You are an AI-powered communication coach for leadership conversations.

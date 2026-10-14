@@ -1,3 +1,4 @@
+import { anredeBlock } from '@/lib/anrede';
 /**
  * @fileOverview Auswertung der Gesprächssimulation (SIM-2).
  *
@@ -131,6 +132,8 @@ export type SimulationFeedbackOutput = Omit<SimulationFeedbackRaw, 'recommendedC
 
 const prompt = ai.definePrompt({
   name: 'simulationFeedbackPrompt',
+  // W1-5: Anrede-Regel (Du groß, nie Sie; Fremdsprachen höflich) für alles, was die App zur Person sagt.
+  system: anredeBlock(),
   input: { schema: SimulationFeedbackInputSchema },
   output: { schema: SimulationFeedbackOutputSchema },
   prompt: `

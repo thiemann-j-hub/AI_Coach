@@ -1,3 +1,4 @@
+import { anredeBlock } from '@/lib/anrede';
 /**
  * Time-out-Coach (Debrief 2.0, Welle D3) — seit V3 mit Karten (Owner-GO 25.09.2026).
  *
@@ -62,6 +63,8 @@ export interface CoachTimeoutResult {
 
 const prompt = ai.definePrompt({
   name: 'simulationCoachTimeoutPrompt',
+  // W1-5: Anrede-Regel (Du groß, nie Sie; Fremdsprachen höflich) für alles, was die App zur Person sagt.
+  system: anredeBlock(),
   input: { schema: CoachTimeoutInputSchema },
   output: { schema: CoachTimeoutOutputSchema },
   prompt: `
