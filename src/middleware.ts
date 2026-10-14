@@ -56,7 +56,8 @@ export function middleware(request: NextRequest) {
   }
 
   // Skip API routes and static assets (Locale-Handling nur für Seiten)
-  if (request.nextUrl.pathname.startsWith("/api/")) {
+  // Hinter dem basePath (/coach) trägt pathname das Präfix — deshalb Regex statt startsWith (W1-2-Befund 14.10.).
+  if (/\/api(\/|$)/.test(request.nextUrl.pathname)) {
     // W1-2 (14.10.2026): Fehler-Nummer — jede API-Anfrage bekommt eine x-request-id (vorhandene bleibt),
     // Routen loggen sie, Fehlerantworten tragen sie. Rückweg REQUEST_ID_IN_UI=off: nur im Protokoll.
     const incoming = request.headers.get("x-request-id")?.trim();
