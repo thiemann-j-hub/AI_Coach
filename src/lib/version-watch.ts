@@ -15,6 +15,8 @@
 export interface VersionInfo {
   sha?: string | null;
   banner?: boolean;
+  /** W1-11: Meldungsregeln an/aus (TOAST_RULES). */
+  toastRules?: boolean;
 }
 
 const UNSTAMPED = new Set(["", "unstamped", "dev", "null", "undefined"]);

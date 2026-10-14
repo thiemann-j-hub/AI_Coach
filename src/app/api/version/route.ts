@@ -40,6 +40,8 @@ export function GET() {
       diagnose,
       // W1-9: Banner „neue Version“ abschaltbar (VERSION_BANNER=off).
       banner: (process.env.VERSION_BANNER ?? "").trim().toLowerCase() !== "off",
+      // W1-11: Meldungsregeln abschaltbar (TOAST_RULES=off → Bibliotheks-Standards).
+      toastRules: (process.env.TOAST_RULES ?? "").trim().toLowerCase() !== "off",
       switches: Object.fromEntries(SWITCHES.map((n) => [n, switchState(n)])),
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }

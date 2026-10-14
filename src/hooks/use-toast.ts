@@ -7,8 +7,10 @@ import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { toastDuration } from "@/lib/toast-rules"
 
-const TOAST_LIMIT = 1
+// W1-11: bleibende Fehler dürfen eine Erfolgsmeldung nicht verdrängen (vorher 1).
+const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 1000000
 
 type ToasterToast = ToastProps & {
@@ -152,10 +154,15 @@ function toast({ ...props }: Toast) {
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
+  // W1-11 (LXT Anhang E §4.3): Fehler bleiben stehen, bis man sie schließt; alles andere 5 s.
+  // Eine ausdrückliche `duration` des Aufrufers gewinnt. Rückweg TOAST_RULES=off (siehe toast-rules.ts).
+  const duration = toastDuration(props.variant === "destructive" ? "error" : "default", props.duration)
+
   dispatch({
     type: "ADD_TOAST",
     toast: {
       ...props,
+      ...(duration === undefined ? {} : { duration }),
       id,
       open: true,
       onOpenChange: (open) => {

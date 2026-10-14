@@ -9,6 +9,7 @@ import { RefreshCw } from "lucide-react";
 import { useTranslation } from "@/i18n/useTranslation";
 import { authFetch } from "@/lib/api-client";
 import { installChunkErrorReload, startVersionWatch, type VersionInfo } from "@/lib/version-watch";
+import { setToastRulesOn } from "@/lib/toast-rules";
 
 export function VersionBanner() {
   const { t } = useTranslation();
@@ -19,7 +20,10 @@ export function VersionBanner() {
     return startVersionWatch({
       fetchVersion: async () => {
         const res = await authFetch("/api/version");
-        return res.ok ? ((await res.json()) as VersionInfo) : null;
+        const info = res.ok ? ((await res.json()) as VersionInfo) : null;
+        // W1-11: Meldungsregeln folgen dem Server-Schalter TOAST_RULES.
+        setToastRulesOn(info?.toastRules !== false);
+        return info;
       },
       onNewVersion: (sha) => setFresh(sha),
     });
