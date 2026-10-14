@@ -585,5 +585,9 @@
     "close": "Dún",
     "download": "Íoslódáil comhad",
     "shortcutHint": "Aicearra: Ctrl + Alt + D. Seol an comhad chuig an tacaíocht mar aon leis an uimhir earráide."
+  },
+  "version": {
+    "newVersion": "Tá leagan nua ar fáil. Athluchtaigh an leathanach chun gach rud a thabhairt chun dáta.",
+    "reload": "Athluchtaigh anois"
   }
 }

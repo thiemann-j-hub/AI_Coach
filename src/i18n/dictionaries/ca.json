@@ -585,5 +585,9 @@
     "close": "Tancar",
     "download": "Descarregar el fitxer",
     "shortcutHint": "Drecera: Ctrl + Alt + D. Envieu el fitxer al suport tècnic juntament amb el número d'error."
+  },
+  "version": {
+    "newVersion": "Hi ha una nova versió disponible. Torneu a carregar la pàgina perquè tot estigui actualitzat.",
+    "reload": "Tornar a carregar ara"
   }
 }

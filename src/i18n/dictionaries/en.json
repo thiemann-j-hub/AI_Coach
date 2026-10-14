@@ -585,5 +585,9 @@
     "close": "Close",
     "download": "Download file",
     "shortcutHint": "Shortcut: Ctrl + Alt + D. Send the file to support together with the error number."
+  },
+  "version": {
+    "newVersion": "A new version is available. Please reload the page so everything matches.",
+    "reload": "Reload now"
   }
 }

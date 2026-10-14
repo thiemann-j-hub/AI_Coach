@@ -585,5 +585,9 @@
     "close": "Sulge",
     "download": "Laadi fail alla",
     "shortcutHint": "Klaviatuuri kiirklahv: Ctrl + Alt + D. Saatke fail koos veanumbriga kasutajatoele."
+  },
+  "version": {
+    "newVersion": "Saadaval on uus versioon. Palun värskendage lehte, et kõik toimiks õigesti.",
+    "reload": "Värskenda kohe"
   }
 }

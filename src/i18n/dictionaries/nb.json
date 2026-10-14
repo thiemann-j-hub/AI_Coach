@@ -585,5 +585,9 @@
     "close": "Lukk",
     "download": "Last ned fil",
     "shortcutHint": "Tastatursnarvei: Ctrl + Alt + D. Send filen til brukerstøtte sammen med feilnummeret."
+  },
+  "version": {
+    "newVersion": "En ny versjon er tilgjengelig. Last inn siden på nytt slik at alt blir oppdatert.",
+    "reload": "Last inn på nytt nå"
   }
 }

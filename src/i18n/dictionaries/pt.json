@@ -585,5 +585,9 @@
     "close": "Fechar",
     "download": "Descarregar ficheiro",
     "shortcutHint": "Atalho: Ctrl + Alt + D. Envie o ficheiro para o suporte juntamente com o número do erro."
+  },
+  "version": {
+    "newVersion": "Está disponível uma nova versão. Por favor, recarregue a página para que tudo fique sincronizado.",
+    "reload": "Recarregar agora"
   }
 }

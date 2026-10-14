@@ -41,6 +41,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { BrandSwitcher, useHubNav } from '@/components/app/app-switcher';
 import { VersionWatcher } from '@/components/app/version-watcher';
 import { SessionExpiredBanner } from '@/components/app/session-expired-banner';
+import { VersionBanner } from '@/components/app/version-banner';
 import { CreditBalance } from '@/components/app/credit-balance';
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -345,6 +346,8 @@ export default function AppShell(props: {
           <VersionWatcher />
           {/* B26 (02.10.2026): „Sitzung abgelaufen" mit „Neu anmelden", wenn die API das meldet. */}
           <SessionExpiredBanner />
+          {/* W1-9 (14.10.2026): neue Version erkennen, Nachladefehler einmal neu laden. */}
+          <VersionBanner />
           {/* Decorative Background Blobs */}
           <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
             <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl" />

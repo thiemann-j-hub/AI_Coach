@@ -585,5 +585,9 @@
     "close": "Sluiten",
     "download": "Bestand downloaden",
     "shortcutHint": "Sneltoets: Ctrl + Alt + D. Stuur het bestand samen met het foutnummer naar de ondersteuning."
+  },
+  "version": {
+    "newVersion": "Er is een nieuwe versie beschikbaar. Vernieuw de pagina zodat alles goed aansluit.",
+    "reload": "Nu vernieuwen"
   }
 }

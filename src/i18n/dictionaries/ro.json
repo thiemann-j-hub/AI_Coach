@@ -585,5 +585,9 @@
     "close": "Închide",
     "download": "Descărcare fișier",
     "shortcutHint": "Scurtătură: Ctrl + Alt + D. Trimiteți fișierul către suport, împreună cu numărul erorii."
+  },
+  "version": {
+    "newVersion": "Este disponibilă o nouă versiune. Vă rugăm să reîncărcați pagina pentru ca totul să fie sincronizat.",
+    "reload": "Reîncarcă acum"
   }
 }

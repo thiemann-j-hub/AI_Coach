@@ -585,5 +585,9 @@
     "close": "Fermer",
     "download": "Télécharger le fichier",
     "shortcutHint": "Raccourci : Ctrl + Alt + D. Envoyez le fichier au support en joignant le numéro d'erreur."
+  },
+  "version": {
+    "newVersion": "Une nouvelle version est disponible. Veuillez recharger la page afin que tout soit à jour.",
+    "reload": "Recharger maintenant"
   }
 }

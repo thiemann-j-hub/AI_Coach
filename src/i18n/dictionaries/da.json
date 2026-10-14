@@ -585,5 +585,9 @@
     "close": "Luk",
     "download": "Download fil",
     "shortcutHint": "Genvej: Ctrl + Alt + D. Send filen til support sammen med fejlnummeret."
+  },
+  "version": {
+    "newVersion": "Der er en ny version tilgængelig. Genindlæs venligst siden, så alt passer sammen.",
+    "reload": "Genindlæs nu"
   }
 }

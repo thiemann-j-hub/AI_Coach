@@ -585,5 +585,9 @@
     "close": "Bezárás",
     "download": "Fájl letöltése",
     "shortcutHint": "Billentyűkombináció: Ctrl + Alt + D. Küldje el a fájlt az ügyfélszolgálatnak a hibakóddal együtt."
+  },
+  "version": {
+    "newVersion": "Új verzió érhető el. Kérjük, frissítse az oldalt, hogy minden megfelelően működjön.",
+    "reload": "Frissítés most"
   }
 }

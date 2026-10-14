@@ -585,5 +585,9 @@
     "close": "Aizvērt",
     "download": "Lejupielādēt failu",
     "shortcutHint": "Tustiņu saīsne: Ctrl + Alt + D. Nosūtiet failu atbalsta dienestam kopā ar kļūdas numuru."
+  },
+  "version": {
+    "newVersion": "Ir pieejama jauna versija. Lūdzu, pārlādējiet lapu, lai viss darbotos pareizi.",
+    "reload": "Pārlādēt tagad"
   }
 }

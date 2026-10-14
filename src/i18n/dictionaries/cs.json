@@ -585,5 +585,9 @@
     "close": "Zavřít",
     "download": "Stáhnout soubor",
     "shortcutHint": "Klávesová zkratka: Ctrl + Alt + D. Pošlete soubor na podporu společně s číslem chyby."
+  },
+  "version": {
+    "newVersion": "Je k dispozici nová verze. Obnovte prosím stránku, aby vše odpovídalo.",
+    "reload": "Načíst znovu"
   }
 }

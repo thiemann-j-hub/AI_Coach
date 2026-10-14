@@ -585,5 +585,9 @@
     "close": "Sulje",
     "download": "Lataa tiedosto",
     "shortcutHint": "Pikanäppäin: Ctrl + Alt + D. Lähetä tiedosto tukeen yhdessä virhenumeron kanssa."
+  },
+  "version": {
+    "newVersion": "Uusi versio on saatavilla. Lataa sivu uudelleen, jotta kaikki tiedot päivittyvät.",
+    "reload": "Lataa sivu uudelleen"
   }
 }

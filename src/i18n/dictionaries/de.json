@@ -585,5 +585,9 @@
     "close": "Schließen",
     "download": "Datei herunterladen",
     "shortcutHint": "Tastenkürzel: Strg + Alt + D. Schick die Datei an den Support, zusammen mit der Fehler-Nummer."
+  },
+  "version": {
+    "newVersion": "Es gibt eine neue Version. Bitte lade die Seite neu, damit alles zusammenpasst.",
+    "reload": "Jetzt neu laden"
   }
 }

@@ -585,5 +585,9 @@
     "close": "Zamknij",
     "download": "Pobierz plik",
     "shortcutHint": "Skrót: Ctrl + Alt + D. Prosimy przesłać plik do pomocy technicznej wraz z numerem błędu."
+  },
+  "version": {
+    "newVersion": "Dostępna jest nowa wersja. Prosimy o odświeżenie strony, aby wszystkie elementy były zgodne.",
+    "reload": "Odśwież teraz"
   }
 }

@@ -38,6 +38,8 @@ export function GET() {
       branch: process.env.BUILD_BRANCH ?? null,
       builtAt: process.env.BUILD_STAMPED_AT ?? null,
       diagnose,
+      // W1-9: Banner „neue Version“ abschaltbar (VERSION_BANNER=off).
+      banner: (process.env.VERSION_BANNER ?? "").trim().toLowerCase() !== "off",
       switches: Object.fromEntries(SWITCHES.map((n) => [n, switchState(n)])),
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
