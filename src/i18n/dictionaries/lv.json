@@ -570,5 +570,20 @@
       "title": "Darbība ar KI neizdevās.",
       "next": "Mēģiniet vēlreiz. Ja kļūda atkārtojas, nosūtiet mums kļūdas numuru."
     }
+  },
+  "diagnose": {
+    "menu": "Lejupielādēt kļūdas ziņojumu",
+    "title": "Kļūdas ziņojums atbalsta dienestam",
+    "intro": "Šis fails palīdz mums ātri atrast kļūdu. Pirms saglabāšanas jūs precīzi redzat, ko tas satur.",
+    "itemBuild": "Coach versija ({sha})",
+    "itemBrowser": "Pārlūks, ekrāna izmērs, valoda, tiešsaistes statuss",
+    "itemSwitches": "{count} slēdžu statuss (tikai ieslēgts/izslēgts)",
+    "itemErrors": "Pēdējie {count} kļūdu numuri",
+    "itemLog": "{count} žurnāla rindiņas no šīs sesijas",
+    "privacy": "Nekādu piekļuves datu, e-pasta adrešu vai kursu satura. Adreses tiek saglabātas bez parametriem.",
+    "previewLabel": "Ziņojuma priekšskatījums",
+    "close": "Aizvērt",
+    "download": "Lejupielādēt failu",
+    "shortcutHint": "Tustiņu saīsne: Ctrl + Alt + D. Nosūtiet failu atbalsta dienestam kopā ar kļūdas numuru."
   }
 }

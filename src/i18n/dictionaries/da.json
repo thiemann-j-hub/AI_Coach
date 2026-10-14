@@ -570,5 +570,20 @@
       "title": "Det virkede ikke med AI'en.",
       "next": "Prøv igen. Hvis fejlen fortsætter, bedes du sende os fejlnummeret."
     }
+  },
+  "diagnose": {
+    "menu": "Download fejlorapport",
+    "title": "Fejlorapport til support",
+    "intro": "Denne fil hjælper os med hurtigt at finde en fejl. Du kan se præcis, hvad den indeholder, før du gemmer.",
+    "itemBuild": "Coach-version ({sha})",
+    "itemBrowser": "Browser, skærmstørrelse, sprog, onlinestatus",
+    "itemSwitches": "Status for {count} kontakter (kun til/fra)",
+    "itemErrors": "De seneste {count} fejlnumre",
+    "itemLog": "{count} loglinjer fra denne session",
+    "privacy": "Ingen adgangsdata, ingen e-mailadresser, intet kursusindhold. Adresser gemmes uden parametre.",
+    "previewLabel": "Forhåndsvisning af rapport",
+    "close": "Luk",
+    "download": "Download fil",
+    "shortcutHint": "Genvej: Ctrl + Alt + D. Send filen til support sammen med fejlnummeret."
   }
 }

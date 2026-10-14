@@ -570,5 +570,20 @@
       "title": "KI-ga ei läinud see korda.",
       "next": "Proovige uuesti. Kui viga püsib, saatke meile vea number."
     }
+  },
+  "diagnose": {
+    "menu": "Laadi vearaport alla",
+    "title": "Vearaport kasutajatoele",
+    "intro": "See fail aitab meil vea kiiresti üles leida. Näete enne salvestamist täpselt, mida see sisaldab.",
+    "itemBuild": "Coach versioon ({sha})",
+    "itemBrowser": "Veebilehitseja, ekraani suurus, keel, võrguolek",
+    "itemSwitches": "{count} lüliti olek (ainult sees/väljas)",
+    "itemErrors": "Viimased {count} veanumbrit",
+    "itemLog": "{count} logirida sellest sessioonist",
+    "privacy": "Ei sisalda juurdepääsuandmeid, e-posti aadresse ega kursuse sisu. Aadressid salvestatakse ilma parameetriteta.",
+    "previewLabel": "Raporti eelvaade",
+    "close": "Sulge",
+    "download": "Laadi fail alla",
+    "shortcutHint": "Klaviatuuri kiirklahv: Ctrl + Alt + D. Saatke fail koos veanumbriga kasutajatoele."
   }
 }

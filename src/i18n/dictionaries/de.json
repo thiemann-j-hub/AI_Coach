@@ -570,5 +570,20 @@
       "title": "Das hat bei der KI nicht geklappt.",
       "next": "Versuch es noch einmal. Bleibt der Fehler, schick uns die Fehler-Nummer."
     }
+  },
+  "diagnose": {
+    "menu": "Fehlerbericht herunterladen",
+    "title": "Fehlerbericht für den Support",
+    "intro": "Diese Datei hilft uns, einen Fehler schnell zu finden. Du siehst vor dem Speichern genau, was drinsteht.",
+    "itemBuild": "Version des Coachs ({sha})",
+    "itemBrowser": "Browser, Bildschirmgröße, Sprache, Online-Status",
+    "itemSwitches": "Stand von {count} Schaltern (nur an/aus)",
+    "itemErrors": "Die letzten {count} Fehler-Nummern",
+    "itemLog": "{count} Protokollzeilen aus dieser Sitzung",
+    "privacy": "Keine Zugangsdaten, keine E-Mail-Adressen, keine Kursinhalte. Adressen werden ohne Parameter gespeichert.",
+    "previewLabel": "Vorschau des Berichts",
+    "close": "Schließen",
+    "download": "Datei herunterladen",
+    "shortcutHint": "Tastenkürzel: Strg + Alt + D. Schick die Datei an den Support, zusammen mit der Fehler-Nummer."
   }
 }

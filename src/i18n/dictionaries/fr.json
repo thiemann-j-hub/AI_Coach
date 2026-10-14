@@ -570,5 +570,20 @@
       "title": "Une erreur est survenue avec l'IA.",
       "next": "Réessayez. Si l'erreur persiste, veuillez nous transmettre le numéro d'erreur."
     }
+  },
+  "diagnose": {
+    "menu": "Télécharger le rapport d'erreur",
+    "title": "Rapport d'erreur pour le support",
+    "intro": "Ce fichier nous aide à identifier rapidement une erreur. Vous pouvez consulter l'intégralité de son contenu avant de l'enregistrer.",
+    "itemBuild": "Version du Coach ({sha})",
+    "itemBrowser": "Navigateur, taille d'écran, langue, statut en ligne",
+    "itemSwitches": "État de {count} commutateurs (activé/désactivé uniquement)",
+    "itemErrors": "Les {count} derniers numéros d'erreur",
+    "itemLog": "{count} lignes de journal de cette session",
+    "privacy": "Aucun identifiant, aucune adresse e-mail, aucun contenu de cours. Les adresses sont enregistrées sans paramètre.",
+    "previewLabel": "Aperçu du rapport",
+    "close": "Fermer",
+    "download": "Télécharger le fichier",
+    "shortcutHint": "Raccourci : Ctrl + Alt + D. Envoyez le fichier au support en joignant le numéro d'erreur."
   }
 }

@@ -570,5 +570,20 @@
       "title": "Ez a művelet nem sikerült a KI-vel.",
       "next": "Próbálja meg újra. Ha a hiba továbbra is fennáll, kérjük, küldje el nekünk a hibakódot."
     }
+  },
+  "diagnose": {
+    "menu": "Hibajelentés letöltése",
+    "title": "Hibajelentés az ügyfélszolgálat számára",
+    "intro": "Ez a fájl segít nekünk a hiba gyors azonosításában. Mentés előtt pontosan láthatja, hogy mit tartalmaz.",
+    "itemBuild": "Coach-verzió ({sha})",
+    "itemBrowser": "Böngésző, képernyőméret, nyelv, online állapot",
+    "itemSwitches": "{count} kapcsoló állapota (csak be/ki)",
+    "itemErrors": "Az utolsó {count} hibakód",
+    "itemLog": "{count} naplósor ebből a munkamenetből",
+    "privacy": "Nem tartalmaz hozzáférési adatokat, e-mail-címeket vagy kurzustartalmakat. A webcímek paraméterek nélkül kerülnek mentésre.",
+    "previewLabel": "Jelentés előnézete",
+    "close": "Bezárás",
+    "download": "Fájl letöltése",
+    "shortcutHint": "Billentyűkombináció: Ctrl + Alt + D. Küldje el a fájlt az ügyfélszolgálatnak a hibakóddal együtt."
   }
 }

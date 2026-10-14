@@ -570,5 +570,20 @@
       "title": "Det fungerte ikke med KI-en.",
       "next": "Prøv igjen. Hvis feilen vedvarer, kan du sende oss feilnummeret."
     }
+  },
+  "diagnose": {
+    "menu": "Last ned feilrapport",
+    "title": "Feilrapport for brukerstøtte",
+    "intro": "Denne filen hjelper oss med å finne en feil raskt. Du ser nøyaktig hva den inneholder før du lagrer.",
+    "itemBuild": "Coach-versjon ({sha})",
+    "itemBrowser": "Nettleser, skjermstørrelse, språk, onlinestatus",
+    "itemSwitches": "Status for {count} brytere (kun på/av)",
+    "itemErrors": "De siste {count} feilnumrene",
+    "itemLog": "{count} logglinjer fra denne økten",
+    "privacy": "Ingen innloggingsopplysninger, ingen e-postadresser, intet kursinnhold. Adresser lagres uten parametere.",
+    "previewLabel": "Forhåndsvisning av rapport",
+    "close": "Lukk",
+    "download": "Last ned fil",
+    "shortcutHint": "Tastatursnarvei: Ctrl + Alt + D. Send filen til brukerstøtte sammen med feilnummeret."
   }
 }

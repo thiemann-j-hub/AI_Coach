@@ -570,5 +570,20 @@
       "title": "Qualcosa non ha funzionato con l’IA.",
       "next": "Riprovi. Se l’errore persiste, ci invii il numero di errore."
     }
+  },
+  "diagnose": {
+    "menu": "Scarica rapporto di errore",
+    "title": "Rapporto di errore per il supporto",
+    "intro": "Questo file ci aiuta a individuare rapidamente un errore. Può verificare esattamente cosa contiene prima di salvarlo.",
+    "itemBuild": "Versione dello Coach ({sha})",
+    "itemBrowser": "Browser, dimensioni dello schermo, lingua, stato online",
+    "itemSwitches": "Stato di {count} interruttori (solo attivo/inattivo)",
+    "itemErrors": "Gli ultimi {count} numeri di errore",
+    "itemLog": "{count} righe di registro da questa sessione",
+    "privacy": "Nessuna credenziale, nessun indirizzo e-mail, nessun contenuto del corso. Gli indirizzi vengono salvati senza parametri.",
+    "previewLabel": "Anteprima del rapporto",
+    "close": "Chiudi",
+    "download": "Scarica file",
+    "shortcutHint": "Scorciatoia: Ctrl + Alt + D. Invii il file al supporto insieme al numero di errore."
   }
 }

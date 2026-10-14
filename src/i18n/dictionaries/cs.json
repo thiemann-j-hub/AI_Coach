@@ -570,5 +570,20 @@
       "title": "S tématem AI to nefungovalo.",
       "next": "Zkuste to znovu. Pokud chyba přetrvává, pošlete nám číslo chyby."
     }
+  },
+  "diagnose": {
+    "menu": "Stáhnout zprávu o chybách",
+    "title": "Hlášení chyby pro podporu",
+    "intro": "Tento soubor nám pomůže rychle najít chybu. Před uložením přesně uvidíte, co obsahuje.",
+    "itemBuild": "Verze Studia ({sha})",
+    "itemBrowser": "Prohlížeč, velikost obrazovky, jazyk, stav online",
+    "itemSwitches": "Stav {count} přepínačů (pouze zapnuto/vypnuto)",
+    "itemErrors": "Posledních {count} čísel chyb",
+    "itemLog": "{count} řádků protokolu z této relace",
+    "privacy": "Žádné přihlašovací údaje, žádné e-mailové adresy, žádný obsah kurzů. Adresy se ukládají bez parametrů.",
+    "previewLabel": "Náhled hlášení",
+    "close": "Zavřít",
+    "download": "Stáhnout soubor",
+    "shortcutHint": "Klávesová zkratka: Ctrl + Alt + D. Pošlete soubor na podporu společně s číslem chyby."
   }
 }

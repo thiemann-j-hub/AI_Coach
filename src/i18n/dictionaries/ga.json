@@ -570,5 +570,20 @@
       "title": "Níor éirigh leis sin leis an AI.",
       "next": "Bain triail as arís. Má leanann an earráid ar aghaidh, seol uimhir na hearráide chugainn."
     }
+  },
+  "diagnose": {
+    "menu": "Íoslódáil tuarascáil earráide",
+    "title": "Tuarascáil earráide le haghaidh tacaíochta",
+    "intro": "Cabhraíonn an comhad seo linn earráid a aimsiú go tapa. Is féidir a fheiceáil go díreach cad atá ann sula sábháiltear é.",
+    "itemBuild": "Leagan Coach ({sha})",
+    "itemBrowser": "Brabhsálaí, méid an scáileáin, teanga, stádas ar líne",
+    "itemSwitches": "Stát {count} lasc (ar siúl/múchta amháin)",
+    "itemErrors": "Na {count} uimhir earráide is déanaí",
+    "itemLog": "{count} líne loga ón seisiún seo",
+    "privacy": "Gan dintiúir, gan seoltaí ríomhphoist, gan ábhar cúrsa. Stóráiltear seoltaí gan paraiméadair.",
+    "previewLabel": "Réamhamharc ar an tuarascáil",
+    "close": "Dún",
+    "download": "Íoslódáil comhad",
+    "shortcutHint": "Aicearra: Ctrl + Alt + D. Seol an comhad chuig an tacaíocht mar aon leis an uimhir earráide."
   }
 }

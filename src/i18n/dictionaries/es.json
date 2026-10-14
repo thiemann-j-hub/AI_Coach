@@ -570,5 +570,20 @@
       "title": "No se ha podido completar la acción con la IA",
       "next": "Inténtelo de nuevo. Si el error persiste, envíenos el número de error."
     }
+  },
+  "diagnose": {
+    "menu": "Descargar informe de error",
+    "title": "Informe de error para el soporte técnico",
+    "intro": "Este archivo nos ayuda a encontrar un error rápidamente. Puede ver exactamente lo que contiene antes de guardarlo.",
+    "itemBuild": "Versión de Coach ({sha})",
+    "itemBrowser": "Navegador, tamaño de pantalla, idioma, estado de conexión",
+    "itemSwitches": "Estado de {count} interruptores (solo activado/desactivado)",
+    "itemErrors": "Los últimos {count} números de error",
+    "itemLog": "{count} líneas de registro de esta sesión",
+    "privacy": "Sin datos de acceso, sin direcciones de correo electrónico, sin contenido del curso. Las direcciones se guardan sin parámetros.",
+    "previewLabel": "Vista previa del informe",
+    "close": "Cerrar",
+    "download": "Descargar archivo",
+    "shortcutHint": "Atajo de teclado: Ctrl + Alt + D. Envíe el archivo al soporte técnico junto con el número de error."
   }
 }

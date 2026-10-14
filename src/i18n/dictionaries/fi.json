@@ -570,5 +570,20 @@
       "title": "Tämä ei onnistunut tekoälyn kanssa.",
       "next": "Yritä uudelleen. Jos virhe toistuu, lähetä meille virhenumero."
     }
+  },
+  "diagnose": {
+    "menu": "Lataa virheraportti",
+    "title": "Virheraportti tukea varten",
+    "intro": "Tämä tiedosto auttaa meitä löytämään virheen nopeasti. Näet sen tarkan sisällön ennen tallentamista.",
+    "itemBuild": "Coachn versio ({sha})",
+    "itemBrowser": "Selain, näytön koko, kieli, verkkotila",
+    "itemSwitches": "{count} kytkimen tila (vain päällä/pois)",
+    "itemErrors": "Viimeiset {count} virhenumeroa",
+    "itemLog": "{count} lokiriviä tästä istunnosta",
+    "privacy": "Ei kirjautumistietoja, ei sähköpostiosoitteita, ei kurssisisältöjä. Osoitteet tallennetaan ilman parametreja.",
+    "previewLabel": "Raportin esikatselu",
+    "close": "Sulje",
+    "download": "Lataa tiedosto",
+    "shortcutHint": "Pikanäppäin: Ctrl + Alt + D. Lähetä tiedosto tukeen yhdessä virhenumeron kanssa."
   }
 }

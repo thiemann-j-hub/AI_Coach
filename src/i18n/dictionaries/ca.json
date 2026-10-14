@@ -570,5 +570,20 @@
       "title": "Això no ha funcionat amb la IA.",
       "next": "Torni-ho a provar. Si l'error persisteix, enviï'ns el número d'error."
     }
+  },
+  "diagnose": {
+    "menu": "Descarregar l'informe d'error",
+    "title": "Informe d'error per al suport tècnic",
+    "intro": "Aquest fitxer ens ajuda a trobar un error ràpidament. Veurà exactament què conté abans de desar-lo.",
+    "itemBuild": "Versió del Coach ({sha})",
+    "itemBrowser": "Navegador, mida de pantalla, idioma, estat en línia",
+    "itemSwitches": "Estat de {count} commutadors (només activat/desactivat)",
+    "itemErrors": "Els últims {count} números d'error",
+    "itemLog": "{count} línies de registre d'aquesta sessió",
+    "privacy": "Sense dades d'accés, sense adreces de correu electrònic, sense continguts del curs. Les adreces s'emmagatzemen sense paràmetres.",
+    "previewLabel": "Previsualització de l'informe",
+    "close": "Tancar",
+    "download": "Descarregar el fitxer",
+    "shortcutHint": "Drecera: Ctrl + Alt + D. Envieu el fitxer al suport tècnic juntament amb el número d'error."
   }
 }

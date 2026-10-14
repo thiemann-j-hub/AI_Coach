@@ -570,5 +570,20 @@
       "title": "Această acțiune nu a reușit cu asistentul IA.",
       "next": "Reîncercați. Dacă eroarea persistă, trimiteți-ne numărul erorii."
     }
+  },
+  "diagnose": {
+    "menu": "Descărcare raport de eroare",
+    "title": "Raport de eroare pentru suport",
+    "intro": "Acest fișier ne ajută să găsim rapid o eroare. Puteți vedea exact ce conține înainte de a-l salva.",
+    "itemBuild": "Versiunea Coach ({sha})",
+    "itemBrowser": "Browser, dimensiunea ecranului, limba, statutul online",
+    "itemSwitches": "Starea a {count} comutatoare (doar pornit/oprit)",
+    "itemErrors": "Ultimele {count} numere de eroare",
+    "itemLog": "{count} linii de jurnal din această sesiune",
+    "privacy": "Fără date de autentificare, fără adrese de e-mail, fără conținut din curs. Adresele sunt stocate fără parametri.",
+    "previewLabel": "Apreciere raport",
+    "close": "Închide",
+    "download": "Descărcare fișier",
+    "shortcutHint": "Scurtătură: Ctrl + Alt + D. Trimiteți fișierul către suport, împreună cu numărul erorii."
   }
 }

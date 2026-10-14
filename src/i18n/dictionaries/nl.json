@@ -570,5 +570,20 @@
       "title": "Dat is niet gelukt met de AI.",
       "next": "Probeer het opnieuw. Als de fout blijft optreden, stuur ons dan het foutnummer."
     }
+  },
+  "diagnose": {
+    "menu": "Foutrapport downloaden",
+    "title": "Foutrapport voor ondersteuning",
+    "intro": "Dit bestand helpt ons om een fout snel te vinden. U ziet voor het opslaan precies wat erin staat.",
+    "itemBuild": "Coach-versie ({sha})",
+    "itemBrowser": "Browser, schermgrootte, taal, onlinestatus",
+    "itemSwitches": "Status van {count} schakelaars (alleen aan/uit)",
+    "itemErrors": "De laatste {count} foutnummers",
+    "itemLog": "{count} logregels uit deze sessie",
+    "privacy": "Geen inloggegevens, geen e-mailadressen, geen cursusinhoud. Adressen worden zonder parameters opgeslagen.",
+    "previewLabel": "Voorbeeld van rapport",
+    "close": "Sluiten",
+    "download": "Bestand downloaden",
+    "shortcutHint": "Sneltoets: Ctrl + Alt + D. Stuur het bestand samen met het foutnummer naar de ondersteuning."
   }
 }

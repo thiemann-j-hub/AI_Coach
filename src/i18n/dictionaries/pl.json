@@ -570,5 +570,20 @@
       "title": "Wystąpił błąd podczas przetwarzania przez SI.",
       "next": "Proszę spróbować ponownie. Jeśli błąd nadal występuje, proszę przesłać nam numer błędu."
     }
+  },
+  "diagnose": {
+    "menu": "Pobierz raport o błędzie",
+    "title": "Raport o błędzie dla pomocy technicznej",
+    "intro": "Ten plik pomaga nam szybko zidentyfikować błąd. Przed zapisaniem dokładnie widać jego zawartość.",
+    "itemBuild": "Wersja Coach ({sha})",
+    "itemBrowser": "Przeglądarka, rozdzielczość ekranu, język, status online",
+    "itemSwitches": "Stan {count} przełączników (tylko włączone/wyłączone)",
+    "itemErrors": "Ostatnie numery błędów ({count})",
+    "itemLog": "Wpisy dziennika z tej sesji ({count})",
+    "privacy": "Brak danych logowania, adresów e-mail i treści kursu. Adresy są zapisywane bez parametrów.",
+    "previewLabel": "Podgląd raportu",
+    "close": "Zamknij",
+    "download": "Pobierz plik",
+    "shortcutHint": "Skrót: Ctrl + Alt + D. Prosimy przesłać plik do pomocy technicznej wraz z numerem błędu."
   }
 }

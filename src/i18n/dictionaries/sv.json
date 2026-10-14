@@ -570,5 +570,20 @@
       "title": "Det fungerade inte med KI.",
       "next": "Försök igen. Skicka felnumret till oss om felet kvarstår."
     }
+  },
+  "diagnose": {
+    "menu": "Ladda ner felrapport",
+    "title": "Felrapport för support",
+    "intro": "Den här filen hjälper oss att snabbt hitta ett fel. Du ser exakt vad den innehåller innan du sparar.",
+    "itemBuild": "Coach-version ({sha})",
+    "itemBrowser": "Webbläsare, skärmstorlek, språk, onlinestatus",
+    "itemSwitches": "Status för {count} växlar (endast på/av)",
+    "itemErrors": "De senaste {count} felnumren",
+    "itemLog": "{count} loggrader från den här sessionen",
+    "privacy": "Inga inloggningsuppgifter, inga e-postadresser, inget kursinnehåll. Adresser sparas utan parametrar.",
+    "previewLabel": "Förhandsgranskning av rapport",
+    "close": "Stäng",
+    "download": "Ladda ner fil",
+    "shortcutHint": "Kortkommando: Ctrl + Alt + D. Skicka filen till supporten tillsammans med felnumret."
   }
 }

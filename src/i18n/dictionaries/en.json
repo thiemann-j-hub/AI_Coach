@@ -570,5 +570,20 @@
       "title": "That did not work with the AI.",
       "next": "Try again. If the error persists, send us the error number."
     }
+  },
+  "diagnose": {
+    "menu": "Download error report",
+    "title": "Error report for support",
+    "intro": "This file helps us find an error quickly. You see exactly what it contains before saving.",
+    "itemBuild": "Coach version ({sha})",
+    "itemBrowser": "Browser, screen size, language, online status",
+    "itemSwitches": "State of {count} switches (on/off only)",
+    "itemErrors": "The last {count} error numbers",
+    "itemLog": "{count} log lines from this session",
+    "privacy": "No credentials, no e-mail addresses, no course content. Addresses are stored without parameters.",
+    "previewLabel": "Report preview",
+    "close": "Close",
+    "download": "Download file",
+    "shortcutHint": "Shortcut: Ctrl + Alt + D. Send the file to support together with the error number."
   }
 }

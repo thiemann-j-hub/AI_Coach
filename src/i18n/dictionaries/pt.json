@@ -570,5 +570,20 @@
       "title": "Não foi possível concluir a ação com a IA.",
       "next": "Tente novamente. Se o erro persistir, envie-nos o número do erro."
     }
+  },
+  "diagnose": {
+    "menu": "Descarregar relatório de erro",
+    "title": "Relatório de erro para o suporte",
+    "intro": "Este ficheiro ajuda-nos a encontrar um erro rapidamente. Vê exatamente o que contém antes de guardar.",
+    "itemBuild": "Versão do Coach ({sha})",
+    "itemBrowser": "Navegador, tamanho do ecrã, idioma, estado online",
+    "itemSwitches": "Estado de {count} interruptores (apenas ligado/desligado)",
+    "itemErrors": "Os últimos {count} números de erro",
+    "itemLog": "{count} linhas de registo desta sessão",
+    "privacy": "Sem credenciais, sem endereços de e-mail, sem conteúdos do curso. Os endereços são guardados sem parâmetros.",
+    "previewLabel": "Pré-visualização do relatório",
+    "close": "Fechar",
+    "download": "Descarregar ficheiro",
+    "shortcutHint": "Atalho: Ctrl + Alt + D. Envie o ficheiro para o suporte juntamente com o número do erro."
   }
 }

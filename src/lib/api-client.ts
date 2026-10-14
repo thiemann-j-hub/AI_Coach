@@ -2,6 +2,7 @@
 
 import { getLocaleCookie } from "@/i18n/locale-cookie";
 import { withBasePath } from "@/lib/base-path";
+import { recordApiError } from "@/lib/diagnose";
 
 /**
  * Headers für API-Calls. Auth läuft seit der Azure-Migration über das
@@ -70,5 +71,20 @@ export async function authFetch(
     headers: { ...headers, ...(options.headers ?? {}) },
   });
   announceIfSessionExpired(res);
+  // W1-3: letzte Fehler-Nummern für den Fehlerbericht (Body nur als Kopie gelesen, Personendaten entfernt).
+  if (!res.ok) {
+    void res
+      .clone()
+      .json()
+      .catch(() => null)
+      .then((b: { requestId?: string; aiCode?: string; code?: string; error?: string } | null) => {
+        recordApiError({
+          requestId: b?.requestId || res.headers.get("x-request-id") || undefined,
+          code: b?.aiCode ?? b?.code,
+          status: res.status,
+          msg: `${url} ${b?.error ?? res.statusText}`,
+        });
+      });
+  }
   return res;
 }
