@@ -596,5 +596,14 @@
     "typeWord": "Kinnitamiseks sisestage {word}.",
     "deleteWord": "KUSTUTA",
     "deleteOk": "Kustuta jäädavalt"
+  },
+  "aiWait": {
+    "aiLimit": "Selle sisu genereeris tehisintellekt ning see võib sisaldada vigu. Palun vaadake see enne kasutamist üle.",
+    "analyzeStep1": "Teie vestluse lugemine…",
+    "analyzeStep2": "Avalduste seostamine oskustega…",
+    "analyzeStep3": "Teie tagasiside koostamine…",
+    "finishStep1": "Kogu vestluse ülevaatamine…",
+    "finishStep2": "Teie panuse hindamine oskuste põhjal…",
+    "finishStep3": "Teie hindamise kirjutamine…"
   }
 }

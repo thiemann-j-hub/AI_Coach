@@ -596,5 +596,14 @@
     "typeWord": "Escreva {word} para confirmar.",
     "deleteWord": "ELIMINAR",
     "deleteOk": "Eliminar permanentemente"
+  },
+  "aiWait": {
+    "aiLimit": "Isto foi gerado por IA e pode conter erros. Por favor, reveja antes de utilizar.",
+    "analyzeStep1": "A ler a sua conversa…",
+    "analyzeStep2": "A mapear declarações para competências…",
+    "analyzeStep3": "A redigir o seu feedback…",
+    "finishStep1": "A rever toda a conversa…",
+    "finishStep2": "A avaliar as suas contribuições com base nas competências…",
+    "finishStep3": "A escrever a sua avaliação…"
   }
 }

@@ -596,5 +596,14 @@
     "typeWord": "Aby potwierdzić, wpisz {word}.",
     "deleteWord": "USUŃ",
     "deleteOk": "Usuń trwale"
+  },
+  "aiWait": {
+    "aiLimit": "Treść została wygenerowana przez sztuczną inteligencję i może zawierać błędy. Prosimy o jej zweryfikowanie przed użyciem.",
+    "analyzeStep1": "Analizowanie rozmowy…",
+    "analyzeStep2": "Przypisywanie wypowiedzi do kompetencji…",
+    "analyzeStep3": "Formułowanie informacji zwrotnej…",
+    "finishStep1": "Ponowne analizowanie całej rozmowy…",
+    "finishStep2": "Ocenianie wypowiedzi pod kątem kompetencji…",
+    "finishStep3": "Przygotowywanie oceny…"
   }
 }

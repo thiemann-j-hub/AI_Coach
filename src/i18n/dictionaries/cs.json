@@ -596,5 +596,14 @@
     "typeWord": "Napište {word} pro potvrzení.",
     "deleteWord": "SMAZAT",
     "deleteOk": "Trvale smazat"
+  },
+  "aiWait": {
+    "aiLimit": "Tento obsah byl vygenerován umělou inteligencí a může obsahovat chyby. Před použitím jej prosím zkontrolujte.",
+    "analyzeStep1": "Čtu vaši konverzaci…",
+    "analyzeStep2": "Přiřazování vyjádření ke dovednostem…",
+    "analyzeStep3": "Formuluji vaši zpětnou vazbu…",
+    "finishStep1": "Procházím celou konverzaci…",
+    "finishStep2": "Hodnotím vaše příspěvky na základě dovedností…",
+    "finishStep3": "Píši vaše vyhodnocení…"
   }
 }

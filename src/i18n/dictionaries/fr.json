@@ -596,5 +596,14 @@
     "typeWord": "Saisissez {word} pour confirmer.",
     "deleteWord": "SUPPRIMER",
     "deleteOk": "Supprimer définitivement"
+  },
+  "aiWait": {
+    "aiLimit": "Ce contenu a été généré par IA et peut contenir des erreurs. Veuillez le vérifier avant de l'utiliser.",
+    "analyzeStep1": "Lecture de votre conversation…",
+    "analyzeStep2": "Association des déclarations aux compétences…",
+    "analyzeStep3": "Rédaction de votre retour…",
+    "finishStep1": "Relecture de l'ensemble de la conversation…",
+    "finishStep2": "Évaluation de vos contributions en fonction des compétences…",
+    "finishStep3": "Rédaction de votre évaluation…"
   }
 }

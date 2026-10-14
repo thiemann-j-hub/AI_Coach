@@ -596,5 +596,14 @@
     "typeWord": "Ievadiet {word}, lai apstiprinātu.",
     "deleteWord": "DZĒST",
     "deleteOk": "Dzēst neatgriezeniski"
+  },
+  "aiWait": {
+    "aiLimit": "Šo saturu ir ģenerējis mākslīgais intelekts, un tajā var būt kļūdas. Lūdzu, pārbaudiet to pirms izmantošanas.",
+    "analyzeStep1": "Tiek lasīta jūsu saruna…",
+    "analyzeStep2": "Tiek piesaistīti izteikumi prasmes līmeņiem…",
+    "analyzeStep3": "Tiek sagatavots jūsu atgriezeniskās saites melnraksts…",
+    "finishStep1": "Tiek pārskatīta visa saruna…",
+    "finishStep2": "Tiek novērtēts jūsu devums, balstoties uz prasmēm…",
+    "finishStep3": "Tiek rakstīts jūsu novērtējums…"
   }
 }

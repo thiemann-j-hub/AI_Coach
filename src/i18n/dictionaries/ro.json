@@ -596,5 +596,14 @@
     "typeWord": "Tastați {word} pentru a confirma.",
     "deleteWord": "ȘTERGE",
     "deleteOk": "Șterge definitiv"
+  },
+  "aiWait": {
+    "aiLimit": "Acest conținut a fost generat de AI și poate conține erori. Vă rugăm să îl verificați înainte de utilizare.",
+    "analyzeStep1": "Se citește conversația dumneavoastră…",
+    "analyzeStep2": "Se asociază afirmațiile cu competențele…",
+    "analyzeStep3": "Se formulează feedbackul dumneavoastră…",
+    "finishStep1": "Se reexaminează întreaga conversație…",
+    "finishStep2": "Se evaluează contribuțiile dumneavoastră pe baza competențelor…",
+    "finishStep3": "Se scrie evaluarea dumneavoastră…"
   }
 }

@@ -596,5 +596,14 @@
     "typeWord": "Clóscríobh {word} chun é a dheimhniú.",
     "deleteWord": "DELETE",
     "deleteOk": "Scrios go buan"
+  },
+  "aiWait": {
+    "aiLimit": "Ghin AI é seo agus seans go bhfuil earráidí ann. Athbhreithnigh é seo le do thoil roimh úsáid.",
+    "analyzeStep1": "Do chomhrá á léamh…",
+    "analyzeStep2": "Ráitis á mapáil ar scileanna…",
+    "analyzeStep3": "Do chuid aiseolais á dréachtú…",
+    "finishStep1": "An comhrá iomlán á athbhreithniú…",
+    "finishStep2": "Do chuid ranníocaíochtaí á meastóireacht bunaithe ar na scileanna…",
+    "finishStep3": "Do mheastóireacht á scríobh…"
   }
 }

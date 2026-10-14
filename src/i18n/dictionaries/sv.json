@@ -596,5 +596,14 @@
     "typeWord": "Skriv {word} för att bekräfta.",
     "deleteWord": "RADERA",
     "deleteOk": "Radera permanent"
+  },
+  "aiWait": {
+    "aiLimit": "Detta har skapats av AI och kan innehålla fel. Granska innehållet innan du använder det.",
+    "analyzeStep1": "Läser din konversation…",
+    "analyzeStep2": "Kopplar uttalanden till kompetenser…",
+    "analyzeStep3": "Formulerar din feedback…",
+    "finishStep1": "Granskar hela konversationen…",
+    "finishStep2": "Utvärderar dina bidrag utifrån kompetenserna…",
+    "finishStep3": "Skriver din utvärdering…"
   }
 }

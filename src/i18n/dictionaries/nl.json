@@ -596,5 +596,14 @@
     "typeWord": "Typ {word} om te bevestigen.",
     "deleteWord": "VERWIJDEREN",
     "deleteOk": "Permanent verwijderen"
+  },
+  "aiWait": {
+    "aiLimit": "Dit is gegenereerd door AI en kan fouten bevatten. Controleer het voordat u het gebruikt.",
+    "analyzeStep1": "Uw gesprek lezen…",
+    "analyzeStep2": "Uitingen koppelen aan vaardigheden…",
+    "analyzeStep3": "Uw feedback opstellen…",
+    "finishStep1": "Het volledige gesprek doornemen…",
+    "finishStep2": "Uw bijdragen beoordelen op basis van de vaardigheden…",
+    "finishStep3": "Uw evaluatie schrijven…"
   }
 }

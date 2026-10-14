@@ -596,5 +596,14 @@
     "typeWord": "Digita {word} per confermare.",
     "deleteWord": "ELIMINA",
     "deleteOk": "Elimina definitivamente"
+  },
+  "aiWait": {
+    "aiLimit": "Questo contenuto è stato generato dall’IA e potrebbe contenere errori. Si prega di verificare prima dell’uso.",
+    "analyzeStep1": "Lettura della conversazione in corso…",
+    "analyzeStep2": "Mappatura delle affermazioni rispetto alle competenze in corso…",
+    "analyzeStep3": "Stesura del feedback in corso…",
+    "finishStep1": "Revisione dell’intera conversazione in corso…",
+    "finishStep2": "Valutazione dei Suoi contributi in base alle competenze in corso…",
+    "finishStep3": "Scrittura della Sua valutazione in corso…"
   }
 }

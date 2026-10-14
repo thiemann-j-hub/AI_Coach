@@ -596,5 +596,14 @@
     "typeWord": "Vahvista kirjoittamalla {word}.",
     "deleteWord": "POISTA",
     "deleteOk": "Poista pysyvästi"
+  },
+  "aiWait": {
+    "aiLimit": "Tämä on tekoälyn luomaa sisältöä ja saattaa sisältää virheitä. Tarkista se ennen käyttöä.",
+    "analyzeStep1": "Luetaan keskusteluasi…",
+    "analyzeStep2": "Yhdistetään lausumia taitoihin…",
+    "analyzeStep3": "Laaditaan palautettasi…",
+    "finishStep1": "Tarkastellaan koko keskustelua…",
+    "finishStep2": "Arvioidaan panostasi taitojen perusteella…",
+    "finishStep3": "Kirjoitetaan arviointiasi…"
   }
 }

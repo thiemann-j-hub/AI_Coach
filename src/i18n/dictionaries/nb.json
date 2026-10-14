@@ -596,5 +596,14 @@
     "typeWord": "Skriv inn {word} for å bekrefte.",
     "deleteWord": "SLETT",
     "deleteOk": "Slett permanent"
+  },
+  "aiWait": {
+    "aiLimit": "Dette ble generert av kunstig intelligens og kan inneholde feil. Kontroller innholdet før du bruker det.",
+    "analyzeStep1": "Leser samtalen din …",
+    "analyzeStep2": "Knyytter uttalelser til kompetanser …",
+    "analyzeStep3": "Formulerer tilbakemeldingen din …",
+    "finishStep1": "Går gjennom hele samtalen på nytt …",
+    "finishStep2": "Vurderer bidragene dine basert på kompetansene …",
+    "finishStep3": "Skriver evalueringen din …"
   }
 }

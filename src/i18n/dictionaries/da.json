@@ -596,5 +596,14 @@
     "typeWord": "Skriv {word} for at bekræfte.",
     "deleteWord": "SLET",
     "deleteOk": "Slet permanent"
+  },
+  "aiWait": {
+    "aiLimit": "Dette er genereret af AI og kan indeholde fejl. Tjek det venligst, før du bruger det.",
+    "analyzeStep1": "Læser din samtale…",
+    "analyzeStep2": "Knytter udsagn til kompetencer…",
+    "analyzeStep3": "Formulerer din feedback…",
+    "finishStep1": "Gennemgår hele samtalen igen…",
+    "finishStep2": "Evaluerer dine bidrag ud fra kompetencerne…",
+    "finishStep3": "Skriver din evaluering…"
   }
 }

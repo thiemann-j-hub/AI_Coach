@@ -596,5 +596,14 @@
     "typeWord": "A megerősítéshez írja be a következőt: {word}.",
     "deleteWord": "TÖRLÉS",
     "deleteOk": "Végleges törlés"
+  },
+  "aiWait": {
+    "aiLimit": "Ezt a tartalmat mesterséges intelligencia generálta, így hibákat tartalmazhat. Kérjük, használat előtt ellenőrizze.",
+    "analyzeStep1": "A beszélgetés olvasása…",
+    "analyzeStep2": "A kijelentések hozzárendelése a készségekhez…",
+    "analyzeStep3": "A visszajelzés megfogalmazása…",
+    "finishStep1": "A teljes beszélgetés áttekintése…",
+    "finishStep2": "Az Ön hozzászólásainak értékelése a készségek alapján…",
+    "finishStep3": "Az Ön értékelésének megírása…"
   }
 }

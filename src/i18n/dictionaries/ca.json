@@ -596,5 +596,14 @@
     "typeWord": "Escrigui {word} per confirmar.",
     "deleteWord": "ELIMINAR",
     "deleteOk": "Suprimir permanentment"
+  },
+  "aiWait": {
+    "aiLimit": "Aquest contingut ha estat generat per IA i pot contenir errors. Revisi'l abans d'utilitzar-lo.",
+    "analyzeStep1": "Llegint la seva conversa…",
+    "analyzeStep2": "Assignant les declaracions a les competències…",
+    "analyzeStep3": "Redactant els seus comentaris…",
+    "finishStep1": "Revisant tota la conversa…",
+    "finishStep2": "Avaluant les seves aportacions en funció de les competències…",
+    "finishStep3": "Redactant la seva avaluació…"
   }
 }
