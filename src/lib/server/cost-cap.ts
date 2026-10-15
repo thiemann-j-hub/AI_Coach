@@ -138,3 +138,27 @@ export function estimateTokens(...texts: (string | null | undefined)[]): number 
   // Input + erwarteter Output (Analyse erzeugt ~2-3k Token), grob gerundet
   return Math.ceil(chars / 4) + 3000;
 }
+
+// ── Go-Live S3 (15.10.2026): Tagesgrenze Rollenspiel-Starts je Person ───────────
+// Standard 6 je Tag (COACH_SIM_STARTS_PER_DAY; 0 = aus). Admins (ADMIN_EMAILS) sind frei.
+export function simStartsPerDay(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = (env.COACH_SIM_STARTS_PER_DAY ?? "").trim();
+  if (!raw) return 6;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 6;
+}
+
+export function simStartsExceeded(startedToday: number, limit: number): boolean {
+  return limit > 0 && startedToday >= limit;
+}
+
+export function isCostCapAdmin(email?: string | null): boolean {
+  return !!email && adminEmails().has(email.toLowerCase());
+}
+
+export function simStartsLimitResponse(limit: number): NextResponse {
+  return NextResponse.json(
+    { ok: false, error: `Heute sind ${limit} Rollenspiele möglich — morgen geht es weiter. Wenn Du heute mehr brauchst, sag Deinem Admin Bescheid.`, code: "QUOTA_EXCEEDED", limit, used: limit },
+    { status: 429 }
+  );
+}

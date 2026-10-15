@@ -4,7 +4,7 @@ import { z } from "zod";
 import { runPersonaOpening } from "@/ai/flows/simulation-persona";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
-import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { checkAndConsumeBudget, estimateTokens, isCostCapAdmin, simStartsExceeded, simStartsLimitResponse, simStartsPerDay } from "@/lib/server/cost-cap";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { preflightEntitlement } from "@/lib/server/credits/entitlement";
@@ -13,8 +13,7 @@ import { withRetry, timeoutMs } from "@/lib/with-timeout";
 const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
 import {
   countFinishedForScenario,
-  createSimulation,
-} from "@/lib/server/simulation-store";
+  createSimulation, countSimulationsStartedToday } from "@/lib/server/simulation-store";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -108,6 +107,16 @@ export async function POST(req: NextRequest) {
         () => runPersonaOpening({ scenario, convoLocale, hardness }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-opening", retries: 1 }
       );
+    }
+
+    // Go-Live S3 (15.10.2026): Tagesgrenze je Person (Standard 6 Starts; Admins frei; COACH_SIM_STARTS_PER_DAY=0 aus).
+    const startLimit = simStartsPerDay();
+    if (startLimit > 0 && !isCostCapAdmin(auth.email)) {
+      const startedToday = await countSimulationsStartedToday(auth.uid);
+      if (simStartsExceeded(startedToday, startLimit)) {
+        logger.api("/api/simulation/start", "daily-starts-blocked", { uid: auth.uid, startedToday, limit: startLimit });
+        return simStartsLimitResponse(startLimit);
+      }
     }
 
     const simId = crypto.randomUUID();

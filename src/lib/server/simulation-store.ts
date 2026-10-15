@@ -292,6 +292,21 @@ export async function latestFinishedForScenario(
 }
 
 /** Anzahl abgeschlossener Versuche eines Szenarios (für attempt = n+1). */
+/** Go-Live S3 (15.10.2026): Rollenspiel-Starts einer Person seit Tagesbeginn (UTC), abgebrochene zählen nicht. */
+export async function countSimulationsStartedToday(uid: string, now: Date = new Date()): Promise<number> {
+  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
+  const rows = await queryItems<number>(
+    runsContainer(),
+    "SELECT VALUE COUNT(1) FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.createdAt >= @from AND c.status != 'aborted'",
+    [
+      { name: "@pk", value: simPartitionKey(uid) },
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@from", value: dayStart },
+    ]
+  );
+  return rows[0] ?? 0;
+}
+
 export async function countFinishedForScenario(
   uid: string,
   scenarioId: string
