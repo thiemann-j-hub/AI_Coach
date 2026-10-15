@@ -1,4 +1,5 @@
 import "server-only";
+import { timingSafeEqual } from "node:crypto";
 
 /**
  * Ausweis gegenüber dem Credit-Dienst (Anmeldung-Umbau Schritt 2c, Owner-GO 02.10.2026).
@@ -52,6 +53,19 @@ export function pnServiceSecret(): string | null {
   if ((process.env.PN_SERVICE_AUTH ?? "on").toLowerCase() === "off") return null;
   const s = process.env.PN_SERVICE_SECRET ?? "";
   return s.length >= MIN_SERVICE_SECRET_CHARS && HEADER_SAFE_SECRET.test(s) ? s : null;
+}
+
+/**
+ * Go-Live Z3 (15.10.2026): Eingehender Dienst-Aufruf (Hub → Coach) mit dem Dienst-Ausweis — derselbe
+ * Helfer, derselbe Ort für Geheimnis und Kopfzeile (Leitplanken-Test). Fail-closed: ohne gültiges
+ * Geheimnis oder mit PN_SERVICE_AUTH=off immer false.
+ */
+export function serviceRequestOk(req: { headers: { get(name: string): string | null } }): boolean {
+  const expected = pnServiceSecret();
+  if (!expected) return false;
+  const a = Buffer.from(req.headers.get("x-pn-service-secret") ?? "", "utf8");
+  const b = Buffer.from(expected, "utf8");
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 /** Sind PulseNorth-Konten als vollwertige Konten eingeschaltet? */

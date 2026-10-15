@@ -10,7 +10,7 @@
  * Fail-closed ohne Geheimnis 404. Rückweg PN_SERVICE_AUTH=off → 404.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { timingSafeEqual } from "node:crypto";
+import { serviceRequestOk } from "@/lib/server/credits/cs-credential";
 import { deleteAccount } from "@/lib/server/account-delete";
 import { deleteItem, queryItems, runsContainer, usersContainer } from "@/lib/cosmos";
 import { scenarioPartitionKey } from "@/lib/server/scenario-store";
@@ -19,15 +19,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-function serviceOk(req: NextRequest): boolean {
-  if ((process.env.PN_SERVICE_AUTH ?? "on").toLowerCase() === "off") return false;
-  const expected = Buffer.from(process.env.PN_SERVICE_SECRET ?? "", "utf8");
-  const got = Buffer.from(req.headers.get("x-pn-service-secret") ?? "", "utf8");
-  return expected.length >= 16 && got.length === expected.length && timingSafeEqual(got, expected);
-}
 
 export async function POST(req: NextRequest) {
-  if (!serviceOk(req)) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  if (!serviceRequestOk(req)) return NextResponse.json({ error: "not_found" }, { status: 404 });
   const body = (await req.json().catch(() => ({}))) as { workspaceId?: unknown; oids?: unknown };
   const workspaceId = typeof body.workspaceId === "string" ? body.workspaceId.trim() : "";
   if (!workspaceId || workspaceId.length > 200) return NextResponse.json({ error: "workspace_required" }, { status: 400 });
