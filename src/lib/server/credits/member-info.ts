@@ -24,6 +24,35 @@ export interface CentralMemberInfo {
   /** Zentrales Profil (16.08.): Bild + Anzeigename, EINMAL gesetzt, ueberall gleich. */
   avatarUrl: string | null;
   displayName: string | null;
+  /** Schritt 9 (16.10.2026): zentrale Einstellungen des Unternehmens — KI-Schalter, Mindestgröße, Pflicht-Einwilligungen. */
+  einstellungen: ZentraleEinstellungen;
+}
+
+export interface ZentraleEinstellungen {
+  ki: { gesamt: boolean; funktionen: Record<string, boolean> };
+  datenschutz: { mindestgruppe: number };
+  einwilligungen: Record<string, boolean>;
+}
+
+export function standardEinstellungen(): ZentraleEinstellungen {
+  return { ki: { gesamt: true, funktionen: {} }, datenschutz: { mindestgruppe: 5 }, einwilligungen: {} };
+}
+
+export function einstellungenAus(raw: unknown): ZentraleEinstellungen {
+  const r = (raw ?? {}) as { ki?: { gesamt?: unknown; funktionen?: Record<string, unknown> }; datenschutz?: { mindestgruppe?: unknown }; einwilligungen?: Record<string, unknown> };
+  const mg = Number(r.datenschutz?.mindestgruppe);
+  return {
+    ki: { gesamt: r.ki?.gesamt !== false, funktionen: Object.fromEntries(Object.entries(r.ki?.funktionen ?? {}).map(([k, v]) => [k, v !== false])) },
+    datenschutz: { mindestgruppe: Number.isInteger(mg) && mg >= 3 && mg <= 50 ? mg : 5 },
+    einwilligungen: Object.fromEntries(Object.entries(r.einwilligungen ?? {}).map(([k, v]) => [k, v === true])),
+  };
+}
+
+/** A-07: Ist diese KI-Funktion für das Unternehmen erlaubt? (Rückweg KI_GATE=off → immer ja) */
+export function kiErlaubt(info: CentralMemberInfo | null | undefined, funktion: string): boolean {
+  if ((process.env.KI_GATE ?? "on").trim().toLowerCase() === "off") return true;
+  if (!info) return true;
+  return info.einstellungen.ki.gesamt && info.einstellungen.ki.funktionen[funktion] !== false;
 }
 
 const BASE_URL = (
@@ -94,6 +123,7 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
       disabled?: boolean;
       avatarUrl?: string | null;
       displayName?: string | null;
+      einstellungen?: unknown;
     };
     const info: CentralMemberInfo = {
       workspaceId: j.workspaceId ?? null,
@@ -102,6 +132,7 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
       disabled: j.disabled === true,
       avatarUrl: typeof j.avatarUrl === "string" ? j.avatarUrl : null,
       displayName: typeof j.displayName === "string" ? j.displayName : null,
+      einstellungen: einstellungenAus(j.einstellungen),
     };
     cache.set(oid, { at: Date.now(), info });
     return { kind: "info", info };

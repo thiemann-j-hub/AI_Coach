@@ -167,7 +167,8 @@ async function getCsCredential(): Promise<CsCredentialResult> {
 export type CentralReserveResult =
   | { ok: true; workspaceId: string; transactionId?: string; balance?: number }
   | { ok: false; reason: "insufficient"; workspaceId: string }
-  | { ok: false; reason: "no_token" | "error"; status?: number };
+  | { ok: false; reason: "no_token" | "error"; status?: number }
+  | { ok: false; reason: "ki_aus" };
 
 /**
  * ON-Pfad-Reservierung: resolve-workspace + zentral spend(1). Direkt (kein
@@ -201,6 +202,10 @@ export async function centralReserve(opts: { runId: string }): Promise<CentralRe
   } catch (e) {
     if (e instanceof CreditServiceError && e.status === 402) {
       return { ok: false, reason: "insufficient", workspaceId };
+    }
+    // Schritt 9 / A-07: 403 ki_aus = die KI-Funktion ist für das Unternehmen aus — eine Entscheidung, kein Fehler.
+    if (e instanceof CreditServiceError && e.status === 403 && e.message.includes("ki_aus")) {
+      return { ok: false, reason: "ki_aus" };
     }
     logger.apiError("credit-service/centralReserve/spend", e, { runId: opts.runId });
     return { ok: false, reason: "error", status: e instanceof CreditServiceError ? e.status : undefined };

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { standardEinstellungen } from "./member-info";
 
 /**
  * member-info mit zwei Ausweisen (Anmeldung-Umbau Schritt 2c, 02.10.2026).
@@ -64,7 +65,7 @@ describe("getCentralMemberState — PulseNorth-Konto (Dienst-Ausweis)", () => {
     const s = await m.getCentralMemberState(PN_ID);
     expect(s).toEqual({
       kind: "info",
-      info: { workspaceId: "ws-1", role: "member", apps: ["coach"], disabled: false, avatarUrl: null, displayName: "Sandra" },
+      info: { workspaceId: "ws-1", role: "member", apps: ["coach"], disabled: false, avatarUrl: null, displayName: "Sandra", einstellungen: standardEinstellungen() },
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);

@@ -99,6 +99,9 @@ export async function reserveEntitlement(opts: {
 
   const c = await centralReserve({ runId });
   if (!c.ok) {
+    if (c.reason === "ki_aus") {
+      return { ok: false, response: NextResponse.json({ ok: false, code: "KI_AUS", error: KI_AUS_TEXT }, { status: 403 }) };
+    }
     if (c.reason === "insufficient") {
       return { ok: false, response: paywall(c.workspaceId, await memberCanTopUp()) };
     }
@@ -172,7 +175,28 @@ export function coachPreflightOn(): boolean {
 export const PREFLIGHT_TEXT =
   "Für die Auswertung brauchst Du 1 Credit. Dein Guthaben ist leer. Lade jetzt auf, dann geht Deine Übung nicht verloren.";
 
+export const KI_AUS_TEXT = "Rollenspiele und Gesprächsanalyse sind für Euer Unternehmen ausgeschaltet. Ein Admin kann sie im Hub unter Einstellungen › KI-Funktionen einschalten.";
+
+/** Schritt 9 / A-07: KI-Schalter des Unternehmens (Hub › Einstellungen › KI-Funktionen) — vor jedem Start. */
+export async function kiSchalterBlockt(): Promise<NextResponse | null> {
+  try {
+    const { auth } = await import("@/auth");
+    const oid = ((await auth())?.user as { oid?: string } | undefined)?.oid;
+    if (!oid) return null;
+    const { getCentralMemberInfo, kiErlaubt } = await import("./member-info");
+    const central = await getCentralMemberInfo(oid);
+    if (!kiErlaubt(central, "rollenspiele")) {
+      return NextResponse.json({ ok: false, code: "KI_AUS", error: KI_AUS_TEXT }, { status: 403 });
+    }
+  } catch (e) {
+    logger.apiError("entitlement/ki-schalter", e);
+  }
+  return null;
+}
+
 export async function preflightEntitlement(): Promise<NextResponse | null> {
+  const kiAus = await kiSchalterBlockt();
+  if (kiAus) return kiAus;
   if (!creditGateEnabled() || !coachPreflightOn()) return null;
   let w: Awaited<ReturnType<typeof centralWalletStatus>>;
   try {
