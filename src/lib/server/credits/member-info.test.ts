@@ -65,7 +65,7 @@ describe("getCentralMemberState — PulseNorth-Konto (Dienst-Ausweis)", () => {
     const s = await m.getCentralMemberState(PN_ID);
     expect(s).toEqual({
       kind: "info",
-      info: { workspaceId: "ws-1", role: "member", apps: ["coach"], disabled: false, avatarUrl: null, displayName: "Sandra", einstellungen: standardEinstellungen() },
+      info: { workspaceId: "ws-1", role: "member", apps: ["coach"], disabled: false, avatarUrl: null, displayName: "Sandra", einstellungen: standardEinstellungen(), meineEinwilligungen: {}, einwilligungFassungen: {}, admins: [] },
     });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
