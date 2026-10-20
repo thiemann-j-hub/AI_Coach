@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Tabhair toiliú uair amháin sula labhraíonn tú",
+    "consentBody": "Tá do chuideachta ag iarraidh do thoiliú roimh an gcéad taifeadadh gutha: tiontaítear do ghuth go téacs in Iarthar na hEorpa, agus ní stóráiltear an taifeadadh. Is féidir leat clóscríobh i gcónaí ina ionad sin.",
+    "consentLater": "Níos déanaí, clóscríobhfaidh mé",
+    "consentGo": "Téigh chuig an toiliú"
   },
   "auth": {
     "signIn": "Sínigh isteach",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Gan rochtain ar Cóitseálaí comhrá IS",
     "body": "Níl Cóitseálaí comhrá IS cumasaithe le haghaidh do chuntais. Deonaíonn riarthóir do chuideachta rochtain faoi “Foireann & rochtain”. Gheobhaidh tú na cúrsaí atá sannta duit i “Mo Limistéar Foghlama”.",
-    "cta": "Téigh chuig “Mo Limistéar Foghlama”"
+    "cta": "Téigh chuig “Mo Limistéar Foghlama”",
+    "wer": "Is féidir rochtain a dheonú ag:",
+    "geben": "Deonaigh rochtain (Foireann & rochtain)"
   },
   "aiErrors": {
     "errorNumber": "Earráid Uimh. {id}",

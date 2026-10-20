@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Samtykk én gang før De snakker",
+    "consentBody": "Deres bedrift ber om Deres samtykke før den første taleinnspillingen: Stemmen Deres konverteres til tekst i Vest-Europa, innspillingen blir ikke lagret. De kan alltid skrive i stedet.",
+    "consentLater": "Senere, jeg skriver",
+    "consentGo": "Gå til samtykke"
   },
   "auth": {
     "signIn": "Logg inn",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Ingen tilgang til AI-samtalecoach",
     "body": "AI-samtalecoach er ikke aktivert for kontoen din. Tilgang tildeles av administratoren i bedriften din under «Team & tilgang». Kursene som er tildelt deg, finner du i «Mitt læringsområde».",
-    "cta": "Gå til «Mitt læringsområde»"
+    "cta": "Gå til «Mitt læringsområde»",
+    "wer": "Tilgang kan gis av:",
+    "geben": "Gi tilgang (Team og tilganger)"
   },
   "aiErrors": {
     "errorNumber": "Feilnr. {id}",

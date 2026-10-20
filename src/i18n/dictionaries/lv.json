@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Sniedziet piekrišanu vienreiz, pirms runājat",
+    "consentBody": "Jūsu uzņēmums lūdz Jūsu piekrišanu pirms pirmā balss ieraksta: Jūsu balss tiek pārveidota tekstā Rietumeiropā, ieraksts netiek saglabāts. Tā vietā Jūs jebkurā laikā varat rakstīt.",
+    "consentLater": "Vēlāk, es rakstīšu",
+    "consentGo": "Doties uz piekrišanu"
   },
   "auth": {
     "signIn": "Pierakstīties",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Nav piekļuves rīkam MI sarunu treneris",
     "body": "Rīks MI sarunu treneris jūsu kontam nav aktivizēts. Piekļuvi piešķir jūsu uzņēmuma administrators sadaļā „Komanda un piekļuve“. Jums piešķirtos kursus atradīsiet sadaļā „Mana mācību zona“.",
-    "cta": "Doties uz sadaļu „Mana mācību zona“"
+    "cta": "Doties uz sadaļu „Mana mācību zona“",
+    "wer": "Piekļuvi var piešķirt:",
+    "geben": "Piešķirt piekļuvi (Komanda un piekļuve)"
   },
   "aiErrors": {
     "errorNumber": "Kļūdas Nr. {id}",

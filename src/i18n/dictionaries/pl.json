@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Wyrażenie zgody przed rozpoczęciem wypowiedzi",
+    "consentBody": "Państwa firma prosi o wyrażenie zgody przed pierwszą rejestracją głosu: Państwa głos jest konwertowany na tekst w Europie Zachodniej, a nagranie nie jest przechowywane. W każdej chwili mogą Państwo zamiast tego pisać.",
+    "consentLater": "Później, będę pisać",
+    "consentGo": "Przejdź do zgody"
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Brak dostępu do narzędzia Coach rozmów AI",
     "body": "Narzędzie Coach rozmów AI nie jest włączone dla Państwa konta. Dostęp przyznaje administrator Państwa firmy w sekcji „Zespół i dostępy”. Przypisane Państwu kursy znajdą Państwo w sekcji „Mój obszar nauki”.",
-    "cta": "Przejść do sekcji „Mój obszar nauki”"
+    "cta": "Przejść do sekcji „Mój obszar nauki”",
+    "wer": "Dostępu mogą udzielić:",
+    "geben": "Udziel dostępu (Zespół i dostęp)"
   },
   "aiErrors": {
     "errorNumber": "Nr błędu: {id}",

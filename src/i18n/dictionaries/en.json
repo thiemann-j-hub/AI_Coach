@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Consent once before you speak",
+    "consentBody": "Your company asks for your consent before the first voice recording: your voice is converted to text in Western Europe, the recording is not stored. You can always type instead.",
+    "consentLater": "Later, I will type",
+    "consentGo": "Go to consent"
   },
   "auth": {
     "signIn": "Sign In",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "No access to AI Conversation Coach",
     "body": "AI Conversation Coach is not enabled for your account. Access is granted by your company’s admin under “Team & access”. You will find your assigned courses in “My learning area”.",
-    "cta": "Go to “My learning area”"
+    "cta": "Go to “My learning area”",
+    "wer": "Access can be granted by:",
+    "geben": "Grant access (Team & access)"
   },
   "aiErrors": {
     "errorNumber": "Error no. {id}",

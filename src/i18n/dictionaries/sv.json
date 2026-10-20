@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Samtyck en gång innan Ni talar",
+    "consentBody": "Ert företag ber om Ert samtycke före den första röstinspelningen: Er röst omvandlas till text i Västeuropa, inspelningen sparas inte. Ni kan alltid skriva i stället.",
+    "consentLater": "Senare, jag skriver",
+    "consentGo": "Gå till samtycke"
   },
   "auth": {
     "signIn": "Logga in",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Ingen åtkomst till AI-samtalscoach",
     "body": "AI-samtalscoach har inte aktiverats för ditt konto. Åtkomst tilldelas av ditt företags administratör under ”Team & åtkomst”. Dina tilldelade kurser hittar du i ”Mitt lärandeområde”.",
-    "cta": "Till ”Mitt lärandeområde”"
+    "cta": "Till ”Mitt lärandeområde”",
+    "wer": "Åtkomst kan beviljas av:",
+    "geben": "Bevilja åtkomst (Team & åtkomst)"
   },
   "aiErrors": {
     "errorNumber": "Fel nr {id}",

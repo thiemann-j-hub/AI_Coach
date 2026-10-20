@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { consentGateOn } from "@/lib/server/credits/member-info";
 
 /**
  * GET /api/speech-token — kurzlebiges Token für die Spracheingabe über Azure Speech (West-Europa).
@@ -22,6 +23,23 @@ export async function GET(req: NextRequest) {
   }
   const limited = checkRateLimit(`stt-token:${auth.uid}`, 30, 10 * 60 * 1000, "Zu viele Anfragen. Bitte kurz warten.");
   if (limited) return limited;
+  // Stufe C / LXT W5-4 (20.10.2026): Verlangt das Unternehmen die Einwilligung „Sprachaufnahme“, gibt es ohne sie
+  // kein Token — und der Browser fällt NICHT auf seine eigene Erkennung zurück (Antwort-Code EINWILLIGUNG).
+  // Rückweg: CONSENT_GATE=off.
+  if (consentGateOn()) {
+    try {
+      const { auth: session } = await import("@/auth");
+      const oid = ((await session())?.user as { oid?: string } | undefined)?.oid;
+      if (oid) {
+        const { getCentralMemberInfo, einwilligungFehlt } = await import("@/lib/server/credits/member-info");
+        if (einwilligungFehlt(await getCentralMemberInfo(oid), "sprachaufnahme")) {
+          return NextResponse.json({ ok: false, error: "consent_required", code: "EINWILLIGUNG", url: "/einwilligung?typ=sprachaufnahme&zurueck=/coach/simulation" }, { status: 403 });
+        }
+      }
+    } catch (e) {
+      console.error("[speech-token] einwilligung", e instanceof Error ? e.message : e);
+    }
+  }
   try {
     const res = await fetch(`https://${region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`, {
       method: "POST",

@@ -43,6 +43,21 @@ export default async function RootLayout({
   // S5: Dieselbe Entscheidung wie das Tor der API (requireAuth → APP_NOT_ENABLED). Ohne Sitzung
   // oder bei anderen Ablehnungen bleibt alles wie bisher (Anmeldung, Sperre, Störung).
   const denied = await coachNotEnabled();
+  // W5-9 (20.10.2026): Wer kann Zugang geben? Nur gelesen, wenn die Seite „kein Zugang“ erscheint.
+  let admins: Array<{ oid: string; name: string | null; email: string | null }> = [];
+  let istAdmin = false;
+  if (denied) {
+    try {
+      const { auth } = await import("@/auth");
+      const oid = ((await auth())?.user as { oid?: string } | undefined)?.oid;
+      if (oid) {
+        const { getCentralMemberInfo } = await import("@/lib/server/credits/member-info");
+        const info = await getCentralMemberInfo(oid);
+        admins = info?.admins ?? [];
+        istAdmin = info?.role === "admin" && !info.disabled;
+      }
+    } catch { /* fail-soft: Seite ohne Namen */ }
+  }
 
   return (
     <html
@@ -70,7 +85,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {denied ? <NoAccess texts={t.noAccess} /> : children}
+            {denied ? <NoAccess texts={t.noAccess} admins={admins} istAdmin={istAdmin} /> : children}
             <ChatWidget surface="coach" lang={locale === "de" ? "de" : "en"} />
             <Toaster />
           </AuthProvider>

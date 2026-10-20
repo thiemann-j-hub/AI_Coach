@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Eenmalig toestemming geven voordat u spreekt",
+    "consentBody": "Uw bedrijf vraagt om uw toestemming voor de eerste spraakopname: uw stem wordt in West-Europa omgezet in tekst, de opname wordt niet opgeslagen. U kunt in plaats daarvan altijd typen.",
+    "consentLater": "Later, ik typ",
+    "consentGo": "Naar toestemming"
   },
   "auth": {
     "signIn": "Aanmelden",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Geen toegang tot AI-gesprekscoach",
     "body": "AI-gesprekscoach is niet geactiveerd voor uw account. De toegang wordt verleend door de beheerder van uw bedrijf onder “Team & toegang”. De cursussen die aan u zijn toegewezen, vindt u in “Mijn leergebied”.",
-    "cta": "Naar “Mijn leergebied”"
+    "cta": "Naar “Mijn leergebied”",
+    "wer": "Toegang kan worden verleend door:",
+    "geben": "Toegang verlenen (Team & toegang)"
   },
   "aiErrors": {
     "errorNumber": "Foutnr. {id}",

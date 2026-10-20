@@ -254,7 +254,11 @@
     "builderVoice": "Voz",
     "voiceSeraphina": "Seraphina (femenina, alemán)",
     "voiceFlorian": "Florian (masculina, alemán)",
-    "voiceEmma": "Emma (femenina, inglés)"
+    "voiceEmma": "Emma (femenina, inglés)",
+    "consentTitle": "Dé su consentimiento una vez antes de hablar",
+    "consentBody": "Su empresa le solicita su consentimiento antes de la primera grabación de voz: su voz se convierte a texto en Europa Occidental y la grabación no se almacena. En su lugar, siempre puede escribir.",
+    "consentLater": "Más tarde, escribiré",
+    "consentGo": "Ir al consentimiento"
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Sin acceso a Coach de conversación con IA",
     "body": "La herramienta Coach de conversación con IA no está habilitada para su cuenta. El acceso lo concede el administrador de su empresa en «Equipo y accesos». Encontrará sus cursos asignados en «Mi área de aprendizaje».",
-    "cta": "Ir a «Mi área de aprendizaje»"
+    "cta": "Ir a «Mi área de aprendizaje»",
+    "wer": "Pueden otorgar acceso:",
+    "geben": "Otorgar acceso (Equipo y accesos)"
   },
   "aiErrors": {
     "errorNumber": "N.º de error {id}",

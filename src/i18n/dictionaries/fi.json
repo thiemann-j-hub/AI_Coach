@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Antakaa suostumuksenne kerran ennen kuin puhutte",
+    "consentBody": "Yrityksenne pyytää suostumustanne ennen ensimmäistä äänitallennetta: äänenne muunnetaan tekstiksi Länsi-Euroopassa, eikä tallennetta tallenneta. Voitte sen sijaan aina kirjoittaa.",
+    "consentLater": "Myöhemmin, kirjoitan",
+    "consentGo": "Siirry suostumukseen"
   },
   "auth": {
     "signIn": "Kirjaudu sisään",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Ei käyttöoikeutta Tekoäly-keskusteluvalmentaja-sovellukseen",
     "body": "Tekoäly-keskusteluvalmentaja-sovellusta ei ole otettu käyttöön tilillesi. Käyttöoikeuden myöntää yrityksesi pääkäyttäjä kohdassa ”Tiimi & käyttöoikeudet”. Sinulle määritetyt kurssit löydät kohdasta ”Oma oppimisalue”.",
-    "cta": "Siirry kohtaan ”Oma oppimisalue”"
+    "cta": "Siirry kohtaan ”Oma oppimisalue”",
+    "wer": "Käyttöoikeuden voi myöntää:",
+    "geben": "Myönnä käyttöoikeus (Tiimi & käyttöoikeudet)"
   },
   "aiErrors": {
     "errorNumber": "Virhenro {id}",

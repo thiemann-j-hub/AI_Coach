@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Udělte souhlas předtím, než budete mluvit",
+    "consentBody": "Vaše společnost vás před první hlasovou nahrávkou žádá o souhlas: váš hlas je v západní Evropě převeden na text, nahrávka se neukládá. Místo toho můžete kdykoli psát.",
+    "consentLater": "Později, budu psát",
+    "consentGo": "Přejít k souhlasu"
   },
   "auth": {
     "signIn": "Přihlásit se",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Nemáte přístup k nástroji AI kouč rozhovorů",
     "body": "Nástroj AI kouč rozhovorů není pro Váš účet zpřístupněn. Přístup uděluje správce Vaší společnosti v části „Tým a přístupy“. Kurzy, které Vám byly přiřazeny, najdete v části „Můj vzdělávací prostor“.",
-    "cta": "Přejít na „Můj vzdělávací prostor“"
+    "cta": "Přejít na „Můj vzdělávací prostor“",
+    "wer": "Přístup může udělit:",
+    "geben": "Udělit přístup (Tým a přístupy)"
   },
   "aiErrors": {
     "errorNumber": "Chyba č. {id}",

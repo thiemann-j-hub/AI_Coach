@@ -26,6 +26,37 @@ export interface CentralMemberInfo {
   displayName: string | null;
   /** Schritt 9 (16.10.2026): zentrale Einstellungen des Unternehmens — KI-Schalter, Mindestgröße, Pflicht-Einwilligungen. */
   einstellungen: ZentraleEinstellungen;
+  /** Stufe C / W5-4 (20.10.2026): eigene Zustimmungen (typ → {fassung, am}) und geltende Fassungen (typ → Fassung). */
+  meineEinwilligungen: Record<string, { fassung: string; am: string }>;
+  einwilligungFassungen: Record<string, string>;
+  /** Stufe C / W5-9: aktive Admins des Unternehmens (wer Zugang geben kann). */
+  admins: Array<{ oid: string; name: string | null; email: string | null }>;
+}
+
+/** W5-4: Fehlt die Einwilligung dieses Typs? (verlangt UND nicht in der geltenden Fassung erteilt) */
+export function einwilligungFehlt(info: CentralMemberInfo | null | undefined, typ: string): boolean {
+  if (!info || !info.einstellungen.einwilligungen[typ]) return false;
+  const geltend = info.einwilligungFassungen[typ];
+  if (!geltend) return false;
+  const meine = info.meineEinwilligungen[typ];
+  return !meine || meine.fassung !== geltend;
+}
+export function consentGateOn(): boolean {
+  return (process.env.CONSENT_GATE ?? "on").trim().toLowerCase() !== "off";
+}
+export function meineEinwilligungenAus(raw: unknown): Record<string, { fassung: string; am: string }> {
+  const out: Record<string, { fassung: string; am: string }> = {};
+  if (raw && typeof raw === "object") for (const [k, v] of Object.entries(raw as Record<string, unknown>)) { const o = v as { fassung?: unknown; am?: unknown } | null; if (o && typeof o.fassung === "string" && typeof o.am === "string") out[k] = { fassung: o.fassung, am: o.am }; }
+  return out;
+}
+export function fassungenAus(raw: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (raw && typeof raw === "object") for (const [k, v] of Object.entries(raw as Record<string, unknown>)) if (typeof v === "string") out[k] = v;
+  return out;
+}
+export function adminsAus(raw: unknown): Array<{ oid: string; name: string | null; email: string | null }> {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((a) => a && typeof a === "object" && typeof (a as { oid?: unknown }).oid === "string").map((a) => ({ oid: (a as { oid: string }).oid, name: typeof (a as { name?: unknown }).name === "string" ? (a as { name: string }).name : null, email: typeof (a as { email?: unknown }).email === "string" ? (a as { email: string }).email : null }));
 }
 
 export interface ZentraleEinstellungen {
@@ -124,6 +155,9 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
       avatarUrl?: string | null;
       displayName?: string | null;
       einstellungen?: unknown;
+      meineEinwilligungen?: unknown;
+      einwilligungFassungen?: unknown;
+      admins?: unknown;
     };
     const info: CentralMemberInfo = {
       workspaceId: j.workspaceId ?? null,
@@ -133,6 +167,9 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
       avatarUrl: typeof j.avatarUrl === "string" ? j.avatarUrl : null,
       displayName: typeof j.displayName === "string" ? j.displayName : null,
       einstellungen: einstellungenAus(j.einstellungen),
+      meineEinwilligungen: meineEinwilligungenAus(j.meineEinwilligungen),
+      einwilligungFassungen: fassungenAus(j.einwilligungFassungen),
+      admins: adminsAus(j.admins),
     };
     cache.set(oid, { at: Date.now(), info });
     return { kind: "info", info };

@@ -525,6 +525,11 @@ export default function SimulationClient() {
   const startAzureMic = useCallback(async (): Promise<boolean> => {
     try {
       const res = await authFetch('/api/speech-token');
+      if (res.status === 403) {
+        // Stufe C / W5-4 (20.10.2026): Einwilligung „Sprachaufnahme“ fehlt → Hinweis statt Browser-Notnagel.
+        const j = (await res.json().catch(() => ({}))) as { code?: string; url?: string };
+        if (j.code === 'EINWILLIGUNG') { setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme'); setMicActive(false); wantMicRef.current = false; return true; }
+      }
       if (!res.ok) return false;
       const j = (await res.json()) as { ok?: boolean; token?: string; region?: string };
       if (!j.ok || !j.token || !j.region) return false;
@@ -556,6 +561,8 @@ export default function SimulationClient() {
   // Browser-Storage). Funktionsumfang des Mikros unverändert.
   const MIC_ACK_KEY = "pn-mic-notice-ack";
   const [micNoticeOpen, setMicNoticeOpen] = useState(false);
+  // W5-4: Link zur Einwilligungs-Seite im Hub, wenn das Unternehmen die Zustimmung „Sprachaufnahme“ verlangt.
+  const [consentUrl, setConsentUrl] = useState<string | null>(null);
   // Sitzungs-Fallback, falls localStorage blockiert ist (Privatmodus): die
   // Bestätigung gilt dann für die laufende Sitzung, ohne Endlos-Modal.
   const micAckRef = useRef(false);
@@ -2401,6 +2408,18 @@ export default function SimulationClient() {
 
         {/* Auswerten-Bestätigung (Kostenhinweis) */}
         {/* CP-3.4 (M21 Option 1) — Aufklärung vor der ersten Mikrofon-Nutzung. */}
+        {consentUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" data-testid="consent-needed">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
+              <h3 className="font-semibold text-lg">{ts.consentTitle}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{ts.consentBody}</p>
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setConsentUrl(null)} className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors">{ts.consentLater}</button>
+                <a href={consentUrl} className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm">{ts.consentGo}</a>
+              </div>
+            </div>
+          </div>
+        )}
         {micNoticeOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">

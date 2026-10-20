@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Adja meg hozzájárulását egyszer, mielőtt beszélni kezd",
+    "consentBody": "A vállalata az első hangfelvétel előtt a hozzájárulását kéri: a hangját Nyugat-Európában alakítják szöveggé, a felvételt pedig nem tárolják. Ehelyett bármikor gépelhet is.",
+    "consentLater": "Később, inkább gépelek",
+    "consentGo": "Tovább a hozzájáruláshoz"
   },
   "auth": {
     "signIn": "Bejelentkezés",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Nincs hozzáférés a MI-beszélgetéscoach alkalmazáshoz",
     "body": "A MI-beszélgetéscoach alkalmazás nincs engedélyezve az Ön fiókja számára. A hozzáférést az Ön vállalatának adminisztrátora adja meg a „Csapat és hozzáférés” menüpontban. Az Önhöz rendelt tanfolyamokat „Az Ön tanulási területe” menüpontban találja.",
-    "cta": "Ugrás ide: „Az Ön tanulási területe”"
+    "cta": "Ugrás ide: „Az Ön tanulási területe”",
+    "wer": "Hozzáférést adhat:",
+    "geben": "Hozzáférés megadása (Csapat és hozzáférés)"
   },
   "aiErrors": {
     "errorNumber": "Hibakód: {id}",

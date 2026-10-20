@@ -254,7 +254,11 @@
     "builderVoice": "Voice",
     "voiceSeraphina": "Seraphina (female, German)",
     "voiceFlorian": "Florian (male, German)",
-    "voiceEmma": "Emma (female, English)"
+    "voiceEmma": "Emma (female, English)",
+    "consentTitle": "Nõustuge üks kord enne rääkimist",
+    "consentBody": "Teie ettevõte küsib Teilt nõusolekut enne esimest häälesalvestust: Teie hääl teisendatakse tekstiks Lääne-Euroopas, salvestist ei salvestata. Võite selle asemel igal ajal tippida.",
+    "consentLater": "Hiljem, tipin",
+    "consentGo": "Nõusoleku juurde"
   },
   "auth": {
     "signIn": "Logi sisse",
@@ -529,7 +533,9 @@
   "noAccess": {
     "title": "Ligipääs rakendusele AI-vestlustreener puudub",
     "body": "Rakendus AI-vestlustreener ei ole teie konto jaoks aktiveeritud. Ligipääsu annab teie ettevõtte administraator jaotises „Meeskond ja ligipääs“. Teile määratud kursused leiate jaotisest „Minu õppimisala“.",
-    "cta": "Mine jaotisse „Minu õppimisala“"
+    "cta": "Mine jaotisse „Minu õppimisala“",
+    "wer": "Ligipääsu saab anda:",
+    "geben": "Anna ligipääs (Tiim ja ligipääsud)"
   },
   "aiErrors": {
     "errorNumber": "Vea nr {id}",

@@ -10,7 +10,9 @@ import { PulscraftMark, PulscraftWordmark } from "@/components/pulscraft-wordmar
  */
 const LEARNING_AREA_URL = "/radar";
 
-export function NoAccess({ texts }: { texts: { title: string; body: string; cta: string } }) {
+export interface NoAccessAdmin { oid: string; name: string | null; email: string | null }
+/** W5-9 (20.10.2026): `admins` = wer Zugang geben kann; `istAdmin` = die Person selbst ist Admin → direkt „Zugang geben“. */
+export function NoAccess({ texts, admins = [], istAdmin = false }: { texts: { title: string; body: string; cta: string; wer: string; geben: string }; admins?: NoAccessAdmin[]; istAdmin?: boolean }) {
   return (
     <main
       className="flex min-h-screen items-center justify-center bg-background p-6"
@@ -29,6 +31,12 @@ export function NoAccess({ texts }: { texts: { title: string; body: string; cta:
         </span>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">{texts.title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{texts.body}</p>
+        {admins.length > 0 && (
+          <p className="mt-3 text-sm text-muted-foreground" data-testid="no-access-admins">{texts.wer} {admins.map((a) => a.name || a.email || "Admin").join(", ")}</p>
+        )}
+        {istAdmin && (
+          <a href="/team-zugaenge" className="pn-none mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-primary/40 px-5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10" data-testid="no-access-geben">{texts.geben}</a>
+        )}
         <a
           href={LEARNING_AREA_URL}
           className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
