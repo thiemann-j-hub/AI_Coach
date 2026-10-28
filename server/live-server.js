@@ -8,10 +8,13 @@
  * Zusammenbau (azure-deploy.yml) Nexts eigener `server.js` zu `next-server.js`, und diese Datei
  * wird `server.js`:
  *   - COACH_LIVE aus (Standard): sie ruft nur `next-server.js` auf — Null Änderung im Betrieb.
- *   - COACH_LIVE an: sie startet Next als Bibliothek, bedient HTTP wie bisher und nimmt auf
- *     `<basePath>/api/simulation/live/ws` WebSockets an. Die Annahme selbst (Karte prüfen, Gespräch
- *     fahren) registriert der Next-Code unter `globalThis.__coachLive` (src/lib/server/live).
- * Entwicklung: `LIVE_SERVER_DEV=1 node server/live-server.js` fährt Next im Entwicklungsmodus.
+ *   - COACH_LIVE an: sie startet Next GENAU wie `next-server.js` (derselbe Startweg `startServer`,
+ *     dieselbe Konfiguration aus `.next/required-server-files.json`), fängt dabei den HTTP-Server ab
+ *     und hängt auf `<basePath>/api/simulation/live/ws` die WebSocket-Annahme davor. Alle anderen
+ *     Upgrade-Anfragen bekommt weiterhin Next. Die Annahme selbst (Karte prüfen, Gespräch fahren)
+ *     registriert der Next-Code unter `globalThis.__coachLive` (src/lib/server/live).
+ *   Lehre 28.10.: Nexts Bibliotheksweg (`require('next')({...})`) braucht Dateien, die im
+ *   Standalone-Bündel fehlen (compiled/webpack) — deshalb der Startweg des Bündels, kein eigener.
  * Rückweg: COACH_LIVE weglassen (oder `node next-server.js` als Startbefehl).
  */
 const path = require("path");
@@ -19,25 +22,37 @@ const http = require("http");
 
 const liveRaw = (process.env.COACH_LIVE || "off").trim().toLowerCase();
 const liveOn = Boolean(liveRaw) && liveRaw !== "off";
-const dev = process.env.LIVE_SERVER_DEV === "1";
 
-if (!liveOn && !dev) {
+if (!liveOn) {
   // Schalter aus: der unveränderte Next-Server.
   require("./next-server.js");
 } else {
-  const dir = dev ? process.cwd() : __dirname;
-  process.env.NODE_ENV = dev ? "development" : "production";
-  process.chdir(dir);
-  const next = require("next");
-  const { WebSocketServer } = require("ws");
+  const dir = path.join(__dirname);
+  process.env.NODE_ENV = "production";
+  process.chdir(__dirname);
 
-  const conf = dev ? undefined : require(path.join(dir, ".next", "required-server-files.json")).config;
-  const port = parseInt(process.env.PORT, 10) || (dev ? 9002 : 3000);
+  const nextConfig = require(path.join(dir, ".next", "required-server-files.json")).config;
+  process.env.__NEXT_PRIVATE_STANDALONE_CONFIG = JSON.stringify(nextConfig);
+  const port = parseInt(process.env.PORT, 10) || 3000;
   const hostname = process.env.HOSTNAME || "0.0.0.0";
-  const basePath = (conf && conf.basePath) || process.env.NEXT_PUBLIC_BASE_PATH || "";
-  const livePath = `${basePath}/api/simulation/live/ws`;
   let keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT, 10);
   if (Number.isNaN(keepAliveTimeout) || !Number.isFinite(keepAliveTimeout) || keepAliveTimeout < 0) keepAliveTimeout = undefined;
+  const basePath = nextConfig.basePath || "";
+  const livePath = `${basePath}/api/simulation/live/ws`;
+
+  // Den HTTP-Server abfangen, den Nexts startServer gleich anlegt (einmalig, danach wieder original).
+  let server = null;
+  const createServerOriginal = http.createServer;
+  http.createServer = function (...args) {
+    const s = createServerOriginal.apply(this, args);
+    server = s;
+    http.createServer = createServerOriginal;
+    return s;
+  };
+
+  require("next");
+  const { startServer } = require("next/dist/server/lib/start-server");
+  const { WebSocketServer } = require("ws");
 
   /** Herkunft wie beim CSRF-Tor: Origin muss zur AUTH_URL passen (ohne AUTH_URL: durchlassen, die Karte bleibt das Tor). */
   function originOk(req) {
@@ -52,14 +67,12 @@ if (!liveOn && !dev) {
     }
   }
 
-  const app = next({ dev, dir, hostname, port, ...(conf ? { conf } : {}), ...(dev ? { turbopack: true } : {}) });
-  app
-    .prepare()
+  startServer({ dir, isDev: false, config: nextConfig, hostname, port, allowRetry: false, keepAliveTimeout })
     .then(() => {
-      const handle = app.getRequestHandler();
-      const upgradeNext = typeof app.getUpgradeHandler === "function" ? app.getUpgradeHandler() : null;
+      if (!server) throw new Error("Server-Mantel: HTTP-Server von Next nicht gefunden");
+      const nextUpgrade = server.listeners("upgrade");
+      server.removeAllListeners("upgrade");
       const wss = new WebSocketServer({ noServer: true, maxPayload: 1 << 20, perMessageDeflate: false });
-      const server = http.createServer((req, res) => handle(req, res));
       server.on("upgrade", (req, socket, head) => {
         let pathname = "/";
         try {
@@ -68,9 +81,7 @@ if (!liveOn && !dev) {
           /* bleibt "/" */
         }
         if (pathname !== livePath) {
-          // Im Entwicklungsmodus braucht Next den Socket für sein Neuladen; sonst gibt es nichts.
-          if (dev && upgradeNext) return upgradeNext(req, socket, head);
-          socket.destroy();
+          for (const l of nextUpgrade) l.call(server, req, socket, head);
           return;
         }
         if (!originOk(req)) {
@@ -87,10 +98,7 @@ if (!liveOn && !dev) {
         }
         wss.handleUpgrade(req, socket, head, (ws) => live.accept(ws));
       });
-      if (keepAliveTimeout !== undefined) server.keepAliveTimeout = keepAliveTimeout;
-      server.listen(port, hostname, () => {
-        console.log(`> Coach bereit auf http://${hostname}:${port}${basePath} (Sprachmodus Live: ${livePath})`);
-      });
+      console.log(`> Sprachmodus Live bereit: ${livePath}`);
     })
     .catch((err) => {
       console.error(err);
