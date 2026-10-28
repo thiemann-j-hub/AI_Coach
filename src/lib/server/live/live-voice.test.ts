@@ -9,6 +9,20 @@ describe("Live-Stimmen", () => {
     expect(liveVoiceFor(undefined)).toBe("Charon");
   });
 
+  it("gibt den acht Standard-Szenarien ihre gewählte Stimme (Owner-Wahl 28.10.)", () => {
+    expect(liveVoiceFor("seraphina-hd", "sim-coaching-morgan")).toBe("Aoede");
+    expect(liveVoiceFor("florian-hd", "sim-peer-lang")).toBe("Alnilam");
+    expect(liveVoiceFor("florian-hd", "sim-critique-vance")).toBe("Puck");
+    expect(liveVoiceFor("florian-hd", "sim-azubi-roth")).toBe("Zubenelgenubi");
+    expect(liveVoiceFor("florian-hd", "sim-performance-reed")).toBe("Charon");
+    expect(liveVoiceFor("florian-hd", "sim-merge-brandt")).toBe("Achird");
+    expect(liveVoiceFor("florian-hd", "sim-peer-falk")).toBe("Algieba");
+    expect(liveVoiceFor("florian-hd", "sim-appraisal-stone")).toBe("Iapetus");
+    // Kundenszenarien aus dem Builder: Rückfall nach Persona-Stimme
+    expect(liveVoiceFor("florian-hd", "custom-123")).toBe("Charon");
+    expect(liveVoiceFor("emma-hd", "custom-123")).toBe("Aoede");
+  });
+
   it("spricht die Gesprächssprache", () => {
     expect(liveLanguageCode("de")).toBe("de-DE");
     expect(liveLanguageCode("en")).toBe("en-US");

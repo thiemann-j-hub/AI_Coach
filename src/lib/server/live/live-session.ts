@@ -175,7 +175,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   if (!scenario) return fail("UNKNOWN_SCENARIO", 4410);
 
   const durationMin = sessionDurationMin(doc, scenario);
-  const voice = liveVoiceFor(scenario.persona.voice);
+  const voice = liveVoiceFor(scenario.persona.voice, scenario.id);
   const languageCode = liveLanguageCode(doc.convoLocale ?? scenario.locale);
   const systemInstruction =
     buildPersonaSystemPrompt(scenario, doc.convoLocale, doc.hardness) + liveAddendum(scenario.locale);

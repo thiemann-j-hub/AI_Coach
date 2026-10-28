@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
   const ticket = liveTicketStore().issue({ uid: auth.uid, email: auth.email ?? null, oid: auth.oid ?? null, simId });
   logger.api("/api/simulation/live/ticket", "ok", { uid: auth.uid, simId, scenarioId: doc.scenarioId });
   return NextResponse.json(
-    { ok: true, ticket, path: LIVE_WS_PATH, persona: scenario.persona.name, voice: liveVoiceFor(scenario.persona.voice) },
+    { ok: true, ticket, path: LIVE_WS_PATH, persona: scenario.persona.name, voice: liveVoiceFor(scenario.persona.voice, scenario.id) },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }

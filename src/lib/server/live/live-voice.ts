@@ -1,19 +1,36 @@
 import type { PersonaVoice, SimConversationLocale } from "@/lib/simulation/types";
 
 /**
- * Stimmen-Zuordnung für den Sprachmodus Live (Owner-Hörurteil 28.10.2026):
- * Von zwölf Gemini-Live-Stimmen bestanden im echten Gesprächszug Aoede (weiblich, als „Sabine“)
- * und Charon (männlich, als „Toni“). Szenarien mit Seraphina sprechen live mit Aoede, Szenarien mit
- * Florian mit Charon. Emma (weiblich, international) bekommt bis zu einem eigenen Hörurteil Aoede.
- * Die übrigen zehn Stimmen liegen als Hörproben in Cowork\Hoerproben-Live-Modelle-2026-10-28.
+ * Stimmen-Zuordnung für den Sprachmodus Live.
+ *
+ * Erstes Owner-Hörurteil 28.10.2026 (zwölf Stimmen, Cowork\Hoerproben-Live-Modelle-2026-10-28):
+ * Aoede (weiblich) und Charon (männlich) bestanden. Sie bleiben der Rückfall nach Persona-Stimme,
+ * also auch für Kundenszenarien aus dem Builder.
+ *
+ * Zweites Owner-Hörurteil 28.10.2026 (je Rolle drei Kandidaten sprechen den echten Eröffnungssatz,
+ * Cowork\Hoerproben-Rollenstimmen-2026-10-28): die acht Standard-Szenarien bekommen ihre eigene
+ * Stimme. Diese Zuordnung geht vor der Persona-Stimme.
  */
+export const LIVE_VOICE_BY_SCENARIO: Readonly<Record<string, string>> = {
+  "sim-coaching-morgan": "Aoede", // Alex Morgan — warm, schnell (Wahl A)
+  "sim-peer-lang": "Alnilam", // Viktor Lang — kühl, knapp (Wahl B)
+  "sim-critique-vance": "Puck", // Dr. Robin Vance — scharf, ironisch (Wahl B)
+  "sim-azubi-roth": "Zubenelgenubi", // Deniz Roth — Azubi, flapsig (Wahl B)
+  "sim-performance-reed": "Charon", // Sam Reed — ruhig, dozierend (Wahl A)
+  "sim-merge-brandt": "Achird", // Marek Brandt — verbindlich, hart in der Sache (Wahl B)
+  "sim-peer-falk": "Algieba", // Ruben Falk — 52, süffisant (Wahl B)
+  "sim-appraisal-stone": "Iapetus", // Erik Stone — Englisch, flott (Wahl C)
+};
+
 export const LIVE_VOICE_BY_PERSONA_VOICE: Readonly<Record<PersonaVoice, string>> = {
   "seraphina-hd": "Aoede",
   "florian-hd": "Charon",
   "emma-hd": "Aoede",
 };
 
-export function liveVoiceFor(voice: PersonaVoice | undefined): string {
+/** Live-Stimme einer Rolle: erst die Wahl je Szenario, sonst der Rückfall nach Persona-Stimme. */
+export function liveVoiceFor(voice: PersonaVoice | undefined, scenarioId?: string): string {
+  if (scenarioId && LIVE_VOICE_BY_SCENARIO[scenarioId]) return LIVE_VOICE_BY_SCENARIO[scenarioId];
   return LIVE_VOICE_BY_PERSONA_VOICE[voice ?? "florian-hd"] ?? "Charon";
 }
 
