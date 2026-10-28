@@ -5,6 +5,7 @@ import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { requireWorkspaceAdmin } from "@/lib/server/scenario-admin";
 import { setWorkspaceScenarioStatus } from "@/lib/server/scenario-store";
+import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -40,6 +41,8 @@ export async function POST(req: NextRequest) {
     if (!doc) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
+    // Spielbuch (Owner-GO 28.10.): beim Veröffentlichen im Hintergrund vorbereiten, damit das erste Gespräch es hat.
+    if (parsed.data.status === "published") void ensureSpielbuch(doc.scenario);
     logger.api("/api/simulation/builder/status", "ok", {
       uid: auth.uid,
       scenarioId: doc.id,

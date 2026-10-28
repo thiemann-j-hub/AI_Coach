@@ -9,6 +9,7 @@
  * beobachtbare Skills mit Gewichten, genau 3 Ziele, 5 Checkpoints).
  */
 import { z } from "zod";
+import { isLiveVoice } from "./live-voices";
 import type { SimulationScenario } from "./types";
 import { PERSONA_VOICES } from "./types";
 
@@ -137,6 +138,8 @@ export const scenarioSchema = z
       role: nonEmpty(120),
       // Owner-GO 19.09.: Azure-HD-Stimme je Persona; optional (Alt-Docs → Default).
       voice: z.enum(PERSONA_VOICES).optional(),
+      // Builder-Stimmenwahl 28.10.: Gemini-Live-Stimme; optional (Alt-Docs → Zuordnung nach Szenario/Azure-Stimme).
+      liveVoice: z.string().refine(isLiveVoice, "unbekannte Live-Stimme").optional(),
     }),
     candidateBriefing: candidateBriefingSchema,
     personaDna: personaDnaSchema,

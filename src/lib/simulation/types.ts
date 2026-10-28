@@ -203,8 +203,8 @@ export interface SimulationScenario {
    * falsche Werte verschlechtern nur die Empfehlungs-Sortierung, nie Daten.
    */
   competencyFocus?: CompetencyKey[];
-  /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). */
-  persona: { name: string; role: string; voice?: PersonaVoice };
+  /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). `liveVoice` = Gemini-Live-Stimme (Builder-Wahl, 28.10.). */
+  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
   candidateBriefing: CandidateBriefing;
   personaDna: PersonaDna;
   assessment: SimulationAssessment;
@@ -223,7 +223,7 @@ export interface PublicSimulationScenario {
   locale: "de" | "en";
   category: ScenarioCategory;
   competencyFocus?: CompetencyKey[];
-  persona: { name: string; role: string; voice?: PersonaVoice };
+  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
   candidateBriefing: CandidateBriefing;
   competencies: SimRubricCompetency[];
 }

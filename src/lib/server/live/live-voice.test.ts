@@ -21,6 +21,10 @@ describe("Live-Stimmen", () => {
     // Kundenszenarien aus dem Builder: Rückfall nach Persona-Stimme
     expect(liveVoiceFor("florian-hd", "custom-123")).toBe("Charon");
     expect(liveVoiceFor("emma-hd", "custom-123")).toBe("Aoede");
+    // Builder-Wahl geht vor; unbekannte Namen werden ignoriert
+    expect(liveVoiceFor("florian-hd", "custom-123", "Sulafat")).toBe("Sulafat");
+    expect(liveVoiceFor("florian-hd", "sim-peer-lang", "Gacrux")).toBe("Gacrux");
+    expect(liveVoiceFor("florian-hd", "custom-123", "Nixda")).toBe("Charon");
   });
 
   it("spricht die Gesprächssprache", () => {

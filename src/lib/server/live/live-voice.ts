@@ -1,3 +1,4 @@
+import { isLiveVoice } from "@/lib/simulation/live-voices";
 import type { PersonaVoice, SimConversationLocale } from "@/lib/simulation/types";
 
 /**
@@ -28,8 +29,12 @@ export const LIVE_VOICE_BY_PERSONA_VOICE: Readonly<Record<PersonaVoice, string>>
   "emma-hd": "Aoede",
 };
 
-/** Live-Stimme einer Rolle: erst die Wahl je Szenario, sonst der Rückfall nach Persona-Stimme. */
-export function liveVoiceFor(voice: PersonaVoice | undefined, scenarioId?: string): string {
+/**
+ * Live-Stimme einer Rolle: (1) im Builder gewählte Live-Stimme, (2) Owner-Wahl je Standard-Szenario,
+ * (3) Rückfall nach Persona-Stimme (Azure-Name).
+ */
+export function liveVoiceFor(voice: PersonaVoice | undefined, scenarioId?: string, liveVoice?: string): string {
+  if (liveVoice && isLiveVoice(liveVoice)) return liveVoice;
   if (scenarioId && LIVE_VOICE_BY_SCENARIO[scenarioId]) return LIVE_VOICE_BY_SCENARIO[scenarioId];
   return LIVE_VOICE_BY_PERSONA_VOICE[voice ?? "florian-hd"] ?? "Charon";
 }

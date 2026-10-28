@@ -48,3 +48,13 @@ export function coachLiveLocation(env: Record<string, string | undefined> = proc
 export function coachLiveModel(env: Record<string, string | undefined> = process.env): string {
   return (env.COACH_LIVE_MODEL ?? "gemini-3.8-live").trim() || "gemini-3.8-live";
 }
+
+/**
+ * Spielbuch (Owner-GO 28.10.2026): Ein starkes Modell (Opus @eu) schreibt VOR dem Gespräch je Szenario ein
+ * vertrauliches Spielbuch (Sachkern, erwartete Züge, Öffnungsverlauf), das in die Rollenanweisung wandert —
+ * so argumentiert auch das schnelle Gesprächsmodell (Gemini Live / Flash) mit Substanz.
+ *   COACH_SPIELBUCH = on (Standard) | off
+ */
+export function coachSpielbuchOn(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.COACH_SPIELBUCH ?? "on").trim().toLowerCase() !== "off";
+}

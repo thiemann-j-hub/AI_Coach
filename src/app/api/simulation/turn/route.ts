@@ -4,6 +4,7 @@ import { runPersonaTurn, type PersonaTimeSignal } from "@/ai/flows/simulation-pe
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
@@ -103,6 +104,8 @@ export async function POST(req: NextRequest) {
     });
     if (!budget.allowed && budget.response) return budget.response;
 
+    // Spielbuch (Owner-GO 28.10.): aus dem Zwischenspeicher; fehlt es, entsteht es im Hintergrund.
+    const spielbuch = await ensureSpielbuch(scenario);
     const reply = await withRetry(
       () =>
         runPersonaTurn({
@@ -112,6 +115,7 @@ export async function POST(req: NextRequest) {
           convoLocale: doc.convoLocale,
           timeSignal,
           hardness: doc.hardness,
+          spielbuch,
         }),
       { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn", retries: 1 }
     );

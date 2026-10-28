@@ -202,7 +202,9 @@ export async function listScenariosForUser(
 export async function setWorkspaceScenarioVoice(
   workspaceId: string,
   scenarioId: string,
-  voice: PersonaVoice
+  voice: PersonaVoice,
+  /** Builder-Stimmenwahl 28.10.: gewählte Live-Stimme (die Azure-Stimme `voice` ist daraus abgeleitet). */
+  liveVoice?: string
 ): Promise<ScenarioDoc | null> {
   const existing = await readItem<ScenarioDoc>(
     runsContainer(),
@@ -212,7 +214,7 @@ export async function setWorkspaceScenarioVoice(
   if (!existing || existing.docType !== SCENARIO_DOC_TYPE) return null;
   const doc: ScenarioDoc = {
     ...existing,
-    scenario: { ...existing.scenario, persona: { ...existing.scenario.persona, voice } },
+    scenario: { ...existing.scenario, persona: { ...existing.scenario.persona, voice, ...(liveVoice ? { liveVoice } : {}) } },
     updatedAt: new Date().toISOString(),
   };
   await upsertItem(runsContainer(), doc);

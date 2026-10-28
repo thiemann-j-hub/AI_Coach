@@ -281,7 +281,9 @@ describe("Leitplanken: ein Helfer, ein Ort für Token und Geheimnis", () => {
 
   it("credential headers are only built in the helper", () => {
     expect(filesWith(/x-pn-service-secret|x-pn-subject/i)).toEqual([HELPER]);
-    expect(filesWith(/["'`]Bearer\s/)).toEqual([HELPER]);
+    // Zweiter erlaubter Ort (28.10.2026): Claude über Vertex trägt das Google-OAuth-Token des Dienstkontos
+    // (Spielbuch), kein PN-Dienstgeheimnis — Datei ist server-only, Token wird nie geloggt.
+    expect(filesWith(/["'`]Bearer\s/).sort()).toEqual([HELPER, "lib/server/claude-vertex.ts"].sort());
   });
 
   it("the helper is server-only and no client file imports it", () => {

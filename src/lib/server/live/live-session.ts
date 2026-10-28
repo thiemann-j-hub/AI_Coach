@@ -95,6 +95,8 @@ export interface LiveDeps {
   loadSim(uid: string, simId: string): Promise<SimulationDoc | null>;
   saveSim(doc: SimulationDoc): Promise<void>;
   loadScenario(uid: string, scenarioId: string, oid: string | null): Promise<SimulationScenario | null>;
+  /** Spielbuch des Szenarios (vorbereitet) oder null; optional (Tests, Rückweg). */
+  loadSpielbuch?(scenario: SimulationScenario): Promise<string | null>;
   budget(args: { uid: string; email: string | null; estimatedTokens: number }): Promise<{ allowed: boolean }>;
   now(): number;
   log(level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>): void;
@@ -175,10 +177,11 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   if (!scenario) return fail("UNKNOWN_SCENARIO", 4410);
 
   const durationMin = sessionDurationMin(doc, scenario);
-  const voice = liveVoiceFor(scenario.persona.voice, scenario.id);
+  const voice = liveVoiceFor(scenario.persona.voice, scenario.id, scenario.persona.liveVoice);
   const languageCode = liveLanguageCode(doc.convoLocale ?? scenario.locale);
+  const spielbuch = deps.loadSpielbuch ? await deps.loadSpielbuch(scenario) : null;
   const systemInstruction =
-    buildPersonaSystemPrompt(scenario, doc.convoLocale, doc.hardness) + liveAddendum(scenario.locale);
+    buildPersonaSystemPrompt(scenario, doc.convoLocale, doc.hardness, spielbuch) + liveAddendum(scenario.locale);
 
   // ── Zustand der Verbindung ────────────────────────────────────────────────
   let upstream: Upstream | null = null;

@@ -4,6 +4,7 @@ import { GoogleGenAI, Modality, type LiveServerMessage } from "@google/genai";
 import { vertexHost } from "@/ai/gemini-backend";
 import { logger } from "@/lib/logger";
 import { checkAndConsumeBudget } from "@/lib/server/cost-cap";
+import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { getSimulation, saveSimulation } from "@/lib/server/simulation-store";
 import { coachLiveLocation, coachLiveModel } from "@/lib/simulation/flags";
@@ -129,6 +130,7 @@ function realDeps(): LiveDeps {
     loadSim: (uid, simId) => getSimulation(uid, simId),
     saveSim: (doc) => saveSimulation(doc),
     loadScenario: (uid, scenarioId, oid) => getScenarioForUser(uid, scenarioId, oid),
+    loadSpielbuch: (scenario) => ensureSpielbuch(scenario),
     budget: async (a) => ({ allowed: (await checkAndConsumeBudget(a)).allowed }),
     now: () => Date.now(),
     log: (level, msg, meta) => logger[level](`[live] ${msg}`, meta),

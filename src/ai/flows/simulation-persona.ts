@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
+import { spielbuchBlock } from '@/lib/simulation/spielbuch';
 import type {
   SimConversationLocale,
   SimulationScenario,
@@ -57,7 +58,9 @@ function hardnessDirective(s: SimulationScenario, hardness: SimPersonaHardness |
 export function buildPersonaSystemPrompt(
   s: SimulationScenario,
   convoLocale?: SimConversationLocale,
-  hardness?: SimPersonaHardness
+  hardness?: SimPersonaHardness,
+  /** Spielbuch (Owner-GO 28.10.): vom starken Modell vorbereitet, vertraulich; null = ohne. */
+  spielbuch?: string | null
 ): string {
   const d = s.personaDna;
   return `Du spielst eine Rolle in einer geschützten Gesprächssimulation für Führungskräfte-Training. Dein Gegenüber (der Nutzer) übt das Gespräch aus dem Szenario "${s.title}". Du bist ${d.name}, ${d.role} bei NorthBay Foods.
@@ -85,7 +88,7 @@ ${bullets(d.personality.quirks)}
 WISSENSGRENZEN (Dinge, die du NICHT weißt — bei Fragen dazu bleibst du ehrlich unwissend):
 ${bullets(d.knowledgeBounds)}
 FAKTEN (halte dich exakt daran; erfinde keine neuen Zahlen, Namen oder Ereignisse):
-${bullets(d.facts)}
+${bullets(d.facts)}${spielbuch ? spielbuchBlock(spielbuch, s.locale) : ''}
 
 === VERHALTENSREGELN ===
 1. Bleibe IMMER in der Rolle von ${d.name}. Du bist ein plausibler Mensch, kein Blockade-Automat — aber du verschenkst nichts: Kooperation gibt es nur über die Öffnungs-Bedingungen.
@@ -150,6 +153,8 @@ export async function runPersonaTurn(args: {
   timeSignal?: PersonaTimeSignal;
   /** B2: Härtegrad des Laufs (aus dem Simulations-Doc). */
   hardness?: SimPersonaHardness;
+  /** Spielbuch des Szenarios (vorbereitet), falls vorhanden. */
+  spielbuch?: string | null;
 }): Promise<string> {
   const { sanitized, injectionDetected } = sanitizeForPrompt(args.userMessage, {
     label: 'GESPRÄCHSBEITRAG',
@@ -172,7 +177,7 @@ export async function runPersonaTurn(args: {
 
   const response = await ai.generate({
     system:
-      buildPersonaSystemPrompt(args.scenario, args.convoLocale, args.hardness) +
+      buildPersonaSystemPrompt(args.scenario, args.convoLocale, args.hardness, args.spielbuch) +
       timeDirective(args.scenario, args.timeSignal),
     messages: [
       ...history,
