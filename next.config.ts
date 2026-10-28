@@ -9,6 +9,10 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '/coach';
 const nextConfig: NextConfig = {
   // Azure App Service: ZIP-Deploy des standalone-Outputs (Playbook Gotcha 12)
   output: 'standalone',
+  // Sprachmodus Live (N4-231), Live-Befund 28.10.: Gebündelt verbiegt Next die WebSocket-Bibliothek
+  // („b.mask is not a function“ beim Verbinden zu Gemini Live). Beide Pakete bleiben echte
+  // node_modules-Module — so, wie die Probe sie lief; der Standalone-Export kopiert sie mit.
+  serverExternalPackages: ['ws', '@google/genai'],
   // basePath/assetPrefix nur setzen, wenn nicht leer (Next verbietet basePath="").
   ...(basePath ? { basePath, assetPrefix: basePath } : {}),
   // basePath an Client + Server durchreichen, damit `withBasePath` denselben

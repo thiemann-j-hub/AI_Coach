@@ -80,7 +80,11 @@ jobs:
           cp server/live-server.js .next/standalone/server.js
           mkdir -p .next/standalone/node_modules
           if [ ! -d .next/standalone/node_modules/ws ]; then cp -r node_modules/ws .next/standalone/node_modules/ws; fi
-          node -e "require('./.next/standalone/node_modules/ws'); console.log('ws im Bündel ok')"
+          # @google/genai bleibt unverbündelt (serverExternalPackages); die Ablaufverfolgung kopiert nur
+          # index.mjs, der Server braucht aber index.cjs → das ganze Paket (14 MB) ins Bündel legen.
+          mkdir -p .next/standalone/node_modules/@google/genai
+          cp -r node_modules/@google/genai/. .next/standalone/node_modules/@google/genai/
+          node -e "require('./.next/standalone/node_modules/ws'); require('./.next/standalone/node_modules/@google/genai'); console.log('ws + @google/genai im Bündel ok')"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
