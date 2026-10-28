@@ -28,6 +28,7 @@ import {
   Mic,
   Pause,
   Play,
+  Radio,
   Send,
   Sparkles,
   Target,
@@ -44,6 +45,8 @@ import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { aiErrorMessage } from '@/lib/api-error-text';
 import { withBasePath } from '@/lib/base-path';
+import { createLiveAudio, liveAudioSupported, type LiveAudio } from '@/lib/live-audio';
+import { openLiveConnection, type LiveConnection } from '@/lib/live-client';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
 import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
@@ -510,8 +513,33 @@ export default function SimulationClient() {
   // (Synthesia-Verhalten: das Mikro bleibt im Gespräch einfach an).
   const wantMicRef = useRef(false);
 
+  // Sprachmodus Live (Owner-GO 28.10.2026, N4-231): Die Persona hört und spricht selbst (Gemini Live,
+  // EU), die Mitschrift beider Seiten läuft mit. Zweiter Weg NEBEN der Kaskade: gibt es für das
+  // Szenario keine Karte (Schalter COACH_LIVE aus), läuft alles wie bisher (Diktat + Azure-Stimme).
+  const liveRef = useRef<{ conn: LiveConnection; audio: LiveAudio } | null>(null);
+  const [liveState, setLiveState] = useState<'off' | 'connecting' | 'on'>('off');
+  const [liveYou, setLiveYou] = useState('');
+  const [livePersona, setLivePersona] = useState('');
+
+  const stopLive = useCallback(() => {
+    const l = liveRef.current;
+    liveRef.current = null;
+    if (l) {
+      try {
+        l.conn.end();
+      } catch {
+        /* schon zu */
+      }
+      l.audio.close();
+    }
+    setLiveState('off');
+    setLiveYou('');
+    setLivePersona('');
+  }, []);
+
   const stopMic = useCallback(() => {
     wantMicRef.current = false;
+    stopLive();
     try {
       recognitionRef.current?.stop();
     } catch {
@@ -519,7 +547,7 @@ export default function SimulationClient() {
     }
     recognitionRef.current = null;
     setMicActive(false);
-  }, []);
+  }, [stopLive]);
 
   /** Azure-Diktat (EU): Token holen, SDK laden, erkennen; null = nicht verfügbar → Browser-Notnagel. */
   const startAzureMic = useCallback(async (): Promise<boolean> => {
@@ -552,6 +580,83 @@ export default function SimulationClient() {
       return false;
     }
   }, [speechLang]);
+
+  /**
+   * Sprachmodus Live: Karte holen, Verbindung öffnen, Mikrofon streamen. false = für dieses Szenario
+   * aus (404 LIVE_OFF) oder nicht konfiguriert (503) → der Aufrufer nimmt die Kaskade wie bisher.
+   * true = Live läuft (oder die Einwilligung „Sprachaufnahme“ fehlt und der Hinweis steht).
+   */
+  const startLiveMic = useCallback(async (): Promise<boolean> => {
+    if (!simId || !liveAudioSupported() || liveRef.current) return false;
+    let karte: { ticket: string; path: string } | null = null;
+    try {
+      const res = await authFetch('/api/simulation/live/ticket', {
+        method: 'POST',
+        body: JSON.stringify({ simId }),
+      });
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; ticket?: string; path?: string; code?: string; url?: string };
+      if (res.status === 403 && j.code === 'EINWILLIGUNG') {
+        setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme');
+        setMicActive(false);
+        wantMicRef.current = false;
+        return true;
+      }
+      if (!res.ok || !j.ok || !j.ticket || !j.path) return false;
+      karte = { ticket: j.ticket, path: j.path };
+    } catch {
+      return false;
+    }
+    setLiveState('connecting');
+    setLiveYou('');
+    setLivePersona('');
+    setError(null);
+    const audio = createLiveAudio();
+    const conn = openLiveConnection(karte.path, karte.ticket, {
+      onReady: () => {
+        void audio
+          .startMic((pcm) => conn.sendAudio(pcm))
+          .then(() => {
+            if (liveRef.current?.conn !== conn) return;
+            setLiveState('on');
+            setMicActive(true);
+          })
+          .catch(() => conn.close()); // Mikrofon verweigert → Verbindung zu, Kaskade bleibt wählbar
+      },
+      onYou: (text) => setLiveYou(text),
+      onPersona: (text) => setLivePersona(text),
+      onInterrupted: () => audio.interrupt(),
+      onAudio: (pcm) => audio.play(pcm),
+      onTurn: (turn) => {
+        const at = new Date().toISOString();
+        setTurns((prev) => [
+          ...prev,
+          ...(turn.user ? [{ role: 'user' as const, text: turn.user, ts: at }] : []),
+          ...(turn.persona ? [{ role: 'persona' as const, text: turn.persona, ts: at }] : []),
+        ]);
+        setLiveYou('');
+        setLivePersona('');
+        if (turn.timeUp) setTimeUp(true);
+      },
+      onError: (code) => {
+        if (code === 'UPSTREAM') setError(ts.genericError);
+      },
+      onBye: (reason) => {
+        if (reason === 'upstream') setError(ts.genericError);
+      },
+      onClose: () => {
+        if (liveRef.current?.conn !== conn) return; // schon über stopMic abgeräumt
+        liveRef.current = null;
+        audio.finish(); // die letzte Antwort (z. B. die Verabschiedung) noch zu Ende spielen
+        setLiveState('off');
+        setLiveYou('');
+        setLivePersona('');
+        setMicActive(false);
+        wantMicRef.current = false;
+      },
+    });
+    liveRef.current = { conn, audio };
+    return true;
+  }, [simId, ts.genericError]);
 
   // CP-3.4 (M21 Option 1, Compliance-Blueprint 31.08.): Aufklärung vor der
   // ERSTEN Mikrofon-Nutzung je Gerät. Die Browser-Spracherkennung überträgt
@@ -587,6 +692,8 @@ export default function SimulationClient() {
     // Sprich-Modus: wer ins Mikro spricht, bekommt die Antwort auch zu hören.
     if (ttsSupported) setSpeakReplies(true);
     void (async () => {
+      // Reihenfolge: Live (wenn für das Szenario an) → Azure-Diktat → Browser-Notnagel.
+      if (await startLiveMic()) return;
       if (await startAzureMic()) return;
       if (!browserSpeechSupported) {
         wantMicRef.current = false;
@@ -595,7 +702,7 @@ export default function SimulationClient() {
       }
       startBrowserMic();
     })();
-  }, [speechSupported, micActive, ttsSupported, startAzureMic, browserSpeechSupported, startBrowserMic]);
+  }, [speechSupported, micActive, ttsSupported, startLiveMic, startAzureMic, browserSpeechSupported, startBrowserMic]);
 
   /** Notnagel: Browser-Spracherkennung (Chrome: Google) — nur wenn Azure gerade nicht kann. */
   function startBrowserMic() {
@@ -702,6 +809,8 @@ export default function SimulationClient() {
       stopSpeaking();
     }
   }, [view, stopMic, stopSpeaking]);
+  // Sprachmodus Live: beim Abbau der Seite die Verbindung und das Mikrofon freigeben.
+  useEffect(() => () => stopLive(), [stopLive]);
 
   // W2-1: Uhr tickt nur im Chat (1 s Auflösung genügt für mm:ss).
   useEffect(() => {
@@ -963,7 +1072,8 @@ export default function SimulationClient() {
 
   async function sendTurn() {
     const message = input.trim();
-    if (!message || !simId || sending) return;
+    // Im Live-Gespräch geht nichts über den Textweg — das Live-Modell hört nur, was gesprochen wird.
+    if (!message || !simId || sending || liveState !== 'off') return;
     setSending(true);
     setError(null);
     const optimistic: Turn = { role: 'user', text: message, ts: new Date().toISOString() };
@@ -1935,6 +2045,18 @@ export default function SimulationClient() {
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">{ts.backToList}</span>
             </button>
+            {/* Sprachmodus Live: Kennzeichen neben der Uhr, solange die Live-Verbindung steht. */}
+            {liveState !== 'off' && (
+              <span
+                className={cx(
+                  'pn-none text-sm font-semibold rounded-lg px-3 py-2 border flex items-center gap-1.5',
+                  liveState === 'on' ? 'border-primary/40 text-primary bg-primary/10' : 'border-border text-muted-foreground'
+                )}
+                title={liveState === 'on' ? ts.liveActive : ts.liveConnecting}
+              >
+                <Radio className={liveState === 'on' ? 'h-4 w-4 animate-pulse' : 'h-4 w-4'} /> {ts.liveBadge}
+              </span>
+            )}
             {/* W2-1: Countdown — passiv, keine Bewertung. */}
             {clockText && (
               <span
@@ -2160,6 +2282,31 @@ export default function SimulationClient() {
                   </div>
                 </div>
               )}
+              {/* Sprachmodus Live: Verbindungsaufbau und die mitlaufende Mitschrift des laufenden Zugs. */}
+              {liveState === 'connecting' && (
+                <div className="flex items-end gap-2 justify-start">
+                  <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
+                  <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    {ts.liveConnecting}
+                  </div>
+                </div>
+              )}
+              {liveYou && (
+                <div className="flex items-end gap-2 justify-end">
+                  <div className="pn-none rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap bg-primary/70 text-primary-foreground rounded-br-sm">
+                    {liveYou}
+                  </div>
+                </div>
+              )}
+              {livePersona && (
+                <div className="flex items-end gap-2 justify-start">
+                  <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
+                  <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap">
+                    {livePersona}
+                  </div>
+                </div>
+              )}
               <div ref={chatEndRef} />
             </div>
           </div>
@@ -2194,7 +2341,7 @@ export default function SimulationClient() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
-                {ts.micLive}
+                {liveState === 'on' ? ts.liveActive : ts.micLive}
               </div>
             )}
             <div className="max-w-3xl mx-auto flex items-end gap-2">
@@ -2208,8 +2355,8 @@ export default function SimulationClient() {
                   }
                 }}
                 rows={2}
-                placeholder={effTimeUp ? ts.timeUpPlaceholder : ts.inputPlaceholder}
-                disabled={effTimeUp}
+                placeholder={effTimeUp ? ts.timeUpPlaceholder : liveState !== 'off' ? ts.liveActive : ts.inputPlaceholder}
+                disabled={effTimeUp || liveState !== 'off'}
                 className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
               {speechSupported && !effTimeUp && (
@@ -2235,7 +2382,7 @@ export default function SimulationClient() {
               )}
               <button
                 onClick={() => void sendTurn()}
-                disabled={sending || !input.trim() || effTimeUp}
+                disabled={sending || !input.trim() || effTimeUp || liveState !== 'off'}
                 className="btn-gradient text-white rounded-xl p-3 shadow-neon disabled:opacity-50"
                 aria-label={ts.send}
               >

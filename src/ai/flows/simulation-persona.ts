@@ -127,6 +127,21 @@ function timeDirective(s: SimulationScenario, signal: PersonaTimeSignal | undefi
     : `\n7. DIE ZEIT IST UM: Beende das Gespräch JETZT höflich und in deiner Rolle — du musst zu deinem nächsten Termin. Gehe kurz auf den letzten Punkt ein, sag, dass du los musst, und verabschiede dich. 2–4 Sätze, keine Zusammenfassung, keine weiteren Fragen.`;
 }
 
+/**
+ * Regie-Marker der Zeit-Regie (PURE). Im Textweg hängt er hinter dem Nutzertext, im Sprachmodus
+ * Live (N4-231) geht er als eigene Notiz an das Live-Modell — gleicher Wortlaut, ein Schreibweg.
+ */
+export function personaStageNote(s: SimulationScenario, signal: PersonaTimeSignal): string {
+  if (signal === 'closing') {
+    return s.locale === 'en'
+      ? '[STAGE NOTE — not part of the conversation: your next appointment is near. In THIS reply, briefly mention you are running out of time.]'
+      : '[REGIE — nicht Teil des Gesprächs: Dein nächster Termin rückt näher. Erwähne in DIESER Antwort kurz, dass du nicht mehr viel Zeit hast.]';
+  }
+  return s.locale === 'en'
+    ? '[STAGE NOTE — not part of the conversation: time is up. Briefly acknowledge the last point, then END the conversation politely — you must leave for your next appointment. Say goodbye.]'
+    : '[REGIE — nicht Teil des Gesprächs: Die Zeit ist um. Gehe kurz auf den letzten Punkt ein und BEENDE dann das Gespräch höflich — du musst zu deinem nächsten Termin. Verabschiede dich.]';
+}
+
 export async function runPersonaTurn(args: {
   scenario: SimulationScenario;
   turns: SimulationTurn[];
@@ -153,16 +168,7 @@ export async function runPersonaTurn(args: {
   // Regie-Marker HINTER dem (gefencten) Nutzertext — Live-Befund 04.08.:
   // nur als Regel 7 am Prompt-Ende überging gemini-2.5-flash den Hinweis.
   // Der Marker steht außerhalb des Nutzer-Fence (kein Injection-Vektor).
-  const stageNote =
-    args.timeSignal === 'closing'
-      ? args.scenario.locale === 'en'
-        ? '\n\n[STAGE NOTE — not part of the conversation: your next appointment is near. In THIS reply, briefly mention you are running out of time.]'
-        : '\n\n[REGIE — nicht Teil des Gesprächs: Dein nächster Termin rückt näher. Erwähne in DIESER Antwort kurz, dass du nicht mehr viel Zeit hast.]'
-      : args.timeSignal === 'farewell'
-        ? args.scenario.locale === 'en'
-          ? '\n\n[STAGE NOTE — not part of the conversation: time is up. Briefly acknowledge the last point, then END the conversation politely — you must leave for your next appointment. Say goodbye.]'
-          : '\n\n[REGIE — nicht Teil des Gesprächs: Die Zeit ist um. Gehe kurz auf den letzten Punkt ein und BEENDE dann das Gespräch höflich — du musst zu deinem nächsten Termin. Verabschiede dich.]'
-        : '';
+  const stageNote = args.timeSignal ? '\n\n' + personaStageNote(args.scenario, args.timeSignal) : '';
 
   const response = await ai.generate({
     system:

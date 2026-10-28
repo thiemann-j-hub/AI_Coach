@@ -73,6 +73,14 @@ jobs:
             "${GITHUB_SHA::7}" "${GITHUB_REF_NAME}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             > .next/standalone/build-info.json
           cat .next/standalone/build-info.json
+          # Sprachmodus Live (N4-231): Nexts server.js wird next-server.js, davor steht der Mantel
+          # server/live-server.js als server.js (Startbefehl bleibt `node server.js`). Mit COACH_LIVE
+          # aus ruft der Mantel nur next-server.js — Null Änderung. ws liegt sicher im Bündel.
+          mv .next/standalone/server.js .next/standalone/next-server.js
+          cp server/live-server.js .next/standalone/server.js
+          mkdir -p .next/standalone/node_modules
+          if [ ! -d .next/standalone/node_modules/ws ]; then cp -r node_modules/ws .next/standalone/node_modules/ws; fi
+          node -e "require('./.next/standalone/node_modules/ws'); console.log('ws im Bündel ok')"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
