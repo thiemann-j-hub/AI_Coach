@@ -302,7 +302,8 @@
     "consentTitle": "Dê o seu consentimento uma vez antes de falar",
     "consentBody": "A sua empresa solicita o seu consentimento antes da primeira gravação de voz: a sua voz é convertida em texto na Europa Ocidental e a gravação não é guardada. Pode sempre optar por escrever.",
     "consentLater": "Mais tarde, irei escrever",
-    "consentGo": "Ir para o consentimento"
+    "consentGo": "Ir para o consentimento",
+    "variantLabel": "Variante"
   },
   "auth": {
     "signIn": "Iniciar sessão",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Também como:",
+    "prepTitle": "Preparar a minha conversa real",
+    "prepBody": "Descreve em três frases o que se aproxima e como a outra pessoa se comporta. Recebes uma conversa de treino privada que só tu vês.",
+    "prepCta": "Preparar",
+    "prepDialogTitle": "Preparar a minha conversa real",
+    "prepAnlass": "De que se trata?",
+    "prepAnlassPh": "p. ex. Amanhã tenho a reunião com o meu gestor de projeto sobre a entrega adiada. Ele ainda não explicou o atraso.",
+    "prepGegen": "Como se comporta a outra pessoa?",
+    "prepGegenPh": "p. ex. Foge ao assunto, remete para outros departamentos, fica seco perante críticas e termina depressa as conversas.",
+    "prepZiel": "O que queres alcançar? (opcional)",
+    "prepZielPh": "p. ex. Uma data fixa e responsabilidades claras até sexta-feira.",
+    "prepHint": "Descreve comportamentos, não pessoas: sem nomes reais nem nomes de empresas. O coach substitui nomes por papéis e inventa uma personagem.",
+    "prepCost": "Custa 1 crédito. A conversa fica privada contigo durante 30 dias. Mais ninguém a vê, nem um admin.",
+    "prepSend": "Criar conversa",
+    "prepBusy": "A criar o teu interlocutor …",
+    "prepMineTitle": "As tuas conversas preparadas",
+    "prepExpires": "Expira a {date}",
+    "prepRemove": "Remover",
+    "prepLimit": "Não podes ter mais de três conversas preparadas ao mesmo tempo. Remove uma e poderás criar outra."
   },
   "evaluation": {
     "calcToggle": "Como surge este número?",

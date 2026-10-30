@@ -302,7 +302,8 @@
     "consentTitle": "Tabhair toiliú uair amháin sula labhraíonn tú",
     "consentBody": "Tá do chuideachta ag iarraidh do thoiliú roimh an gcéad taifeadadh gutha: tiontaítear do ghuth go téacs in Iarthar na hEorpa, agus ní stóráiltear an taifeadadh. Is féidir leat clóscríobh i gcónaí ina ionad sin.",
     "consentLater": "Níos déanaí, clóscríobhfaidh mé",
-    "consentGo": "Téigh chuig an toiliú"
+    "consentGo": "Téigh chuig an toiliú",
+    "variantLabel": "Leagan"
   },
   "auth": {
     "signIn": "Sínigh isteach",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Freisin mar:",
+    "prepTitle": "Mo fhíorchomhrá a ullmhú",
+    "prepBody": "Déan cur síos i dtrí abairt ar a bhfuil le teacht agus ar an gcaoi a n-iompraíonn an duine eile é féin. Gheobhaidh tú comhrá cleachtaidh príobháideach nach bhfeiceann ach tú féin.",
+    "prepCta": "Ullmhaigh",
+    "prepDialogTitle": "Mo fhíorchomhrá a ullmhú",
+    "prepAnlass": "Cad faoi a bhfuil sé?",
+    "prepAnlassPh": "m.sh. Amárach tá an comhrá agam le mo cheannaire tionscadail faoin seachadadh a cuireadh siar. Níor mhínigh sé an mhoill go fóill.",
+    "prepGegen": "Conas a iompraíonn an duine eile é féin?",
+    "prepGegenPh": "m.sh. Seachnaíonn sé an cheist, cuireann sé ranna eile i leith, éiríonn sé giorraisc le cáineadh agus críochnaíonn sé comhráite go tapa.",
+    "prepZiel": "Cad atá uait a bhaint amach? (roghnach)",
+    "prepZielPh": "m.sh. Dáta seasta agus freagrachtaí soiléire faoin Aoine.",
+    "prepHint": "Déan cur síos ar iompar, ní ar dhaoine: gan fíorainmneacha, gan ainmneacha cuideachtaí. Cuireann an cóitseálaí róil in ionad ainmneacha agus cumann sé carachtar.",
+    "prepCost": "Cosnaíonn sé 1 chreidmheas. Fanann an comhrá príobháideach agat ar feadh 30 lá. Ní fheiceann aon duine eile é, fiú riarthóir.",
+    "prepSend": "Cruthaigh comhrá",
+    "prepBusy": "Do dhuine eile á chruthú …",
+    "prepMineTitle": "Do chomhráite ullmhaithe",
+    "prepExpires": "In éag ar {date}",
+    "prepRemove": "Bain",
+    "prepLimit": "Ní féidir níos mó ná trí chomhrá ullmhaithe a bheith agat ag an am céanna. Bain ceann amháin, ansin is féidir leat ceann nua a chruthú."
   },
   "evaluation": {
     "calcToggle": "Conas a thagann an uimhir seo?",

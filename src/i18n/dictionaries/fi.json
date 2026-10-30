@@ -302,7 +302,8 @@
     "consentTitle": "Antakaa suostumuksenne kerran ennen kuin puhutte",
     "consentBody": "Yrityksenne pyytää suostumustanne ennen ensimmäistä äänitallennetta: äänenne muunnetaan tekstiksi Länsi-Euroopassa, eikä tallennetta tallenneta. Voitte sen sijaan aina kirjoittaa.",
     "consentLater": "Myöhemmin, kirjoitan",
-    "consentGo": "Siirry suostumukseen"
+    "consentGo": "Siirry suostumukseen",
+    "variantLabel": "Muunnelma"
   },
   "auth": {
     "signIn": "Kirjaudu sisään",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Myös muodossa:",
+    "prepTitle": "Valmistele oikea keskusteluni",
+    "prepBody": "Kuvaa kolmella lauseella, mitä on tulossa ja miten vastapuolesi käyttäytyy. Saat yksityisen harjoituskeskustelun, jonka näet vain sinä.",
+    "prepCta": "Valmistele",
+    "prepDialogTitle": "Valmistele oikea keskusteluni",
+    "prepAnlass": "Mistä on kyse?",
+    "prepAnlassPh": "esim. Huomenna minulla on keskustelu projektipäällikköni kanssa viivästyneestä toimituksesta. Hän ei ole vielä selittänyt viivästystä.",
+    "prepGegen": "Miten vastapuolesi käyttäytyy?",
+    "prepGegenPh": "esim. Väistelee, viittaa muihin osastoihin, muuttuu lyhytsanaiseksi kritiikistä ja lopettaa keskustelut nopeasti.",
+    "prepZiel": "Mitä haluat saavuttaa? (valinnainen)",
+    "prepZielPh": "esim. Kiinteän päivämäärän ja selkeät vastuut perjantaihin mennessä.",
+    "prepHint": "Kuvaa käyttäytymistä, älä henkilöitä: ei oikeita nimiä, ei yritysten nimiä. Valmentaja korvaa nimet rooleilla ja keksii hahmon.",
+    "prepCost": "Maksaa 1 creditin. Keskustelu pysyy yksityisenä sinulla 30 päivää. Kukaan muu ei näe sitä, ei edes ylläpitäjä.",
+    "prepSend": "Luo keskustelu",
+    "prepBusy": "Vastapuoltasi luodaan …",
+    "prepMineTitle": "Valmistelemasi keskustelut",
+    "prepExpires": "Vanhenee {date}",
+    "prepRemove": "Poista",
+    "prepLimit": "Valmisteltuja keskusteluja voi olla enintään kolme kerrallaan. Poista yksi, niin voit luoda uuden."
   },
   "evaluation": {
     "calcToggle": "Miten luku syntyy?",

@@ -302,7 +302,8 @@
     "consentTitle": "Acconsenta una volta prima di parlare",
     "consentBody": "La Sua azienda Le chiede il consenso prima della prima registrazione vocale: la Sua voce viene convertita in testo nell'Europa occidentale e la registrazione non viene memorizzata. In alternativa, può sempre digitare.",
     "consentLater": "Più tardi, digiterò",
-    "consentGo": "Procedi al consenso"
+    "consentGo": "Procedi al consenso",
+    "variantLabel": "Variante"
   },
   "auth": {
     "signIn": "Accedi",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Anche come:",
+    "prepTitle": "Preparare la mia conversazione reale",
+    "prepBody": "Descrivi in tre frasi cosa ti aspetta e come si comporta il tuo interlocutore. Otterrai una conversazione di allenamento privata che vedi solo tu.",
+    "prepCta": "Prepara",
+    "prepDialogTitle": "Preparare la mia conversazione reale",
+    "prepAnlass": "Di cosa si tratta?",
+    "prepAnlassPh": "es. Domani ho il colloquio con il mio project manager sulla consegna rinviata. Finora non ha spiegato il ritardo.",
+    "prepGegen": "Come si comporta il tuo interlocutore?",
+    "prepGegenPh": "es. Svia, rimanda ad altri reparti, diventa brusco alle critiche e chiude in fretta le conversazioni.",
+    "prepZiel": "Cosa vuoi ottenere? (facoltativo)",
+    "prepZielPh": "es. Una data fissa e responsabilità chiare entro venerdì.",
+    "prepHint": "Descrivi comportamenti, non persone: nessun nome reale, nessun nome di azienda. Il coach sostituisce i nomi con ruoli e inventa un personaggio.",
+    "prepCost": "Costa 1 credito. La conversazione resta privata per 30 giorni. Nessun altro la vede, nemmeno un admin.",
+    "prepSend": "Crea conversazione",
+    "prepBusy": "Sto creando il tuo interlocutore …",
+    "prepMineTitle": "Le tue conversazioni preparate",
+    "prepExpires": "Scade il {date}",
+    "prepRemove": "Rimuovi",
+    "prepLimit": "Non puoi tenere più di tre conversazioni preparate alla volta. Rimuovine una, poi potrai crearne una nuova."
   },
   "evaluation": {
     "calcToggle": "Come nasce questo numero?",

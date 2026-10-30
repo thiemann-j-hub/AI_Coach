@@ -302,7 +302,8 @@
     "consentTitle": "Udělte souhlas předtím, než budete mluvit",
     "consentBody": "Vaše společnost vás před první hlasovou nahrávkou žádá o souhlas: váš hlas je v západní Evropě převeden na text, nahrávka se neukládá. Místo toho můžete kdykoli psát.",
     "consentLater": "Později, budu psát",
-    "consentGo": "Přejít k souhlasu"
+    "consentGo": "Přejít k souhlasu",
+    "variantLabel": "Varianta"
   },
   "auth": {
     "signIn": "Přihlásit se",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Také jako:",
+    "prepTitle": "Připravit můj skutečný rozhovor",
+    "prepBody": "Popiš ve třech větách, co tě čeká a jak se chová tvůj protějšek. Získáš soukromý cvičný rozhovor, který vidíš jen ty.",
+    "prepCta": "Připravit",
+    "prepDialogTitle": "Připravit můj skutečný rozhovor",
+    "prepAnlass": "O co jde?",
+    "prepAnlassPh": "např. Zítra mám rozhovor s vedoucím projektu o odloženém odevzdání. Zpoždění zatím nevysvětlil.",
+    "prepGegen": "Jak se chová tvůj protějšek?",
+    "prepGegenPh": "např. Vyhýbá se, odkazuje na jiná oddělení, při kritice je strohý a rozhovory rychle ukončuje.",
+    "prepZiel": "Čeho chceš dosáhnout? (nepovinné)",
+    "prepZielPh": "např. Pevný termín a jasné odpovědnosti do pátku.",
+    "prepHint": "Popisuj chování, ne osoby: žádná skutečná jména, žádné názvy firem. Kouč nahradí jména rolemi a vymyslí postavu.",
+    "prepCost": "Stojí 1 kredit. Rozhovor zůstane 30 dní soukromý u tebe. Nikdo jiný ho nevidí, ani admin.",
+    "prepSend": "Vytvořit rozhovor",
+    "prepBusy": "Tvůj protějšek se vytváří …",
+    "prepMineTitle": "Tvé připravené rozhovory",
+    "prepExpires": "Vyprší {date}",
+    "prepRemove": "Odebrat",
+    "prepLimit": "Najednou můžeš mít nejvýše tři připravené rozhovory. Jeden odeber, pak můžeš vytvořit nový."
   },
   "evaluation": {
     "calcToggle": "Jak vzniká toto číslo?",

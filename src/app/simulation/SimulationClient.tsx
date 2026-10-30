@@ -76,6 +76,8 @@ interface PublicScenario {
   category: ScenarioCategory;
   competencyFocus?: string[];
   persona: { name: string; role: string; voice?: PersonaVoice };
+  /** Welle 3: Persönlichkeits-Variante eines Grundszenarios (Porträt und Karte kommen vom Grundszenario). */
+  variante?: { von: string; name: { de: string; en: string } };
   candidateBriefing: {
     yourRole: string;
     relationship: string;
@@ -337,6 +339,16 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
 }
 
+/** Welle 4: private, selbst vorbereitete Gespräche tragen die Id-Klasse ws-mein-. */
+function isMein(s: { id: string }): boolean {
+  return s.id.startsWith('ws-mein-');
+}
+
+/** Welle 3: Varianten teilen das Porträt ihres Grundszenarios. */
+function portraitOf(s: { id: string; variante?: { von: string } }): string {
+  return s.variante?.von ?? s.id;
+}
+
 // UX-W3 (01.10., Status-Wörterbuch): Schwierigkeit ist kein Status — eine Farbe, Punkte statt Ampel.
 const LEVEL_STYLES: Record<number, string> = {
   1: 'bg-primary/10 text-primary border-primary/20',
@@ -459,6 +471,13 @@ export default function SimulationClient() {
   const [wishText, setWishText] = useState('');
   const [wishBusy, setWishBusy] = useState(false);
   const [wishDone, setWishDone] = useState(false);
+  // Welle 4: „Mein echtes Gespräch vorbereiten“ — drei Sätze → privates Szenario (nur diese Person, 30 Tage).
+  const [vorbOpen, setVorbOpen] = useState(false);
+  const [vorbAnlass, setVorbAnlass] = useState('');
+  const [vorbGegen, setVorbGegen] = useState('');
+  const [vorbZiel, setVorbZiel] = useState('');
+  const [vorbBusy, setVorbBusy] = useState(false);
+  const [vorbError, setVorbError] = useState<string | null>(null);
   /** Fokus aus dem Deep-Link (?szenario=&fokus= — Retry von der Auswertungsseite). */
   const pendingFocusRef = useRef<string | null>(null);
   const [topUpUrl, setTopUpUrl] = useState<string | null>(null);
@@ -1302,11 +1321,19 @@ export default function SimulationClient() {
     const nonEmptyCategories = CATEGORY_ORDER.filter((c) =>
       scenarios.some((s) => s.category === c)
     );
+    // Welle 3: Varianten stehen nicht als eigene Karten im Raster, sondern als Auswahl an ihrer Grundkarte.
+    const grundszenarien = scenarios.filter((s) => !s.variante && !isMein(s));
+    const meine = scenarios.filter(isMein);
+    const variantenVon = new Map<string, PublicScenario[]>();
+    for (const s of scenarios) {
+      if (!s.variante) continue;
+      variantenVon.set(s.variante.von, [...(variantenVon.get(s.variante.von) ?? []), s]);
+    }
     const visibleScenarios =
       categoryFilter === 'all'
-        ? scenarios
-        : scenarios.filter((s) => s.category === categoryFilter);
-    const recommended = recommendScenarios(scenarios, insight?.weakestC ?? null, 3);
+        ? grundszenarien
+        : grundszenarien.filter((s) => s.category === categoryFilter);
+    const recommended = recommendScenarios(grundszenarien, insight?.weakestC ?? null, 3);
     const catLabel = (c: ScenarioCategory) =>
       c === 'mitarbeiterfuehrung'
         ? t.entry.catMitarbeiterfuehrung
@@ -1325,8 +1352,8 @@ export default function SimulationClient() {
     };
 
     const scenarioCard = (s: PublicScenario, highlighted = false) => (
+      <div key={s.id} className="flex flex-col gap-2 min-w-0">
       <button
-        key={s.id}
         onClick={() => openBriefing(s)}
         className={cx(
           'pn-tile glass-panel rounded-2xl p-5 text-left border transition-colors flex flex-col gap-3',
@@ -1351,7 +1378,7 @@ export default function SimulationClient() {
         <h3 className="font-semibold leading-snug">{s.title}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.teaser}</p>
         <div className="flex items-center gap-2">
-          <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
+          <PersonaAvatar name={s.persona.name} scenarioId={portraitOf(s)} size="sm" />
           <div className="text-xs text-muted-foreground min-w-0">
             <div className="font-medium text-foreground truncate">{s.persona.name}</div>
             <div className="truncate">{s.persona.role}</div>
@@ -1361,7 +1388,72 @@ export default function SimulationClient() {
           {s.locale === 'en' ? ts.englishOnly : ts.germanOnly}
         </div>
       </button>
+      {/* Welle 3: Persönlichkeits-Varianten — dieselbe Lage, ein anderes Gegenüber. */}
+      {(variantenVon.get(s.id) ?? []).length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 px-1 text-xs text-muted-foreground" data-testid="varianten">
+          <span>{t.entry.variantsAlso}</span>
+          {(variantenVon.get(s.id) ?? []).map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => openBriefing(v)}
+              className="pn-none rounded-full border border-border px-2.5 py-0.5 font-medium text-foreground hover:border-primary/60 hover:text-primary transition-colors"
+            >
+              {locale === 'de' ? v.variante!.name.de : v.variante!.name.en}
+            </button>
+          ))}
+        </div>
+      )}
+      </div>
     );
+
+    async function submitVorbereiten() {
+      if (vorbBusy || vorbAnlass.trim().length < 20 || vorbGegen.trim().length < 20) return;
+      setVorbBusy(true);
+      setVorbError(null);
+      try {
+        const res = await authFetch('/api/simulation/vorbereiten', {
+          method: 'POST',
+          body: JSON.stringify({
+            anlass: vorbAnlass.trim().slice(0, 1200),
+            gegenueber: vorbGegen.trim().slice(0, 1200),
+            ...(vorbZiel.trim() ? { ziel: vorbZiel.trim().slice(0, 600) } : {}),
+            locale: locale === 'en' ? 'en' : 'de',
+          }),
+        });
+        const json = await res.json().catch(() => null);
+        if (res.status === 409 && json?.code === 'PRIVATE_LIMIT') {
+          setVorbError(t.entry.prepLimit);
+          return;
+        }
+        if (!res.ok || !json?.ok || !json.scenario) {
+          setVorbOpen(false);
+          await handleApiFailure(res);
+          return;
+        }
+        window.dispatchEvent(new Event(CREDITS_REFRESH_EVENT));
+        const s = json.scenario as PublicScenario;
+        setScenarios((prev) => [...prev.filter((x) => x.id !== s.id), s]);
+        setVorbOpen(false);
+        setVorbAnlass('');
+        setVorbGegen('');
+        setVorbZiel('');
+        openBriefing(s);
+      } catch {
+        setVorbError(ts.genericError);
+      } finally {
+        setVorbBusy(false);
+      }
+    }
+
+    async function removeVorbereitet(id: string) {
+      try {
+        const res = await authFetch('/api/simulation/vorbereiten', { method: 'DELETE', body: JSON.stringify({ id }) });
+        if (res.ok) setScenarios((prev) => prev.filter((x) => x.id !== id));
+      } catch {
+        /* fail-soft: Karte bleibt bis zum nächsten Laden */
+      }
+    }
 
     async function submitWish() {
       const text = wishText.trim();
@@ -1501,7 +1593,7 @@ export default function SimulationClient() {
                         onClick={() => void resumeSimulation(r)}
                         className="flex items-center gap-3 min-w-0 flex-1 text-left"
                       >
-                        <PersonaAvatar name={s.persona.name} scenarioId={s.id} size="sm" />
+                        <PersonaAvatar name={s.persona.name} scenarioId={portraitOf(s)} size="sm" />
                         <div className="min-w-0">
                           <div className="text-sm font-medium truncate">{s.title}</div>
                           <div className="text-xs text-muted-foreground">
@@ -1568,6 +1660,29 @@ export default function SimulationClient() {
             </section>
           )}
 
+          {/* ── Welle 4: eigene vorbereitete Gespräche (privat, 30 Tage) ── */}
+          {meine.length > 0 && (
+            <section className="space-y-2" data-testid="meine-gespraeche">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                <MessagesSquare className="h-3.5 w-3.5 text-primary" /> {t.entry.prepMineTitle}
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {meine.map((s) => (
+                  <div key={s.id} className="flex flex-col gap-1.5 min-w-0">
+                    {scenarioCard(s, true)}
+                    <button
+                      type="button"
+                      onClick={() => void removeVorbereitet(s.id)}
+                      className="self-end text-xs text-muted-foreground underline hover:text-foreground"
+                    >
+                      {t.entry.prepRemove}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* ── Ablage-Leiste: der zweite Zufluss, einzeilig (W1-2) ── */}
           <TranscriptDropBar />
 
@@ -1628,6 +1743,20 @@ export default function SimulationClient() {
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {visibleScenarios.map((s) => scenarioCard(s))}
             {/* Geister-Karte (W1-5): der Wunsch wird Nachfrage-Statistik. */}
+            {/* Welle 4: „Mein echtes Gespräch vorbereiten“ — für alle, privat. */}
+            <button
+              onClick={() => {
+                setVorbError(null);
+                setVorbOpen(true);
+              }}
+              data-testid="prep-card"
+              className="pn-none rounded-2xl p-5 text-left border-2 border-dashed border-primary/40 hover:border-primary transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
+            >
+              <MessagesSquare className="h-6 w-6 text-primary" />
+              <h3 className="font-semibold leading-snug text-foreground">{t.entry.prepTitle}</h3>
+              <p className="text-sm leading-relaxed">{t.entry.prepBody}</p>
+              <span className="mt-1 text-xs font-semibold text-primary">{t.entry.prepCta} →</span>
+            </button>
             {/* Welle C: Self-Service-Builder — nur für Workspace-Admins. */}
             {isWorkspaceAdmin && (
               <button
@@ -1665,6 +1794,70 @@ export default function SimulationClient() {
           {/* Preiszeile — EINMAL unter dem Raster, nicht je Karte (W2-4-Vorgriff). */}
           <p className="text-xs text-muted-foreground text-center">{ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</p>
         </div>
+
+        {/* ── Welle 4: Dialog „Mein echtes Gespräch vorbereiten“ ── */}
+        {vorbOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-lg w-full space-y-4 bg-card max-h-[90vh] overflow-y-auto">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <MessagesSquare className="h-5 w-5 text-primary" /> {t.entry.prepDialogTitle}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{t.entry.prepHint}</p>
+              <label className="block space-y-1">
+                <span className="text-sm font-medium">{t.entry.prepAnlass}</span>
+                <textarea
+                  value={vorbAnlass}
+                  onChange={(e) => setVorbAnlass(e.target.value)}
+                  rows={3}
+                  maxLength={1200}
+                  placeholder={t.entry.prepAnlassPh}
+                  className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-sm font-medium">{t.entry.prepGegen}</span>
+                <textarea
+                  value={vorbGegen}
+                  onChange={(e) => setVorbGegen(e.target.value)}
+                  rows={3}
+                  maxLength={1200}
+                  placeholder={t.entry.prepGegenPh}
+                  className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-sm font-medium">{t.entry.prepZiel}</span>
+                <textarea
+                  value={vorbZiel}
+                  onChange={(e) => setVorbZiel(e.target.value)}
+                  rows={2}
+                  maxLength={600}
+                  placeholder={t.entry.prepZielPh}
+                  className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <p className="text-xs text-muted-foreground">{t.entry.prepCost}</p>
+              {vorbError && <p className="text-sm text-rose-800 dark:text-rose-400">{vorbError}</p>}
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setVorbOpen(false)}
+                  disabled={vorbBusy}
+                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {t.common.cancel}
+                </button>
+                <button
+                  onClick={() => void submitVorbereiten()}
+                  disabled={vorbBusy || vorbAnlass.trim().length < 20 || vorbGegen.trim().length < 20}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+                >
+                  {vorbBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {vorbBusy ? t.entry.prepBusy : t.entry.prepSend}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Wunsch-Dialog (Geister-Karte) ── */}
         {wishOpen && (
@@ -1759,6 +1952,11 @@ export default function SimulationClient() {
             <div className="space-y-4 order-2 lg:order-1">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight">{motto}</h2>
+                {scenario.variante && (
+                  <span className="pn-none mt-1 inline-block rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary" data-testid="variante-badge">
+                    {ts.variantLabel}: {locale === 'de' ? scenario.variante.name.de : scenario.variante.name.en}
+                  </span>
+                )}
                 <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{scenario.teaser}</p>
               </div>
 
@@ -1866,7 +2064,7 @@ export default function SimulationClient() {
               <div className="pn-none relative overflow-hidden rounded-3xl border border-border shadow-neon aspect-[4/5] bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={withBasePath(`/personas/${scenario.id}.jpg`)}
+                  src={withBasePath(`/personas/${portraitOf(scenario)}.jpg`)}
                   alt={scenario.persona.name}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
@@ -2358,7 +2556,7 @@ export default function SimulationClient() {
                   key={idx}
                   className={cx('flex items-end gap-2', turn.role === 'user' ? 'justify-end' : 'justify-start')}
                 >
-                  {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />}
+                  {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />}
                   <div
                     className={cx(
                       'pn-none rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap',
@@ -2373,7 +2571,7 @@ export default function SimulationClient() {
               ))}
               {sending && (
                 <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
+                  <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />
                   <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     {scenario.persona.name} {ts.personaTyping}
@@ -2383,7 +2581,7 @@ export default function SimulationClient() {
               {/* Sprachmodus Live: Verbindungsaufbau und die mitlaufende Mitschrift des laufenden Zugs. */}
               {liveState === 'connecting' && (
                 <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
+                  <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />
                   <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     {ts.liveConnecting}
@@ -2399,7 +2597,7 @@ export default function SimulationClient() {
               )}
               {livePersona && (
                 <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} scenarioId={scenario.id} size="sm" />
+                  <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />
                   <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap">
                     {livePersona}
                   </div>

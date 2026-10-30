@@ -302,7 +302,8 @@
     "consentTitle": "Wyrażenie zgody przed rozpoczęciem wypowiedzi",
     "consentBody": "Państwa firma prosi o wyrażenie zgody przed pierwszą rejestracją głosu: Państwa głos jest konwertowany na tekst w Europie Zachodniej, a nagranie nie jest przechowywane. W każdej chwili mogą Państwo zamiast tego pisać.",
     "consentLater": "Później, będę pisać",
-    "consentGo": "Przejdź do zgody"
+    "consentGo": "Przejdź do zgody",
+    "variantLabel": "Wariant"
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Także jako:",
+    "prepTitle": "Przygotuj moją prawdziwą rozmowę",
+    "prepBody": "Opisz w trzech zdaniach, co Cię czeka i jak zachowuje się Twój rozmówca. Otrzymasz prywatną rozmowę ćwiczebną, którą widzisz tylko Ty.",
+    "prepCta": "Przygotuj",
+    "prepDialogTitle": "Przygotuj moją prawdziwą rozmowę",
+    "prepAnlass": "O co chodzi?",
+    "prepAnlassPh": "np. Jutro mam rozmowę z kierownikiem projektu o przesuniętym terminie. Do tej pory nie wyjaśnił opóźnienia.",
+    "prepGegen": "Jak zachowuje się Twój rozmówca?",
+    "prepGegenPh": "np. Unika tematu, odsyła do innych działów, przy krytyce staje się oschły i szybko kończy rozmowy.",
+    "prepZiel": "Co chcesz osiągnąć? (opcjonalnie)",
+    "prepZielPh": "np. Stały termin i jasne odpowiedzialności do piątku.",
+    "prepHint": "Opisuj zachowania, nie osoby: bez prawdziwych nazwisk, bez nazw firm. Coach zastępuje nazwiska rolami i wymyśla postać.",
+    "prepCost": "Kosztuje 1 kredyt. Rozmowa pozostaje prywatna u Ciebie przez 30 dni. Nikt inny jej nie widzi, nawet admin.",
+    "prepSend": "Zbuduj rozmowę",
+    "prepBusy": "Tworzę Twojego rozmówcę …",
+    "prepMineTitle": "Twoje przygotowane rozmowy",
+    "prepExpires": "Wygasa {date}",
+    "prepRemove": "Usuń",
+    "prepLimit": "Możesz mieć najwyżej trzy przygotowane rozmowy naraz. Usuń jedną, a będziesz mógł zbudować nową."
   },
   "evaluation": {
     "calcToggle": "Jak powstaje ta liczba?",

@@ -302,7 +302,8 @@
     "consentTitle": "Eenmalig toestemming geven voordat u spreekt",
     "consentBody": "Uw bedrijf vraagt om uw toestemming voor de eerste spraakopname: uw stem wordt in West-Europa omgezet in tekst, de opname wordt niet opgeslagen. U kunt in plaats daarvan altijd typen.",
     "consentLater": "Later, ik typ",
-    "consentGo": "Naar toestemming"
+    "consentGo": "Naar toestemming",
+    "variantLabel": "Variant"
   },
   "auth": {
     "signIn": "Aanmelden",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Ook als:",
+    "prepTitle": "Mijn echte gesprek voorbereiden",
+    "prepBody": "Beschrijf in drie zinnen wat eraan komt en hoe je gesprekspartner zich gedraagt. Je krijgt een privé-oefengesprek dat alleen jij ziet.",
+    "prepCta": "Voorbereiden",
+    "prepDialogTitle": "Mijn echte gesprek voorbereiden",
+    "prepAnlass": "Waar gaat het om?",
+    "prepAnlassPh": "bijv. Morgen heb ik het gesprek met mijn projectleider over de uitgestelde oplevering. Hij heeft de vertraging nog niet uitgelegd.",
+    "prepGegen": "Hoe gedraagt je gesprekspartner zich?",
+    "prepGegenPh": "bijv. Ontwijkt, verwijst naar andere afdelingen, wordt kortaf bij kritiek en beëindigt gesprekken snel.",
+    "prepZiel": "Wat wil je bereiken? (optioneel)",
+    "prepZielPh": "bijv. Een vaste datum en duidelijke verantwoordelijkheden voor vrijdag.",
+    "prepHint": "Beschrijf gedrag, geen personen: geen echte namen, geen bedrijfsnamen. De coach vervangt namen door rollen en verzint een personage.",
+    "prepCost": "Kost 1 credit. Het gesprek blijft 30 dagen privé bij jou. Niemand anders ziet het, ook geen admin.",
+    "prepSend": "Gesprek bouwen",
+    "prepBusy": "Je gesprekspartner wordt gebouwd …",
+    "prepMineTitle": "Je voorbereide gesprekken",
+    "prepExpires": "Verloopt op {date}",
+    "prepRemove": "Verwijderen",
+    "prepLimit": "Je kunt maximaal drie voorbereide gesprekken tegelijk hebben. Verwijder er een, dan kun je een nieuw bouwen."
   },
   "evaluation": {
     "calcToggle": "Hoe komt dit getal tot stand?",

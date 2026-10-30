@@ -302,7 +302,8 @@
     "consentTitle": "Samtykk én gang før De snakker",
     "consentBody": "Deres bedrift ber om Deres samtykke før den første taleinnspillingen: Stemmen Deres konverteres til tekst i Vest-Europa, innspillingen blir ikke lagret. De kan alltid skrive i stedet.",
     "consentLater": "Senere, jeg skriver",
-    "consentGo": "Gå til samtykke"
+    "consentGo": "Gå til samtykke",
+    "variantLabel": "Variant"
   },
   "auth": {
     "signIn": "Logg inn",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Også som:",
+    "prepTitle": "Forbered min ekte samtale",
+    "prepBody": "Beskriv i tre setninger hva som venter, og hvordan samtalepartneren din oppfører seg. Du får en privat øvingssamtale som bare du ser.",
+    "prepCta": "Forbered",
+    "prepDialogTitle": "Forbered min ekte samtale",
+    "prepAnlass": "Hva handler det om?",
+    "prepAnlassPh": "f.eks. I morgen har jeg samtalen med prosjektlederen min om den utsatte leveransen. Han har ennå ikke forklart forsinkelsen.",
+    "prepGegen": "Hvordan oppfører samtalepartneren din seg?",
+    "prepGegenPh": "f.eks. Unnviker, viser til andre avdelinger, blir kort ved kritikk og avslutter samtaler raskt.",
+    "prepZiel": "Hva vil du oppnå? (valgfritt)",
+    "prepZielPh": "f.eks. En fast dato og tydelig ansvar innen fredag.",
+    "prepHint": "Beskriv atferd, ikke personer: ingen ekte navn, ingen firmanavn. Coachen erstatter navn med roller og finner opp en figur.",
+    "prepCost": "Koster 1 credit. Samtalen forblir privat hos deg i 30 dager. Ingen andre ser den, heller ikke en admin.",
+    "prepSend": "Bygg samtale",
+    "prepBusy": "Samtalepartneren din bygges …",
+    "prepMineTitle": "Dine forberedte samtaler",
+    "prepExpires": "Utløper {date}",
+    "prepRemove": "Fjern",
+    "prepLimit": "Du kan ha høyst tre forberedte samtaler samtidig. Fjern én, så kan du bygge en ny."
   },
   "evaluation": {
     "calcToggle": "Hvordan oppstår tallet?",

@@ -394,6 +394,10 @@ export async function POST(req: NextRequest) {
           runId: doc.id,
           createdAt: finishedAt,
           competencyRatings,
+          // Welle 5: Anker je Fähigkeit (Stufe, Gewicht), Szenario und Urteil — Datenbasis des Team-Bilds im Hub.
+          rubric: feedback.rubric,
+          szenarioId: scenario.id,
+          bestanden: debrief.verdict === "passed" ? true : debrief.verdict === "failed" ? false : null,
         }).catch((e) =>
           logger.apiError("/api/simulation/finish/radar", e, { simId: doc.id })
         );

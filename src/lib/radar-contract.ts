@@ -62,6 +62,32 @@ export interface CoachMeasurementDoc {
    * existieren; Alt-Events tragen das Feld nicht.
    */
   evidence?: Partial<Record<CompetencyKey, string[]>>;
+  /**
+   * Welle 5 (30.10.2026, ADDITIV — alle Leser tolerieren Fehlen): Anker-Ergebnisse des Rollenspiels je Fähigkeit
+   * (Bibliotheks-Id oder Szenario-Schlüssel), Stufe 1–4 oder null, Gewicht relativ; dazu Szenario-Id und
+   * Bestanden-Urteil. Anonym, ohne Zitate — Datenbasis des Team-Bilds im Hub (Mindestgruppe dort).
+   */
+  faehigkeiten?: Array<{ id: string; stufe: number | null; gewicht: number }>;
+  szenarioId?: string;
+  bestanden?: boolean | null;
+}
+
+/** Welle 5: Anker-Ergebnisse eines Rollenspiels in die Radar-Form bringen (defensiv, Alt-Formen tolerant). */
+export function faehigkeitenFromRubric(rubric: unknown): Array<{ id: string; stufe: number | null; gewicht: number }> | undefined {
+  if (!Array.isArray(rubric)) return undefined;
+  const out: Array<{ id: string; stufe: number | null; gewicht: number }> = [];
+  for (const r of rubric) {
+    const id = typeof (r as { key?: unknown })?.key === "string" ? (r as { key: string }).key : "";
+    if (!id) continue;
+    const s = (r as { score?: unknown })?.score;
+    const w = (r as { weight?: unknown })?.weight;
+    out.push({
+      id,
+      stufe: typeof s === "number" && Number.isFinite(s) && s > 0 ? s : null,
+      gewicht: typeof w === "number" && Number.isFinite(w) && w > 0 ? w : 1,
+    });
+  }
+  return out.length ? out : undefined;
 }
 
 /** Idempotente Doc-id — exakt Hub `measurementDocId(appId, runId)`. */
@@ -152,6 +178,10 @@ export function buildCoachMeasurementDoc(args: {
   /** IMMER runDoc.createdAt (ISO-8601) — NIE Date.now() (gelockt). */
   createdAt: string;
   competencyRatings: unknown;
+  /** Welle 5 (optional): Anker-Rubrik des Rollenspiels (feedback.rubric), Szenario-Id, Bestanden-Urteil. */
+  rubric?: unknown;
+  szenarioId?: string;
+  bestanden?: boolean | null;
 }): CoachMeasurementDoc | null {
   if (!args.workspaceId || !args.subjectId || !args.runId || !args.createdAt) {
     return null;
@@ -159,6 +189,7 @@ export function buildCoachMeasurementDoc(args: {
   const metrics = metricsFromCompetencyRatings(args.competencyRatings);
   if (!hasObservableMetric(metrics)) return null;
   const evidence = evidenceFromCompetencyRatings(args.competencyRatings);
+  const faehigkeiten = faehigkeitenFromRubric(args.rubric);
   return {
     id: coachMeasurementDocId(args.runId),
     v: RADAR_CONTRACT_VERSION,
@@ -171,5 +202,8 @@ export function buildCoachMeasurementDoc(args: {
     metrics,
     scale: { min: COACH_SCALE.min, max: COACH_SCALE.max },
     ...(evidence ? { evidence } : {}),
+    ...(faehigkeiten ? { faehigkeiten } : {}),
+    ...(args.szenarioId ? { szenarioId: args.szenarioId } : {}),
+    ...(typeof args.bestanden === "boolean" ? { bestanden: args.bestanden } : {}),
   };
 }

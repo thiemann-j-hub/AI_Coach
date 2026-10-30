@@ -12,7 +12,7 @@
 import { writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-const KEY = process.env.FAL_KEY;
+const KEY = process.env.FAL_KEY ?? process.env.FAL_API_KEY;
 if (!KEY) { console.error("FAL_KEY fehlt"); process.exit(1); }
 
 const OUT_DIR = join(process.cwd(), "public", "personas");
@@ -33,6 +33,14 @@ const PERSONAS = [
   { id: "sim-merge-brandt", prompt: "Man around 45, composed friendly-but-firm expression, short dark hair with first grey, navy sweater over collared shirt, seasoned project-manager vibe." },
   { id: "sim-peer-falk", prompt: "Man of 52, polished confident presence, well-groomed silver-streaked hair, tailored suit jacket without tie, slight knowing smile, senior sales-executive vibe." },
   { id: "sim-appraisal-stone", prompt: "Man of 37, athletic, direct confident look, short styled hair, fitted business shirt with rolled-up sleeves, top-performer sales-manager vibe." },
+  // Welle 3 (30.10.2026): sechs neue Standard-Szenarien + Toni Faber. Varianten teilen das Porträt des Grundszenarios.
+  { id: "sim-cold-kessler", prompt: "Woman in her late 40s, sharp attentive gaze, no smile, dark hair in a neat low bun, thin-framed glasses, dark blazer, senior retail buyer vibe." },
+  { id: "sim-discovery-weber", prompt: "Man in his early 40s, calm analytical expression, short brown hair, light stubble, grey crew-neck sweater over a collared shirt, category-manager vibe." },
+  { id: "sim-complaint-hartmann", prompt: "Woman in her late 30s, determined slightly impatient expression, blonde hair tied back, store-manager fleece vest over a white shirt, supermarket office background." },
+  { id: "sim-media-vogt", prompt: "Woman in her early 30s, alert curious expression, auburn shoulder-length hair, headphones around her neck, dark casual jacket, radio-studio background softly blurred." },
+  { id: "sim-promotion-albrecht", prompt: "Woman in her mid 30s, thoughtful quiet expression with a faint smile, dark hair in a ponytail, white lab coat over a blouse, laboratory background softly blurred." },
+  { id: "sim-disengaged-keller", prompt: "Man in his late 30s, tired withdrawn expression, looking slightly past the camera, short dark-blond hair, plain dark polo shirt, logistics office background." },
+  { id: "sim-price-faber", prompt: "Man in his late 40s, friendly but firm expression, short grey-blond hair, light-blue shirt under a navy jacket, packaging-industry sales vibe, northern German office background." },
 ];
 
 async function generate(p) {

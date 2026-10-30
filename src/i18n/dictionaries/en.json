@@ -302,7 +302,8 @@
     "consentTitle": "Consent once before you speak",
     "consentBody": "Your company asks for your consent before the first voice recording: your voice is converted to text in Western Europe, the recording is not stored. You can always type instead.",
     "consentLater": "Later, I will type",
-    "consentGo": "Go to consent"
+    "consentGo": "Go to consent",
+    "variantLabel": "Variant"
   },
   "auth": {
     "signIn": "Sign In",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Also as:",
+    "prepTitle": "Prepare my real conversation",
+    "prepBody": "Describe in three sentences what is coming up and how the other person behaves. You get a private practice conversation that only you can see.",
+    "prepCta": "Prepare",
+    "prepDialogTitle": "Prepare my real conversation",
+    "prepAnlass": "What is it about?",
+    "prepAnlassPh": "e.g. Tomorrow I meet my project lead about the delayed delivery. He has not explained the delay so far.",
+    "prepGegen": "How does the other person behave?",
+    "prepGegenPh": "e.g. Evades, points to other departments, gets curt when criticised and ends conversations quickly.",
+    "prepZiel": "What do you want to achieve? (optional)",
+    "prepZielPh": "e.g. A fixed date and clear responsibilities by Friday.",
+    "prepHint": "Describe behaviour, not people: no real names, no company names. The coach replaces names with roles and invents a character.",
+    "prepCost": "Costs 1 credit. The conversation stays private with you for 30 days. Nobody else sees it, not even an admin.",
+    "prepSend": "Build conversation",
+    "prepBusy": "Building your counterpart …",
+    "prepMineTitle": "Your prepared conversations",
+    "prepExpires": "Expires on {date}",
+    "prepRemove": "Remove",
+    "prepLimit": "You can keep at most three prepared conversations at a time. Remove one, then you can build a new one."
   },
   "evaluation": {
     "calcToggle": "How is this number calculated?",

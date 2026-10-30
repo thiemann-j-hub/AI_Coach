@@ -302,7 +302,8 @@
     "consentTitle": "Nõustuge üks kord enne rääkimist",
     "consentBody": "Teie ettevõte küsib Teilt nõusolekut enne esimest häälesalvestust: Teie hääl teisendatakse tekstiks Lääne-Euroopas, salvestist ei salvestata. Võite selle asemel igal ajal tippida.",
     "consentLater": "Hiljem, tipin",
-    "consentGo": "Nõusoleku juurde"
+    "consentGo": "Nõusoleku juurde",
+    "variantLabel": "Variant"
   },
   "auth": {
     "signIn": "Logi sisse",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Ka kui:",
+    "prepTitle": "Valmista ette minu päris vestlus",
+    "prepBody": "Kirjelda kolme lausega, mis on tulemas ja kuidas sinu vestluspartner käitub. Saad privaatse harjutusvestluse, mida näed ainult sina.",
+    "prepCta": "Valmista ette",
+    "prepDialogTitle": "Valmista ette minu päris vestlus",
+    "prepAnlass": "Millest on jutt?",
+    "prepAnlassPh": "nt Homme on mul vestlus projektijuhiga edasi lükatud üleandmise teemal. Ta pole viivitust seni selgitanud.",
+    "prepGegen": "Kuidas sinu vestluspartner käitub?",
+    "prepGegenPh": "nt Põikleb, viitab teistele osakondadele, muutub kriitika peale napisõnaliseks ja lõpetab vestlused kiiresti.",
+    "prepZiel": "Mida tahad saavutada? (valikuline)",
+    "prepZielPh": "nt Kindla kuupäeva ja selged vastutused reedeks.",
+    "prepHint": "Kirjelda käitumist, mitte inimesi: ei päris nimesid ega ettevõtete nimesid. Coach asendab nimed rollidega ja mõtleb välja tegelase.",
+    "prepCost": "Maksab 1 krediidi. Vestlus jääb sinu juures 30 päevaks privaatseks. Keegi teine seda ei näe, ka mitte admin.",
+    "prepSend": "Loo vestlus",
+    "prepBusy": "Sinu vestluspartnerit luuakse …",
+    "prepMineTitle": "Sinu ettevalmistatud vestlused",
+    "prepExpires": "Aegub {date}",
+    "prepRemove": "Eemalda",
+    "prepLimit": "Korraga saab olla kuni kolm ettevalmistatud vestlust. Eemalda üks, siis saad uue luua."
   },
   "evaluation": {
     "calcToggle": "Kuidas see arv tekib?",

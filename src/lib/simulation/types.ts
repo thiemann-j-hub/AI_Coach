@@ -216,6 +216,12 @@ export interface SimulationScenario {
   competencyFocus?: CompetencyKey[];
   /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). `liveVoice` = Gemini-Live-Stimme (Builder-Wahl, 28.10.). */
   persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
+  /**
+   * Welle 3 (30.10.2026): Persönlichkeits-Variante eines Grundszenarios — gleiche Fakten, Ziele und Messlatte,
+   * anderes Gegenüber (Motive, Ton, Einwände). `von` = Id des Grundszenarios; der Katalog zeigt Varianten als
+   * Auswahl an der Grundkarte, Porträt und Spielbuch-Stimme kommen vom Grundszenario, wenn nichts Eigenes da ist.
+   */
+  variante?: { von: string; name: { de: string; en: string } };
   candidateBriefing: CandidateBriefing;
   personaDna: PersonaDna;
   assessment: SimulationAssessment;
@@ -235,6 +241,7 @@ export interface PublicSimulationScenario {
   category: ScenarioCategory;
   competencyFocus?: CompetencyKey[];
   persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
+  variante?: { von: string; name: { de: string; en: string } };
   candidateBriefing: CandidateBriefing;
   competencies: SimRubricCompetency[];
 }

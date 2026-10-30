@@ -302,7 +302,8 @@
     "consentTitle": "Einmal zustimmen, bevor Du sprichst",
     "consentBody": "Dein Unternehmen bittet Dich vor der ersten Sprachaufnahme um Deine Zustimmung: Deine Stimme wird in Westeuropa in Text umgewandelt, die Aufnahme wird nicht gespeichert. Du kannst stattdessen jederzeit tippen.",
     "consentLater": "Später, ich tippe",
-    "consentGo": "Zur Zustimmung"
+    "consentGo": "Zur Zustimmung",
+    "variantLabel": "Variante"
   },
   "auth": {
     "signIn": "Anmelden",
@@ -507,7 +508,26 @@
     "transferPartly": "Teilweise",
     "transferNot": "Nicht geschafft",
     "transferDismiss": "Nicht mehr fragen",
-    "transferThanks": "Danke — das fließt in Dein nächstes Debrief ein."
+    "transferThanks": "Danke — das fließt in Dein nächstes Debrief ein.",
+    "variantsAlso": "Auch als:",
+    "prepTitle": "Mein echtes Gespräch vorbereiten",
+    "prepBody": "Beschreib in drei Sätzen, was ansteht und wie Dein Gegenüber tickt. Daraus entsteht ein privates Übungsgespräch, das nur Du siehst.",
+    "prepCta": "Vorbereiten",
+    "prepDialogTitle": "Mein echtes Gespräch vorbereiten",
+    "prepAnlass": "Worum geht es?",
+    "prepAnlassPh": "z. B. Morgen habe ich das Gespräch mit meinem Projektleiter über die verschobene Abgabe. Er hat die Verzögerung bisher nicht erklärt.",
+    "prepGegen": "Wie verhält sich Dein Gegenüber?",
+    "prepGegenPh": "z. B. Weicht aus, verweist auf andere Abteilungen, wird bei Kritik kurz angebunden und beendet Gespräche schnell.",
+    "prepZiel": "Was willst Du erreichen? (optional)",
+    "prepZielPh": "z. B. Einen festen Termin und klare Zuständigkeiten bis Freitag.",
+    "prepHint": "Beschreibe Verhalten, keine Personen: keine echten Namen, keine Firmennamen. Der Coach ersetzt Namen durch Rollen und erfindet eine Spielfigur.",
+    "prepCost": "Kostet 1 Credit. Das Gespräch bleibt 30 Tage privat bei Dir. Niemand sonst sieht es, auch kein Admin.",
+    "prepSend": "Gespräch bauen",
+    "prepBusy": "Dein Gegenüber wird gebaut …",
+    "prepMineTitle": "Deine vorbereiteten Gespräche",
+    "prepExpires": "Verfällt am {date}",
+    "prepRemove": "Entfernen",
+    "prepLimit": "Mehr als drei vorbereitete Gespräche gleichzeitig gehen nicht. Entferne eines, dann kannst Du ein neues bauen."
   },
   "evaluation": {
     "calcToggle": "Wie entsteht die Zahl?",

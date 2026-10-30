@@ -302,7 +302,8 @@
     "consentTitle": "Adja meg hozzájárulását egyszer, mielőtt beszélni kezd",
     "consentBody": "A vállalata az első hangfelvétel előtt a hozzájárulását kéri: a hangját Nyugat-Európában alakítják szöveggé, a felvételt pedig nem tárolják. Ehelyett bármikor gépelhet is.",
     "consentLater": "Később, inkább gépelek",
-    "consentGo": "Tovább a hozzájáruláshoz"
+    "consentGo": "Tovább a hozzájáruláshoz",
+    "variantLabel": "Változat"
   },
   "auth": {
     "signIn": "Bejelentkezés",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Így is:",
+    "prepTitle": "Készítsem elő a valódi beszélgetésemet",
+    "prepBody": "Írd le három mondatban, mi vár rád, és hogyan viselkedik a beszélgetőpartnered. Privát gyakorló beszélgetést kapsz, amit csak te látsz.",
+    "prepCta": "Előkészítés",
+    "prepDialogTitle": "Készítsem elő a valódi beszélgetésemet",
+    "prepAnlass": "Miről van szó?",
+    "prepAnlassPh": "pl. Holnap beszélek a projektvezetőmmel az elhalasztott leadásról. A késést eddig nem indokolta.",
+    "prepGegen": "Hogyan viselkedik a beszélgetőpartnered?",
+    "prepGegenPh": "pl. Kitér, más osztályokra mutogat, kritikára kurta lesz, és gyorsan lezárja a beszélgetéseket.",
+    "prepZiel": "Mit szeretnél elérni? (nem kötelező)",
+    "prepZielPh": "pl. Fix határidőt és egyértelmű felelősségeket péntekig.",
+    "prepHint": "Viselkedést írj le, ne személyeket: valódi nevek és cégnevek nélkül. A coach a neveket szerepekkel helyettesíti, és kitalál egy figurát.",
+    "prepCost": "1 kreditbe kerül. A beszélgetés 30 napig privát marad nálad. Senki más nem látja, admin sem.",
+    "prepSend": "Beszélgetés készítése",
+    "prepBusy": "A beszélgetőpartnered készül …",
+    "prepMineTitle": "Az előkészített beszélgetéseid",
+    "prepExpires": "Lejár: {date}",
+    "prepRemove": "Eltávolítás",
+    "prepLimit": "Egyszerre legfeljebb három előkészített beszélgetésed lehet. Távolíts el egyet, és készíthetsz újat."
   },
   "evaluation": {
     "calcToggle": "Hogyan jön ki ez a szám?",

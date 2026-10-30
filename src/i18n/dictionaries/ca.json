@@ -302,7 +302,8 @@
     "consentTitle": "Doni el consentiment una vegada abans de parlar",
     "consentBody": "La seva empresa li demana el seu consentiment abans de la primera gravació de veu: la seva veu es converteix en text a l'Europa occidental, la gravació no es desa. Sempre pot escriure en comptes de parlar.",
     "consentLater": "Més tard, escriuré",
-    "consentGo": "Anar al consentiment"
+    "consentGo": "Anar al consentiment",
+    "variantLabel": "Variant"
   },
   "auth": {
     "signIn": "Inicia la sessió",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "També com a:",
+    "prepTitle": "Preparar la meva conversa real",
+    "prepBody": "Descriu en tres frases què t'espera i com es comporta l'altra persona. Obtindràs una conversa de pràctica privada que només tu veus.",
+    "prepCta": "Preparar",
+    "prepDialogTitle": "Preparar la meva conversa real",
+    "prepAnlass": "De què es tracta?",
+    "prepAnlassPh": "p. ex. Demà tinc la reunió amb el meu cap de projecte sobre el lliurament ajornat. Encara no ha explicat el retard.",
+    "prepGegen": "Com es comporta l'altra persona?",
+    "prepGegenPh": "p. ex. Evita el tema, remet a altres departaments, es torna sec davant les crítiques i acaba de pressa les converses.",
+    "prepZiel": "Què vols aconseguir? (opcional)",
+    "prepZielPh": "p. ex. Una data fixa i responsabilitats clares abans de divendres.",
+    "prepHint": "Descriu comportaments, no persones: sense noms reals ni noms d'empreses. El coach substitueix els noms per rols i inventa un personatge.",
+    "prepCost": "Costa 1 crèdit. La conversa queda privada amb tu durant 30 dies. Ningú més la veu, ni tan sols un admin.",
+    "prepSend": "Crear conversa",
+    "prepBusy": "Creant el teu interlocutor …",
+    "prepMineTitle": "Les teves converses preparades",
+    "prepExpires": "Caduca el {date}",
+    "prepRemove": "Treure",
+    "prepLimit": "No pots tenir més de tres converses preparades alhora. Treu-ne una i en podràs crear una de nova."
   },
   "evaluation": {
     "calcToggle": "Com es calcula aquesta xifra?",

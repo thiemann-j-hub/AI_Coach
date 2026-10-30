@@ -97,3 +97,11 @@ export function coachLiveSprechpause(env: Record<string, string | undefined> = p
 export function coachSpielbuchOn(env: Record<string, string | undefined> = process.env): boolean {
   return (env.COACH_SPIELBUCH ?? "on").trim().toLowerCase() !== "off";
 }
+
+/**
+ * Welle 4 (Owner-GO 30.10.2026): „Mein echtes Gespräch vorbereiten“ — Lernende beschreiben Anlass und Gegenüber,
+ * der Generator baut ein privates Szenario (eigene Partition, 30 Tage, 1 Credit). COACH_VORBEREITEN = on | off.
+ */
+export function coachVorbereitenOn(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.COACH_VORBEREITEN ?? "on").trim().toLowerCase() !== "off";
+}

@@ -89,8 +89,9 @@ describe("simulation scenarios — Abwandlungs-Auflage", () => {
 
 describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => {
   it("Lerntreppe mit zwei Spuren: jede Stufe 1–3 hat beide Gesprächstypen", () => {
-    // Welle 3 (30.10.2026): 8 Bestands-Szenarien + 6 neue (Vertrieb, Stakeholder, Entwicklung, innere Kündigung).
-    expect(SIMULATION_SCENARIOS).toHaveLength(14);
+    // Welle 3 (30.10.2026): 8 Bestands-Szenarien + 6 neue (Vertrieb, Stakeholder, Entwicklung, innere Kündigung)
+    // + Toni Faber + 4 Persönlichkeits-Varianten (Weber skeptisch/offen, Albrecht fordernd/abgetaucht).
+    expect(SIMULATION_SCENARIOS).toHaveLength(19);
     const bestand = SIMULATION_SCENARIOS.slice(0, 8);
     expect(bestand.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3, 3]);
     for (const stufe of [1, 2, 3]) {
@@ -215,6 +216,7 @@ describe("Szenario-Kategorien + Kompetenz-Fokus (§2.1/§2.2)", () => {
         kollegengespräch: "zusammenarbeit",
         kaltakquise: "vertrieb",
         bedarfsgespräch: "vertrieb",
+        preisverhandlung: "vertrieb",
         kundengespräch: "stakeholder",
         medieninterview: "stakeholder",
       };

@@ -302,7 +302,8 @@
     "consentTitle": "Sniedziet piekrišanu vienreiz, pirms runājat",
     "consentBody": "Jūsu uzņēmums lūdz Jūsu piekrišanu pirms pirmā balss ieraksta: Jūsu balss tiek pārveidota tekstā Rietumeiropā, ieraksts netiek saglabāts. Tā vietā Jūs jebkurā laikā varat rakstīt.",
     "consentLater": "Vēlāk, es rakstīšu",
-    "consentGo": "Doties uz piekrišanu"
+    "consentGo": "Doties uz piekrišanu",
+    "variantLabel": "Variants"
   },
   "auth": {
     "signIn": "Pierakstīties",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Arī kā:",
+    "prepTitle": "Sagatavot manu īsto sarunu",
+    "prepBody": "Trīs teikumos apraksti, kas gaidāms un kā uzvedas tavs sarunu partneris. Tu saņemsi privātu treniņa sarunu, ko redzi tikai tu.",
+    "prepCta": "Sagatavot",
+    "prepDialogTitle": "Sagatavot manu īsto sarunu",
+    "prepAnlass": "Par ko ir runa?",
+    "prepAnlassPh": "piem. Rīt man ir saruna ar projekta vadītāju par atlikto nodošanu. Viņš kavēšanos līdz šim nav paskaidrojis.",
+    "prepGegen": "Kā uzvedas tavs sarunu partneris?",
+    "prepGegenPh": "piem. Izvairās, norāda uz citām nodaļām, pret kritiku kļūst īss un ātri beidz sarunas.",
+    "prepZiel": "Ko tu vēlies sasniegt? (pēc izvēles)",
+    "prepZielPh": "piem. Noteiktu datumu un skaidru atbildību līdz piektdienai.",
+    "prepHint": "Apraksti uzvedību, nevis cilvēkus: bez īstiem vārdiem, bez uzņēmumu nosaukumiem. Treneris aizstāj vārdus ar lomām un izdomā tēlu.",
+    "prepCost": "Maksā 1 kredītu. Saruna 30 dienas paliek privāta pie tevis. Neviens cits to neredz, arī ne administrators.",
+    "prepSend": "Izveidot sarunu",
+    "prepBusy": "Tavs sarunu partneris tiek veidots …",
+    "prepMineTitle": "Tavas sagatavotās sarunas",
+    "prepExpires": "Beidzas {date}",
+    "prepRemove": "Noņemt",
+    "prepLimit": "Vienlaikus var būt ne vairāk kā trīs sagatavotas sarunas. Noņem vienu, tad varēsi izveidot jaunu."
   },
   "evaluation": {
     "calcToggle": "Kā veidojas šis skaitlis?",

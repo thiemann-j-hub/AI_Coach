@@ -40,6 +40,12 @@ export interface ScenarioDraftArgs {
    */
   previousDraft?: SimulationScenario;
   reviseNote?: string;
+  /**
+   * Welle 4: privates Szenario aus den drei Sätzen einer lernenden Person („Mein echtes Gespräch vorbereiten“).
+   * Der Generator anonymisiert: keine Namen echter Personen oder Firmen, Rollenbezeichnungen statt Namen,
+   * ein erfundener Name für die Spielfigur; die vom Menschen genannten Fakten bleiben.
+   */
+  privat?: boolean;
 }
 
 /** PURE (getestet): baut den Meta-Prompt des Generators. */
@@ -70,7 +76,8 @@ AUTORENREGELN (hart, werden maschinell geprüft):
 8. personaDna vollständig: hiddenDrivers (nie aussprechen), positions (sagt sie offen) GETRENNT von interests (gibt sie erst bei ehrlichem Erkunden preis), concessionConditions (wann wird sie kooperativer), escalationTriggers, knowledgeBounds (was sie NICHT weiß), facts (exakte Zahlen/Namen — NUR aus BRIEF/MATERIAL, nie erfunden), openingLine.
 9. Alle Inhalte auf ${args.locale === 'en' ? 'Englisch' : 'Deutsch'}; category "${args.category ?? 'mitarbeiterfuehrung'}"; difficulty ${args.difficulty ?? 2}; durationMin 15, checkDurationMin 10; timeboxMin 15.
 10. persona.name === personaDna.name. Erfinde realistische, aber fiktive Namen — übernimm KEINE echten Personennamen aus dem MATERIAL.
-11. Titel-Konvention: "Motto — Gesprächstyp mit <Name>".
+11. Titel-Konvention: "Motto — Gesprächstyp mit <Name>".${args.privat ? `
+13. PRIVATES SZENARIO (die Person bereitet ihr echtes Gespräch vor): Übernimm KEINE Namen echter Personen oder Firmen aus dem BRIEF — ersetze sie durch Rollenbezeichnungen (»mein Projektleiter«, »die Kundin«, »das Unternehmen«) und gib der Spielfigur einen erfundenen, zur Rolle passenden Namen. Die vom Menschen beschriebenen Verhaltensweisen, Zahlen und Anlässe bleiben erhalten; erfinde nur, was für eine spielbare Rolle fehlt (Hintergrund, verdeckte Motive, Einwände, Freigabe-Regel, Endbedingungen). candidateBriefing in der Du-Form aus Sicht der Person. durationMin 10, checkDurationMin 8.` : ''}
 
 BIBLIOTHEK DER FÄHIGKEITEN (Id in Klammern der Titel):
 ${faehigkeitenKatalog(args.locale === 'en' ? 'en' : 'de')}

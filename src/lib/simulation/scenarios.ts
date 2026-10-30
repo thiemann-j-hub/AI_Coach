@@ -13,6 +13,7 @@
 
 import { anker } from "./faehigkeiten";
 import { WELLE3_SCENARIOS } from "./scenarios-welle3";
+import { WELLE3_VARIANTEN } from "./scenarios-varianten";
 import { coachFaehigkeitenOn } from "./flags";
 import type {
   PublicSimulationScenario,
@@ -1271,7 +1272,7 @@ const stone: SimulationScenario = {
 };
 
 /** Welle 3 (30.10.2026): sechs weitere Szenarien in scenarios-welle3.ts (Vertrieb, Stakeholder, zwei Führungsgespräche ohne Konfliktstart). */
-export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt, falk, stone, ...WELLE3_SCENARIOS];
+export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt, falk, stone, ...WELLE3_SCENARIOS, ...WELLE3_VARIANTEN];
 
 /** Welle-1-Rückweg: ohne den Schalter bewerten die Standard-Szenarien wie vor dem 30.10. (S1–S5, keine Grenze). */
 export function mitAnkerRueckweg(s: SimulationScenario): SimulationScenario {
@@ -1301,6 +1302,7 @@ export function publicScenario(s: SimulationScenario): PublicSimulationScenario 
     category: s.category,
     ...(s.competencyFocus ? { competencyFocus: s.competencyFocus } : {}),
     persona: s.persona,
+    ...(s.variante ? { variante: s.variante } : {}),
     candidateBriefing: s.candidateBriefing,
     competencies: s.assessment.competencies,
   };

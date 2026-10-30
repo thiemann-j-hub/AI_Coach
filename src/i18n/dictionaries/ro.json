@@ -302,7 +302,8 @@
     "consentTitle": "Dați-vă acordul o singură dată înainte de a vorbi",
     "consentBody": "Compania dumneavoastră vă solicită acordul înainte de prima înregistrare vocală: vocea dumneavoastră este transformată în text în Europa de Vest, iar înregistrarea nu este stocată. Puteți scrie în schimb oricând.",
     "consentLater": "Mai târziu, voi scrie",
-    "consentGo": "Către acord"
+    "consentGo": "Către acord",
+    "variantLabel": "Variantă"
   },
   "auth": {
     "signIn": "Conectare",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Și ca:",
+    "prepTitle": "Pregătește conversația mea reală",
+    "prepBody": "Descrie în trei propoziții ce urmează și cum se comportă interlocutorul tău. Primești o conversație de exersare privată, pe care o vezi doar tu.",
+    "prepCta": "Pregătește",
+    "prepDialogTitle": "Pregătește conversația mea reală",
+    "prepAnlass": "Despre ce este vorba?",
+    "prepAnlassPh": "de ex. Mâine am discuția cu managerul de proiect despre livrarea amânată. Nu a explicat încă întârzierea.",
+    "prepGegen": "Cum se comportă interlocutorul tău?",
+    "prepGegenPh": "de ex. Evită, trimite la alte departamente, devine scurt la critică și încheie repede conversațiile.",
+    "prepZiel": "Ce vrei să obții? (opțional)",
+    "prepZielPh": "de ex. O dată fixă și responsabilități clare până vineri.",
+    "prepHint": "Descrie comportamente, nu persoane: fără nume reale, fără nume de firme. Coachul înlocuiește numele cu roluri și inventează un personaj.",
+    "prepCost": "Costă 1 credit. Conversația rămâne privată la tine 30 de zile. Nimeni altcineva nu o vede, nici măcar un admin.",
+    "prepSend": "Creează conversația",
+    "prepBusy": "Interlocutorul tău se creează …",
+    "prepMineTitle": "Conversațiile tale pregătite",
+    "prepExpires": "Expiră la {date}",
+    "prepRemove": "Elimină",
+    "prepLimit": "Nu poți avea mai mult de trei conversații pregătite deodată. Elimină una, apoi poți crea alta."
   },
   "evaluation": {
     "calcToggle": "Cum rezultă această cifră?",

@@ -302,7 +302,8 @@
     "consentTitle": "Samtyck en gång innan Ni talar",
     "consentBody": "Ert företag ber om Ert samtycke före den första röstinspelningen: Er röst omvandlas till text i Västeuropa, inspelningen sparas inte. Ni kan alltid skriva i stället.",
     "consentLater": "Senare, jag skriver",
-    "consentGo": "Gå till samtycke"
+    "consentGo": "Gå till samtycke",
+    "variantLabel": "Variant"
   },
   "auth": {
     "signIn": "Logga in",
@@ -507,7 +508,26 @@
     "transferPartly": "Partly",
     "transferNot": "Didn't get to it",
     "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief."
+    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "variantsAlso": "Även som:",
+    "prepTitle": "Förbered mitt riktiga samtal",
+    "prepBody": "Beskriv i tre meningar vad som väntar och hur din motpart beter sig. Du får ett privat övningssamtal som bara du ser.",
+    "prepCta": "Förbered",
+    "prepDialogTitle": "Förbered mitt riktiga samtal",
+    "prepAnlass": "Vad handlar det om?",
+    "prepAnlassPh": "t.ex. I morgon har jag samtalet med min projektledare om den försenade leveransen. Han har inte förklarat förseningen än.",
+    "prepGegen": "Hur beter sig din motpart?",
+    "prepGegenPh": "t.ex. Undviker frågan, hänvisar till andra avdelningar, blir kort vid kritik och avslutar samtal snabbt.",
+    "prepZiel": "Vad vill du uppnå? (valfritt)",
+    "prepZielPh": "t.ex. Ett fast datum och tydliga ansvar senast fredag.",
+    "prepHint": "Beskriv beteende, inte personer: inga riktiga namn, inga företagsnamn. Coachen ersätter namn med roller och hittar på en rollfigur.",
+    "prepCost": "Kostar 1 credit. Samtalet förblir privat hos dig i 30 dagar. Ingen annan ser det, inte ens en admin.",
+    "prepSend": "Bygg samtal",
+    "prepBusy": "Din motpart byggs …",
+    "prepMineTitle": "Dina förberedda samtal",
+    "prepExpires": "Går ut {date}",
+    "prepRemove": "Ta bort",
+    "prepLimit": "Du kan ha högst tre förberedda samtal samtidigt. Ta bort ett, så kan du bygga ett nytt."
   },
   "evaluation": {
     "calcToggle": "Hur uppstår siffran?",

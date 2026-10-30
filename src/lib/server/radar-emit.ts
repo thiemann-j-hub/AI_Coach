@@ -77,6 +77,10 @@ export async function emitCoachMeasurement(args: {
   /** IMMER runDoc.createdAt (ISO-8601) — NIE Date.now() (Zeitstabilitaet). */
   createdAt: string;
   competencyRatings: unknown;
+  /** Welle 5 (optional): Anker-Rubrik, Szenario-Id, Bestanden — nur Rollenspiele. */
+  rubric?: unknown;
+  szenarioId?: string;
+  bestanden?: boolean | null;
 }): Promise<RadarEmitResult> {
   if (!radarEmitEnabled()) return { ok: true, skipped: true, reason: "flag_off" };
   try {
