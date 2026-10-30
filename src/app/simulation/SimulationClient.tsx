@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Clock,
   Compass,
+  ListChecks,
   Flag,
   GraduationCap,
   MessagesSquare,
@@ -49,6 +50,7 @@ import { createLiveAudio, liveAudioSupported, type LiveAudio } from '@/lib/live-
 import { openLiveConnection, type LiveConnection } from '@/lib/live-client';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
+import { faehigkeit } from '@/lib/simulation/faehigkeiten';
 import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
 import { maxEurHint } from '@/lib/pricing-display';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
@@ -85,7 +87,7 @@ interface PublicScenario {
     expectation?: string;
     factVisuals?: FactVisual[];
   };
-  competencies: { key: string; label: string }[];
+  competencies: { key: string; label: string; weight?: number }[];
 }
 
 /** Gesprächssprache (Synthesia-Muster): Auswahl per Flaggen-Pills im Briefing. */
@@ -481,6 +483,11 @@ export default function SimulationClient() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   /** Zeit-Regie: Persona hat sich verabschiedet — Eingabe zu, nur noch Auswertung. */
   const [timeUp, setTimeUp] = useState(false);
+  // Welle 2: die Rolle hat das Gespräch selbst beendet (Grund in der Autorensprache, Art).
+  const [personaEnded, setPersonaEnded] = useState<{ grund: string; ergebnis: string } | null>(null);
+  // Welle 2: Statuszeile im Live-Modus (Stille-Vorwarnung, Wiederverbindung).
+  const [liveNotice, setLiveNotice] = useState<{ kind: 'idle' | 'reconnecting' | 'reconnected'; seconds?: number } | null>(null);
+  const liveRetryRef = useRef(0);
   // ── W2-1 sichtbare Uhr: Client-Anzeige ab createdAt; Server bleibt Wahrheit. ──
   const [simStartedAt, setSimStartedAt] = useState<string | null>(null);
   const [nowTs, setNowTs] = useState(() => Date.now());
@@ -610,6 +617,7 @@ export default function SimulationClient() {
     setLiveYou('');
     setLivePersona('');
     setError(null);
+    let byeSeen = false;
     const audio = createLiveAudio();
     const conn = openLiveConnection(karte.path, karte.ticket, {
       onReady: () => {
@@ -619,10 +627,21 @@ export default function SimulationClient() {
             if (liveRef.current?.conn !== conn) return;
             setLiveState('on');
             setMicActive(true);
+            if (liveRetryRef.current > 0) {
+              // Wieder da nach einem Abriss: kurz melden, dann Zähler zurück.
+              setLiveNotice({ kind: 'reconnected' });
+              setTimeout(() => setLiveNotice((n) => (n?.kind === 'reconnected' ? null : n)), 3000);
+              liveRetryRef.current = 0;
+            }
           })
           .catch(() => conn.close()); // Mikrofon verweigert → Verbindung zu, Kaskade bleibt wählbar
       },
-      onYou: (text) => setLiveYou(text),
+      onYou: (text) => {
+        setLiveYou(text);
+        setLiveNotice((n) => (n?.kind === 'idle' ? null : n));
+      },
+      onEnded: (p) => setPersonaEnded({ grund: p.grund, ergebnis: p.ergebnis }),
+      onIdleWarn: (seconds) => setLiveNotice({ kind: 'idle', seconds }),
       onPersona: (text) => setLivePersona(text),
       onInterrupted: () => audio.interrupt(),
       onAudio: (pcm) => audio.play(pcm),
@@ -636,11 +655,13 @@ export default function SimulationClient() {
         setLiveYou('');
         setLivePersona('');
         if (turn.timeUp) setTimeUp(true);
+        if (turn.ended) setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
       },
       onError: (code) => {
         if (code === 'UPSTREAM') setError(ts.genericError);
       },
       onBye: (reason) => {
+        byeSeen = true;
         if (reason === 'upstream') setError(ts.genericError);
       },
       onClose: () => {
@@ -651,7 +672,22 @@ export default function SimulationClient() {
         setLiveYou('');
         setLivePersona('');
         setMicActive(false);
+        // Welle 2: Abriss ohne Abschied vom Server (Netz, Schlaf) → einmal still neu verbinden.
+        if (!byeSeen && wantMicRef.current && liveRetryRef.current < 1) {
+          liveRetryRef.current += 1;
+          setLiveNotice({ kind: 'reconnecting' });
+          setTimeout(() => {
+            void startLiveMic().then((ok) => {
+              if (!ok) {
+                setLiveNotice(null);
+                wantMicRef.current = false;
+              }
+            });
+          }, 1000);
+          return;
+        }
         wantMicRef.current = false;
+        setLiveNotice(null);
       },
     });
     liveRef.current = { conn, audio };
@@ -936,7 +972,7 @@ export default function SimulationClient() {
 
   async function handleApiFailure(res: Response) {
     let code = '';
-    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean; aiCode?: string; requestId?: string } = {};
+    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean; aiCode?: string; requestId?: string; ende?: { grund: string; ergebnis: string } } = {};
     try {
       body = await res.json();
       code = body.code ?? '';
@@ -963,6 +999,10 @@ export default function SimulationClient() {
     } else if (code === 'TIME_UP') {
       // Kein Fehler: die Zeit ist um — Banner statt roter Meldung.
       setTimeUp(true);
+    } else if (code === 'ENDED') {
+      // Welle 2: die Rolle hat das Gespräch beendet — Karte statt Fehler.
+      setPersonaEnded(body.ende ?? { grund: '', ergebnis: 'verabschiedung' });
+      stopMic();
     } else if (code === 'TIMEOUT_LIMIT') {
       setError(ts.timeoutLimit);
     } else {
@@ -1023,7 +1063,7 @@ export default function SimulationClient() {
       setCoachNotes([]);
       setBriefingOpen(false);
       setTimeoutOpen(false);
-      setTimeUp(false);
+      setTimeUp(false); setPersonaEnded(null); setLiveNotice(null);
       setView('chat');
     } catch {
       setError(ts.genericError);
@@ -1063,6 +1103,7 @@ export default function SimulationClient() {
       setSimMode(json.simulation.mode ?? 'practice');
       setSimHardness(json.simulation.hardness ?? 'standard');
       setTimeUp(json.simulation.timeUp === true);
+      setPersonaEnded(json.simulation.ende ?? null);
       setBriefingOpen(false);
       setView('chat');
     } catch {
@@ -1098,6 +1139,11 @@ export default function SimulationClient() {
       // Zeit-Regie: die Persona hat sich verabschiedet → Eingabe schließen.
       if (json.timeUp === true) {
         setTimeUp(true);
+        stopMic();
+      }
+      // Welle 2: die Rolle hat das Gespräch mit dieser Antwort beendet.
+      if (json.ende) {
+        setPersonaEnded(json.ende);
         stopMic();
       }
       if (speakReplies) void speak(json.reply);
@@ -1683,10 +1729,13 @@ export default function SimulationClient() {
 
   if (view === 'briefing' && scenario) {
     const b = scenario.candidateBriefing;
+    const comps = scenario.competencies;
     const steps = [
       { icon: User, label: ts.stepSituation },
       { icon: Target, label: ts.stepGoals },
       { icon: Compass, label: ts.stepApproach },
+      // Welle 1 (3.4): die Fähigkeiten, auf die der Richter achtet — mit Gewicht und Definition.
+      { icon: ListChecks, label: ts.stepCriteria },
     ];
     const isLast = briefStep === steps.length - 1;
     const { motto, heroTitle } = splitTitle(scenario.title);
@@ -1993,6 +2042,34 @@ export default function SimulationClient() {
                 )}
               </div>
             )}
+            {briefStep === 3 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                  <ListChecks className="h-4 w-4 text-primary" /> {ts.stepCriteria}
+                </h3>
+                <p className="text-sm text-muted-foreground">{ts.criteriaIntro}</p>
+                <ul className="divide-y divide-border">
+                  {(() => {
+                    const total = comps.reduce((a, c) => a + (c.weight ?? 1), 0) || 1;
+                    const defLocale = locale === 'de' ? 'de' : 'en';
+                    return comps.map((c) => {
+                      const f = faehigkeit(c.key);
+                      return (
+                        <li key={c.key} className="py-2.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-sm font-semibold">{f ? f.titel[defLocale] : c.label}</span>
+                            <span className="pn-none shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                              {Math.round(((c.weight ?? 1) / total) * 100)} %
+                            </span>
+                          </div>
+                          {f && <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">{f.definition[defLocale]}</p>}
+                        </li>
+                      );
+                    });
+                  })()}
+                </ul>
+              </div>
+            )}
           </div>
 
         </>
@@ -2055,6 +2132,27 @@ export default function SimulationClient() {
                 title={liveState === 'on' ? ts.liveActive : ts.liveConnecting}
               >
                 <Radio className={liveState === 'on' ? 'h-4 w-4 animate-pulse' : 'h-4 w-4'} /> {ts.liveBadge}
+              </span>
+            )}
+            {/* Welle 2: Statuszeile — Stille-Vorwarnung, Verbindung kurz weg, wieder da. Erscheint nur im Fall. */}
+            {liveNotice && (
+              <span
+                className={cx(
+                  'pn-none text-sm rounded-lg px-3 py-2 border flex items-center gap-2',
+                  liveNotice.kind === 'reconnected'
+                    ? 'border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-500/10'
+                    : liveNotice.kind === 'reconnecting'
+                      ? 'border-rose-500/40 text-rose-700 dark:text-rose-300 bg-rose-500/10'
+                      : 'border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-500/10'
+                )}
+                role="status"
+              >
+                <span className={cx('h-2 w-2 rounded-full', liveNotice.kind === 'reconnected' ? 'bg-emerald-500' : liveNotice.kind === 'reconnecting' ? 'bg-rose-500' : 'bg-amber-500')} />
+                {liveNotice.kind === 'idle'
+                  ? ts.liveIdleWarn.replace('{s}', String(liveNotice.seconds ?? 60))
+                  : liveNotice.kind === 'reconnecting'
+                    ? ts.liveReconnecting
+                    : ts.liveReconnected}
               </span>
             )}
             {/* W2-1: Countdown — passiv, keine Bewertung. */}
@@ -2321,7 +2419,25 @@ export default function SimulationClient() {
             </p>
             {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
                 Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
-            {effTimeUp && !deadEnd && (
+            {/* Welle 2: die Rolle hat das Gespräch selbst beendet — Karte mit Grund-Art und Weg zur Auswertung. */}
+            {personaEnded && !deadEnd && (
+              <div className="pn-none max-w-3xl mx-auto mb-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-semibold text-emerald-800 dark:text-emerald-300">{ts.endedByPersona.replace('{name}', scenario.persona.name)}</span>
+                  <span className="text-muted-foreground">
+                    {personaEnded.ergebnis === 'ziel' ? ts.endedZiel : personaEnded.ergebnis === 'abbruch' ? ts.endedAbbruch : ts.endedVerabschiedung} {ts.endedHint}
+                  </span>
+                </span>
+                <button
+                  onClick={() => setConfirmOpen(true)}
+                  disabled={finishing}
+                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Sparkles className="h-4 w-4" /> {ts.finishCta}
+                </button>
+              </div>
+            )}
+            {effTimeUp && !deadEnd && !personaEnded && (
               <div className="pn-none max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <span className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
                   <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
@@ -2355,7 +2471,7 @@ export default function SimulationClient() {
                   }
                 }}
                 rows={2}
-                placeholder={effTimeUp ? ts.timeUpPlaceholder : liveState !== 'off' ? ts.liveActive : ts.inputPlaceholder}
+                placeholder={personaEnded ? ts.endedHint : effTimeUp ? ts.timeUpPlaceholder : liveState !== 'off' ? ts.liveActive : ts.inputPlaceholder}
                 disabled={effTimeUp || liveState !== 'off'}
                 className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />

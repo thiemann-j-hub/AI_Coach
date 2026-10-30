@@ -40,7 +40,16 @@ import { useTranslation } from '@/i18n/useTranslation';
 
 export interface SimEvalFeedback {
   summary: string;
-  rubric: { key: string; label: string; evidence: string[]; why: string; score: number | null }[];
+  rubric: {
+    key: string;
+    label: string;
+    evidence: string[];
+    why: string;
+    score: number | null;
+    /** Welle 1: „Das gelang“ / „Nächstes Mal“ (fehlt bei Alt-Läufen). */
+    wentWell?: string[];
+    tryNext?: string[];
+  }[];
   checkpoints: { id: string; hit: boolean; comment: string }[];
   nextStep: string;
   focusReview?: { addressed: boolean; comment: string } | null;
@@ -65,6 +74,9 @@ export interface SimEvalDebriefAnchor {
   score: number | null;
   pct: number | null;
   expectation: 'not-observable' | 'below' | 'approaching' | 'meets' | 'exceeds';
+  /** Welle 1: Gewicht (Prozent der beobachteten Anker) und Beitrag zur Gesamtnote in Punkten; fehlt bei Alt-Läufen. */
+  weightPct?: number | null;
+  contribution?: number | null;
 }
 
 export interface SimEvalDebrief {
@@ -643,7 +655,39 @@ export function SimulationEvaluation(props: {
                   />
                 </div>
               )}
-              <p className="text-sm text-muted-foreground leading-relaxed">{r.why}</p>
+              {/* Welle 1 (3.3): zwei kurze Listen statt eines Absatzes; Alt-Läufe zeigen weiter die Begründung. */}
+              {(r.wentWell?.length || r.tryNext?.length) ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {r.wentWell && r.wentWell.length > 0 && (
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-1">{ts.anchorWentWell}</div>
+                      <ul className="space-y-1">
+                        {r.wentWell.map((x, i) => (
+                          <li key={i} className="text-sm leading-relaxed flex gap-2"><Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" /><span>{x}</span></li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {r.tryNext && r.tryNext.length > 0 && (
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-wide text-primary mb-1">{ts.anchorTryNext}</div>
+                      <ul className="space-y-1">
+                        {r.tryNext.map((x, i) => (
+                          <li key={i} className="text-sm leading-relaxed flex gap-2"><ArrowRight className="h-4 w-4 text-primary shrink-0 mt-0.5" /><span>{x}</span></li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground leading-relaxed">{r.why}</p>
+              )}
+              {anchor?.weightPct != null && anchor.contribution != null && (
+                <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pt-2 border-t border-dashed border-border">
+                  <span>{ts.anchorWeight.replace('{pct}', String(anchor.weightPct))}</span>
+                  <span>{ts.anchorContribution.replace('{points}', String(anchor.contribution))}</span>
+                </div>
+              )}
               {r.evidence.length > 0 && (
                 <div>
                   <button
