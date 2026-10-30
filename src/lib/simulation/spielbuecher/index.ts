@@ -11,14 +11,19 @@ import s2 from "./sim-coaching-morgan.json";
 import s3 from "./sim-cold-kessler.json";
 import s4 from "./sim-complaint-hartmann.json";
 import s5 from "./sim-critique-vance.json";
-import s6 from "./sim-discovery-weber.json";
-import s7 from "./sim-disengaged-keller.json";
-import s8 from "./sim-media-vogt.json";
-import s9 from "./sim-merge-brandt.json";
-import s10 from "./sim-peer-falk.json";
-import s11 from "./sim-peer-lang.json";
-import s12 from "./sim-performance-reed.json";
-import s13 from "./sim-promotion-albrecht.json";
+import s6 from "./sim-discovery-weber-offen.json";
+import s7 from "./sim-discovery-weber-skeptisch.json";
+import s8 from "./sim-discovery-weber.json";
+import s9 from "./sim-disengaged-keller.json";
+import s10 from "./sim-media-vogt.json";
+import s11 from "./sim-merge-brandt.json";
+import s12 from "./sim-peer-falk.json";
+import s13 from "./sim-peer-lang.json";
+import s14 from "./sim-performance-reed.json";
+import s15 from "./sim-price-faber.json";
+import s16 from "./sim-promotion-albrecht-abgetaucht.json";
+import s17 from "./sim-promotion-albrecht-fordernd.json";
+import s18 from "./sim-promotion-albrecht.json";
 
 export interface SpielbuchEintrag {
   scenarioId: string;
@@ -43,4 +48,9 @@ export const SPIELBUECHER_BUILTIN: Readonly<Record<string, SpielbuchEintrag>> = 
   [s11.scenarioId]: s11,
   [s12.scenarioId]: s12,
   [s13.scenarioId]: s13,
+  [s14.scenarioId]: s14,
+  [s15.scenarioId]: s15,
+  [s16.scenarioId]: s16,
+  [s17.scenarioId]: s17,
+  [s18.scenarioId]: s18,
 };
