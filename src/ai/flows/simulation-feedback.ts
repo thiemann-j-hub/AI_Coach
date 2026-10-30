@@ -295,7 +295,8 @@ export const RICHTER_OPUS_TIMEOUT_MS = Math.max(30_000, Number(process.env.COACH
  * (gültiges JSON; ohne Aufruf wird der Text als JSON gelesen) und wird gegen das Zod-Schema geprüft.
  */
 async function judgeOpus(promptText: string): Promise<SimulationFeedbackRaw> {
-  const schema = zodToJsonSchema(SimulationFeedbackOutputSchema, { target: 'openApi3', $refStrategy: 'none' }) as Record<string, unknown>;
+  // jsonSchema7: nullable wird zu type ["object","null"], das versteht das Werkzeug-Schema; openApi3 (nullable: true) führte zu Strings statt null.
+  const schema = zodToJsonSchema(SimulationFeedbackOutputSchema, { target: 'jsonSchema7', $refStrategy: 'none' }) as Record<string, unknown>;
   const reply = await claudeStructured<unknown>({
     system:
       anredeBlock() +
@@ -306,7 +307,30 @@ async function judgeOpus(promptText: string): Promise<SimulationFeedbackRaw> {
     maxTokens: 8192,
     signal: AbortSignal.timeout(RICHTER_OPUS_TIMEOUT_MS),
   });
-  return SimulationFeedbackOutputSchema.parse(reply.data);
+  return SimulationFeedbackOutputSchema.parse(normalizeJudgeOutput(reply.data));
+}
+
+/** Kleine Nachsicht vor der Schema-Prüfung: optionale Objekte als null, fehlende Listen als leer (Opus setzt sonst gern ""). */
+export function normalizeJudgeOutput(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') return raw;
+  const o = { ...(raw as Record<string, unknown>) };
+  for (const k of ['focusReview', 'selfReview'] as const) {
+    const v = o[k];
+    if (!v || typeof v !== 'object') o[k] = null;
+  }
+  if (!Array.isArray(o.recommendedCards)) o.recommendedCards = [];
+  if (typeof o.nextStepKey !== 'string') o.nextStepKey = '';
+  if (!o.microTransfer || typeof o.microTransfer !== 'object') o.microTransfer = { step: '', when: '' };
+  if (Array.isArray(o.rubric)) {
+    o.rubric = o.rubric.map((r) => {
+      if (!r || typeof r !== 'object') return r;
+      const x = { ...(r as Record<string, unknown>) };
+      for (const k of ['evidence', 'wentWell', 'tryNext'] as const) if (!Array.isArray(x[k])) x[k] = [];
+      if (typeof x.score !== 'number') x.score = null;
+      return x;
+    });
+  }
+  return o;
 }
 
 export async function generateSimulationFeedback(args: {

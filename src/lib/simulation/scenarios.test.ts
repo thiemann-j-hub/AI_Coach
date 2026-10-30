@@ -89,11 +89,13 @@ describe("simulation scenarios — Abwandlungs-Auflage", () => {
 
 describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => {
   it("Lerntreppe mit zwei Spuren: jede Stufe 1–3 hat beide Gesprächstypen", () => {
-    expect(SIMULATION_SCENARIOS).toHaveLength(8);
-    expect(SIMULATION_SCENARIOS.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3, 3]);
+    // Welle 3 (30.10.2026): 8 Bestands-Szenarien + 6 neue (Vertrieb, Stakeholder, Entwicklung, innere Kündigung).
+    expect(SIMULATION_SCENARIOS).toHaveLength(14);
+    const bestand = SIMULATION_SCENARIOS.slice(0, 8);
+    expect(bestand.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3, 3]);
     for (const stufe of [1, 2, 3]) {
       const types = new Set(
-        SIMULATION_SCENARIOS.filter((s) => s.difficulty === stufe).map(
+        bestand.filter((s) => s.difficulty === stufe).map(
           (s) => s.conversationType,
         ),
       );
@@ -206,13 +208,17 @@ describe("Szenario-Kategorien + Kompetenz-Fokus (§2.1/§2.2)", () => {
   it("jedes Szenario hat eine gültige Kategorie, 1:1 aus conversationType", () => {
     for (const s of SIMULATION_SCENARIOS) {
       expect(VALID_CATEGORIES).toContain(s.category);
-      // Bestandszuordnung (Blueprint §2.1): mitarbeitergespräch →
-      // mitarbeiterfuehrung, kollegengespräch → zusammenarbeit.
-      if (s.conversationType === "mitarbeitergespräch") {
-        expect(s.category).toBe("mitarbeiterfuehrung");
-      } else {
-        expect(s.category).toBe("zusammenarbeit");
-      }
+      // Zuordnung (Blueprint §2.1 + Welle 3): Gesprächsart → Kategorie, eindeutig.
+      const erwartet: Record<string, string> = {
+        mitarbeitergespräch: "mitarbeiterfuehrung",
+        entwicklungsgespräch: "mitarbeiterfuehrung",
+        kollegengespräch: "zusammenarbeit",
+        kaltakquise: "vertrieb",
+        bedarfsgespräch: "vertrieb",
+        kundengespräch: "stakeholder",
+        medieninterview: "stakeholder",
+      };
+      expect(s.category, `${s.id}: ${s.conversationType}`).toBe(erwartet[s.conversationType]);
     }
   });
 
