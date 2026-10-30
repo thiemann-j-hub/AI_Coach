@@ -113,8 +113,9 @@ export async function claudeMessage(p: {
 }
 
 /**
- * Strukturierte Antwort (Welle 1, Richter): Claude füllt ein Werkzeug mit dem gegebenen JSON-Schema —
- * die Antwort ist damit immer gültiges JSON (kein Zaun, keine ungeschützten Anführungszeichen).
+ * Strukturierte Antwort (Welle 1, Richter): Claude bekommt ein Werkzeug mit dem gegebenen JSON-Schema.
+ * Erzwungener Aufruf (tool_choice tool/any) ist bei Opus 5.5 mit Denken nicht erlaubt (HTTP 400, 30.10.),
+ * deshalb: Werkzeug angeboten + Anweisung; kommt kein Werkzeugaufruf, wird der Text als JSON gelesen.
  * Denken adaptiv; ein zweiter Versuch bei 429/5xx wie bei claudeMessage.
  */
 export async function claudeStructured<T = unknown>(p: {
@@ -140,7 +141,7 @@ export async function claudeStructured<T = unknown>(p: {
     system: p.system,
     messages: [{ role: "user", content: [{ type: "text", text: p.user }] }],
     tools: [{ name: toolName, description: "Liefert das Ergebnis in genau dieser Struktur.", input_schema: p.schema }],
-    tool_choice: { type: "tool", name: toolName },
+    tool_choice: { type: "auto" },
     thinking: { type: "adaptive" },
   });
   let lastError = "";
@@ -156,13 +157,23 @@ export async function claudeStructured<T = unknown>(p: {
     const raw = await res.text();
     if (res.ok) {
       const j = JSON.parse(raw) as {
-        content?: Array<{ type: string; name?: string; input?: unknown }>;
+        content?: Array<{ type: string; name?: string; input?: unknown; text?: string }>;
         usage?: { input_tokens?: number; output_tokens?: number };
         stop_reason?: string;
       };
       const use = (j.content ?? []).find((b) => b.type === "tool_use" && b.name === toolName);
-      if (!use || use.input == null) throw new Error(`Claude ${model}@${region}: kein Werkzeugaufruf in der Antwort (stop_reason ${j.stop_reason ?? "?"})`);
-      return { data: use.input as T, tokens: { prompt: j.usage?.input_tokens, output: j.usage?.output_tokens }, model, region, ms: Date.now() - t0 };
+      let data: unknown = use?.input;
+      if (data == null) {
+        // Kein Werkzeugaufruf: den Text als JSON lesen (Zaun und Vortext entfernen).
+        const text = (j.content ?? []).filter((b) => b.type === "text" && typeof b.text === "string").map((b) => b.text as string).join("\n").trim();
+        const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+        const body = fenced ? fenced[1] : text;
+        const start = body.indexOf("{");
+        const end = body.lastIndexOf("}");
+        if (start < 0 || end <= start) throw new Error(`Claude ${model}@${region}: weder Werkzeugaufruf noch JSON in der Antwort (stop_reason ${j.stop_reason ?? "?"})`);
+        data = JSON.parse(body.slice(start, end + 1));
+      }
+      return { data: data as T, tokens: { prompt: j.usage?.input_tokens, output: j.usage?.output_tokens }, model, region, ms: Date.now() - t0 };
     }
     lastError = `HTTP ${res.status}: ${raw.replace(/\s+/g, " ").slice(0, 200)}`;
     const retryable = res.status === 429 || res.status >= 500;

@@ -291,13 +291,15 @@ async function judgeGemini(promptText: string): Promise<SimulationFeedbackRaw> {
 export const RICHTER_OPUS_TIMEOUT_MS = Math.max(30_000, Number(process.env.COACH_RICHTER_TIMEOUT_MS ?? 110_000) || 110_000);
 
 /**
- * Richter Opus @eu: gleicher Prompt; die Antwort kommt als erzwungener Werkzeugaufruf mit dem JSON-Schema der
- * Auswertung (immer gültiges JSON) und wird gegen das Zod-Schema geprüft.
+ * Richter Opus @eu: gleicher Prompt; die Antwort kommt als Werkzeugaufruf mit dem JSON-Schema der Auswertung
+ * (gültiges JSON; ohne Aufruf wird der Text als JSON gelesen) und wird gegen das Zod-Schema geprüft.
  */
 async function judgeOpus(promptText: string): Promise<SimulationFeedbackRaw> {
   const schema = zodToJsonSchema(SimulationFeedbackOutputSchema, { target: 'openApi3', $refStrategy: 'none' }) as Record<string, unknown>;
   const reply = await claudeStructured<unknown>({
-    system: anredeBlock() + '\n\nDu lieferst die Auswertung ausschließlich über das Werkzeug „auswertung“, alle Felder nach Schema.',
+    system:
+      anredeBlock() +
+      '\n\nDu lieferst die Auswertung ausschließlich über das Werkzeug „auswertung“ (ein Aufruf, alle Felder nach Schema). Kein Text davor oder danach. Innerhalb von Textfeldern nur typografische Anführungszeichen („…“ oder »…«), nie gerade Anführungszeichen.',
     user: promptText.replace('Gib ausschließlich JSON gemäß Schema zurück.', 'Fülle das Werkzeug „auswertung“ vollständig aus.'),
     schema,
     toolName: 'auswertung',
