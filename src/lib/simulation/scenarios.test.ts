@@ -90,8 +90,10 @@ describe("simulation scenarios — Abwandlungs-Auflage", () => {
 describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => {
   it("Lerntreppe mit zwei Spuren: jede Stufe 1–3 hat beide Gesprächstypen", () => {
     // Welle 3 (30.10.2026): 8 Bestands-Szenarien + 6 neue (Vertrieb, Stakeholder, Entwicklung, innere Kündigung)
-    // + Toni Faber + 4 Persönlichkeits-Varianten (Weber skeptisch/offen, Albrecht fordernd/abgetaucht).
-    expect(SIMULATION_SCENARIOS).toHaveLength(19);
+    // + Toni Faber + 8 Persönlichkeits-Varianten (Weber skeptisch/offen, Albrecht fordernd/abgetaucht,
+    // Kessler freundlich, Hartmann resigniert, Vogt sanft, Keller gereizt) + 3 Varianten der Bestandsrollen
+    // (Morgan abwehrend, Lang polternd, Vance charmant).
+    expect(SIMULATION_SCENARIOS).toHaveLength(26);
     const bestand = SIMULATION_SCENARIOS.slice(0, 8);
     expect(bestand.map((s) => s.difficulty).sort()).toEqual([1, 1, 2, 2, 3, 3, 3, 3]);
     for (const stufe of [1, 2, 3]) {

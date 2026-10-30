@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { FAEHIGKEITEN } from "@/lib/simulation/faehigkeiten";
+import { FAEHIGKEITEN, faehigkeitText } from "@/lib/simulation/faehigkeiten";
 import { SIMULATION_SCENARIOS } from "@/lib/simulation/scenarios";
 
 export const runtime = "nodejs";
@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
  *   GET /api/simulation/faehigkeiten?locale=de|en
  */
 export async function GET(req: NextRequest) {
-  const locale = req.nextUrl.searchParams.get("locale") === "en" ? "en" : "de";
+  // 22 Sprachen: de/en aus der Bibliothek, die übrigen aus faehigkeiten-i18n.json (Rückfall Englisch).
+  const locale = (req.nextUrl.searchParams.get("locale") ?? "de").trim().toLowerCase().slice(0, 2) || "de";
   const szenarienJe = new Map<string, Array<{ id: string; title: string; category: string; difficulty: number }>>();
   for (const s of SIMULATION_SCENARIOS) {
     if (s.variante) continue; // Varianten teilen die Anker ihres Grundszenarios
@@ -25,8 +26,7 @@ export async function GET(req: NextRequest) {
   const faehigkeiten = FAEHIGKEITEN.map((f) => ({
     id: f.id,
     gruppe: f.gruppe,
-    titel: f.titel[locale],
-    definition: f.definition[locale],
+    ...faehigkeitText(f, locale),
     szenarien: (szenarienJe.get(f.id) ?? []).sort((a, b) => a.difficulty - b.difficulty),
   }));
   return NextResponse.json(

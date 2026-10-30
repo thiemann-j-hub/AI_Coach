@@ -1,0 +1,2522 @@
+{
+  "fr": {
+    "rahmen": {
+      "titel": "Cadrer la conversation et rassurer",
+      "definition": "Dès le début, clarifier l'objet et l'intention de la conversation, et séparer le problème de la personne."
+    },
+    "konkret": {
+      "titel": "Rester concret",
+      "definition": "Décrire les comportements observables et leurs effets plutôt que d'utiliser des étiquettes, et maintenir cette approche même face à la contradiction."
+    },
+    "ursache": {
+      "titel": "Écouter jusqu'à la cause profonde",
+      "definition": "Demander le point de vue de l'interlocuteur, rebondir sur ses réponses et persévérer jusqu'à ce que la véritable raison apparaisse, avant de proposer des solutions."
+    },
+    "ruhe": {
+      "titel": "Garder son calme face à la résistance",
+      "definition": "Rester serein et respectueux face à la contradiction, la défense ou l'attaque, maintenir le message clé et apaiser la situation."
+    },
+    "vereinbarung": {
+      "titel": "Convenir ensemble de la prochaine étape",
+      "definition": "Conclure par une étape concrète et datée, co-construite avec l'interlocuteur, incluant le soutien nécessaire et un suivi."
+    },
+    "anerkennung": {
+      "titel": "Reconnaissance étayée",
+      "definition": "Valoriser concrètement et de manière crédible les performances et l'engagement, avec des exemples, sans que ce soit une formule creuse ou un préambule à la critique."
+    },
+    "luecke": {
+      "titel": "Nommer honnêtement l'écart",
+      "definition": "Aborder clairement la différence entre la performance actuelle et l'étape suivante, avec des exemples, sans enjoliver ni blesser."
+    },
+    "entwicklung": {
+      "titel": "Concrétiser le parcours de développement",
+      "definition": "Transformer l'écart en expériences, missions et soutien qui mènent visiblement à l'objectif."
+    },
+    "interessen": {
+      "titel": "Explorer les intérêts derrière les positions",
+      "definition": "Demander ce dont l'interlocuteur a réellement besoin, plutôt que de négocier ou de réfuter ses exigences."
+    },
+    "standpunkt": {
+      "titel": "Affirmer clairement son point de vue",
+      "definition": "Aborder directement et sans reproche les incidents et ses propres besoins, en tant qu'observation avec impact, et maintenir cette position."
+    },
+    "loesung": {
+      "titel": "Solution conjointe, pas un compromis de façade",
+      "definition": "Développer avec l'interlocuteur des options qui répondent aux intérêts des deux parties, et décider sur la base de critères plutôt que du pouvoir."
+    },
+    "verbindlich": {
+      "titel": "Établir l'engagement",
+      "definition": "Sécuriser concrètement les engagements : qui, quoi, pour quand, et vérifier si l'engagement a de la substance."
+    },
+    "einstieg": {
+      "titel": "Accroche et permission",
+      "definition": "Gagner le droit de poursuivre dès les premières phrases : nom, raison, pertinence pour l'interlocuteur et un moment où il accepte d'écouter."
+    },
+    "abwimmeln": {
+      "titel": "Gérer le rejet",
+      "definition": "Rester calme face au premier « pas intéressé » ou « envoyez-moi de la documentation », répondre à l'objection spécifique et maintenir le contact sans insister."
+    },
+    "relevanz": {
+      "titel": "Établir la pertinence",
+      "definition": "Relier sa propre offre à une préoccupation concrète de l'interlocuteur, avec des preuves plutôt que des slogans."
+    },
+    "qualifizieren": {
+      "titel": "Qualifier",
+      "definition": "Clarifier si l'effort en vaut la peine : impact, urgence, parties prenantes, tentatives précédentes."
+    },
+    "naechster-schritt": {
+      "titel": "Sécuriser la prochaine étape",
+      "definition": "Mener à une étape de suivi concrète à laquelle l'interlocuteur adhère réellement : objectif, échéance, participants."
+    },
+    "agenda": {
+      "titel": "Convenir de l'ordre du jour",
+      "definition": "Clarifier dès le début l'objectif, le déroulement et le résultat souhaité, et obtenir l'accord de l'interlocuteur."
+    },
+    "fragen": {
+      "titel": "Questionner et relancer",
+      "definition": "Poser des questions ouvertes et bien structurées, et relancer jusqu'à ce que de véritables problèmes apparaissent, au lieu de réponses superficielles."
+    },
+    "spiegeln": {
+      "titel": "Écouter et reformuler",
+      "definition": "Montrer de la compréhension en résumant fidèlement et en basant la question suivante sur la réponse."
+    },
+    "bedarf-entscheider": {
+      "titel": "Clarifier besoin, décideur, budget, échéance",
+      "definition": "Établir en conversation s'il existe un problème réel, qui décide, comment les projets sont financés et s'il y a une échéance."
+    },
+    "bedarf-finden": {
+      "titel": "Écouter et identifier le besoin réel",
+      "definition": "Explorer la situation de l'interlocuteur avant de proposer une solution, et trouver le besoin réel derrière la demande."
+    },
+    "empathie": {
+      "titel": "Empathie concrète",
+      "definition": "Nommer concrètement et de manière crédible le sentiment ou l'engagement de l'interlocuteur avant de résoudre quoi que ce soit."
+    },
+    "verantwortung": {
+      "titel": "Prendre ses responsabilités",
+      "definition": "Assumer personnellement la résolution du problème spécifique, sans pointer du doigt les autres, le système ou les règles."
+    },
+    "klar-relevant": {
+      "titel": "Expliquer clairement et pertinemment",
+      "definition": "Expliquer de manière compréhensible et relier les informations à ce qui est important pour cet interlocuteur."
+    },
+    "verbindlich-kunde": {
+      "titel": "Prochaine étape engageante",
+      "definition": "Mener à une action concrète et crédible que l'interlocuteur accepte explicitement, avec une responsabilité et une échéance."
+    },
+    "kernbotschaft": {
+      "titel": "Maintenir le message clé",
+      "definition": "Avoir un message clair et le répéter constamment malgré les distractions, la pression et les relances."
+    },
+    "bruecke": {
+      "titel": "Faire le pont vers le message",
+      "definition": "Répondre brièvement et honnêtement à la question, puis orienter vers son propre message sans esquiver."
+    },
+    "keine-spekulation": {
+      "titel": "Pas de spéculation",
+      "definition": "Ne dire que ce qui est avéré, séparer les faits des suppositions et nommer ouvertement ce qui n'est pas encore connu."
+    },
+    "druck": {
+      "titel": "Calme sous pression",
+      "definition": "Rester calme, courtois et pertinent face aux questions incisives, interruptives ou suggestives."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Faire preuve de responsabilité, les personnes concernées d'abord",
+      "definition": "Placer les personnes concernées et la solution avant la justification, et montrer que l'entreprise agit."
+    }
+  },
+  "es": {
+    "rahmen": {
+      "titel": "Establecer el marco y generar confianza",
+      "definition": "Indica al principio de qué se trata y con qué intención, y separa el asunto de la persona."
+    },
+    "konkret": {
+      "titel": "Mantenerse concreto",
+      "definition": "Nombra el comportamiento observable y su impacto en lugar de etiquetas, y lo mantiene incluso ante la objeción."
+    },
+    "ursache": {
+      "titel": "Escuchar hasta la causa raíz",
+      "definition": "Pregunta por el punto de vista del interlocutor, retoma las respuestas y persiste hasta que la verdadera razón sea visible, antes de proponer soluciones."
+    },
+    "ruhe": {
+      "titel": "Mantener la calma ante la resistencia",
+      "definition": "Se mantiene sereno y respetuoso ante la contradicción, la defensa o el ataque, mantiene el mensaje central y baja la tensión."
+    },
+    "vereinbarung": {
+      "titel": "Acordar juntos el siguiente paso",
+      "definition": "Concluye con un paso concreto y con fecha límite, que el interlocutor ha ayudado a diseñar, incluyendo apoyo y una fecha de seguimiento."
+    },
+    "anerkennung": {
+      "titel": "Reconocimiento con evidencia",
+      "definition": "Valora el rendimiento y el esfuerzo de forma concreta y creíble, con un ejemplo, no como una frase hecha o un preámbulo a la crítica."
+    },
+    "luecke": {
+      "titel": "Identificar la brecha con honestidad",
+      "definition": "Aborda claramente la diferencia entre el rendimiento actual y el siguiente paso, con ejemplos, sin adornar ni herir."
+    },
+    "entwicklung": {
+      "titel": "Concretar la ruta de desarrollo",
+      "definition": "Transforma la brecha en experiencias, tareas y apoyo que conducen visiblemente al objetivo."
+    },
+    "interessen": {
+      "titel": "Explorar los intereses detrás de las posiciones",
+      "definition": "Pregunta qué necesita realmente el interlocutor, en lugar de negociar o refutar demandas."
+    },
+    "standpunkt": {
+      "titel": "Expresar claramente el propio punto de vista",
+      "definition": "Aborda incidentes y necesidades propias de forma directa y sin reproches, como una observación con impacto, y la sostiene."
+    },
+    "loesung": {
+      "titel": "Solución conjunta, no un compromiso fácil",
+      "definition": "Desarrolla opciones con el interlocutor que contemplan ambos intereses, y decide basándose en criterios en lugar de en el poder."
+    },
+    "verbindlich": {
+      "titel": "Establecer el compromiso",
+      "definition": "Asegura los compromisos de forma concreta: quién, qué, para cuándo, y verifica si el compromiso tiene sustancia."
+    },
+    "einstieg": {
+      "titel": "Inicio y permiso",
+      "definition": "Se gana el derecho a continuar hablando en las primeras frases: nombre, motivo, relevancia para el interlocutor y un momento en el que este acepta escuchar."
+    },
+    "abwimmeln": {
+      "titel": "Manejar el desinterés",
+      "definition": "Se mantiene tranquilo ante el primer «no me interesa» o «envíe la información», responde a la objeción específica y mantiene la comunicación abierta, sin presionar."
+    },
+    "relevanz": {
+      "titel": "Generar relevancia",
+      "definition": "Conecta la propia oferta con una preocupación concreta del interlocutor, con pruebas en lugar de eslóganes."
+    },
+    "qualifizieren": {
+      "titel": "Calificar",
+      "definition": "Aclara si vale la pena: impacto, urgencia, partes involucradas, intentos previos."
+    },
+    "naechster-schritt": {
+      "titel": "Asegurar el siguiente paso",
+      "definition": "Conduce a un paso de seguimiento concreto que el interlocutor realmente acepta: propósito, momento, participantes."
+    },
+    "agenda": {
+      "titel": "Acordar la agenda",
+      "definition": "Aclara al principio el propósito, el desarrollo y el resultado deseado, y obtiene para ello el consentimiento del interlocutor."
+    },
+    "fragen": {
+      "titel": "Preguntar y hacer seguimiento",
+      "definition": "Formula preguntas abiertas y bien estructuradas, y hace seguimiento hasta que los problemas reales, en lugar de respuestas superficiales, sean visibles."
+    },
+    "spiegeln": {
+      "titel": "Escuchar y reflejar",
+      "definition": "Demuestra comprensión resumiendo con precisión y construyendo la siguiente pregunta sobre la respuesta."
+    },
+    "bedarf-entscheider": {
+      "titel": "Aclarar necesidad, decisor, presupuesto, plazo",
+      "definition": "Aclara en la conversación si existe un problema real, quién decide, cómo se financian las iniciativas y si hay un plazo."
+    },
+    "bedarf-finden": {
+      "titel": "Escuchar y encontrar la necesidad",
+      "definition": "Explora la situación del interlocutor antes de resolver, y encuentra la necesidad real detrás de la demanda."
+    },
+    "empathie": {
+      "titel": "Empatía concreta",
+      "definition": "Nombra el sentimiento o el esfuerzo del interlocutor de forma concreta y creíble, antes de resolver."
+    },
+    "verantwortung": {
+      "titel": "Asumir la responsabilidad",
+      "definition": "Asume personalmente la resolución del problema concreto, sin señalar a otros, al sistema o a las normas."
+    },
+    "klar-relevant": {
+      "titel": "Explicar de forma clara y relevante",
+      "definition": "Explica de forma comprensible y vincula la información con lo que es importante para este interlocutor."
+    },
+    "verbindlich-kunde": {
+      "titel": "Siguiente paso vinculante",
+      "definition": "Conduce a una acción concreta y creíble que el interlocutor acepta explícitamente, con responsabilidad y plazo."
+    },
+    "kernbotschaft": {
+      "titel": "Mantener el mensaje central",
+      "definition": "Tiene un mensaje claro y lo reitera a pesar de las distracciones, la presión y las preguntas de seguimiento."
+    },
+    "bruecke": {
+      "titel": "Puente hacia el mensaje",
+      "definition": "Responde a la pregunta de forma breve y honesta, y luego conduce al propio mensaje, sin evadir."
+    },
+    "keine-spekulation": {
+      "titel": "Sin especulación",
+      "definition": "Dice solo lo que está probado, separa el conocimiento de la suposición y nombra abiertamente lo que aún no se conoce."
+    },
+    "druck": {
+      "titel": "Calma bajo presión",
+      "definition": "Se mantiene tranquilo, cortés y centrado ante preguntas incisivas, que interrumpen o sugestivas."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Mostrar responsabilidad, los afectados primero",
+      "definition": "Prioriza a los afectados y la solución antes que la justificación, y demuestra que la empresa está actuando."
+    }
+  },
+  "it": {
+    "rahmen": {
+      "titel": "Definire il contesto e dare sicurezza",
+      "definition": "Spiega all'inizio di cosa si tratta e con quale intenzione, e separa la questione dalla persona."
+    },
+    "konkret": {
+      "titel": "Rimanere concreti",
+      "definition": "Nomina il comportamento osservabile e il suo impatto invece di etichette, e mantiene questa linea anche sotto contestazione."
+    },
+    "ursache": {
+      "titel": "Ascoltare fino alla causa",
+      "definition": "Chiede il punto di vista dell'interlocutore, riprende le risposte e persiste finché la vera causa non è visibile, prima di proporre soluzioni."
+    },
+    "ruhe": {
+      "titel": "Mantenere la calma sotto resistenza",
+      "definition": "Rimane calmo e rispettoso in caso di contraddizione, difesa o attacco, mantiene il messaggio chiave e abbassa la tensione."
+    },
+    "vereinbarung": {
+      "titel": "Concordare insieme il prossimo passo",
+      "definition": "Conclude con un passo concreto e con scadenza, che l'interlocutore ha contribuito a definire, inclusi supporto e un appuntamento di follow-up."
+    },
+    "anerkennung": {
+      "titel": "Riconoscimento con prova",
+      "definition": "Riconosce risultati e impegno in modo concreto e credibile, con un esempio, non come frase fatta o preambolo alla critica."
+    },
+    "luecke": {
+      "titel": "Nominare onestamente il divario",
+      "definition": "Affronta chiaramente la differenza tra la prestazione attuale e il prossimo passo, con esempi, senza edulcorare o ferire."
+    },
+    "entwicklung": {
+      "titel": "Rendere concreto il percorso di sviluppo",
+      "definition": "Trasforma il divario in esperienze, compiti e supporto che conducono visibilmente all'obiettivo."
+    },
+    "interessen": {
+      "titel": "Esplorare gli interessi dietro le posizioni",
+      "definition": "Chiede cosa l'interlocutore abbia realmente bisogno, invece di negoziare o confutare le richieste."
+    },
+    "standpunkt": {
+      "titel": "Esprimere chiaramente il proprio punto di vista",
+      "definition": "Affronta incidenti e bisogni personali direttamente e senza accuse, come osservazione con impatto, e li sostiene."
+    },
+    "loesung": {
+      "titel": "Soluzione comune, non un compromesso pigro",
+      "definition": "Sviluppa con l'interlocutore opzioni che soddisfano entrambi gli interessi, e decide in base a criteri anziché al potere."
+    },
+    "verbindlich": {
+      "titel": "Stabilire la vincolatività",
+      "definition": "Assicura gli impegni in modo concreto: chi, cosa, entro quando, e verifica se l'impegno ha sostanza."
+    },
+    "einstieg": {
+      "titel": "Introduzione e permesso",
+      "definition": "Si guadagna il diritto di continuare nelle prime frasi: nome, motivo, rilevanza per l'interlocutore e un momento in cui acconsente ad ascoltare."
+    },
+    "abwimmeln": {
+      "titel": "Gestire il rifiuto",
+      "definition": "Rimane calmo al primo «nessun interesse» o «invii documentazione», risponde all'obiezione specifica e mantiene la linea aperta, senza insistere."
+    },
+    "relevanz": {
+      "titel": "Stabilire la rilevanza",
+      "definition": "Collega la propria offerta a una preoccupazione concreta dell'interlocutore, con prove anziché slogan."
+    },
+    "qualifizieren": {
+      "titel": "Qualificare",
+      "definition": "Chiarisce se ne vale la pena: impatto, urgenza, persone coinvolte, tentativi precedenti."
+    },
+    "naechster-schritt": {
+      "titel": "Assicurare il prossimo passo",
+      "definition": "Conduce a un concreto passo successivo, al quale l'interlocutore acconsente sinceramente: scopo, tempistica, persone coinvolte."
+    },
+    "agenda": {
+      "titel": "Concordare l'agenda",
+      "definition": "Chiarisce all'inizio scopo, svolgimento e risultato desiderato e ottiene il consenso dell'interlocutore."
+    },
+    "fragen": {
+      "titel": "Domandare e approfondire",
+      "definition": "Pone domande aperte e ben strutturate e approfondisce finché non emergono problemi reali invece di risposte superficiali."
+    },
+    "spiegeln": {
+      "titel": "Ascoltare e riflettere",
+      "definition": "Mostra comprensione riassumendo accuratamente e costruendo la domanda successiva sulla risposta."
+    },
+    "bedarf-entscheider": {
+      "titel": "Chiarire bisogno, decisore, budget, tempistica",
+      "definition": "Chiarisce durante la conversazione se esiste un problema reale, chi decide, come vengono finanziate le iniziative e se c'è una tempistica."
+    },
+    "bedarf-finden": {
+      "titel": "Ascoltare e trovare il bisogno reale",
+      "definition": "Esplora la situazione dell'interlocutore prima di proporre soluzioni, e trova il bisogno reale dietro la richiesta."
+    },
+    "empathie": {
+      "titel": "Empatia concreta",
+      "definition": "Nomina il sentimento o l'impegno dell'interlocutore in modo concreto e credibile, prima di risolvere qualsiasi cosa."
+    },
+    "verantwortung": {
+      "titel": "Assumersi la responsabilità",
+      "definition": "Si assume personalmente la risoluzione del problema specifico, senza indicare altri, il sistema o le regole."
+    },
+    "klar-relevant": {
+      "titel": "Spiegare in modo chiaro e rilevante",
+      "definition": "Spiega in modo comprensibile e collega le informazioni a ciò che è importante per questo specifico interlocutore."
+    },
+    "verbindlich-kunde": {
+      "titel": "Prossimo passo vincolante",
+      "definition": "Conduce a un'azione concreta e credibile che l'interlocutore accetta esplicitamente, con responsabilità e tempistica."
+    },
+    "kernbotschaft": {
+      "titel": "Mantenere il messaggio chiave",
+      "definition": "Ha un messaggio chiaro e lo ripropone costantemente nonostante distrazioni, pressioni e domande di approfondimento."
+    },
+    "bruecke": {
+      "titel": "Ponte al messaggio",
+      "definition": "Risponde alla domanda in modo breve e onesto e poi conduce al proprio messaggio, senza eludere."
+    },
+    "keine-spekulation": {
+      "titel": "Nessuna speculazione",
+      "definition": "Dice solo ciò che è provato, separa la conoscenza dalla supposizione e dichiara apertamente ciò che non è ancora noto."
+    },
+    "druck": {
+      "titel": "Calmo sotto pressione",
+      "definition": "Rimane calmo, cortese e pertinente sotto domande incisive, interruttive o suggestive."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Mostrare responsabilità, le persone coinvolte prima",
+      "definition": "Pone le persone coinvolte e la soluzione prima della giustificazione e mostra che l'azienda sta agendo."
+    }
+  },
+  "pt": {
+    "rahmen": {
+      "titel": "Definir o enquadramento e dar segurança",
+      "definition": "Explica no início qual o propósito e a intenção da conversa, e separa a questão da pessoa."
+    },
+    "konkret": {
+      "titel": "Manter a concretude",
+      "definition": "Nomeia o comportamento observável e o seu impacto em vez de rótulos, e mantém essa linha mesmo sob contestação."
+    },
+    "ursache": {
+      "titel": "Ouvir até à causa",
+      "definition": "Pergunta pela perspetiva do interlocutor, aproveita as respostas e persiste até que a verdadeira razão seja visível, antes de apresentar soluções."
+    },
+    "ruhe": {
+      "titel": "Manter a calma sob resistência",
+      "definition": "Mantém a calma e o respeito perante contradição, defesa ou ataque, sustenta a mensagem principal e baixa a tensão."
+    },
+    "vereinbarung": {
+      "titel": "Acordar o próximo passo em conjunto",
+      "definition": "Conclui com um passo concreto e com prazo definido, que o interlocutor ajudou a moldar, incluindo apoio e uma data de acompanhamento."
+    },
+    "anerkennung": {
+      "titel": "Reconhecimento com prova",
+      "definition": "Valoriza o desempenho e o esforço de forma concreta e credível, com um exemplo, não como uma frase feita ou preâmbulo para a crítica."
+    },
+    "luecke": {
+      "titel": "Nomear a lacuna com honestidade",
+      "definition": "Aborda claramente a diferença entre o desempenho atual e o próximo passo, com exemplos, sem embelezar ou ferir."
+    },
+    "entwicklung": {
+      "titel": "Concretizar o percurso de desenvolvimento",
+      "definition": "Transforma a lacuna em experiências, tarefas e apoio que conduzem visivelmente ao objetivo."
+    },
+    "interessen": {
+      "titel": "Explorar interesses por trás das posições",
+      "definition": "Pergunta o que o interlocutor realmente precisa, em vez de negociar ou refutar exigências."
+    },
+    "standpunkt": {
+      "titel": "Defender claramente o próprio ponto de vista",
+      "definition": "Aborda incidentes e necessidades próprias de forma direta e sem censura, como uma observação com impacto, e mantém essa posição."
+    },
+    "loesung": {
+      "titel": "Solução conjunta, não um compromisso preguiçoso",
+      "definition": "Desenvolve com o interlocutor opções que satisfaçam ambos os interesses, e decide com base em critérios em vez de poder."
+    },
+    "verbindlich": {
+      "titel": "Estabelecer compromisso",
+      "definition": "Garante compromissos de forma concreta: quem, o quê, até quando, e verifica se o compromisso tem substância."
+    },
+    "einstieg": {
+      "titel": "Início e permissão",
+      "definition": "Conquista o direito de continuar a falar nas primeiras frases: nome, motivo, relevância para o interlocutor e um momento em que este concorda em ouvir."
+    },
+    "abwimmeln": {
+      "titel": "Gerir a rejeição",
+      "definition": "Mantém a calma perante o primeiro «sem interesse» ou «envie documentação», responde à objeção específica e mantém a comunicação aberta, sem pressionar."
+    },
+    "relevanz": {
+      "titel": "Estabelecer relevância",
+      "definition": "Conecta a própria oferta a uma preocupação concreta do interlocutor, com prova em vez de slogan."
+    },
+    "qualifizieren": {
+      "titel": "Qualificar",
+      "definition": "Esclarece se vale a pena: impacto, urgência, envolvidos, tentativas anteriores."
+    },
+    "naechster-schritt": {
+      "titel": "Garantir o próximo passo",
+      "definition": "Conduz a um passo de seguimento concreto, ao qual o interlocutor realmente concorda: propósito, momento, envolvidos."
+    },
+    "agenda": {
+      "titel": "Acordar a agenda",
+      "definition": "Esclarece no início o propósito, o processo e o resultado desejado, e obtém o acordo do interlocutor para tal."
+    },
+    "fragen": {
+      "titel": "Perguntar e fazer seguimento",
+      "definition": "Faz perguntas abertas e bem sequenciadas, e faz seguimento até que problemas reais, em vez de respostas superficiais, sejam visíveis."
+    },
+    "spiegeln": {
+      "titel": "Ouvir e refletir",
+      "definition": "Demonstra compreensão ao resumir com precisão e ao construir a próxima pergunta com base na resposta."
+    },
+    "bedarf-entscheider": {
+      "titel": "Esclarecer necessidade, decisor, orçamento, prazo",
+      "definition": "Esclarece na conversa se existe um problema real, quem decide, como os projetos são financiados e se há um prazo."
+    },
+    "bedarf-finden": {
+      "titel": "Ouvir e encontrar a verdadeira necessidade",
+      "definition": "Explora a situação do interlocutor antes de resolver, e encontra a verdadeira necessidade por trás da exigência."
+    },
+    "empathie": {
+      "titel": "Empatia concreta",
+      "definition": "Nomeia o sentimento ou o esforço do interlocutor de forma concreta e credível, antes de resolver qualquer coisa."
+    },
+    "verantwortung": {
+      "titel": "Assumir responsabilidade",
+      "definition": "Assume pessoalmente a resolução do problema concreto, sem apontar para outros, para o sistema ou para as regras."
+    },
+    "klar-relevant": {
+      "titel": "Explicar de forma clara e relevante",
+      "definition": "Explica de forma compreensível e conecta as informações com o que é importante para este interlocutor."
+    },
+    "verbindlich-kunde": {
+      "titel": "Próximo passo vinculativo",
+      "definition": "Conduz a uma ação concreta e credível que o interlocutor aceita expressamente, com responsabilidade e prazo."
+    },
+    "kernbotschaft": {
+      "titel": "Manter a mensagem principal",
+      "definition": "Tem uma mensagem clara e a repete, apesar das distrações, da pressão e das perguntas de seguimento."
+    },
+    "bruecke": {
+      "titel": "Ponte para a mensagem",
+      "definition": "Responde à pergunta de forma breve e honesta, e depois conduz à própria mensagem, sem desviar."
+    },
+    "keine-spekulation": {
+      "titel": "Sem especulação",
+      "definition": "Diz apenas o que está comprovado, separa o conhecimento da suposição e nomeia abertamente o que ainda não é conhecido."
+    },
+    "druck": {
+      "titel": "Calmo sob pressão",
+      "definition": "Mantém a calma, a cortesia e o foco sob perguntas incisivas, interruptivas ou sugestivas."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Mostrar responsabilidade, afetados primeiro",
+      "definition": "Coloca os afetados e a solução antes da justificação e mostra que a empresa está a agir."
+    }
+  },
+  "ca": {
+    "rahmen": {
+      "titel": "Establir el marc i donar seguretat",
+      "definition": "Explicar al principi de què tracta i amb quina intenció, i separar el tema de la persona."
+    },
+    "konkret": {
+      "titel": "Ser concret",
+      "definition": "Anomenar el comportament observable i el seu impacte en lloc d'etiquetes, i mantenir-ho fins i tot davant la contradicció."
+    },
+    "ursache": {
+      "titel": "Escoltar fins a la causa",
+      "definition": "Preguntar per la visió de l'altra persona, aprofitar les respostes i insistir fins que la raó real sigui visible, abans de proposar solucions."
+    },
+    "ruhe": {
+      "titel": "Mantenir la calma davant la resistència",
+      "definition": "Mantenir-se serè i respectuós davant la contradicció, la defensa o l'atac, mantenir el missatge central i rebaixar la tensió."
+    },
+    "vereinbarung": {
+      "titel": "Acordar el següent pas conjuntament",
+      "definition": "Concloure amb un pas concret i amb data, que l'altra persona ha ajudat a dissenyar, incloent suport i una data de seguiment."
+    },
+    "anerkennung": {
+      "titel": "Reconeixement amb proves",
+      "definition": "Valorar el rendiment i l'esforç de manera concreta i creïble, amb un exemple, no com una frase feta o una introducció a la crítica."
+    },
+    "luecke": {
+      "titel": "Anomenar la bretxa amb honestedat",
+      "definition": "Abordar clarament la diferència entre el rendiment actual i el següent pas, amb exemples, sense embellir ni ferir."
+    },
+    "entwicklung": {
+      "titel": "Concretar el camí de desenvolupament",
+      "definition": "Transformar la bretxa en experiències, tasques i suport que condueixin visiblement a l'objectiu."
+    },
+    "interessen": {
+      "titel": "Explorar els interessos darrere les posicions",
+      "definition": "Preguntar què necessita realment l'altra persona, en lloc de negociar o refutar exigències."
+    },
+    "standpunkt": {
+      "titel": "Defensar clarament el propi punt de vista",
+      "definition": "Abordar incidents i necessitats pròpies de manera directa i sense retrets, com una observació amb impacte, i mantenir-ho."
+    },
+    "loesung": {
+      "titel": "Solució conjunta, no un compromís fàcil",
+      "definition": "Desenvolupar amb l'altra persona opcions que satisfacin ambdós interessos, i decidir segons criteris en lloc de per poder."
+    },
+    "verbindlich": {
+      "titel": "Establir un compromís ferm",
+      "definition": "Assegurar els compromisos de manera concreta: qui, què, fins quan, i verificar si el compromís té substància."
+    },
+    "einstieg": {
+      "titel": "Inici i permís",
+      "definition": "Guanyar-se el dret a continuar parlant en les primeres frases: nom, motiu, rellevància per a l'altra persona i un moment en què aquesta accepti escoltar."
+    },
+    "abwimmeln": {
+      "titel": "Gestionar el rebuig",
+      "definition": "Mantenir la calma davant el primer «cap interès» o «envieu documentació», respondre a l'objecció concreta i mantenir la línia oberta sense pressionar."
+    },
+    "relevanz": {
+      "titel": "Establir rellevància",
+      "definition": "Connectar la pròpia oferta amb una preocupació concreta de l'altra persona, amb proves en lloc d'eslògans."
+    },
+    "qualifizieren": {
+      "titel": "Qualificar",
+      "definition": "Aclarir si val la pena: impacte, urgència, implicats, intents anteriors."
+    },
+    "naechster-schritt": {
+      "titel": "Assegurar el següent pas",
+      "definition": "Conduir a un pas de seguiment concret que l'altra persona accepti realment: propòsit, moment, participants."
+    },
+    "agenda": {
+      "titel": "Acordar l'agenda",
+      "definition": "Aclarir al principi el propòsit, el desenvolupament i el resultat desitjat, i obtenir l'acord de l'altra persona."
+    },
+    "fragen": {
+      "titel": "Preguntar i fer seguiment",
+      "definition": "Fer preguntes obertes i ben estructurades, i fer seguiment fins que es facin visibles problemes reals en lloc de respostes superficials."
+    },
+    "spiegeln": {
+      "titel": "Escoltar i reflectir",
+      "definition": "Mostrar comprensió resumint amb precisió i construint la següent pregunta a partir de la resposta."
+    },
+    "bedarf-entscheider": {
+      "titel": "Aclarir necessitat, decisor, pressupost, moment",
+      "definition": "Aclarir en la conversa si hi ha un problema real, qui decideix, com es financen els projectes i si hi ha un termini."
+    },
+    "bedarf-finden": {
+      "titel": "Escoltar i trobar la necessitat real",
+      "definition": "Explorar la situació de l'altra persona abans de resoldre, i trobar la necessitat real darrere de l'exigència."
+    },
+    "empathie": {
+      "titel": "Empatia concreta",
+      "definition": "Anomenar el sentiment o l'esforç de l'altra persona de manera concreta i creïble, abans de resoldre res."
+    },
+    "verantwortung": {
+      "titel": "Assumir la responsabilitat",
+      "definition": "Assumir personalment la solució del problema concret, sense assenyalar altres, el sistema o les normes."
+    },
+    "klar-relevant": {
+      "titel": "Explicar de manera clara i rellevant",
+      "definition": "Explicar de manera comprensible i vincular la informació amb allò que és important per a aquesta persona."
+    },
+    "verbindlich-kunde": {
+      "titel": "Següent pas vinculant",
+      "definition": "Conduir a una acció concreta i creïble que l'altra persona accepti explícitament, amb responsabilitat i termini."
+    },
+    "kernbotschaft": {
+      "titel": "Mantenir el missatge central",
+      "definition": "Tenir un missatge clar i reiterar-lo malgrat les distraccions, la pressió i les preguntes de seguiment."
+    },
+    "bruecke": {
+      "titel": "Pont cap al missatge",
+      "definition": "Respondre la pregunta breument i amb honestedat, i després conduir al propi missatge sense evadir-lo."
+    },
+    "keine-spekulation": {
+      "titel": "Sense especulació",
+      "definition": "Dir només allò que està demostrat, separar el coneixement de la suposició i expressar obertament allò que encara no es coneix."
+    },
+    "druck": {
+      "titel": "Calma sota pressió",
+      "definition": "Mantenir la calma, la cortesia i la concentració davant preguntes incisives, que interrompen o suggestives."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Mostrar responsabilitat, afectats primer",
+      "definition": "Posar les persones afectades i la solució per davant de la justificació i demostrar que l'empresa actua."
+    }
+  },
+  "nl": {
+    "rahmen": {
+      "titel": "Kader scheppen en veiligheid bieden",
+      "definition": "Geeft aan het begin aan waar het gesprek over gaat en met welke intentie, en scheidt de zaak van de persoon."
+    },
+    "konkret": {
+      "titel": "Concreet blijven",
+      "definition": "Benoemt observeerbaar gedrag en de impact ervan in plaats van etiketten, en houdt hieraan vast, ook bij tegenspraak."
+    },
+    "ursache": {
+      "titel": "Doorluisteren tot de oorzaak",
+      "definition": "Vraagt naar de visie van de ander, bouwt voort op antwoorden en blijft doorvragen tot de werkelijke oorzaak zichtbaar is, voordat oplossingen worden aangedragen."
+    },
+    "ruhe": {
+      "titel": "Rustig blijven bij weerstand",
+      "definition": "Blijft kalm en respectvol bij tegenspraak, verdediging of aanval, houdt vast aan de kernboodschap en verlaagt de spanning."
+    },
+    "vereinbarung": {
+      "titel": "Volgende stap samen afspreken",
+      "definition": "Sluit af met een concrete, getimede stap die de ander heeft helpen vormgeven, inclusief ondersteuning en een vervolgdatum."
+    },
+    "anerkennung": {
+      "titel": "Erkenning met bewijs",
+      "definition": "Waardeert prestatie en inzet concreet en geloofwaardig, met een voorbeeld, niet als loze frase of inleiding op kritiek."
+    },
+    "luecke": {
+      "titel": "De kloof eerlijk benoemen",
+      "definition": "Benoemt het verschil tussen de huidige prestatie en de volgende stap duidelijk, met voorbeelden, zonder te verbloemen of te kwetsen."
+    },
+    "entwicklung": {
+      "titel": "Ontwikkelingspad concreet maken",
+      "definition": "Vertaalt de kloof naar ervaringen, taken en ondersteuning die zichtbaar naar het doel leiden."
+    },
+    "interessen": {
+      "titel": "Interesses achter standpunten verkennen",
+      "definition": "Vraagt wat de ander werkelijk nodig heeft, in plaats van eisen te onderhandelen of te weerleggen."
+    },
+    "standpunkt": {
+      "titel": "Eigen standpunt duidelijk verwoorden",
+      "definition": "Bespreekt incidenten en eigen behoeften direct en zonder verwijt, als observatie met impact, en houdt hieraan vast."
+    },
+    "loesung": {
+      "titel": "Gezamenlijke oplossing, geen gemakzuchtig compromis",
+      "definition": "Ontwikkelt met de ander opties die beide belangen dienen, en beslist op basis van criteria in plaats van macht."
+    },
+    "verbindlich": {
+      "titel": "Bindend maken",
+      "definition": "Zet afspraken concreet vast: wie, wat, wanneer, en controleert of de toezegging substantie heeft."
+    },
+    "einstieg": {
+      "titel": "Opening en toestemming",
+      "definition": "Verdient in de eerste zinnen het recht om verder te spreken: naam, reden, relevantie voor de ander en een moment waarop deze instemt met luisteren."
+    },
+    "abwimmeln": {
+      "titel": "Afwijzing opvangen",
+      "definition": "Blijft rustig bij het eerste 'geen interesse' of 'stuur maar documentatie', beantwoordt het concrete bezwaar en houdt de lijn open, zonder te dringen."
+    },
+    "relevanz": {
+      "titel": "Relevantie creëren",
+      "definition": "Verbindt het eigen aanbod met een concrete zorg van de ander, met bewijs in plaats van een slogan."
+    },
+    "qualifizieren": {
+      "titel": "Kwalificeren",
+      "definition": "Verheldert of het de moeite waard is: impact, urgentie, betrokkenen, eerdere pogingen."
+    },
+    "naechster-schritt": {
+      "titel": "Volgende stap veiligstellen",
+      "definition": "Leidt tot een concrete vervolgstap waarmee de ander echt instemt: doel, tijdstip, betrokkenen."
+    },
+    "agenda": {
+      "titel": "Agenda afstemmen",
+      "definition": "Verheldert aan het begin doel, verloop en gewenst resultaat en verkrijgt hiervoor de instemming van de ander."
+    },
+    "fragen": {
+      "titel": "Vragen en doorvragen",
+      "definition": "Stelt open, goed gestructureerde vragen en vraagt door totdat echte problemen zichtbaar worden in plaats van oppervlakkige antwoorden."
+    },
+    "spiegeln": {
+      "titel": "Luisteren en spiegelen",
+      "definition": "Toont begrip door accuraat samen te vatten en de volgende vraag op het antwoord te baseren."
+    },
+    "bedarf-entscheider": {
+      "titel": "Behoefte, beslisser, budget, timing verhelderen",
+      "definition": "Verheldert in het gesprek of er een echt probleem is, wie beslist, hoe projecten worden gefinancierd en of er een tijdlijn is."
+    },
+    "bedarf-finden": {
+      "titel": "Luisteren en de werkelijke behoefte vinden",
+      "definition": "Verkent de situatie van de ander voordat er een oplossing wordt geboden, en vindt de werkelijke behoefte achter de eis."
+    },
+    "empathie": {
+      "titel": "Concrete empathie",
+      "definition": "Benoemt het gevoel of de inzet van de ander concreet en geloofwaardig, voordat er een oplossing wordt geboden."
+    },
+    "verantwortung": {
+      "titel": "Verantwoordelijkheid nemen",
+      "definition": "Neemt persoonlijk de verantwoordelijkheid voor de oplossing van het concrete probleem, zonder naar anderen, het systeem of regels te verwijzen."
+    },
+    "klar-relevant": {
+      "titel": "Duidelijk en relevant uitleggen",
+      "definition": "Legt begrijpelijk uit en verbindt informatie met wat voor deze specifieke persoon belangrijk is."
+    },
+    "verbindlich-kunde": {
+      "titel": "Bindende volgende stap",
+      "definition": "Leidt tot een concrete, geloofwaardige actie die de ander expliciet accepteert, met verantwoordelijkheid en tijdstip."
+    },
+    "kernbotschaft": {
+      "titel": "Kernboodschap vasthouden",
+      "definition": "Heeft een duidelijke boodschap en brengt deze ondanks afleiding, druk en doorvragen steeds opnieuw naar voren."
+    },
+    "bruecke": {
+      "titel": "Brug naar de boodschap",
+      "definition": "Beantwoordt de vraag kort en eerlijk en leidt dan naar de eigen boodschap, zonder uit te wijken."
+    },
+    "keine-spekulation": {
+      "titel": "Geen speculatie",
+      "definition": "Zegt alleen wat bewezen is, scheidt kennis van vermoeden en benoemt openlijk wat nog niet bekend is."
+    },
+    "druck": {
+      "titel": "Rustig onder druk",
+      "definition": "Blijft kalm, beleefd en ter zake bij scherpe, onderbrekende of suggestieve vragen."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Verantwoordelijkheid tonen, getroffenen eerst",
+      "definition": "Plaatst getroffenen en de oplossing vóór rechtvaardiging en toont aan dat het bedrijf handelt."
+    }
+  },
+  "sv": {
+    "rahmen": {
+      "titel": "Sätta ramar och skapa trygghet",
+      "definition": "Berättar i början vad samtalet handlar om och med vilken avsikt, och skiljer sak från person."
+    },
+    "konkret": {
+      "titel": "Var konkret",
+      "definition": "Benämner observerbart beteende och dess effekt istället för etiketter, och håller fast vid detta även vid motstånd."
+    },
+    "ursache": {
+      "titel": "Lyssna till grundorsaken",
+      "definition": "Frågar efter den andra partens synpunkt, bygger vidare på svaren och fortsätter tills den verkliga orsaken blir synlig, innan lösningar presenteras."
+    },
+    "ruhe": {
+      "titel": "Behåll lugnet vid motstånd",
+      "definition": "Förblir lugn och respektfull vid motsägelser, försvar eller angrepp, håller fast vid kärnbudskapet och sänker temperaturen."
+    },
+    "vereinbarung": {
+      "titel": "Kom överens om nästa steg tillsammans",
+      "definition": "Avslutar med ett konkret, tidsbestämt steg som den andra parten har varit med och utformat, inklusive stöd och uppföljning."
+    },
+    "anerkennung": {
+      "titel": "Erkännande med belägg",
+      "definition": "Uppmärksammar prestation och insats konkret och trovärdigt, med exempel, inte som en fras eller inledning till kritik."
+    },
+    "luecke": {
+      "titel": "Benämn glappet ärligt",
+      "definition": "Talar tydligt om skillnaden mellan dagens prestation och nästa steg, med exempel, utan att försköna eller såra."
+    },
+    "entwicklung": {
+      "titel": "Konkretisera utvecklingsvägen",
+      "definition": "Omvandlar glappet till erfarenheter, uppgifter och stöd som synbart leder till målet."
+    },
+    "interessen": {
+      "titel": "Utforska intressen bakom positioner",
+      "definition": "Frågar vad den andra parten verkligen behöver, istället för att förhandla om eller motbevisa krav."
+    },
+    "standpunkt": {
+      "titel": "Företräd din egen ståndpunkt tydligt",
+      "definition": "Tar upp händelser och egna behov direkt och utan anklagelser, som en observation med effekt, och håller fast vid den."
+    },
+    "loesung": {
+      "titel": "Gemensam lösning istället för dålig kompromiss",
+      "definition": "Utvecklar tillsammans med den andra parten alternativ som tillgodoser båda intressen, och fattar beslut baserat på kriterier istället för makt."
+    },
+    "verbindlich": {
+      "titel": "Skapa förpliktelse",
+      "definition": "Säkrar åtaganden konkret: vem, vad, till när, och kontrollerar om åtagandet har substans."
+    },
+    "einstieg": {
+      "titel": "Inledning och tillstånd",
+      "definition": "Förtjänar rätten att fortsätta i de första meningarna: namn, anledning, relevans för den andra parten och ett ögonblick då den samtycker till att lyssna."
+    },
+    "abwimmeln": {
+      "titel": "Hantera avvisanden",
+      "definition": "Förblir lugn vid första 'inget intresse' eller 'skicka underlag', besvarar den konkreta invändningen och håller linjen öppen utan att pressa."
+    },
+    "relevanz": {
+      "titel": "Skapa relevans",
+      "definition": "Kopplar det egna erbjudandet till en konkret angelägenhet hos den andra parten, med belägg istället för slogan."
+    },
+    "qualifizieren": {
+      "titel": "Kvalificera",
+      "definition": "Klargör om det är värt att fortsätta: påverkan, brådska, inblandade parter, tidigare försök."
+    },
+    "naechster-schritt": {
+      "titel": "Säkra nästa steg",
+      "definition": "Leder till ett konkret uppföljningssteg som den andra parten verkligen samtycker till: syfte, tidpunkt, deltagare."
+    },
+    "agenda": {
+      "titel": "Stäm av agendan",
+      "definition": "Klargör i början syfte, förlopp och önskat resultat och inhämtar den andra partens samtycke till detta."
+    },
+    "fragen": {
+      "titel": "Fråga och följ upp",
+      "definition": "Ställer öppna, välstrukturerade frågor och följer upp tills verkliga problem, istället för ytliga svar, blir synliga."
+    },
+    "spiegeln": {
+      "titel": "Lyssna och spegla",
+      "definition": "Visar förståelse genom att korrekt sammanfatta och bygga nästa fråga på svaret."
+    },
+    "bedarf-entscheider": {
+      "titel": "Klargör behov, beslutsfattare, budget, tidpunkt",
+      "definition": "Klargör i samtalet om ett verkligt problem finns, vem som beslutar, hur initiativ finansieras och om det finns en tidsplan."
+    },
+    "bedarf-finden": {
+      "titel": "Lyssna och hitta det verkliga behovet",
+      "definition": "Utforskar den andra partens situation innan lösningar presenteras, och hittar det verkliga behovet bakom kravet."
+    },
+    "empathie": {
+      "titel": "Konkret empati",
+      "definition": "Benämner den andra partens känsla eller insats konkret och trovärdigt, innan lösningar presenteras."
+    },
+    "verantwortung": {
+      "titel": "Ta ansvar",
+      "definition": "Tar personligen ansvar för lösningen av det konkreta problemet, utan att peka på andra, systemet eller regler."
+    },
+    "klar-relevant": {
+      "titel": "Förklara tydligt och relevant",
+      "definition": "Förklarar begripligt och kopplar information till det som är viktigt för den specifika parten."
+    },
+    "verbindlich-kunde": {
+      "titel": "Ett bindande nästa steg",
+      "definition": "Leder till en konkret, trovärdig handling som den andra parten uttryckligen accepterar, med ansvar och tidpunkt."
+    },
+    "kernbotschaft": {
+      "titel": "Håll fast vid kärnbudskapet",
+      "definition": "Har ett tydligt budskap och återkommer till det trots distraktion, press och följdfrågor."
+    },
+    "bruecke": {
+      "titel": "Bro till budskapet",
+      "definition": "Besvarar frågan kort och ärligt och leder sedan till det egna budskapet, utan att undvika det."
+    },
+    "keine-spekulation": {
+      "titel": "Ingen spekulation",
+      "definition": "Säger endast vad som är bekräftat, skiljer kunskap från antaganden och benämner öppet vad som ännu inte är känt."
+    },
+    "druck": {
+      "titel": "Lugn under press",
+      "definition": "Förblir lugn, artig och saklig vid skarpa, avbrytande eller suggestiva frågor."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Visa ansvar, drabbade först",
+      "definition": "Prioriterar drabbade och lösning före rättfärdigande och visar att företaget agerar."
+    }
+  },
+  "da": {
+    "rahmen": {
+      "titel": "Sæt rammen og skab tryghed",
+      "definition": "Fortæl indledningsvis, hvad samtalen handler om, og hvad formålet er, og adskil sag fra person."
+    },
+    "konkret": {
+      "titel": "Forbliv konkret",
+      "definition": "Beskriv observerbar adfærd og dens virkning i stedet for at sætte etiketter på, og hold fast i dette, selv under modstand."
+    },
+    "ursache": {
+      "titel": "Lyt dig frem til årsagen",
+      "definition": "Spørg ind til den andens perspektiv, byg videre på svarene og bliv ved, indtil den egentlige årsag er synlig, før løsninger præsenteres."
+    },
+    "ruhe": {
+      "titel": "Bevar roen under modstand",
+      "definition": "Forbliv rolig og respektfuld under modsigelse, afvisning eller angreb, hold fast i kernebudskabet og sænk temperaturen."
+    },
+    "vereinbarung": {
+      "titel": "Aftal næste skridt i fællesskab",
+      "definition": "Afslut med et konkret, tidsbestemt skridt, som den anden part har været med til at forme, inklusive støtte og en opfølgende aftale."
+    },
+    "anerkennung": {
+      "titel": "Anerkendelse med belæg",
+      "definition": "Anerkend præstation og indsats konkret og troværdigt, med eksempler, ikke som en floskel eller en optakt til kritik."
+    },
+    "luecke": {
+      "titel": "Benævn ærligt hullet/forskellen",
+      "definition": "Tal klart om forskellen mellem nuværende præstation og næste skridt, med eksempler, uden at forskønne eller såre."
+    },
+    "entwicklung": {
+      "titel": "Gør udviklingsvejen konkret",
+      "definition": "Oversæt hullet/forskellen til erfaringer, opgaver og støtte, der synligt fører til målet."
+    },
+    "interessen": {
+      "titel": "Udforsk interesser bag positioner",
+      "definition": "Spørg, hvad den anden part virkelig har brug for, i stedet for at forhandle eller afvise krav."
+    },
+    "standpunkt": {
+      "titel": "Fremfør dit eget standpunkt klart",
+      "definition": "Tal direkte og anklagefrit om hændelser og egne behov, som en observation med virkning, og hold fast i det."
+    },
+    "loesung": {
+      "titel": "Fælles løsning frem for et dovent kompromis",
+      "definition": "Udvikl sammen med den anden part muligheder, der tilgodeser begge interesser, og træf beslutning ud fra kriterier frem for magt."
+    },
+    "verbindlich": {
+      "titel": "Skab forpligtelse",
+      "definition": "Sikr konkrete tilsagn: hvem, hvad, hvornår, og tjek om tilsagnet har substans."
+    },
+    "einstieg": {
+      "titel": "Indledning og tilladelse",
+      "definition": "Gør dig fortjent til at tale videre i de første sætninger: navn, årsag, relevans for den anden part og et øjeblik, hvor vedkommende accepterer at lytte."
+    },
+    "abwimmeln": {
+      "titel": "Håndter afvisning",
+      "definition": "Forbliv rolig ved det første 'ikke interesseret' eller 'send mig noget materiale', besvar den konkrete indvending og hold linjen åben uden at presse."
+    },
+    "relevanz": {
+      "titel": "Skab relevans",
+      "definition": "Forbind dit eget tilbud med en konkret bekymring hos den anden part, med belæg frem for slogan."
+    },
+    "qualifizieren": {
+      "titel": "Kvalificer",
+      "definition": "Afdæk, om det er umagen værd: virkning, hastende karakter, involverede parter, tidligere forsøg."
+    },
+    "naechster-schritt": {
+      "titel": "Sikr næste skridt",
+      "definition": "Før til et konkret opfølgende skridt, som den anden part oprigtigt accepterer: formål, tidspunkt, involverede parter."
+    },
+    "agenda": {
+      "titel": "Aftal dagsordenen",
+      "definition": "Afdæk indledningsvis formål, proces og ønsket resultat og få den anden parts accept heraf."
+    },
+    "fragen": {
+      "titel": "Spørg og følg op",
+      "definition": "Stil åbne, velstrukturerede spørgsmål og følg op, indtil reelle problemer fremstår i stedet for overfladiske svar."
+    },
+    "spiegeln": {
+      "titel": "Lyt og spejl",
+      "definition": "Vis forståelse ved at opsummere præcist og bygge det næste spørgsmål på svaret."
+    },
+    "bedarf-entscheider": {
+      "titel": "Afdæk behov, beslutningstager, budget, tidspunkt",
+      "definition": "Afdæk i samtalen, om der er et reelt problem, hvem der beslutter, hvordan initiativer finansieres, og om der er en tidsplan."
+    },
+    "bedarf-finden": {
+      "titel": "Lyt og find det reelle behov",
+      "definition": "Udforsk den anden parts situation, før du foreslår løsninger, og find det egentlige behov bag kravet."
+    },
+    "empathie": {
+      "titel": "Konkret empati",
+      "definition": "Benævn den anden parts følelse eller indsats konkret og troværdigt, før du foreslår løsninger."
+    },
+    "verantwortung": {
+      "titel": "Tag ansvar",
+      "definition": "Tag personligt ansvar for løsningen af det konkrete problem, uden at pege på andre, systemet eller regler."
+    },
+    "klar-relevant": {
+      "titel": "Forklar klart og relevant",
+      "definition": "Forklar forståeligt og forbind information med det, der er vigtigt for den specifikke person."
+    },
+    "verbindlich-kunde": {
+      "titel": "Et bindende næste skridt",
+      "definition": "Før til en konkret, troværdig handling, som den anden part udtrykkeligt accepterer, med ansvar og tidspunkt."
+    },
+    "kernbotschaft": {
+      "titel": "Hold fast i kernebudskabet",
+      "definition": "Har et klart budskab og bringer det gentagne gange frem, trods distraktion, pres og opfølgende spørgsmål."
+    },
+    "bruecke": {
+      "titel": "Bro til budskabet",
+      "definition": "Besvar spørgsmålet kort og ærligt, og før derefter til dit eget budskab, uden at undvige."
+    },
+    "keine-spekulation": {
+      "titel": "Ingen spekulation",
+      "definition": "Sig kun, hvad der er dokumenteret, adskil viden fra formodning, og benævn åbent, hvad der endnu ikke er kendt."
+    },
+    "druck": {
+      "titel": "Rolig under pres",
+      "definition": "Forbliv rolig, høflig og saglig under skarpe, afbrydende eller ledende spørgsmål."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Vis ansvar, berørte parter først",
+      "definition": "Prioriter berørte parter og løsningen frem for retfærdiggørelse, og vis, at virksomheden handler."
+    }
+  },
+  "nb": {
+    "rahmen": {
+      "titel": "Sette rammen og skape trygghet",
+      "definition": "Si innledningsvis hva samtalen handler om og med hvilken hensikt, og skille sak fra person."
+    },
+    "konkret": {
+      "titel": "Være konkret",
+      "definition": "Nevne observerbar atferd og dens virkning i stedet for merkelapper, og holde fast ved dette selv under motstand."
+    },
+    "ursache": {
+      "titel": "Lytte til årsaken",
+      "definition": "Spørre etter den andres syn, bygge videre på svar og holde fast til den egentlige årsaken blir synlig, før løsninger presenteres."
+    },
+    "ruhe": {
+      "titel": "Forbli rolig under motstand",
+      "definition": "Forbli rolig og respektfull ved motstand, forsvar eller angrep, holde fast ved kjernebudskapet og senke temperaturen."
+    },
+    "vereinbarung": {
+      "titel": "Bli enige om neste skritt",
+      "definition": "Avslutte med et konkret, tidsbestemt skritt som den andre har bidratt til å forme, inkludert støtte og en oppfølgingsdato."
+    },
+    "anerkennung": {
+      "titel": "Anerkjennelse med belegg",
+      "definition": "Verdsette innsats og resultater konkret og troverdig, med eksempler, ikke som en frase eller innledning til kritikk."
+    },
+    "luecke": {
+      "titel": "Navngi gapet ærlig",
+      "definition": "Tydelig adressere forskjellen mellom dagens prestasjon og neste skritt, med eksempler, uten å pynte på sannheten eller såre."
+    },
+    "entwicklung": {
+      "titel": "Gjøre utviklingsveien konkret",
+      "definition": "Omsette gapet til erfaringer, oppgaver og støtte som synlig fører til målet."
+    },
+    "interessen": {
+      "titel": "Utforske interesser bak posisjoner",
+      "definition": "Spørre hva den andre virkelig trenger, i stedet for å forhandle om eller tilbakevise krav."
+    },
+    "standpunkt": {
+      "titel": "Tydelig fremlegge eget standpunkt",
+      "definition": "Ta opp hendelser og egne behov direkte og uten bebreidelse, som en observasjon med virkning, og holde fast ved det."
+    },
+    "loesung": {
+      "titel": "Felles løsning, ikke et dårlig kompromiss",
+      "definition": "Utvikle alternativer med den andre som ivaretar begge parters interesser, og ta beslutninger basert på kriterier i stedet for makt."
+    },
+    "verbindlich": {
+      "titel": "Skape forpliktelse",
+      "definition": "Sikre konkrete avtaler: hvem, hva, innen når, og sjekke om avtalen har substans."
+    },
+    "einstieg": {
+      "titel": "Innledning og tillatelse",
+      "definition": "Gjøre seg fortjent til å fortsette i de første setningene: navn, grunn, relevans for den andre og et øyeblikk der den andre samtykker til å lytte."
+    },
+    "abwimmeln": {
+      "titel": "Håndtere avvisning",
+      "definition": "Forbli rolig ved første «ikke interessert» eller «send meg dokumenter», besvare den konkrete innvendingen og holde dialogen åpen, uten å presse."
+    },
+    "relevanz": {
+      "titel": "Skape relevans",
+      "definition": "Knytte eget tilbud til en konkret bekymring hos den andre, med belegg i stedet for slagord."
+    },
+    "qualifizieren": {
+      "titel": "Kvalifisere",
+      "definition": "Avklare om det er verdt å forfølge: virkning, hast, involverte parter, tidligere forsøk."
+    },
+    "naechster-schritt": {
+      "titel": "Sikre neste skritt",
+      "definition": "Føre til et konkret oppfølgingsskritt som den andre virkelig samtykker til: formål, tidspunkt, involverte parter."
+    },
+    "agenda": {
+      "titel": "Avstemme agendaen",
+      "definition": "Avklare formål, fremgangsmåte og ønsket resultat i starten, og innhente den andres samtykke til dette."
+    },
+    "fragen": {
+      "titel": "Spørre og følge opp",
+      "definition": "Stille åpne, velstrukturerte spørsmål og følge opp til ekte problemer blir synlige i stedet for overfladiske svar."
+    },
+    "spiegeln": {
+      "titel": "Lytte og speile",
+      "definition": "Vise forståelse ved å oppsummere nøyaktig og bygge neste spørsmål på svaret."
+    },
+    "bedarf-entscheider": {
+      "titel": "Avklare behov, beslutningstaker, budsjett, tidspunkt",
+      "definition": "Avklare i samtalen om det foreligger et reelt problem, hvem som beslutter, hvordan tiltak finansieres og om det finnes en tidsramme."
+    },
+    "bedarf-finden": {
+      "titel": "Lytte og finne det reelle behovet",
+      "definition": "Utforske den andres situasjon før man løser, og finne det egentlige behovet bak kravet."
+    },
+    "empathie": {
+      "titel": "Konkret empati",
+      "definition": "Navngi den andres følelse eller innsats konkret og troverdig, før man løser noe."
+    },
+    "verantwortung": {
+      "titel": "Ta ansvar",
+      "definition": "Personlig ta ansvar for løsningen av det konkrete problemet, uten å peke på andre, systemet eller regler."
+    },
+    "klar-relevant": {
+      "titel": "Forklare klart og relevant",
+      "definition": "Forklare forståelig og knytte informasjon til det som er viktig for den andre."
+    },
+    "verbindlich-kunde": {
+      "titel": "Et forpliktende neste skritt",
+      "definition": "Føre til en konkret, troverdig handling som den andre uttrykkelig aksepterer, med ansvar og tidspunkt."
+    },
+    "kernbotschaft": {
+      "titel": "Holde fast ved kjernebudskapet",
+      "definition": "Ha et klart budskap og stadig bringe det tilbake, til tross for distraksjon, press og oppfølgingsspørsmål."
+    },
+    "bruecke": {
+      "titel": "Bro til budskapet",
+      "definition": "Besvare spørsmålet kort og ærlig, og deretter lede til eget budskap, uten å unnvike."
+    },
+    "keine-spekulation": {
+      "titel": "Ingen spekulasjon",
+      "definition": "Si kun det som er dokumentert, skille kunnskap fra antakelser og åpent navngi det som ennå ikke er kjent."
+    },
+    "druck": {
+      "titel": "Rolig under press",
+      "definition": "Forbli rolig, høflig og saklig ved skarpe, avbrytende eller suggestive spørsmål."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Vise ansvar, berørte først",
+      "definition": "Prioritere berørte og løsning foran rettferdiggjørelse, og vise at selskapet handler."
+    }
+  },
+  "fi": {
+    "rahmen": {
+      "titel": "Luo puitteet ja turvallinen ilmapiiri",
+      "definition": "Kerro alussa, mistä keskustelussa on kyse ja miksi, ja erota asia henkilöstä."
+    },
+    "konkret": {
+      "titel": "Pysy konkreettisena",
+      "definition": "Nimeä havaittava käyttäytyminen ja sen vaikutus leimojen sijaan, ja pidä tästä kiinni myös vastustuksen edessä."
+    },
+    "ursache": {
+      "titel": "Kuuntele syyhyn asti",
+      "definition": "Kysy toisen näkemystä, hyödynnä vastauksia ja pysy asiassa, kunnes todellinen syy on näkyvissä, ennen ratkaisujen esittämistä."
+    },
+    "ruhe": {
+      "titel": "Pysy rauhallisena vastustuksen edessä",
+      "definition": "Pysy tyynenä ja kunnioittavana vastustuksen, puolustelun tai hyökkäyksen edessä, pidä kiinni ydinviestistä ja laske jännitettä."
+    },
+    "vereinbarung": {
+      "titel": "Sovi seuraavasta askeleesta yhdessä",
+      "definition": "Päätä keskustelu konkreettiseen, aikataulutettuun askeleeseen, jonka toinen osapuoli on ollut mukana muotoilemassa, sisältäen tuen ja seurantatapaamisen."
+    },
+    "anerkennung": {
+      "titel": "Tunnustus todistein",
+      "definition": "Arvosta suoritusta ja panosta konkreettisesti ja uskottavasti, esimerkin kera, ei fraasina tai kritiikin johdantona."
+    },
+    "luecke": {
+      "titel": "Nimeä puute rehellisesti",
+      "definition": "Käsittele selkeästi tämänhetkisen suorituksen ja seuraavan askeleen välistä eroa, esimerkkien avulla, kaunistelematta tai loukkaamatta."
+    },
+    "entwicklung": {
+      "titel": "Konkretisoi kehityspolku",
+      "definition": "Muunna puute kokemuksiksi, tehtäviksi ja tueksi, jotka johtavat näkyvästi tavoitteeseen."
+    },
+    "interessen": {
+      "titel": "Tutki intressejä kantojen takana",
+      "definition": "Kysy, mitä toinen todella tarvitsee, sen sijaan että neuvottelisit tai kiistäisit vaatimuksia."
+    },
+    "standpunkt": {
+      "titel": "Esitä oma näkökantasi selkeästi",
+      "definition": "Käsittele tapahtumia ja omia tarpeita suoraan ja syyttämättä, havaintona ja sen vaikutuksena, ja pidä niistä kiinni."
+    },
+    "loesung": {
+      "titel": "Yhteinen ratkaisu, ei laiska kompromissi",
+      "definition": "Kehitä toisen osapuolen kanssa vaihtoehtoja, jotka palvelevat molempien intressejä, ja päätä kriteerien, ei vallan, perusteella."
+    },
+    "verbindlich": {
+      "titel": "Luo sitovuutta",
+      "definition": "Varmista sitoumukset konkreettisesti: kuka, mitä, mihin mennessä, ja tarkista, onko sitoumuksella sisältöä."
+    },
+    "einstieg": {
+      "titel": "Aloitus ja lupa",
+      "definition": "Ansaitse oikeus jatkaa puhumista ensimmäisillä lauseilla: nimi, syy, merkityksellisyys toiselle osapuolelle ja hetki, jolloin hän suostuu kuuntelemaan."
+    },
+    "abwimmeln": {
+      "titel": "Käsittele torjunta",
+      "definition": "Pysy rauhallisena ensimmäisen 'ei kiinnosta' tai 'lähetä materiaalia' -vastauksen jälkeen, vastaa konkreettiseen vastalauseeseen ja pidä linja auki painostamatta."
+    },
+    "relevanz": {
+      "titel": "Luo merkityksellisyyttä",
+      "definition": "Yhdistä oma tarjous toisen osapuolen konkreettiseen huoleen, todistein iskulauseiden sijaan."
+    },
+    "qualifizieren": {
+      "titel": "Kartoita",
+      "definition": "Selvitä, kannattaako asiaa edistää: vaikutus, kiireellisyys, osalliset, aiemmat yritykset."
+    },
+    "naechster-schritt": {
+      "titel": "Varmista seuraava askel",
+      "definition": "Johda konkreettiseen seuraavaan askeleeseen, johon toinen osapuoli todella suostuu: tarkoitus, ajankohta, osalliset."
+    },
+    "agenda": {
+      "titel": "Sovi asialistasta",
+      "definition": "Selvitä alussa tarkoitus, kulku ja toivottu tulos ja hanki niihin toisen osapuolen suostumus."
+    },
+    "fragen": {
+      "titel": "Kysy ja seuraa",
+      "definition": "Esitä avoimia, hyvin jäsenneltyjä kysymyksiä ja seuraa niitä, kunnes todelliset ongelmat pintavastausten sijaan ovat näkyvissä."
+    },
+    "spiegeln": {
+      "titel": "Kuuntele ja peilaa",
+      "definition": "Osoita ymmärrystä tiivistämällä tarkasti ja rakentamalla seuraava kysymys vastauksen pohjalle."
+    },
+    "bedarf-entscheider": {
+      "titel": "Selvitä tarve, päättäjä, budjetti, ajankohta",
+      "definition": "Selvitä keskustelussa, onko olemassa todellinen ongelma, kuka päättää, miten hankkeet rahoitetaan ja onko niille aikataulua."
+    },
+    "bedarf-finden": {
+      "titel": "Kuuntele ja löydä todellinen tarve",
+      "definition": "Tutki toisen osapuolen tilannetta ennen ratkaisujen esittämistä ja löydä todellinen tarve vaatimuksen takaa."
+    },
+    "empathie": {
+      "titel": "Konkreettinen empatia",
+      "definition": "Nimeä toisen osapuolen tunne tai panostus konkreettisesti ja uskottavasti ennen ratkaisujen esittämistä."
+    },
+    "verantwortung": {
+      "titel": "Ota vastuu",
+      "definition": "Ota henkilökohtaisesti vastuu konkreettisen ongelman ratkaisusta osoittamatta muita, järjestelmää tai sääntöjä."
+    },
+    "klar-relevant": {
+      "titel": "Selitä selkeästi ja merkityksellisesti",
+      "definition": "Selitä ymmärrettävästi ja yhdistä tieto siihen, mikä on tärkeää tälle tietylle henkilölle."
+    },
+    "verbindlich-kunde": {
+      "titel": "Sitova seuraava askel",
+      "definition": "Johda konkreettiseen, uskottavaan toimenpiteeseen, jonka toinen osapuoli nimenomaisesti hyväksyy, vastuineen ja ajankohtineen."
+    },
+    "kernbotschaft": {
+      "titel": "Pidä kiinni ydinviestistä",
+      "definition": "Pidä selkeä viesti ja tuo se esiin yhä uudelleen huolimatta häiriötekijöistä, paineesta ja lisäkysymyksistä."
+    },
+    "bruecke": {
+      "titel": "Silta viestiin",
+      "definition": "Vastaa kysymykseen lyhyesti ja rehellisesti ja johda sitten omaan viestiin väistelemättä."
+    },
+    "keine-spekulation": {
+      "titel": "Ei spekulaatiota",
+      "definition": "Kerro vain se, mikä on todennettu, erota tieto oletuksesta ja nimeä avoimesti, mikä ei ole vielä tiedossa."
+    },
+    "druck": {
+      "titel": "Rauhallisena paineen alla",
+      "definition": "Pysy rauhallisena, kohteliaana ja asiassa terävien, keskeyttävien tai johdattelevien kysymysten edessä."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Osoita vastuuta, asianosaiset ensin",
+      "definition": "Aseta asianosaiset ja ratkaisu oikeutuksen edelle ja osoita, että yritys toimii."
+    }
+  },
+  "et": {
+    "rahmen": {
+      "titel": "Raamistiku loomine ja turvalisuse tagamine",
+      "definition": "Vestluse alguses selgitatakse eesmärki ja kavatsust ning eristatakse teemat isikust."
+    },
+    "konkret": {
+      "titel": "Jääda konkreetseks",
+      "definition": "Nimetatakse vaadeldavat käitumist ja selle mõju sildistamise asemel ning hoitakse sellest kinni ka vastuväidete korral."
+    },
+    "ursache": {
+      "titel": "Kuulata põhjuseni",
+      "definition": "Küsitakse vestluspartneri vaatenurka, võetakse vastused arvesse ja jätkatakse, kuni tegelik põhjus on nähtav, enne lahenduste pakkumist."
+    },
+    "ruhe": {
+      "titel": "Säilitada rahu vastupanu korral",
+      "definition": "Vastuväidete, kaitsehoiakute või rünnakute korral jäädakse rahulikuks ja lugupidavaks, hoitakse kinni põhisõnumist ning alandatakse pingeid."
+    },
+    "vereinbarung": {
+      "titel": "Järgmine samm ühiselt kokku leppida",
+      "definition": "Lõpetatakse konkreetse, tähtajalise sammuga, mille kujundamisel on vestluspartner osalenud, sh toetus ja järelkohtumine."
+    },
+    "anerkennung": {
+      "titel": "Tunnustus tõenditega",
+      "definition": "Tunnustatakse saavutusi ja pingutusi konkreetselt ja usutavalt, näitega, mitte fraasina või kriitika sissejuhatusena."
+    },
+    "luecke": {
+      "titel": "Lünga aus nimetamine",
+      "definition": "Räägitakse selgelt tänase soorituse ja järgmise sammu vahest, näidetega, ilustamata või haavamata."
+    },
+    "entwicklung": {
+      "titel": "Arendustee konkretiseerimine",
+      "definition": "Lünk tõlgitakse kogemusteks, ülesanneteks ja toetuseks, mis viivad nähtavalt eesmärgini."
+    },
+    "interessen": {
+      "titel": "Huvide uurimine seisukohtade taga",
+      "definition": "Küsitakse, mida vestluspartner tegelikult vajab, selle asemel et nõudmiste üle kaubelda või neid ümber lükata."
+    },
+    "standpunkt": {
+      "titel": "Oma seisukoha selge väljendamine",
+      "definition": "Käsitletakse juhtumeid ja oma vajadusi otse ja süüdistusteta, kui vaatlust koos mõjuga, ja hoitakse sellest kinni."
+    },
+    "loesung": {
+      "titel": "Ühine lahendus, mitte laisk kompromiss",
+      "definition": "Arendatakse koos vestluspartneriga valikuid, mis arvestavad mõlema poole huve, ja otsustatakse kriteeriumide, mitte võimu alusel."
+    },
+    "verbindlich": {
+      "titel": "Siduvuse loomine",
+      "definition": "Tagatakse lubadused konkreetselt: kes, mida, mis ajaks, ja kontrollitakse, kas lubadusel on sisu."
+    },
+    "einstieg": {
+      "titel": "Sissejuhatus ja luba",
+      "definition": "Esimese lausetega teenitakse õigus jätkata: nimi, põhjus, seos vestluspartneriga ja hetk, mil ta nõustub kuulama."
+    },
+    "abwimmeln": {
+      "titel": "Tagasilükkamise käsitlemine",
+      "definition": "Esimese „pole huvi“ või „saatke materjalid“ peale jäädakse rahulikuks, vastatakse konkreetsele vastuväitele ja hoitakse liini avatuna, ilma survet avaldamata."
+    },
+    "relevanz": {
+      "titel": "Asjakohasuse loomine",
+      "definition": "Ühendatakse oma pakkumine vestluspartneri konkreetse murega, tõenditega, mitte loosungiga."
+    },
+    "qualifizieren": {
+      "titel": "Kvalifitseerimine",
+      "definition": "Selgitatakse välja, kas see on väärt jätkamist: mõju, kiireloomulisus, osalejad, varasemad katsed."
+    },
+    "naechster-schritt": {
+      "titel": "Järgmise sammu kindlustamine",
+      "definition": "Viib konkreetse järelsammu juurde, millega vestluspartner tõeliselt nõustub: eesmärk, aeg, osalejad."
+    },
+    "agenda": {
+      "titel": "Päevakorra kooskõlastamine",
+      "definition": "Alguses selgitatakse eesmärk, käik ja soovitud tulemus ning saadakse selleks vestluspartneri nõusolek."
+    },
+    "fragen": {
+      "titel": "Küsimine ja järelküsimine",
+      "definition": "Esitatakse avatud, hästi järjestatud küsimusi ja küsitakse edasi, kuni pinnapealsete vastuste asemel on nähtavad tegelikud probleemid."
+    },
+    "spiegeln": {
+      "titel": "Kuulamine ja peegeldamine",
+      "definition": "Näidatakse mõistmist, võttes täpselt kokku ja ehitades järgmise küsimuse vastusele."
+    },
+    "bedarf-entscheider": {
+      "titel": "Vajaduse, otsustaja, eelarve, ajastuse selgitamine",
+      "definition": "Vestluses selgitatakse välja, kas on olemas tegelik probleem, kes otsustab, kuidas ettevõtmisi rahastatakse ja kas on olemas ajakava."
+    },
+    "bedarf-finden": {
+      "titel": "Kuulamine ja tegeliku vajaduse leidmine",
+      "definition": "Uuritakse vestluspartneri olukorda enne lahenduste pakkumist ja leitakse tegelik vajadus nõudmiste taga."
+    },
+    "empathie": {
+      "titel": "Konkreetne empaatia",
+      "definition": "Nimetatakse vestluspartneri tunnet või pingutust konkreetselt ja usutavalt, enne lahenduste pakkumist."
+    },
+    "verantwortung": {
+      "titel": "Vastutuse võtmine",
+      "definition": "Võetakse isiklikult vastutus konkreetse probleemi lahendamise eest, viitamata teistele, süsteemile või reeglitele."
+    },
+    "klar-relevant": {
+      "titel": "Selge ja asjakohane selgitamine",
+      "definition": "Selgitatakse arusaadavalt ja seotakse informatsioon sellega, mis on vestluspartnerile oluline."
+    },
+    "verbindlich-kunde": {
+      "titel": "Siduv järgmine samm",
+      "definition": "Viib konkreetse, usutava tegevuseni, mille vestluspartner selgesõnaliselt aktsepteerib, koos vastutuse ja ajastusega."
+    },
+    "kernbotschaft": {
+      "titel": "Põhisõnumi hoidmine",
+      "definition": "Omab selget sõnumit ja toob seda korduvalt esile vaatamata segajatele, survele ja järelküsimustele."
+    },
+    "bruecke": {
+      "titel": "Sild sõnumini",
+      "definition": "Vastatakse küsimusele lühidalt ja ausalt ning seejärel suunatakse oma sõnumile, vältimata kõrvalepõikeid."
+    },
+    "keine-spekulation": {
+      "titel": "Spekulatsioonide vältimine",
+      "definition": "Öeldakse ainult seda, mis on tõendatud, eristatakse teadmisi oletustest ja nimetatakse avatult, mis on veel teadmata."
+    },
+    "druck": {
+      "titel": "Rahulik surve all",
+      "definition": "Jäädakse teravate, katkestavate või suunavate küsimuste korral rahulikuks, viisakaks ja asjalikuks."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Vastutuse näitamine, kannatanud esikohale",
+      "definition": "Asetatakse kannatanud ja lahendus õigustuste ette ning näidatakse, et ettevõte tegutseb."
+    }
+  },
+  "lv": {
+    "rahmen": {
+      "titel": "Noteikt ietvaru un radīt drošību",
+      "definition": "Sarunas sākumā paskaidro, par ko ir runa un ar kādu nolūku, un atdala jautājumu no personas."
+    },
+    "konkret": {
+      "titel": "Palikt konkrētam",
+      "definition": "Nosauc novērojamu uzvedību un tās ietekmi, nevis lieto birkas, un pie tā pieturas arī pretestības apstākļos."
+    },
+    "ursache": {
+      "titel": "Uzklausīt līdz cēlonim",
+      "definition": "Jautā par otra viedokli, balstās uz atbildēm un turpina, līdz ir redzams patiesais iemesls, pirms piedāvā risinājumus."
+    },
+    "ruhe": {
+      "titel": "Saglabāt mieru pretestības apstākļos",
+      "definition": "Pretrunu, aizsardzības vai uzbrukuma gadījumā paliek mierīgs un cieņpilns, saglabā galveno vēstījumu un samazina spriedzi."
+    },
+    "vereinbarung": {
+      "titel": "Kopīgi vienoties par nākamo soli",
+      "definition": "Noslēdz ar konkrētu, termiņotu soli, ko otra puse ir palīdzējusi veidot, ieskaitot atbalstu un nākamo tikšanos."
+    },
+    "anerkennung": {
+      "titel": "Atzinība ar piemēru",
+      "definition": "Novērtē sniegumu un pūles konkrēti un ticami, ar piemēru, nevis kā frāzi vai ievadu kritikai."
+    },
+    "luecke": {
+      "titel": "Godīgi norādīt uz atšķirību",
+      "definition": "Skaidri norāda uz atšķirību starp pašreizējo sniegumu un nākamo soli, ar piemēriem, neskaistinot un neaizskarot."
+    },
+    "entwicklung": {
+      "titel": "Konkretizēt attīstības ceļu",
+      "definition": "Pārvērš atšķirību pieredzē, uzdevumos un atbalstā, kas redzami ved uz mērķi."
+    },
+    "interessen": {
+      "titel": "Izpētīt intereses aiz pozīcijām",
+      "definition": "Jautā, kas otram patiešām ir nepieciešams, nevis apspriest vai atspēkot prasības."
+    },
+    "standpunkt": {
+      "titel": "Skaidri paust savu viedokli",
+      "definition": "Tieši un bez pārmetumiem runā par notikumiem un savām vajadzībām, kā novērojumu ar ietekmi, un to uztur."
+    },
+    "loesung": {
+      "titel": "Kopīgs risinājums, nevis vājš kompromiss",
+      "definition": "Kopā ar otru pusi izstrādā iespējas, kas atbalsta abas intereses, un pieņem lēmumus, pamatojoties uz kritērijiem, nevis uz varu."
+    },
+    "verbindlich": {
+      "titel": "Nodrošināt saistošumu",
+      "definition": "Konkretizē solījumus: kas, ko, līdz kuram laikam, un pārbauda, vai solījumam ir pamats."
+    },
+    "einstieg": {
+      "titel": "Ievads un atļauja",
+      "definition": "Pirmajos teikumos nopelna tiesības turpināt runāt: vārds, iemesls, saistība ar otru pusi un brīdis, kad viņš piekrīt klausīties."
+    },
+    "abwimmeln": {
+      "titel": "Pārvarēt atraidījumu",
+      "definition": "Paliek mierīgs, dzirdot pirmo „nav intereses“ vai „atsūtiet dokumentus“, atbild uz konkrēto iebildumu un saglabā saziņu atvērtu, bez spiediena."
+    },
+    "relevanz": {
+      "titel": "Nodrošināt atbilstību",
+      "definition": "Saista savu piedāvājumu ar otra puses konkrētu vajadzību, ar pierādījumu, nevis saukli."
+    },
+    "qualifizieren": {
+      "titel": "Noskaidrot atbilstību",
+      "definition": "Noskaidro, vai ir vērts: ietekme, steidzamība, iesaistītās puses, iepriekšējie mēģinājumi."
+    },
+    "naechster-schritt": {
+      "titel": "Nodrošināt nākamo soli",
+      "definition": "Novirza uz konkrētu nākamo soli, kam otra puse patiešām piekrīt: mērķis, laiks, iesaistītās personas."
+    },
+    "agenda": {
+      "titel": "Saskaņot darba kārtību",
+      "definition": "Sākumā noskaidro mērķi, norisi un vēlamo rezultātu un saņem otra puses piekrišanu."
+    },
+    "fragen": {
+      "titel": "Jautāt un precizēt",
+      "definition": "Uzdot atvērtus, labi sakārtotus jautājumus un precizē, līdz ir redzamas patiesas problēmas, nevis virspusējas atbildes."
+    },
+    "spiegeln": {
+      "titel": "Klausīties un atspoguļot",
+      "definition": "Parāda izpratni, precīzi apkopojot un veidojot nākamo jautājumu, balstoties uz atbildi."
+    },
+    "bedarf-entscheider": {
+      "titel": "Noskaidrot vajadzību, lēmēju, budžetu, laiku",
+      "definition": "Sarunā noskaidro, vai pastāv reāla problēma, kurš pieņem lēmumus, kā tiek finansēti projekti un vai ir noteikts termiņš."
+    },
+    "bedarf-finden": {
+      "titel": "Klausīties un atrast vajadzību",
+      "definition": "Izpēta otra puses situāciju, pirms piedāvā risinājumus, un atrod patieso vajadzību aiz prasības."
+    },
+    "empathie": {
+      "titel": "Konkrēta empātija",
+      "definition": "Konkrēti un ticami nosauc otra puses sajūtas vai ieguldījumu, pirms piedāvā risinājumus."
+    },
+    "verantwortung": {
+      "titel": "Uznemties atbildību",
+      "definition": "Personīgi uzņemas konkrētās problēmas risināšanu, nenorādot uz citiem, sistēmu vai noteikumiem."
+    },
+    "klar-relevant": {
+      "titel": "Skaidri un atbilstoši paskaidrot",
+      "definition": "Paskaidro saprotami un saista informāciju ar to, kas ir svarīgs otrai pusei."
+    },
+    "verbindlich-kunde": {
+      "titel": "Saistošs nākamais solis",
+      "definition": "Novirza uz konkrētu, ticamu darbību, ko otra puse skaidri pieņem, ar atbildību un termiņu."
+    },
+    "kernbotschaft": {
+      "titel": "Saglabāt galveno vēstījumu",
+      "definition": "Ir skaidrs vēstījums un to atkārtoti pauž, neskatoties uz uzmanības novēršanu, spiedienu un papildu jautājumiem."
+    },
+    "bruecke": {
+      "titel": "Tilts uz vēstījumu",
+      "definition": "Īsi un godīgi atbild uz jautājumu un pēc tam novirza uz savu vēstījumu, neizvairoties."
+    },
+    "keine-spekulation": {
+      "titel": "Bez spekulācijām",
+      "definition": "Saka tikai to, kas ir pierādīts, atdala zināšanas no pieņēmumiem un atklāti nosauc to, kas vēl nav zināms."
+    },
+    "druck": {
+      "titel": "Mierīgs zem spiediena",
+      "definition": "Asu, pārtraucošu vai suģestējošu jautājumu gadījumā paliek mierīgs, pieklājīgs un pie lietas."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Parādīt atbildību, vispirms iesaistītie",
+      "definition": "Izvirza iesaistītos un risinājumu pirms attaisnojumiem un parāda, ka uzņēmums rīkojas."
+    }
+  },
+  "pl": {
+    "rahmen": {
+      "titel": "Ustalanie ram i zapewnianie bezpieczeństwa",
+      "definition": "Na początku rozmowy jasno określa jej cel i intencje, oddzielając problem od osoby."
+    },
+    "konkret": {
+      "titel": "Pozostawanie konkretnym",
+      "definition": "Nazywa obserwowalne zachowania i ich wpływ zamiast etykiet, utrzymując to stanowisko nawet w obliczu sprzeciwu."
+    },
+    "ursache": {
+      "titel": "Słuchanie do sedna sprawy",
+      "definition": "Pyta o punkt widzenia rozmówcy, nawiązuje do odpowiedzi i drąży temat, aż prawdziwa przyczyna stanie się widoczna, zanim zaproponuje rozwiązania."
+    },
+    "ruhe": {
+      "titel": "Zachowanie spokoju w obliczu oporu",
+      "definition": "W obliczu sprzeciwu, obrony lub ataku pozostaje spokojny i pełen szacunku, podtrzymuje główną wiadomość i obniża napięcie."
+    },
+    "vereinbarung": {
+      "titel": "Wspólne uzgadnianie kolejnego kroku",
+      "definition": "Kończy rozmowę konkretnym, terminowym krokiem, który rozmówca współtworzył, wraz z wsparciem i terminem kontynuacji."
+    },
+    "anerkennung": {
+      "titel": "Uznanie poparte dowodami",
+      "definition": "Docenia osiągnięcia i zaangażowanie w sposób konkretny i wiarygodny, z przykładem, a nie jako frazes czy wstęp do krytyki."
+    },
+    "luecke": {
+      "titel": "Uczciwe nazywanie luki",
+      "definition": "Jasno wskazuje różnicę między obecnymi wynikami a kolejnym krokiem, podając przykłady, bez upiększania czy ranienia."
+    },
+    "entwicklung": {
+      "titel": "Konkretyzowanie ścieżki rozwoju",
+      "definition": "Przekłada lukę na doświadczenia, zadania i wsparcie, które w widoczny sposób prowadzą do celu."
+    },
+    "interessen": {
+      "titel": "Badanie interesów stojących za stanowiskami",
+      "definition": "Pyta, czego rozmówca naprawdę potrzebuje, zamiast negocjować lub obalać żądania."
+    },
+    "standpunkt": {
+      "titel": "Jasne przedstawianie własnego stanowiska",
+      "definition": "Bezpośrednio i bez zarzutów porusza incydenty i własne potrzeby, jako obserwację z konsekwencjami, i wytrzymuje to."
+    },
+    "loesung": {
+      "titel": "Wspólne rozwiązanie zamiast leniwego kompromisu",
+      "definition": "Wspólnie z rozmówcą opracowuje opcje, które uwzględniają interesy obu stron, i decyduje na podstawie kryteriów, a nie siły."
+    },
+    "verbindlich": {
+      "titel": "Ustanawianie wiążących ustaleń",
+      "definition": "Konkretyzuje zobowiązania: kto, co, do kiedy, i sprawdza, czy zobowiązanie ma realną podstawę."
+    },
+    "einstieg": {
+      "titel": "Wstęp i uzyskanie zgody",
+      "definition": "W pierwszych zdaniach zdobywa prawo do kontynuowania rozmowy: imię, powód, odniesienie do rozmówcy i moment, w którym zgadza się słuchać."
+    },
+    "abwimmeln": {
+      "titel": "Radzenie sobie ze zbywaniem",
+      "definition": "Przy pierwszym „brak zainteresowania” lub „proszę wysłać materiały” pozostaje spokojny, odpowiada na konkretny zarzut i utrzymuje otwartą linię, nie naciskając."
+    },
+    "relevanz": {
+      "titel": "Budowanie relewancji",
+      "definition": "Łączy własną ofertę z konkretną potrzebą rozmówcy, popierając to dowodami, a nie sloganami."
+    },
+    "qualifizieren": {
+      "titel": "Kwalifikowanie",
+      "definition": "Ustala, czy warto kontynuować: wpływ, pilność, zaangażowane strony, dotychczasowe próby."
+    },
+    "naechster-schritt": {
+      "titel": "Zabezpieczanie kolejnego kroku",
+      "definition": "Prowadzi do konkretnego, kolejnego kroku, na który rozmówca naprawdę się zgadza: cel, termin, uczestnicy."
+    },
+    "agenda": {
+      "titel": "Uzgadnianie agendy",
+      "definition": "Na początku wyjaśnia cel, przebieg i pożądany wynik, uzyskując na to zgodę rozmówcy."
+    },
+    "fragen": {
+      "titel": "Pytanie i drążenie tematu",
+      "definition": "Zadaje otwarte, dobrze ułożone pytania i drąży temat, aż widoczne staną się prawdziwe problemy, a nie powierzchowne odpowiedzi."
+    },
+    "spiegeln": {
+      "titel": "Słuchanie i odzwierciedlanie",
+      "definition": "Pokazuje zrozumienie, trafnie podsumowując i budując kolejne pytanie na podstawie odpowiedzi."
+    },
+    "bedarf-entscheider": {
+      "titel": "Wyjaśnianie potrzeby, decydenta, budżetu, terminu",
+      "definition": "W rozmowie ustala, czy istnieje prawdziwy problem, kto podejmuje decyzje, jak finansowane są przedsięwzięcia i czy jest określony termin."
+    },
+    "bedarf-finden": {
+      "titel": "Słuchanie i znajdowanie prawdziwej potrzeby",
+      "definition": "Bada sytuację rozmówcy, zanim zaproponuje rozwiązanie, i znajduje prawdziwą potrzebę stojącą za żądaniem."
+    },
+    "empathie": {
+      "titel": "Konkretna empatia",
+      "definition": "Nazywa uczucie lub zaangażowanie rozmówcy w sposób konkretny i wiarygodny, zanim zaproponuje rozwiązanie."
+    },
+    "verantwortung": {
+      "titel": "Przyjmowanie odpowiedzialności",
+      "definition": "Osobiście bierze na siebie rozwiązanie konkretnego problemu, nie wskazując na innych, system czy zasady."
+    },
+    "klar-relevant": {
+      "titel": "Wyjaśnianie jasno i relewantnie",
+      "definition": "Wyjaśnia w zrozumiały sposób i łączy informacje z tym, co jest ważne dla danego rozmówcy."
+    },
+    "verbindlich-kunde": {
+      "titel": "Wiążący kolejny krok",
+      "definition": "Prowadzi do konkretnego, wiarygodnego działania, które rozmówca wyraźnie akceptuje, z określeniem odpowiedzialności i terminu."
+    },
+    "kernbotschaft": {
+      "titel": "Utrzymywanie głównego przekazu",
+      "definition": "Ma jasny przekaz i konsekwentnie do niego wraca, pomimo rozproszeń, presji i dodatkowych pytań."
+    },
+    "bruecke": {
+      "titel": "Most do przekazu",
+      "definition": "Odpowiada na pytanie krótko i szczerze, a następnie przechodzi do własnego przekazu, nie unikając tematu."
+    },
+    "keine-spekulation": {
+      "titel": "Brak spekulacji",
+      "definition": "Mówi tylko to, co jest udowodnione, oddziela wiedzę od przypuszczeń i otwarcie nazywa to, co jeszcze nie jest znane."
+    },
+    "druck": {
+      "titel": "Spokój pod presją",
+      "definition": "W obliczu ostrych, przerywających lub sugestywnych pytań pozostaje spokojny, uprzejmy i rzeczowy."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Okazywanie odpowiedzialności, najpierw poszkodowani",
+      "definition": "Stawia poszkodowanych i rozwiązanie przed usprawiedliwieniami i pokazuje, że firma działa."
+    }
+  },
+  "cs": {
+    "rahmen": {
+      "titel": "Nastavit rámec a zajistit bezpečí",
+      "definition": "Na začátku říká, o čem rozhovor je a s jakým záměrem, a odděluje věc od osoby."
+    },
+    "konkret": {
+      "titel": "Zůstat konkrétní",
+      "definition": "Pojmenovává pozorovatelné chování a jeho dopad namísto nálepek a drží se toho i přes odpor."
+    },
+    "ursache": {
+      "titel": "Naslouchat až k příčině",
+      "definition": "Ptá se na pohled protistrany, navazuje na odpovědi a drží se tématu, dokud není viditelný skutečný důvod, než přijdou řešení."
+    },
+    "ruhe": {
+      "titel": "Zůstat klidný pod odporem",
+      "definition": "Zůstává klidný a uctivý při odporu, obraně nebo útoku, drží se hlavní zprávy a snižuje napětí."
+    },
+    "vereinbarung": {
+      "titel": "Společně dohodnout další krok",
+      "definition": "Uzavírá rozhovor konkrétním, časově určeným krokem, který protistrana spoluvytvořila, včetně podpory a následného termínu."
+    },
+    "anerkennung": {
+      "titel": "Uznání s důkazem",
+      "definition": "Oceňuje výkon a nasazení konkrétně a důvěryhodně, s příkladem, ne jako frázi nebo úvod ke kritice."
+    },
+    "luecke": {
+      "titel": "Upřímně pojmenovat mezeru",
+      "definition": "Jasně pojmenovává rozdíl mezi současným výkonem a dalším krokem, s příklady, aniž by zkrášloval nebo zraňoval."
+    },
+    "entwicklung": {
+      "titel": "Konkretizovat cestu rozvoje",
+      "definition": "Převádí mezeru do zkušeností, úkolů a podpory, které viditelně vedou k cíli."
+    },
+    "interessen": {
+      "titel": "Prozkoumat zájmy za pozicemi",
+      "definition": "Ptá se, co protistrana skutečně potřebuje, namísto vyjednávání nebo vyvracení požadavků."
+    },
+    "standpunkt": {
+      "titel": "Jasně zastávat vlastní stanovisko",
+      "definition": "Přímo a bez výčitek pojmenovává události a vlastní potřeby, jako pozorování s dopadem, a drží se jich."
+    },
+    "loesung": {
+      "titel": "Společné řešení namísto líného kompromisu",
+      "definition": "Společně s protistranou rozvíjí možnosti, které zohledňují zájmy obou stran, a rozhoduje na základě kritérií, nikoli moci."
+    },
+    "verbindlich": {
+      "titel": "Zajistit závaznost",
+      "definition": "Konkrétně zajišťuje závazky: kdo, co, do kdy, a ověřuje, zda má závazek podstatu."
+    },
+    "einstieg": {
+      "titel": "Úvod a svolení",
+      "definition": "V prvních větách si zaslouží právo pokračovat v rozhovoru: jméno, důvod, vztah k protistraně a okamžik, kdy protistrana souhlasí s nasloucháním."
+    },
+    "abwimmeln": {
+      "titel": "Zvládnout odmítnutí",
+      "definition": "Zůstává klidný při prvním „nemám zájem“ nebo „pošlete mi podklady“, odpoví na konkrétní námitku a udržuje komunikaci otevřenou, aniž by tlačil."
+    },
+    "relevanz": {
+      "titel": "Vytvořit relevanci",
+      "definition": "Spojuje vlastní nabídku s konkrétním zájmem protistrany, s důkazem namísto sloganu."
+    },
+    "qualifizieren": {
+      "titel": "Kvalifikovat",
+      "definition": "Zjišťuje, zda se to vyplatí: dopad, naléhavost, zúčastněné strany, dosavadní pokusy."
+    },
+    "naechster-schritt": {
+      "titel": "Zajistit další krok",
+      "definition": "Vede ke konkrétnímu následnému kroku, se kterým protistrana skutečně souhlasí: účel, čas, zúčastněné osoby."
+    },
+    "agenda": {
+      "titel": "Odsouhlasit agendu",
+      "definition": "Na začátku objasňuje účel, průběh a požadovaný výsledek a získá k tomu souhlas protistrany."
+    },
+    "fragen": {
+      "titel": "Ptát se a doptávat se",
+      "definition": "Klade otevřené, dobře seřazené otázky a doptává se, dokud nejsou viditelné skutečné problémy namísto povrchních odpovědí."
+    },
+    "spiegeln": {
+      "titel": "Naslouchat a zrcadlit",
+      "definition": "Projevuje pochopení tím, že přesně shrnuje a další otázku staví na odpovědi."
+    },
+    "bedarf-entscheider": {
+      "titel": "Vyjasnit potřebu, rozhodovatele, rozpočet, načasování",
+      "definition": "V rozhovoru objasňuje, zda existuje skutečný problém, kdo rozhoduje, jak jsou záměry financovány a zda existuje časový rámec."
+    },
+    "bedarf-finden": {
+      "titel": "Naslouchat a najít skutečnou potřebu",
+      "definition": "Zkoumá situaci protistrany, než začne řešit, a nachází skutečnou potřebu za požadavkem."
+    },
+    "empathie": {
+      "titel": "Konkrétní empatie",
+      "definition": "Konkrétně a důvěryhodně pojmenovává pocit nebo úsilí protistrany, než začne řešit."
+    },
+    "verantwortung": {
+      "titel": "Převzít odpovědnost",
+      "definition": "Osobně přebírá řešení konkrétního problému, aniž by ukazoval na ostatní, systém nebo pravidla."
+    },
+    "klar-relevant": {
+      "titel": "Vysvětlit jasně a relevantně",
+      "definition": "Vysvětluje srozumitelně a propojuje informace s tím, co je pro danou protistranu důležité."
+    },
+    "verbindlich-kunde": {
+      "titel": "Závazný další krok",
+      "definition": "Vede ke konkrétnímu, důvěryhodnému jednání, které protistrana výslovně přijímá, s odpovědností a časovým určením."
+    },
+    "kernbotschaft": {
+      "titel": "Držet se hlavní zprávy",
+      "definition": "Má jasnou zprávu a opakovaně ji předkládá navzdory rozptýlení, tlaku a doplňujícím otázkám."
+    },
+    "bruecke": {
+      "titel": "Most ke zprávě",
+      "definition": "Odpoví na otázku krátce a upřímně a poté přejde k vlastní zprávě, aniž by se vyhýbal."
+    },
+    "keine-spekulation": {
+      "titel": "Žádné spekulace",
+      "definition": "Říká jen to, co je doloženo, odděluje vědomosti od domněnek a otevřeně pojmenovává, co ještě není známo."
+    },
+    "druck": {
+      "titel": "Klidný pod tlakem",
+      "definition": "Zůstává klidný, zdvořilý a věcný při ostrých, přerušujících nebo sugestivních otázkách."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Projevit odpovědnost, postižení na prvním místě",
+      "definition": "Staví postižené a řešení před ospravedlnění a ukazuje, že společnost jedná."
+    }
+  },
+  "hu": {
+    "rahmen": {
+      "titel": "Keretet adni és biztonságot teremteni",
+      "definition": "A beszélgetés elején tisztázza a témát és a szándékot, és elválasztja az ügyet a személytől."
+    },
+    "konkret": {
+      "titel": "Konkrétnak maradni",
+      "definition": "Megnevezi a megfigyelhető viselkedést és annak hatását a címkék helyett, és ezt ellenállás esetén is fenntartja."
+    },
+    "ursache": {
+      "titel": "A gyökérokig meghallgatni",
+      "definition": "Rákérdez a másik fél nézőpontjára, épít a válaszokra, és addig folytatja, amíg a valódi ok láthatóvá nem válik, mielőtt megoldások születnének."
+    },
+    "ruhe": {
+      "titel": "Nyugodtnak maradni ellenállás esetén",
+      "definition": "Ellentmondás, védekezés vagy támadás esetén higgadt és tisztelettudó marad, fenntartja a kulcsüzenetet és csökkenti a feszültséget."
+    },
+    "vereinbarung": {
+      "titel": "A következő lépést közösen megállapítani",
+      "definition": "Egy konkrét, határidős lépéssel zár, amelyet a másik fél is formált, beleértve a támogatást és egy nyomon követési időpontot."
+    },
+    "anerkennung": {
+      "titel": "Elismerés bizonyítékkal",
+      "definition": "Konkrétan és hitelesen elismeri a teljesítményt és az erőfeszítést, példával, nem frázisként vagy a kritika bevezetőjeként."
+    },
+    "luecke": {
+      "titel": "Őszintén megnevezni a hiányosságot",
+      "definition": "Világosan megnevezi a mai teljesítmény és a következő lépés közötti különbséget, példákkal, szépítés vagy sértés nélkül."
+    },
+    "entwicklung": {
+      "titel": "Konkrétabbá tenni a fejlődési utat",
+      "definition": "A hiányosságot olyan tapasztalatokká, feladatokká és támogatássá alakítja, amelyek láthatóan a célhoz vezetnek."
+    },
+    "interessen": {
+      "titel": "Feltárni az érdekeket az álláspontok mögött",
+      "definition": "Azt kérdezi, mire van valójában szüksége a másik félnek, ahelyett, hogy követelésekről tárgyalna vagy azokat cáfolná."
+    },
+    "standpunkt": {
+      "titel": "Saját álláspontot világosan képviselni",
+      "definition": "Közvetlenül és vádaskodás nélkül szólítja meg az eseteket és saját igényeit, megfigyelésként, hatással, és kitart mellettük."
+    },
+    "loesung": {
+      "titel": "Közös megoldás, nem lusta kompromisszum",
+      "definition": "A másik féllel olyan opciókat dolgoz ki, amelyek mindkét fél érdekeit szolgálják, és kritériumok alapján dönt, nem hatalom alapján."
+    },
+    "verbindlich": {
+      "titel": "Kötelezettséget teremteni",
+      "definition": "Konkrétan rögzíti az ígéreteket: ki, mit, mikorra, és ellenőrzi, hogy az ígéretnek van-e tartalma."
+    },
+    "einstieg": {
+      "titel": "Bevezetés és engedély",
+      "definition": "Az első mondatokban kiérdemli a tovább beszélés jogát: név, ok, relevancia a másik fél számára, és egy pillanat, amikor beleegyezik a meghallgatásba."
+    },
+    "abwimmeln": {
+      "titel": "Elhárítás kezelése",
+      "definition": "Az első „nincs érdeklődés” vagy „küldjön anyagokat” válaszra nyugodt marad, megválaszolja a konkrét kifogást, és nyitva tartja a vonalat, anélkül, hogy sürgetne."
+    },
+    "relevanz": {
+      "titel": "Relevanciát teremteni",
+      "definition": "Összekapcsolja saját ajánlatát a másik fél konkrét igényével, bizonyítékkal, nem szlogennel."
+    },
+    "qualifizieren": {
+      "titel": "Minősíteni",
+      "definition": "Tisztázza, érdemes-e folytatni: hatás, sürgősség, érintettek, eddigi próbálkozások."
+    },
+    "naechster-schritt": {
+      "titel": "A következő lépést biztosítani",
+      "definition": "Egy konkrét következő lépéshez vezet, amelybe a másik fél valóban beleegyezik: cél, időpont, érintettek."
+    },
+    "agenda": {
+      "titel": "Napirendet egyeztetni",
+      "definition": "Az elején tisztázza a célt, a menetet és a kívánt eredményt, és ehhez megszerzi a másik fél beleegyezését."
+    },
+    "fragen": {
+      "titel": "Kérdezni és nyomon követni",
+      "definition": "Nyitott, jól felépített kérdéseket tesz fel, és addig követi nyomon, amíg a felszínes válaszok helyett valódi problémák válnak láthatóvá."
+    },
+    "spiegeln": {
+      "titel": "Meghallgatni és visszatükrözni",
+      "definition": "Megértést mutat azáltal, hogy pontosan összefoglalja, és a következő kérdést a válaszra építi."
+    },
+    "bedarf-entscheider": {
+      "titel": "Szükséglet, döntéshozó, költségvetés, időpont tisztázása",
+      "definition": "A beszélgetés során tisztázza, hogy van-e valódi probléma, ki dönt, hogyan finanszírozzák a projekteket, és van-e határidő."
+    },
+    "bedarf-finden": {
+      "titel": "Meghallgatni és megtalálni a valódi igényt",
+      "definition": "Feltárja a másik fél helyzetét, mielőtt megoldást kínálna, és megtalálja a követelés mögötti valódi igényt."
+    },
+    "empathie": {
+      "titel": "Konkrét empátia",
+      "definition": "Konkrétan és hitelesen megnevezi a másik fél érzését vagy erőfeszítését, mielőtt megoldást kínálna."
+    },
+    "verantwortung": {
+      "titel": "Felelősséget vállalni",
+      "definition": "Személyesen vállalja a konkrét probléma megoldását, anélkül, hogy másokra, a rendszerre vagy a szabályokra mutogatna."
+    },
+    "klar-relevant": {
+      "titel": "Világosan és relevánsan magyarázni",
+      "definition": "Érthetően magyaráz, és az információkat ahhoz kapcsolja, ami a másik fél számára fontos."
+    },
+    "verbindlich-kunde": {
+      "titel": "Kötelező érvényű következő lépés",
+      "definition": "Egy konkrét, hiteles cselekvéshez vezet, amelyet a másik fél kifejezetten elfogad, felelősségi körrel és időponttal."
+    },
+    "kernbotschaft": {
+      "titel": "A kulcsüzenetet fenntartani",
+      "definition": "Világos üzenete van, és azt figyelemelterelés, nyomás és további kérdések ellenére is újra és újra előhozza."
+    },
+    "bruecke": {
+      "titel": "Híd az üzenethez",
+      "definition": "Röviden és őszintén válaszol a kérdésre, majd kitérés nélkül a saját üzenetéhez vezet."
+    },
+    "keine-spekulation": {
+      "titel": "Nincs spekuláció",
+      "definition": "Csak azt mondja, ami bizonyított, elválasztja a tudást a feltételezéstől, és nyíltan megnevezi, ami még nem ismert."
+    },
+    "druck": {
+      "titel": "Nyugodt nyomás alatt",
+      "definition": "Éles, félbeszakító vagy szuggesztív kérdések esetén nyugodt, udvarias és a tárgynál marad."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Felelősséget mutatni, érintettek először",
+      "definition": "Az érintetteket és a megoldást a magyarázat elé helyezi, és megmutatja, hogy a vállalat cselekszik."
+    }
+  },
+  "ro": {
+    "rahmen": {
+      "titel": "Stabilește cadrul și oferă siguranță",
+      "definition": "La început, explică scopul și intenția, separând problema de persoană."
+    },
+    "konkret": {
+      "titel": "Rămâi concret",
+      "definition": "Numește comportamentul observabil și impactul său, în loc de etichete, și menține această abordare chiar și sub contestație."
+    },
+    "ursache": {
+      "titel": "Ascultă până la cauză",
+      "definition": "Întreabă despre perspectiva interlocutorului, preia răspunsurile și insistă până când motivul real devine vizibil, înainte de a propune soluții."
+    },
+    "ruhe": {
+      "titel": "Rămâi calm sub rezistență",
+      "definition": "Rămâne calm și respectuos în fața contestației, apărării sau atacului, menține mesajul cheie și reduce tensiunea."
+    },
+    "vereinbarung": {
+      "titel": "Stabiliți împreună următorul pas",
+      "definition": "Încheie cu un pas concret, cu termen limită, la care interlocutorul a contribuit, incluzând sprijin și o dată de urmărire."
+    },
+    "anerkennung": {
+      "titel": "Recunoaștere cu dovezi",
+      "definition": "Apreciază performanța și efortul concret și credibil, cu exemple, nu ca o formulă goală sau o introducere la critică."
+    },
+    "luecke": {
+      "titel": "Numește sincer decalajul",
+      "definition": "Abordează clar diferența dintre performanța actuală și următorul pas, cu exemple, fără a înfrumuseța sau a răni."
+    },
+    "entwicklung": {
+      "titel": "Concretizează calea de dezvoltare",
+      "definition": "Transformă decalajul în experiențe, sarcini și sprijin care duc vizibil la atingerea obiectivului."
+    },
+    "interessen": {
+      "titel": "Explorează interesele din spatele pozițiilor",
+      "definition": "Întreabă ce are nevoie cu adevărat interlocutorul, în loc să negocieze sau să respingă cereri."
+    },
+    "standpunkt": {
+      "titel": "Susține-ți clar punctul de vedere",
+      "definition": "Abordează direct și fără reproșuri incidentele și propriile nevoi, ca o observație cu impact, și le susține."
+    },
+    "loesung": {
+      "titel": "Soluție comună, nu un compromis facil",
+      "definition": "Dezvoltă împreună cu interlocutorul opțiuni care să susțină ambele interese și decide pe baza criteriilor, nu a puterii."
+    },
+    "verbindlich": {
+      "titel": "Stabilește angajamentul",
+      "definition": "Asigură angajamentele concret: cine, ce, până când, și verifică dacă angajamentul are substanță."
+    },
+    "einstieg": {
+      "titel": "Introducere și permisiune",
+      "definition": "Câștigă în primele propoziții dreptul de a continua discuția: nume, motiv, relevanță pentru interlocutor și un moment în care acesta este de acord să asculte."
+    },
+    "abwimmeln": {
+      "titel": "Gestionează refuzul",
+      "definition": "Rămâne calm la primul „nu sunt interesat” sau „trimiteți documente”, răspunde obiecției specifice și menține linia deschisă, fără a insista."
+    },
+    "relevanz": {
+      "titel": "Stabilește relevanța",
+      "definition": "Conectează propria ofertă cu o preocupare concretă a interlocutorului, cu dovezi în loc de sloganuri."
+    },
+    "qualifizieren": {
+      "titel": "Califică",
+      "definition": "Clarifică dacă merită efortul: impact, urgență, părți implicate, încercări anterioare."
+    },
+    "naechster-schritt": {
+      "titel": "Asigură următorul pas",
+      "definition": "Conduce la un pas concret de urmărire, cu care interlocutorul este cu adevărat de acord: scop, moment, părți implicate."
+    },
+    "agenda": {
+      "titel": "Stabilește agenda",
+      "definition": "Clarifică la început scopul, desfășurarea și rezultatul dorit și obține acordul interlocutorului pentru acestea."
+    },
+    "fragen": {
+      "titel": "Pune întrebări și aprofundează",
+      "definition": "Pune întrebări deschise, bine structurate și aprofundează până când problemele reale devin vizibile, în loc de răspunsuri superficiale."
+    },
+    "spiegeln": {
+      "titel": "Ascultă și reflectă",
+      "definition": "Arată înțelegere rezumând cu acuratețe și construind următoarea întrebare pe baza răspunsului."
+    },
+    "bedarf-entscheider": {
+      "titel": "Clarifică nevoia, decidentul, bugetul, momentul",
+      "definition": "Clarifică în discuție dacă există o problemă reală, cine decide, cum sunt finanțate inițiativele și dacă există un termen limită."
+    },
+    "bedarf-finden": {
+      "titel": "Ascultă și găsește nevoia",
+      "definition": "Explorează situația interlocutorului înainte de a oferi soluții și găsește nevoia reală din spatele cererii."
+    },
+    "empathie": {
+      "titel": "Empatie concretă",
+      "definition": "Numește concret și credibil sentimentul sau efortul interlocutorului, înainte de a oferi soluții."
+    },
+    "verantwortung": {
+      "titel": "Asumă-ți responsabilitatea",
+      "definition": "Își asumă personal rezolvarea problemei specifice, fără a arăta spre alții, sistem sau reguli."
+    },
+    "klar-relevant": {
+      "titel": "Explică clar și relevant",
+      "definition": "Explică într-un mod ușor de înțeles și conectează informațiile cu ceea ce este important pentru interlocutor."
+    },
+    "verbindlich-kunde": {
+      "titel": "Următorul pas ferm",
+      "definition": "Conduce la o acțiune concretă, credibilă, pe care interlocutorul o acceptă explicit, cu responsabilitate și termen limită."
+    },
+    "kernbotschaft": {
+      "titel": "Menține mesajul cheie",
+      "definition": "Are un mesaj clar și îl reiterează constant, în ciuda distragerilor, presiunii și întrebărilor suplimentare."
+    },
+    "bruecke": {
+      "titel": "Punte către mesaj",
+      "definition": "Răspunde scurt și sincer la întrebare, apoi conduce către propriul mesaj, fără a ocoli."
+    },
+    "keine-spekulation": {
+      "titel": "Fără speculații",
+      "definition": "Spune doar ce este dovedit, separă cunoștințele de presupuneri și afirmă deschis ce nu este încă cunoscut."
+    },
+    "druck": {
+      "titel": "Calm sub presiune",
+      "definition": "Rămâne calm, politicos și la obiect în fața întrebărilor tăioase, întrerupătoare sau sugestive."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Arată responsabilitate, persoanele afectate pe primul loc",
+      "definition": "Pune persoanele afectate și soluția înaintea justificărilor și arată că firma acționează."
+    }
+  },
+  "el": {
+    "rahmen": {
+      "titel": "Θέτω το πλαίσιο και παρέχω ασφάλεια",
+      "definition": "Στην αρχή, αναφέρει το θέμα και την πρόθεση, διαχωρίζοντας το ζήτημα από το πρόσωπο."
+    },
+    "konkret": {
+      "titel": "Παραμένω συγκεκριμένος/η",
+      "definition": "Ονομάζει παρατηρήσιμη συμπεριφορά και την επίδρασή της αντί για ταμπέλες, και το διατηρεί αυτό ακόμα και υπό αντίρρηση."
+    },
+    "ursache": {
+      "titel": "Ακούω μέχρι την αιτία",
+      "definition": "Ρωτάει για την άποψη του συνομιλητή, αξιοποιεί τις απαντήσεις και επιμένει μέχρι να φανεί ο πραγματικός λόγος, πριν προταθούν λύσεις."
+    },
+    "ruhe": {
+      "titel": "Παραμένω ήρεμος/η υπό αντίσταση",
+      "definition": "Παραμένει ψύχραιμος/η και με σεβασμό σε περίπτωση αντίρρησης, άμυνας ή επίθεσης, διατηρεί το βασικό μήνυμα και μειώνει την ένταση."
+    },
+    "vereinbarung": {
+      "titel": "Συμφωνώ το επόμενο βήμα από κοινού",
+      "definition": "Ολοκληρώνει με ένα συγκεκριμένο, χρονολογημένο βήμα που έχει διαμορφώσει ο συνομιλητής, συμπεριλαμβανομένης υποστήριξης και επακόλουθης συνάντησης."
+    },
+    "anerkennung": {
+      "titel": "Αναγνώριση με αποδεικτικά στοιχεία",
+      "definition": "Αναγνωρίζει την απόδοση και την προσπάθεια συγκεκριμένα και αξιόπιστα, με παράδειγμα, όχι ως κοινοτοπία ή προοίμιο κριτικής."
+    },
+    "luecke": {
+      "titel": "Ονομάζω ειλικρινά το κενό",
+      "definition": "Αναφέρει ξεκάθαρα τη διαφορά μεταξύ της σημερινής απόδοσης και του επόμενου βήματος, με παραδείγματα, χωρίς να ωραιοποιεί ή να πληγώνει."
+    },
+    "entwicklung": {
+      "titel": "Κάνω την πορεία ανάπτυξης συγκεκριμένη",
+      "definition": "Μετατρέπει το κενό σε εμπειρίες, καθήκοντα και υποστήριξη που οδηγούν ορατά στον στόχο."
+    },
+    "interessen": {
+      "titel": "Διερευνώ τα συμφέροντα πίσω από τις θέσεις",
+      "definition": "Ρωτάει τι πραγματικά χρειάζεται ο συνομιλητής, αντί να διαπραγματεύεται ή να αντικρούει απαιτήσεις."
+    },
+    "standpunkt": {
+      "titel": "Εκφράζω ξεκάθαρα τη δική μου άποψη",
+      "definition": "Αναφέρει περιστατικά και προσωπικές ανάγκες άμεσα και χωρίς κατηγορίες, ως παρατήρηση με επίδραση, και τις υποστηρίζει."
+    },
+    "loesung": {
+      "titel": "Κοινή λύση αντί για τεμπέλικος συμβιβασμός",
+      "definition": "Αναπτύσσει με τον συνομιλητή επιλογές που εξυπηρετούν και τα δύο συμφέροντα, και αποφασίζει με βάση κριτήρια αντί για εξουσία."
+    },
+    "verbindlich": {
+      "titel": "Δημιουργώ δέσμευση",
+      "definition": "Εξασφαλίζει συγκεκριμένες δεσμεύσεις: ποιος, τι, μέχρι πότε, και ελέγχει αν η δέσμευση έχει ουσία."
+    },
+    "einstieg": {
+      "titel": "Είσοδος και άδεια",
+      "definition": "Κερδίζει το δικαίωμα να συνεχίσει να μιλάει στις πρώτες προτάσεις: όνομα, λόγος, σχέση με τον συνομιλητή και μια στιγμή που συμφωνεί να ακούσει."
+    },
+    "abwimmeln": {
+      "titel": "Αντιμετωπίζω την απόρριψη",
+      "definition": "Παραμένει ήρεμος/η στην πρώτη «δεν υπάρχει ενδιαφέρον» ή «στείλτε έγγραφα», απαντά στην συγκεκριμένη αντίρρηση και κρατάει ανοιχτή τη γραμμή, χωρίς να πιέζει."
+    },
+    "relevanz": {
+      "titel": "Δημιουργώ συνάφεια/σχετικότητα",
+      "definition": "Συνδέει την προσφορά με ένα συγκεκριμένο ενδιαφέρον του συνομιλητή, με αποδεικτικά στοιχεία αντί για σύνθημα."
+    },
+    "qualifizieren": {
+      "titel": "Προκριματική αξιολόγηση",
+      "definition": "Διευκρινίζει αν αξίζει τον κόπο: επίδραση, επείγον, εμπλεκόμενοι, προηγούμενες προσπάθειες."
+    },
+    "naechster-schritt": {
+      "titel": "Εξασφαλίζω το επόμενο βήμα",
+      "definition": "Οδηγεί σε ένα συγκεκριμένο επόμενο βήμα, στο οποίο ο συνομιλητής πραγματικά συμφωνεί: σκοπός, χρόνος, εμπλεκόμενοι."
+    },
+    "agenda": {
+      "titel": "Συντονίζω την ατζέντα",
+      "definition": "Διευκρινίζει στην αρχή τον σκοπό, τη διαδικασία και το επιθυμητό αποτέλεσμα και λαμβάνει τη συγκατάθεση του συνομιλητή γι' αυτό."
+    },
+    "fragen": {
+      "titel": "Ρωτώ και παρακολουθώ",
+      "definition": "Θέτει ανοιχτές, καλά διατεταγμένες ερωτήσεις και παρακολουθεί μέχρι να γίνουν ορατά πραγματικά προβλήματα αντί για επιφανειακές απαντήσεις."
+    },
+    "spiegeln": {
+      "titel": "Ακούω και αντικατοπτρίζω",
+      "definition": "Δείχνει κατανόηση συνοψίζοντας με ακρίβεια και χτίζοντας την επόμενη ερώτηση πάνω στην απάντηση."
+    },
+    "bedarf-entscheider": {
+      "titel": "Διευκρινίζω ανάγκη, υπεύθυνο λήψης αποφάσεων, προϋπολογισμό, χρονοδιάγραμμα",
+      "definition": "Διευκρινίζει κατά τη συζήτηση αν υπάρχει ένα πραγματικό πρόβλημα, ποιος αποφασίζει, πώς χρηματοδοτούνται τα έργα και αν υπάρχει χρονοδιάγραμμα."
+    },
+    "bedarf-finden": {
+      "titel": "Ακούω και βρίσκω την ανάγκη",
+      "definition": "Διερευνά την κατάσταση του συνομιλητή πριν προτείνει λύσεις, και βρίσκει την πραγματική ανάγκη πίσω από την απαίτηση."
+    },
+    "empathie": {
+      "titel": "Συγκεκριμένη ενσυναίσθηση",
+      "definition": "Ονομάζει το συναίσθημα ή την προσπάθεια του συνομιλητή συγκεκριμένα και αξιόπιστα, πριν προτείνει λύσεις."
+    },
+    "verantwortung": {
+      "titel": "Αναλαμβάνω την ευθύνη",
+      "definition": "Αναλαμβάνει προσωπικά την επίλυση του συγκεκριμένου προβλήματος, χωρίς να παραπέμπει σε άλλους, το σύστημα ή τους κανόνες."
+    },
+    "klar-relevant": {
+      "titel": "Εξηγώ με σαφήνεια και συνάφεια",
+      "definition": "Εξηγεί κατανοητά και συνδέει τις πληροφορίες με αυτό που είναι σημαντικό για τον συγκεκριμένο συνομιλητή."
+    },
+    "verbindlich-kunde": {
+      "titel": "Δεσμευτικό επόμενο βήμα",
+      "definition": "Οδηγεί σε μια συγκεκριμένη, αξιόπιστη ενέργεια που ο συνομιλητής αποδέχεται ρητά, με αρμοδιότητα και χρονοδιάγραμμα."
+    },
+    "kernbotschaft": {
+      "titel": "Διατηρώ το βασικό μήνυμα",
+      "definition": "Έχει ένα σαφές μήνυμα και το επαναφέρει συνεχώς παρά την απόσπαση προσοχής, την πίεση και τις ερωτήσεις."
+    },
+    "bruecke": {
+      "titel": "Γέφυρα προς το μήνυμα",
+      "definition": "Απαντά στην ερώτηση σύντομα και ειλικρινά και στη συνέχεια οδηγεί στο δικό του μήνυμα, χωρίς να αποφεύγει."
+    },
+    "keine-spekulation": {
+      "titel": "Όχι εικασίες",
+      "definition": "Λέει μόνο ό,τι είναι τεκμηριωμένο, διαχωρίζει τη γνώση από την υπόθεση και αναφέρει ανοιχτά τι δεν είναι ακόμη γνωστό."
+    },
+    "druck": {
+      "titel": "Ήρεμος/η υπό πίεση",
+      "definition": "Παραμένει ήρεμος/η, ευγενικός/ή και στο θέμα σε έντονες, διακοπτικές ή υποβλητικές ερωτήσεις."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Δείχνω ευθύνη, οι επηρεαζόμενοι πρώτοι",
+      "definition": "Θέτει τους επηρεαζόμενους και τη λύση πριν από την αιτιολόγηση και δείχνει ότι η εταιρεία ενεργεί."
+    }
+  },
+  "ru": {
+    "rahmen": {
+      "titel": "Определить рамки и создать атмосферу безопасности",
+      "definition": "В начале разговора обозначить его цель и намерение, отделить проблему от личности."
+    },
+    "konkret": {
+      "titel": "Оставаться конкретным",
+      "definition": "Называть наблюдаемое поведение и его последствия вместо ярлыков, придерживаться этого даже при возражениях."
+    },
+    "ursache": {
+      "titel": "Дослушать до сути/причины",
+      "definition": "Спрашивать о точке зрения собеседника, развивать ответы и продолжать, пока не станет видна истинная причина, прежде чем предлагать решения."
+    },
+    "ruhe": {
+      "titel": "Сохранять спокойствие при сопротивлении",
+      "definition": "Оставаться невозмутимым и уважительным при возражениях, обороне или нападении, сохранять основное сообщение и снижать напряжение."
+    },
+    "vereinbarung": {
+      "titel": "Совместно договориться о следующем шаге",
+      "definition": "Завершать разговор конкретным, ограниченным по срокам шагом, в разработке которого участвовал собеседник, включая поддержку и последующую встречу."
+    },
+    "anerkennung": {
+      "titel": "Признание с доказательствами",
+      "definition": "Конкретно и достоверно отмечать достижения и усилия, приводя примеры, а не используя общие фразы или как прелюдию к критике."
+    },
+    "luecke": {
+      "titel": "Честно обозначить пробел/разрыв",
+      "definition": "Четко обозначать разницу между текущими результатами и следующим шагом, с примерами, не приукрашивая и не обижая."
+    },
+    "entwicklung": {
+      "titel": "Конкретизировать путь развития",
+      "definition": "Превращать пробел в опыт, задачи и поддержку, которые явно ведут к цели."
+    },
+    "interessen": {
+      "titel": "Исследовать интересы, стоящие за позициями",
+      "definition": "Спрашивать, что собеседнику действительно нужно, вместо того чтобы торговаться или опровергать требования."
+    },
+    "standpunkt": {
+      "titel": "Четко излагать свою позицию",
+      "definition": "Прямо и без обвинений говорить об инцидентах и собственных потребностях, как о наблюдении с последствиями, и отстаивать свою точку зрения."
+    },
+    "loesung": {
+      "titel": "Совместное решение вместо невыгодного компромисса",
+      "definition": "Разрабатывать с собеседником варианты, учитывающие интересы обеих сторон, и принимать решения на основе критериев, а не власти."
+    },
+    "verbindlich": {
+      "titel": "Обеспечить обязательность/приверженность",
+      "definition": "Конкретизировать обязательства: кто, что, к какому сроку, и проверять, имеет ли обязательство под собой основу."
+    },
+    "einstieg": {
+      "titel": "Начало и получение разрешения",
+      "definition": "В первых предложениях заслужить право продолжать разговор: назвать имя, причину, связь с собеседником и получить его согласие выслушать."
+    },
+    "abwimmeln": {
+      "titel": "Преодолевать отговорки/отказы",
+      "definition": "Сохранять спокойствие при первом «нет интереса» или «пришлите документы», отвечать на конкретное возражение и поддерживать связь, не настаивая."
+    },
+    "relevanz": {
+      "titel": "Создавать актуальность/значимость",
+      "definition": "Связывать свое предложение с конкретной проблемой собеседника, используя доказательства, а не лозунги."
+    },
+    "qualifizieren": {
+      "titel": "Квалифицировать/Оценивать",
+      "definition": "Выяснять, стоит ли продолжать: влияние, срочность, участники, предпринятые попытки."
+    },
+    "naechster-schritt": {
+      "titel": "Обеспечить следующий шаг",
+      "definition": "Приводить к конкретному последующему шагу, с которым собеседник действительно согласен: цель, время, участники."
+    },
+    "agenda": {
+      "titel": "Согласовать повестку",
+      "definition": "В начале прояснять цель, ход и желаемый результат, и получать на это согласие собеседника."
+    },
+    "fragen": {
+      "titel": "Задавать вопросы и уточнять",
+      "definition": "Задавать открытые, хорошо структурированные вопросы и уточнять, пока не станут видны настоящие проблемы вместо поверхностных ответов."
+    },
+    "spiegeln": {
+      "titel": "Слушать и отражать/резюмировать",
+      "definition": "Показывать понимание, точно резюмируя и строя следующий вопрос на основе ответа."
+    },
+    "bedarf-entscheider": {
+      "titel": "Выяснить потребность, лицо, принимающее решение, бюджет, сроки",
+      "definition": "В ходе разговора выяснять, существует ли реальная проблема, кто принимает решения, как финансируются проекты и есть ли сроки."
+    },
+    "bedarf-finden": {
+      "titel": "Слушать и находить истинную потребность",
+      "definition": "Изучать ситуацию собеседника, прежде чем предлагать решение, и находить истинную потребность за требованием."
+    },
+    "empathie": {
+      "titel": "Конкретная эмпатия",
+      "definition": "Конкретно и достоверно называть чувство или усилия собеседника, прежде чем предлагать решение."
+    },
+    "verantwortung": {
+      "titel": "Брать на себя ответственность",
+      "definition": "Лично брать на себя решение конкретной проблемы, не указывая на других, систему или правила."
+    },
+    "klar-relevant": {
+      "titel": "Объяснять ясно и актуально",
+      "definition": "Объяснять понятно и связывать информацию с тем, что важно для данного собеседника."
+    },
+    "verbindlich-kunde": {
+      "titel": "Обязательный следующий шаг",
+      "definition": "Приводить к конкретному, достоверному действию, которое собеседник явно принимает, с указанием ответственного и срока."
+    },
+    "kernbotschaft": {
+      "titel": "Придерживаться основной идеи/сообщения",
+      "definition": "Иметь четкое сообщение и постоянно возвращаться к нему, несмотря на отвлечения, давление и дополнительные вопросы."
+    },
+    "bruecke": {
+      "titel": "Мост к сообщению",
+      "definition": "Кратко и честно отвечать на вопрос, а затем переходить к собственному сообщению, не уклоняясь."
+    },
+    "keine-spekulation": {
+      "titel": "Без спекуляций",
+      "definition": "Говорить только то, что подтверждено, отделять знание от предположений и открыто называть то, что еще неизвестно."
+    },
+    "druck": {
+      "titel": "Спокойствие под давлением",
+      "definition": "Оставаться спокойным, вежливым и по существу при острых, прерывающих или наводящих вопросах."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Проявлять ответственность, пострадавшие в первую очередь",
+      "definition": "Ставить пострадавших и решение выше оправданий и показывать, что компания действует."
+    }
+  },
+  "uk": {
+    "rahmen": {
+      "titel": "Встановити рамки та забезпечити безпеку",
+      "definition": "На початку розмови чітко пояснити її мету та намір, а також відокремити проблему від особистості."
+    },
+    "konkret": {
+      "titel": "Залишатися конкретним",
+      "definition": "Називати спостережувану поведінку та її наслідки замість ярликів, і дотримуватися цього навіть під час заперечень."
+    },
+    "ursache": {
+      "titel": "Дослухатися до першопричини",
+      "definition": "Запитувати про погляд співрозмовника, розвивати відповіді та продовжувати, доки не стане видно справжню причину, перш ніж пропонувати рішення."
+    },
+    "ruhe": {
+      "titel": "Зберігати спокій під час опору",
+      "definition": "Залишатися спокійним і шанобливим під час заперечень, захисту або нападу, триматися основної думки та знижувати напругу."
+    },
+    "vereinbarung": {
+      "titel": "Спільно узгодити наступний крок",
+      "definition": "Завершити розмову конкретним, визначеним у часі кроком, який співрозмовник допоміг сформувати, включно з підтримкою та наступною зустріччю."
+    },
+    "anerkennung": {
+      "titel": "Визнання з підтвердженням",
+      "definition": "Конкретно та достовірно відзначати досягнення та зусилля, з прикладами, а не як порожню фразу чи вступ до критики."
+    },
+    "luecke": {
+      "titel": "Чесно назвати прогалину",
+      "definition": "Чітко вказати на різницю між поточною продуктивністю та наступним кроком, з прикладами, не прикрашаючи та не ображаючи."
+    },
+    "entwicklung": {
+      "titel": "Конкретизувати шлях розвитку",
+      "definition": "Перетворити прогалину на досвід, завдання та підтримку, які очевидно ведуть до мети."
+    },
+    "interessen": {
+      "titel": "Досліджувати інтереси за позиціями",
+      "definition": "Запитувати, що насправді потрібно співрозмовнику, замість того, щоб обговорювати або спростовувати вимоги."
+    },
+    "standpunkt": {
+      "titel": "Чітко висловлювати власну позицію",
+      "definition": "Безпосередньо та без докорів звертати увагу на інциденти та власні потреби, як спостереження з наслідками, і витримувати це."
+    },
+    "loesung": {
+      "titel": "Спільне рішення замість лінивого компромісу",
+      "definition": "Розробляти зі співрозмовником варіанти, які враховують інтереси обох сторін, і приймати рішення за критеріями, а не за допомогою влади."
+    },
+    "verbindlich": {
+      "titel": "Забезпечити обов'язковість",
+      "definition": "Конкретно закріпити зобов'язання: хто, що, до якого терміну, і перевірити, чи має зобов'язання зміст."
+    },
+    "einstieg": {
+      "titel": "Початок та дозвіл",
+      "definition": "Заслужити право продовжувати розмову в перших реченнях: назвати ім'я, причину, зв'язок зі співрозмовником та отримати його згоду слухати."
+    },
+    "abwimmeln": {
+      "titel": "Справитися з відмовою",
+      "definition": "Залишатися спокійним при першому «не цікавить» або «надішліть документи», відповісти на конкретне заперечення та тримати зв'язок відкритим, не тиснучи."
+    },
+    "relevanz": {
+      "titel": "Створити релевантність",
+      "definition": "Пов'язати власну пропозицію з конкретною потребою співрозмовника, з підтвердженням замість гасла."
+    },
+    "qualifizieren": {
+      "titel": "Кваліфікувати",
+      "definition": "З'ясувати, чи варто продовжувати: вплив, терміновість, залучені сторони, попередні спроби."
+    },
+    "naechster-schritt": {
+      "titel": "Забезпечити наступний крок",
+      "definition": "Привести до конкретного наступного кроку, на який співрозмовник дійсно погоджується: мета, час, учасники."
+    },
+    "agenda": {
+      "titel": "Узгодити порядок денний",
+      "definition": "На початку з'ясувати мету, хід та бажаний результат і отримати згоду співрозмовника на це."
+    },
+    "fragen": {
+      "titel": "Ставити запитання та уточнювати",
+      "definition": "Ставити відкриті, добре структуровані запитання та уточнювати, доки не стануть видимими справжні проблеми замість поверхових відповідей."
+    },
+    "spiegeln": {
+      "titel": "Слухати та відображати",
+      "definition": "Показувати розуміння, точно підсумовуючи та будуючи наступне запитання на основі відповіді."
+    },
+    "bedarf-entscheider": {
+      "titel": "З'ясувати потребу, особу, що приймає рішення, бюджет, терміни",
+      "definition": "У розмові з'ясувати, чи існує справжня проблема, хто приймає рішення, як фінансуються проєкти та чи є терміни."
+    },
+    "bedarf-finden": {
+      "titel": "Слухати та знаходити справжню потребу",
+      "definition": "Досліджувати ситуацію співрозмовника, перш ніж пропонувати рішення, і знаходити справжню потребу за вимогою."
+    },
+    "empathie": {
+      "titel": "Конкретна емпатія",
+      "definition": "Конкретно та достовірно називати почуття або зусилля співрозмовника, перш ніж пропонувати рішення."
+    },
+    "verantwortung": {
+      "titel": "Брати на себе відповідальність",
+      "definition": "Особисто брати на себе вирішення конкретної проблеми, не вказуючи на інших, систему чи правила."
+    },
+    "klar-relevant": {
+      "titel": "Пояснювати чітко та релевантно",
+      "definition": "Пояснювати зрозуміло та пов'язувати інформацію з тим, що важливо для цього конкретного співрозмовника."
+    },
+    "verbindlich-kunde": {
+      "titel": "Обов'язковий наступний крок",
+      "definition": "Привести до конкретної, достовірної дії, яку співрозмовник чітко приймає, з відповідальністю та терміном."
+    },
+    "kernbotschaft": {
+      "titel": "Триматися основної думки",
+      "definition": "Мати чітке повідомлення та постійно повертатися до нього, незважаючи на відволікання, тиск та додаткові запитання."
+    },
+    "bruecke": {
+      "titel": "Міст до повідомлення",
+      "definition": "Коротко та чесно відповісти на запитання, а потім перейти до власного повідомлення, не ухиляючись."
+    },
+    "keine-spekulation": {
+      "titel": "Без спекуляцій",
+      "definition": "Говорити лише те, що підтверджено, відокремлювати знання від припущень та відкрито називати те, що ще невідомо."
+    },
+    "druck": {
+      "titel": "Спокій під тиском",
+      "definition": "Залишатися спокійним, ввічливим та по суті під час гострих, перериваючих або навідних запитань."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Проявити відповідальність, постраждалі насамперед",
+      "definition": "Ставити постраждалих та рішення вище виправдань і показувати, що компанія діє."
+    }
+  },
+  "ga": {
+    "rahmen": {
+      "titel": "An creat a shocrú agus slándáil a thabhairt",
+      "definition": "Deir sé ar dtús cad atá i gceist leis an gcomhrá agus cén fáth, agus scarann sé an cheist ón duine."
+    },
+    "konkret": {
+      "titel": "Fanacht nithiúil",
+      "definition": "Ainmníonn sé iompar inbhraite agus a thionchar in áit lipéid, agus coinníonn sé sin fiú faoi bhrú."
+    },
+    "ursache": {
+      "titel": "Éisteacht go dtí an bhunchúis",
+      "definition": "Fiafraíonn sé dearcadh an duine eile, tógann sé ar fhreagraí agus leanann sé air go dtí go mbíonn an fíorchúis le feiceáil, sula dtagann réitigh."
+    },
+    "ruhe": {
+      "titel": "Fanacht socair faoi fhriotaíocht",
+      "definition": "Fanann sé suaimhneach agus measúil faoi fhriotaíocht, cosaint nó ionsaí, coinníonn sé an príomhtheachtaireacht agus íslíonn sé an teocht."
+    },
+    "vereinbarung": {
+      "titel": "An chéad chéim eile a chomhaontú le chéile",
+      "definition": "Críochnaíonn sé le céim nithiúil, sceidealta a chabhraigh an duine eile a mhúnlú, lena n-áirítear tacaíocht agus dáta leantach."
+    },
+    "anerkennung": {
+      "titel": "Aitheantas le fianaise",
+      "definition": "Aithníonn sé feidhmíocht agus iarracht go nithiúil agus go inchreidte, le sampla, ní mar fhoirmliú nó mar réamhrá le cáineadh."
+    },
+    "luecke": {
+      "titel": "An bhearna a ainmniú go hionraic",
+      "definition": "Labhraíonn sé go soiléir faoin difríocht idir feidhmíocht an lae inniu agus an chéad chéim eile, le samplaí, gan é a mhaisiú ná a ghortú."
+    },
+    "entwicklung": {
+      "titel": "An cosán forbartha a dhéanamh nithiúil",
+      "definition": "Aistríonn sé an bhearna go taithí, tascanna agus tacaíocht a threoraíonn go soiléir chuig an sprioc."
+    },
+    "interessen": {
+      "titel": "Leasanna taobh thiar de sheasaimh a iniúchadh",
+      "definition": "Fiafraíonn sé cad atá de dhíth ar an duine eile i ndáiríre, in áit éilimh a chaibidil nó a bhréagnú."
+    },
+    "standpunkt": {
+      "titel": "Do sheasamh féin a chur in iúl go soiléir",
+      "definition": "Labhraíonn sé faoi theagmhais agus riachtanais féin go díreach agus gan milleán, mar bhreathnóireacht le tionchar, agus coinníonn sé an pointe."
+    },
+    "loesung": {
+      "titel": "Réiteach comhpháirteach, ní comhréiteach leisciúil",
+      "definition": "Forbraíonn sé roghanna leis an duine eile a thacaíonn le leasanna an dá thaobh, agus cinneann sé de réir critéar in áit cumhachta."
+    },
+    "verbindlich": {
+      "titel": "Ceangal a chruthú",
+      "definition": "Daingníonn sé gealltanais go nithiúil: cé, cad, faoi cén uair, agus seiceálann sé an bhfuil substaint sa ghealltanas."
+    },
+    "einstieg": {
+      "titel": "Tús agus cead",
+      "definition": "Tuilleann sé an ceart leanúint ar aghaidh sna chéad abairtí: ainm, cúis, ábharthacht don duine eile agus nóiméad ina n-aontaíonn siad éisteacht."
+    },
+    "abwimmeln": {
+      "titel": "An diúltú a láimhseáil",
+      "definition": "Fanann sé socair ag an gcéad “gan suim” nó “seol doiciméid”, freagraíonn sé an agóid shonrach agus coinníonn sé an líne oscailte, gan brú a chur."
+    },
+    "relevanz": {
+      "titel": "Ábharthacht a chruthú",
+      "definition": "Nascann sé an tairiscint féin le hábhar imní nithiúil an duine eile, le fianaise in áit mana."
+    },
+    "qualifizieren": {
+      "titel": "Cáilíocht a dhéanamh",
+      "definition": "Soiléiríonn sé an fiú é: tionchar, práinn, na daoine atá i gceist, iarrachtaí roimhe seo."
+    },
+    "naechster-schritt": {
+      "titel": "An chéad chéim eile a dhaingniú",
+      "definition": "Treoraíonn sé chuig céim leantach nithiúil a n-aontaíonn an duine eile léi i ndáiríre: cuspóir, am, daoine."
+    },
+    "agenda": {
+      "titel": "An clár oibre a chomhaontú",
+      "definition": "Soiléiríonn sé cuspóir, próiseas agus toradh inmhianaithe ag an tús agus faigheann sé comhaontú an duine eile chuige sin."
+    },
+    "fragen": {
+      "titel": "Ceisteanna a chur agus leanúint ar aghaidh",
+      "definition": "Cuireann sé ceisteanna oscailte, dea-ordaithe agus leanann sé ar aghaidh go dtí go mbíonn fíorfhadhbanna le feiceáil in áit freagraí dromchla."
+    },
+    "spiegeln": {
+      "titel": "Éisteacht agus machnamh",
+      "definition": "Taispeánann sé tuiscint trí achoimre chruinn a dhéanamh agus an chéad cheist eile a thógáil ar an bhfreagra."
+    },
+    "bedarf-entscheider": {
+      "titel": "Riachtanas, cinnteoir, buiséad, am a shoiléiriú",
+      "definition": "Soiléiríonn sé sa chomhrá an bhfuil fíorfhadhb ann, cé a chinneann, conas a mhaoinítear tionscadail den sórt sin agus an bhfuil amlíne ann."
+    },
+    "bedarf-finden": {
+      "titel": "Éisteacht agus an fíor-riachtanas a aimsiú",
+      "definition": "Scrúdaíonn sé staid an duine eile sula réitíonn sé, agus aimsíonn sé an fíor-riachtanas taobh thiar den éileamh."
+    },
+    "empathie": {
+      "titel": "Comhbhá nithiúil",
+      "definition": "Ainmníonn sé mothú nó iarracht an duine eile go nithiúil agus go inchreidte sula réitíonn sé aon rud."
+    },
+    "verantwortung": {
+      "titel": "Freagracht a ghlacadh",
+      "definition": "Glacann sé freagracht phearsanta as réiteach na faidhbe sonracha seo, gan díriú ar dhaoine eile, ar an gcóras nó ar rialacha."
+    },
+    "klar-relevant": {
+      "titel": "Míniú soiléir agus ábhartha",
+      "definition": "Míníonn sé go soiléir agus nascann sé faisnéis leis an rud atá tábhachtach don duine áirithe seo."
+    },
+    "verbindlich-kunde": {
+      "titel": "An chéad chéim cheangailteach eile",
+      "definition": "Treoraíonn sé chuig gníomh nithiúil, inchreidte a ghlacann an duine eile go sainráite leis, le freagracht agus am."
+    },
+    "kernbotschaft": {
+      "titel": "An príomhtheachtaireacht a choinneáil",
+      "definition": "Tá teachtaireacht shoiléir aige agus tugann sé ar ais í arís agus arís eile in ainneoin seachráin, brú agus ceisteanna leantacha."
+    },
+    "bruecke": {
+      "titel": "Droichead chuig an teachtaireacht",
+      "definition": "Freagraíonn sé an cheist go gairid agus go hionraic agus ansin treoraíonn sé chuig a theachtaireacht féin, gan éalú."
+    },
+    "keine-spekulation": {
+      "titel": "Gan tuairimíocht",
+      "definition": "Ní deir sé ach an rud atá cruthaithe, scarann sé eolas ó thuairimíocht agus ainmníonn sé go hoscailte an rud nach bhfuil ar eolas fós."
+    },
+    "druck": {
+      "titel": "Socair faoi bhrú",
+      "definition": "Fanann sé socair, béasach agus dírithe faoi cheisteanna géara, cur isteach nó treoracha."
+    },
+    "verantwortung-zeigen": {
+      "titel": "Freagracht a léiriú, na daoine atá buailte ar dtús",
+      "definition": "Cuireann sé na daoine atá buailte agus an réiteach roimh an údarú agus léiríonn sé go bhfuil an chuideachta ag gníomhú."
+    }
+  }
+}

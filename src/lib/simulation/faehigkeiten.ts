@@ -1,4 +1,5 @@
 import type { SimRubricCompetency } from "./types";
+import FAEHIGKEITEN_I18N from "./faehigkeiten-i18n.json";
 
 /**
  * Fähigkeiten-Bibliothek (Welle 1, Owner-GO 30.10.2026, Register N4-240):
@@ -907,6 +908,20 @@ export function faehigkeit(id: string): Faehigkeit | undefined {
 }
 
 export type FaehigkeitLocale = "de" | "en";
+
+/**
+ * Welle 3 Nachtrag (30.10.2026): Titel und Definition in den 20 weiteren Oberflächensprachen (erzeugt per
+ * `scripts/_faehigkeiten-uebersetzen.mts`, Datei `faehigkeiten-i18n.json`). Rubrik-Stufen bleiben de/en — sie
+ * sprechen nur zum Richter. Rückfall: Englisch.
+ */
+export function faehigkeitText(f: Faehigkeit, locale: string): { titel: string; definition: string } {
+  if (locale === "de") return { titel: f.titel.de, definition: f.definition.de };
+  if (locale !== "en") {
+    const t = (FAEHIGKEITEN_I18N as Record<string, Record<string, { titel: string; definition: string } | undefined> | undefined>)[locale]?.[f.id];
+    if (t?.titel && t?.definition) return t;
+  }
+  return { titel: f.titel.en, definition: f.definition.en };
+}
 
 /** Bewertungs-Rubrik für den Richter: Definition plus vier Stufen (unsere Skala 1–4). */
 export function faehigkeitRubrik(x: Faehigkeit, locale: FaehigkeitLocale): string {

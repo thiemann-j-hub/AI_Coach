@@ -50,7 +50,7 @@ import { createLiveAudio, liveAudioSupported, type LiveAudio } from '@/lib/live-
 import { openLiveConnection, type LiveConnection } from '@/lib/live-client';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
-import { faehigkeit } from '@/lib/simulation/faehigkeiten';
+import { faehigkeit, faehigkeitText } from '@/lib/simulation/faehigkeiten';
 import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
 import { maxEurHint } from '@/lib/pricing-display';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
@@ -2259,18 +2259,18 @@ export default function SimulationClient() {
                 <ul className="divide-y divide-border">
                   {(() => {
                     const total = comps.reduce((a, c) => a + (c.weight ?? 1), 0) || 1;
-                    const defLocale = locale === 'de' ? 'de' : 'en';
                     return comps.map((c) => {
                       const f = faehigkeit(c.key);
+                      const ft = f ? faehigkeitText(f, locale) : null;
                       return (
                         <li key={c.key} className="py-2.5">
                           <div className="flex items-start justify-between gap-3">
-                            <span className="text-sm font-semibold">{f ? f.titel[defLocale] : c.label}</span>
+                            <span className="text-sm font-semibold">{ft ? ft.titel : c.label}</span>
                             <span className="pn-none shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                               {Math.round(((c.weight ?? 1) / total) * 100)} %
                             </span>
                           </div>
-                          {f && <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">{f.definition[defLocale]}</p>}
+                          {ft && <p className="text-sm text-muted-foreground leading-relaxed mt-0.5">{ft.definition}</p>}
                         </li>
                       );
                     });

@@ -13,7 +13,7 @@
 
 import { anker } from "./faehigkeiten";
 import { WELLE3_SCENARIOS } from "./scenarios-welle3";
-import { WELLE3_VARIANTEN } from "./scenarios-varianten";
+import { WELLE3_VARIANTEN, altVarianten } from "./scenarios-varianten";
 import { coachFaehigkeitenOn } from "./flags";
 import type {
   PublicSimulationScenario,
@@ -1272,7 +1272,7 @@ const stone: SimulationScenario = {
 };
 
 /** Welle 3 (30.10.2026): sechs weitere Szenarien in scenarios-welle3.ts (Vertrieb, Stakeholder, zwei Führungsgespräche ohne Konfliktstart). */
-export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt, falk, stone, ...WELLE3_SCENARIOS, ...WELLE3_VARIANTEN];
+export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt, falk, stone, ...WELLE3_SCENARIOS, ...WELLE3_VARIANTEN, ...altVarianten({ morgan, lang, vance })];
 
 /** Welle-1-Rückweg: ohne den Schalter bewerten die Standard-Szenarien wie vor dem 30.10. (S1–S5, keine Grenze). */
 export function mitAnkerRueckweg(s: SimulationScenario): SimulationScenario {
