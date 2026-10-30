@@ -111,3 +111,63 @@ export async function claudeMessage(p: {
   }
   throw new Error(`Claude ${model}@${region}: ${lastError}`);
 }
+
+/**
+ * Strukturierte Antwort (Welle 1, Richter): Claude füllt ein Werkzeug mit dem gegebenen JSON-Schema —
+ * die Antwort ist damit immer gültiges JSON (kein Zaun, keine ungeschützten Anführungszeichen).
+ * Denken adaptiv; ein zweiter Versuch bei 429/5xx wie bei claudeMessage.
+ */
+export async function claudeStructured<T = unknown>(p: {
+  system: string;
+  user: string;
+  /** JSON-Schema (Draft 7 / OpenAPI-3-Stil) des erwarteten Objekts. */
+  schema: Record<string, unknown>;
+  toolName?: string;
+  maxTokens?: number;
+  model?: string;
+  region?: string;
+  signal?: AbortSignal;
+}): Promise<{ data: T; tokens: { prompt?: number; output?: number }; model: string; region: string; ms: number }> {
+  const model = p.model ?? claudeModel();
+  const region = p.region ?? claudeRegion();
+  const toolName = p.toolName ?? "ergebnis";
+  const project = (process.env.VERTEX_PROJECT ?? "").trim();
+  if (!project) throw new Error("VERTEX_PROJECT fehlt (Claude über Vertex)");
+  const url = `https://${claudeHost(region)}/v1/projects/${project}/locations/${region}/publishers/anthropic/models/${model}:rawPredict`;
+  const body = JSON.stringify({
+    anthropic_version: "vertex-2023-10-16",
+    max_tokens: p.maxTokens ?? 8192,
+    system: p.system,
+    messages: [{ role: "user", content: [{ type: "text", text: p.user }] }],
+    tools: [{ name: toolName, description: "Liefert das Ergebnis in genau dieser Struktur.", input_schema: p.schema }],
+    tool_choice: { type: "tool", name: toolName },
+    thinking: { type: "adaptive" },
+  });
+  let lastError = "";
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const t0 = Date.now();
+    const token = await accessToken();
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body,
+      signal: p.signal,
+    });
+    const raw = await res.text();
+    if (res.ok) {
+      const j = JSON.parse(raw) as {
+        content?: Array<{ type: string; name?: string; input?: unknown }>;
+        usage?: { input_tokens?: number; output_tokens?: number };
+        stop_reason?: string;
+      };
+      const use = (j.content ?? []).find((b) => b.type === "tool_use" && b.name === toolName);
+      if (!use || use.input == null) throw new Error(`Claude ${model}@${region}: kein Werkzeugaufruf in der Antwort (stop_reason ${j.stop_reason ?? "?"})`);
+      return { data: use.input as T, tokens: { prompt: j.usage?.input_tokens, output: j.usage?.output_tokens }, model, region, ms: Date.now() - t0 };
+    }
+    lastError = `HTTP ${res.status}: ${raw.replace(/\s+/g, " ").slice(0, 200)}`;
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || attempt === 2) break;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  throw new Error(`Claude ${model}@${region}: ${lastError}`);
+}

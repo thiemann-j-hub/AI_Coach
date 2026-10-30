@@ -6,6 +6,8 @@ import { GENKIT_MODEL_ID } from "@/ai/genkit";
 import { scoreCompetencies } from "@/ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
 import { regieVerlaufText } from "@/ai/flows/simulation-regie";
+import { RICHTER_OPUS_TIMEOUT_MS } from "@/ai/flows/simulation-feedback";
+import { coachRichter } from "@/lib/simulation/flags";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import {
@@ -53,7 +55,7 @@ import { aiErrorResponse } from "@/lib/server/request-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 180;
 
 const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
 
@@ -192,7 +194,8 @@ export async function POST(req: NextRequest) {
                 : undefined,
             regieVerlauf: regieVerlaufText(doc.regie, scenario.locale) || undefined,
           }),
-        { ms: LLM_TIMEOUT_MS, label: "gemini-sim-feedback", retries: 1 }
+        // Welle 1: der Opus-Richter braucht länger (40–90 s); seine Frist plus Rückfall liegt im Flow.
+        { ms: coachRichter() === "opus" ? RICHTER_OPUS_TIMEOUT_MS + 50_000 : LLM_TIMEOUT_MS, label: "sim-feedback", retries: 1 }
       ),
       withTimeout(
         scoreCompetencies({

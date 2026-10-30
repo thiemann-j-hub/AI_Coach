@@ -22,7 +22,7 @@ import type { SimulationScenario, SimulationTurn } from '@/lib/simulation/types'
 import { coachRichter } from '@/lib/simulation/flags';
 import { assembleTranscript } from '@/lib/server/simulation-store';
 import { OBSERVER_CANON_DE } from '@/lib/coach-canon';
-import { claudeMessage, claudeVertexConfigured } from '@/lib/server/claude-vertex';
+import { claudeStructured, claudeVertexConfigured } from '@/lib/server/claude-vertex';
 import { logger } from '@/lib/logger';
 import {
   buildCoachQuery,
@@ -287,17 +287,24 @@ async function judgeGemini(promptText: string): Promise<SimulationFeedbackRaw> {
   return res.output as SimulationFeedbackRaw;
 }
 
-/** Richter Opus @eu: gleicher Prompt, JSON-Schema als Anweisung, Antwort gegen das Zod-Schema geprüft. */
+/** Frist des Opus-Richters (er denkt länger als Flash); danach Rückfall auf Gemini. */
+export const RICHTER_OPUS_TIMEOUT_MS = Math.max(30_000, Number(process.env.COACH_RICHTER_TIMEOUT_MS ?? 110_000) || 110_000);
+
+/**
+ * Richter Opus @eu: gleicher Prompt; die Antwort kommt als erzwungener Werkzeugaufruf mit dem JSON-Schema der
+ * Auswertung (immer gültiges JSON) und wird gegen das Zod-Schema geprüft.
+ */
 async function judgeOpus(promptText: string): Promise<SimulationFeedbackRaw> {
-  const schema = JSON.stringify(zodToJsonSchema(SimulationFeedbackOutputSchema, { target: 'openApi3' }));
-  const reply = await claudeMessage({
-    system:
-      anredeBlock() +
-      '\n\nDu antwortest AUSSCHLIESSLICH mit einem JSON-Objekt nach dem angegebenen Schema — ohne Einleitung, ohne Markdown-Zaun, ohne Kommentar. Alle Schlüssel exakt wie im Schema.',
-    user: promptText + '\n\nJSON-SCHEMA DER ANTWORT:\n' + schema,
-    maxTokens: 6000,
+  const schema = zodToJsonSchema(SimulationFeedbackOutputSchema, { target: 'openApi3', $refStrategy: 'none' }) as Record<string, unknown>;
+  const reply = await claudeStructured<unknown>({
+    system: anredeBlock() + '\n\nDu lieferst die Auswertung ausschließlich über das Werkzeug „auswertung“, alle Felder nach Schema.',
+    user: promptText.replace('Gib ausschließlich JSON gemäß Schema zurück.', 'Fülle das Werkzeug „auswertung“ vollständig aus.'),
+    schema,
+    toolName: 'auswertung',
+    maxTokens: 8192,
+    signal: AbortSignal.timeout(RICHTER_OPUS_TIMEOUT_MS),
   });
-  return SimulationFeedbackOutputSchema.parse(parseJudgeJson(reply.text));
+  return SimulationFeedbackOutputSchema.parse(reply.data);
 }
 
 export async function generateSimulationFeedback(args: {
