@@ -395,7 +395,7 @@ export async function POST(req: NextRequest) {
           createdAt: finishedAt,
           competencyRatings,
           // Welle 5: Anker je Fähigkeit (Stufe, Gewicht), Szenario und Urteil — Datenbasis des Team-Bilds im Hub.
-          rubric: feedback.rubric,
+          rubric: feedback.rubric.map((r) => ({ ...r, weight: weightByKey.get(r.key) })),
           szenarioId: scenario.id,
           bestanden: debrief.verdict === "passed" ? true : debrief.verdict === "failed" ? false : null,
         }).catch((e) =>

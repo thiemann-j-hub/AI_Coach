@@ -472,6 +472,7 @@ export default function SimulationClient() {
   const [wishBusy, setWishBusy] = useState(false);
   const [wishDone, setWishDone] = useState(false);
   // Welle 4: „Mein echtes Gespräch vorbereiten“ — drei Sätze → privates Szenario (nur diese Person, 30 Tage).
+  const [heroImgFailed, setHeroImgFailed] = useState(false);
   const [vorbOpen, setVorbOpen] = useState(false);
   const [vorbAnlass, setVorbAnlass] = useState('');
   const [vorbGegen, setVorbGegen] = useState('');
@@ -1344,6 +1345,7 @@ export default function SimulationClient() {
             : t.entry.catStakeholder;
 
     const openBriefing = (s: PublicScenario) => {
+      setHeroImgFailed(false);
       setScenario(s);
       setError(null);
       setBriefStep(0);
@@ -2062,12 +2064,20 @@ export default function SimulationClient() {
             {/* ── Rechte Spalte: Hero-Porträt mit Overlay (Synthesia-Muster) ── */}
             <div className="order-1 lg:order-2 lg:sticky lg:top-4">
               <div className="pn-none relative overflow-hidden rounded-3xl border border-border shadow-neon aspect-[4/5] bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={withBasePath(`/personas/${portraitOf(scenario)}.jpg`)}
-                  alt={scenario.persona.name}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
+                {/* Welle 4: Kunden- und private Szenarien haben kein Porträt — dann Verlauf mit Initialen statt Alt-Text. */}
+                {heroImgFailed ? (
+                  <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary to-accent text-6xl font-bold text-white/90" aria-hidden>
+                    {scenario.persona.name.split(/\s+/).map((p) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+                  </div>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={withBasePath(`/personas/${portraitOf(scenario)}.jpg`)}
+                    alt={scenario.persona.name}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    onError={() => setHeroImgFailed(true)}
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10" />
                 {/* Badges oben (Stufe + Sprache) */}
                 <div className="absolute left-4 top-4 flex flex-wrap gap-2">
