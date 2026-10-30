@@ -9,7 +9,7 @@
  * Lernende sehen weiterhin ausschließlich die publicScenario-Projektion.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
@@ -22,7 +22,9 @@ import {
   Play,
   RotateCcw,
   Sparkles,
+  Square,
   Trash2,
+  Volume2,
   Wand2,
 } from 'lucide-react';
 import AppShell from '@/components/app/app-shell';
@@ -30,6 +32,9 @@ import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
 import { maxEurHint } from '@/lib/pricing-display';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
+import { withBasePath } from '@/lib/base-path';
+import { LIVE_VOICES, defaultLiveVoice, liveVoiceSamplePath } from '@/lib/simulation/live-voices';
+import type { PersonaVoice } from '@/lib/simulation/types';
 
 interface BuilderScenario {
   id: string;
@@ -37,7 +42,7 @@ interface BuilderScenario {
   teaser: string;
   category: string;
   difficulty: number;
-  persona: { name: string; role: string; voice?: string };
+  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
   candidateBriefing: {
     yourRole: string;
     relationship: string;
@@ -94,6 +99,29 @@ export default function BuilderClient() {
   const [reviseNote, setReviseNote] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // Hörprobe der Live-Stimme: ein Abspieler für die ganze Seite, ein Klick startet, der nächste stoppt.
+  const [playingVoice, setPlayingVoice] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const stopSample = useCallback(() => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setPlayingVoice(null);
+  }, []);
+  useEffect(() => stopSample, [stopSample]);
+  function toggleSample(voiceId: string) {
+    if (playingVoice === voiceId) {
+      stopSample();
+      return;
+    }
+    stopSample();
+    const audio = new Audio(withBasePath(liveVoiceSamplePath(voiceId)));
+    audio.onended = () => setPlayingVoice((cur) => (cur === voiceId ? null : cur));
+    audio.onerror = () => setPlayingVoice((cur) => (cur === voiceId ? null : cur));
+    audioRef.current = audio;
+    setPlayingVoice(voiceId);
+    void audio.play().catch(() => setPlayingVoice(null));
+  }
 
   const load = useCallback(async () => {
     try {
@@ -176,21 +204,24 @@ export default function BuilderClient() {
     }
   }
 
-  // O5a: Stimme der Persona wählen (Seraphina/Florian/Emma) — Kundenszenarien
-  // sprachen bisher alle mit der Standardstimme.
-  async function setVoice(id: string, voice: string) {
+  // Stimme der Rolle (Owner-Skizze 28.10.): eine der 30 Live-Stimmen. Der Server leitet daraus die
+  // Vorlesestimme für den Textweg ab (gleiches Geschlecht) und gibt beides zurück.
+  async function setLiveVoice(id: string, liveVoice: string) {
     setBusyId(id);
     setError(null);
     try {
       const res = await authFetch('/api/simulation/builder/voice', {
         method: 'POST',
-        body: JSON.stringify({ scenarioId: id, voice }),
+        body: JSON.stringify({ scenarioId: id, liveVoice }),
       });
-      const json = await res.json().catch(() => null);
+      const json = (await res.json().catch(() => null)) as { ok?: boolean; voice?: PersonaVoice; liveVoice?: string } | null;
       if (!res.ok || !json?.ok) throw new Error('voice');
+      const voice = json.voice;
       setItems((prev) =>
         prev.map((it) =>
-          it.id === id ? { ...it, scenario: { ...it.scenario, persona: { ...it.scenario.persona, voice } } } : it
+          it.id === id
+            ? { ...it, scenario: { ...it.scenario, persona: { ...it.scenario.persona, liveVoice, ...(voice ? { voice } : {}) } } }
+            : it
         )
       );
     } catch {
@@ -373,6 +404,7 @@ export default function BuilderClient() {
           {items.map((item) => {
             const isOpen = openId === item.id;
             const s = item.scenario;
+            const liveVoice = s.persona.liveVoice ?? defaultLiveVoice(s.persona.voice);
             return (
               <div key={item.id} className="pn-surface glass-panel rounded-xl border border-border">
                 <div className="p-4 flex items-center gap-3 flex-wrap">
@@ -408,21 +440,43 @@ export default function BuilderClient() {
                   <div className="border-t border-border p-4 space-y-4 text-sm">
                     <p className="text-muted-foreground leading-relaxed">{s.teaser}</p>
 
-                    {/* O5a: Stimme der Persona (Sprachmodus) */}
-                    <label className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-semibold uppercase tracking-wide">{ts.builderVoice}</span>
-                      <select
-                        value={s.persona.voice ?? 'florian-hd'}
-                        disabled={busyId === item.id}
-                        onChange={(e) => void setVoice(item.id, e.target.value)}
-                        className="pn-field rounded-lg border border-border bg-background px-2 py-1 text-sm text-foreground"
-                        data-testid="builder-voice"
-                      >
-                        <option value="seraphina-hd">{ts.voiceSeraphina}</option>
-                        <option value="florian-hd">{ts.voiceFlorian}</option>
-                        <option value="emma-hd">{ts.voiceEmma}</option>
-                      </select>
-                    </label>
+                    {/* Stimme der Rolle (Owner-Skizze 28.10.): zwei Gruppen, Name + Charakterwort, Anhören */}
+                    <div className="space-y-1.5">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {ts.builderVoice}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          value={liveVoice}
+                          disabled={busyId === item.id}
+                          onChange={(e) => void setLiveVoice(item.id, e.target.value)}
+                          className="pn-field rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground min-w-[16rem]"
+                          aria-label={ts.builderVoice}
+                          data-testid="builder-voice"
+                        >
+                          {(['w', 'm'] as const).map((g) => (
+                            <optgroup key={g} label={g === 'w' ? ts.builderVoiceFemale : ts.builderVoiceMale}>
+                              {LIVE_VOICES.filter((v) => v.gender === g).map((v) => (
+                                <option key={v.id} value={v.id}>
+                                  {v.id} · {ts.liveVoiceCharacter[v.character]}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => toggleSample(liveVoice)}
+                          className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-secondary"
+                          aria-pressed={playingVoice === liveVoice}
+                          data-testid="builder-voice-listen"
+                        >
+                          {playingVoice === liveVoice ? <Square className="h-3.5 w-3.5" /> : <Volume2 className="h-4 w-4" />}
+                          {playingVoice === liveVoice ? ts.builderVoiceStop : ts.builderVoiceListen}
+                        </button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{ts.builderVoiceNote}</p>
+                    </div>
 
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">

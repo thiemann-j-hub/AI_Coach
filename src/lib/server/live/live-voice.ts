@@ -1,4 +1,4 @@
-import { isLiveVoice } from "@/lib/simulation/live-voices";
+import { defaultLiveVoice, isLiveVoice } from "@/lib/simulation/live-voices";
 import type { PersonaVoice, SimConversationLocale } from "@/lib/simulation/types";
 
 /**
@@ -23,12 +23,6 @@ export const LIVE_VOICE_BY_SCENARIO: Readonly<Record<string, string>> = {
   "sim-appraisal-stone": "Iapetus", // Erik Stone — Englisch, flott (Wahl C)
 };
 
-export const LIVE_VOICE_BY_PERSONA_VOICE: Readonly<Record<PersonaVoice, string>> = {
-  "seraphina-hd": "Aoede",
-  "florian-hd": "Charon",
-  "emma-hd": "Aoede",
-};
-
 /**
  * Live-Stimme einer Rolle: (1) im Builder gewählte Live-Stimme, (2) Owner-Wahl je Standard-Szenario,
  * (3) Rückfall nach Persona-Stimme (Azure-Name).
@@ -36,7 +30,7 @@ export const LIVE_VOICE_BY_PERSONA_VOICE: Readonly<Record<PersonaVoice, string>>
 export function liveVoiceFor(voice: PersonaVoice | undefined, scenarioId?: string, liveVoice?: string): string {
   if (liveVoice && isLiveVoice(liveVoice)) return liveVoice;
   if (scenarioId && LIVE_VOICE_BY_SCENARIO[scenarioId]) return LIVE_VOICE_BY_SCENARIO[scenarioId];
-  return LIVE_VOICE_BY_PERSONA_VOICE[voice ?? "florian-hd"] ?? "Charon";
+  return defaultLiveVoice(voice); // Rückfall nach Persona-Stimme (ein Ort: live-voices.ts)
 }
 
 /** Sprachkennung für die Sprachausgabe des Live-Modells (Gesprächssprache, nicht Autorensprache). */
