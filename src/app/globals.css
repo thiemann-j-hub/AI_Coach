@@ -230,3 +230,50 @@
     transition: none;
   }
 }
+
+/* ── Farbwelt „Klar“ (Owner-GO 30.10.2026, Claude-Design-Vorschlag, Register N4-238) ──
+   Gleiche Farben wie im Hub. Gilt nur mit Klasse pn-klar auf <html> (Schalter DESIGN_KLAR, Standard an).
+   Rückweg: DESIGN_KLAR=off. Unlayered am Dateiende: schlägt :root/.dark; .pn-klar.dark setzt jede
+   Variable aus .pn-klar neu, sonst gälten helle Werte im Dunkelmodus.
+   Hell: Knöpfe #006fd6 (Weiß 5,0:1), Nebentext #56657f, Grund #f4f7fb, sichtbarer Kartenschatten.
+   Dunkel: Knöpfe #3aa8ff mit dunkler Schrift (6,9:1), Nebentext #a3aed0. Logo bleibt Markenblau (--brand). */
+:root,
+.dark {
+  --brand: 207 100% 50%;
+}
+.pn-klar {
+  --background: 214 47% 97%;
+  --primary: 209 100% 42%;
+  --primary-foreground: 0 0% 100%;
+  --primary-dark: 212 90% 37%;
+  --muted-foreground: 218 19% 42%;
+  --text-muted: 218 19% 42%;
+  --destructive: 4 74% 49%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 27% 91%;
+  --input: 215 29% 87%;
+  --ring: 209 100% 42%;
+  --brand: 206 100% 50%;
+  --shadow-card: 4px 6px 16px -4px rgba(10, 25, 47, 0.18);
+  --pn-shadow-ruhe: 4px 6px 16px -4px rgba(10, 25, 47, 0.18);
+  --pn-rand-hover: rgba(0, 145, 255, 0.75);
+  --pn-shadow-hover: 0 0 10px 1px rgba(0, 145, 255, 0.3);
+}
+.pn-klar.dark {
+  --background: 213 54% 12%;
+  --primary: 206 100% 61%;
+  --primary-foreground: 216 65% 11%;
+  --primary-dark: 206 100% 50%;
+  --muted-foreground: 225 32% 73%;
+  --text-muted: 225 32% 73%;
+  --destructive: 2 97% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 215 25% 20%;
+  --input: 215 25% 23%;
+  --ring: 206 100% 61%;
+  --brand: 206 100% 61%;
+  --shadow-card: 4px 6px 16px -4px rgba(0, 0, 0, 0.55);
+  --pn-shadow-ruhe: 4px 6px 16px -4px rgba(0, 0, 0, 0.55);
+  --pn-rand-hover: rgba(58, 168, 255, 0.85);
+  --pn-shadow-hover: 0 0 12px 1px rgba(58, 168, 255, 0.45);
+}

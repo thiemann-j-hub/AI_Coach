@@ -14,7 +14,7 @@ export function PulscraftMark({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 40 40"
-      className={cn("h-8 w-8 shrink-0 text-primary", className)}
+      className={cn("h-8 w-8 shrink-0 text-brand", className)}
       fill="none"
       aria-hidden="true"
     >
@@ -68,7 +68,7 @@ export function PulscraftWordmark({
       {!iconOnly && (
         <span className="text-lg font-bold tracking-tight">
           <span className="text-foreground">PulseNorth</span>
-          <span className="text-primary">.AI</span>
+          <span className="text-brand">.AI</span>
           {product ? <PulscraftProductName product={product} /> : null}
         </span>
       )}

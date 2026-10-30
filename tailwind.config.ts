@@ -46,6 +46,8 @@ export default {
         },
         "primary-hover": "#007ACC",
         "primary-dark": "hsl(var(--primary-dark))",
+        // Farbwelt „Klar“ (30.10.2026): Markenblau für Logo und Wortmarke, getrennt vom Knopf-Blau.
+        brand: "hsl(var(--brand) / <alpha-value>)",
 
         // PulseCraft Explicit Colors
         "background-light": "#F3F4F6",

@@ -67,13 +67,14 @@ export default async function RootLayout({
       // betraf v.a. den ausgeloggten Login als ersten Kalt-Load. next-themes
       // (defaultTheme=dark) haelt dunkel bzw. wechselt auf eine gespeicherte
       // Light-Praeferenz; suppressHydrationWarning deckt den Klassen-Abgleich.
-      className={`${sans.variable} ${mono.variable} dark`}
+      // Farbwelt „Klar“ (Owner-GO 30.10.2026): pn-klar schaltet die Farben in globals.css um. Rückweg DESIGN_KLAR=off.
+      className={`${sans.variable} ${mono.variable} dark${(process.env.DESIGN_KLAR ?? "on").trim().toLowerCase() !== "off" ? " pn-klar" : ""}`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium"
         >
           {t.common.skipToContent}
         </a>

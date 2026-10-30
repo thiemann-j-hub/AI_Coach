@@ -377,7 +377,7 @@ export default function AnalyzeClient() {
                     <span className="text-xs font-medium text-foreground">{t.analyze.cleanTeams}</span>
                   </label>
                   <button
-                    className="pn-none bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors text-xs font-medium py-2 px-4 rounded-lg"
+                    className="pn-none bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-primary-foreground transition-colors text-xs font-medium py-2 px-4 rounded-lg"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadBusy || loading}
                   >

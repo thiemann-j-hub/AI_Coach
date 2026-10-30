@@ -153,7 +153,7 @@ export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
             <PulscraftMark />
             <span className="text-lg font-bold tracking-tight">
               <span className="text-foreground">PulseNorth</span>
-              <span className="text-primary">.AI</span>
+              <span className="text-brand">.AI</span>
             </span>
           </span>
         )}
@@ -179,7 +179,7 @@ export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
               <PulscraftMark />
               <span className="text-lg font-bold tracking-tight">
                 <span className="text-foreground">PulseNorth</span>
-                <span className="text-primary">.AI</span>
+                <span className="text-brand">.AI</span>
               </span>
               <ChevronDown
                 className={`mt-1.5 h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
@@ -214,7 +214,7 @@ export function BrandSwitcher({ collapsed }: { collapsed?: boolean }) {
                 {app.suffix ? (
                   <span className="truncate font-semibold tracking-tight">
                     <span className="text-foreground">PulseNorth</span>
-                    <span className="text-primary">.AI</span>
+                    <span className="text-brand">.AI</span>
                     <span className="font-medium text-muted-foreground"> {app.suffix}</span>
                   </span>
                 ) : (

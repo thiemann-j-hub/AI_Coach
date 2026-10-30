@@ -128,7 +128,7 @@ function LoginScreen() {
         </div>
         <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
           <span className="text-foreground">PulseNorth</span>
-          <span className="text-primary">.AI</span>
+          <span className="text-brand">.AI</span>
         </h1>
         <p className="mt-2 text-sm font-medium text-muted-foreground">Gesprächs-Coach</p>
         <p className="mt-3 text-lg font-medium text-gradient">{tagline}</p>
@@ -138,7 +138,7 @@ function LoginScreen() {
           type="button"
           onClick={onSignIn}
           disabled={busy}
-          className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-white shadow-neon transition-all hover:bg-primary-dark hover:shadow-neon-hover disabled:opacity-60"
+          className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-neon transition-all hover:bg-primary-dark hover:shadow-neon-hover disabled:opacity-60"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <MicrosoftMark />}
           {t.auth.signInWithMicrosoft}

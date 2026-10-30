@@ -78,7 +78,7 @@ function StudioRecommendationCard({ competencies }: { competencies: any[] }) {
           </p>
           <a
             href={href}
-            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-white shadow-neon transition-all hover:bg-primary-dark"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground shadow-neon transition-all hover:bg-primary-dark"
           >
             <GraduationCap className="h-4 w-4" />
             {de ? 'Lernmodul im Studio erstellen' : 'Create module in Studio'}
@@ -531,7 +531,7 @@ export default function ReportDashboard({
           {/* 7-Day Practice */}
           <div className="pn-tile lg:col-span-1 glass-panel rounded-2xl p-6 flex flex-col border-border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-primary rounded-lg text-white shadow-neon">
+              <div className="p-2 bg-primary rounded-lg text-primary-foreground shadow-neon">
                 <span className="text-sm font-bold">7</span>
               </div>
               <h3 className="font-bold text-lg text-foreground">{t.report.weeklyPractice}</h3>
@@ -553,7 +553,7 @@ export default function ReportDashboard({
                 die methodisch richtige Messkadenz für den Längsschnitt. */}
             <button
               type="button"
-              className="w-full mt-2 py-3 bg-primary text-white text-sm font-semibold rounded-xl shadow-neon hover:bg-primary-dark hover:shadow-neon-hover transition-all flex items-center justify-center gap-2"
+              className="w-full mt-2 py-3 bg-primary text-primary-foreground text-sm font-semibold rounded-xl shadow-neon hover:bg-primary-dark hover:shadow-neon-hover transition-all flex items-center justify-center gap-2"
               onClick={handleFollowUp}
             >
               <CalendarPlus className="h-4 w-4" />
