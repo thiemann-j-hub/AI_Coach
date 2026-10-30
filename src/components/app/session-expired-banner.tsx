@@ -41,7 +41,7 @@ export function SessionExpiredBanner() {
       data-testid="session-expired"
     >
       <span className="inline-flex items-center gap-2 font-medium">
-        <LogIn className="h-4 w-4 shrink-0 text-amber-500" aria-hidden />
+        <LogIn className="h-4 w-4 shrink-0 text-amber-800 dark:text-amber-500" aria-hidden />
         {t.common.sessionExpired}
       </span>
       <button

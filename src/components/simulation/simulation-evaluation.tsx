@@ -257,7 +257,7 @@ function DeliveryScale(props: { position: 0 | 1 | 2; tone: 'ok' | 'mid' | 'off' 
 const EXPECTATION_STYLES: Record<SimEvalDebriefAnchor['expectation'], string> = {
   exceeds: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
   meets: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30',
-  approaching: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30',
+  approaching: 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30',
   below: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30',
   'not-observable': 'bg-muted text-muted-foreground border-border',
 };
@@ -404,7 +404,7 @@ export function SimulationEvaluation(props: {
           {t.aiWait.aiLimit}
         </p>
         {props.mode === 'check' && (
-          <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+          <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-800 dark:text-amber-400">
             {ts.modeCheckBadge}
           </span>
         )}
@@ -552,7 +552,7 @@ export function SimulationEvaluation(props: {
           ) : feedback.selfReview.agreement === 'partly' ? (
             <Minus className="h-5 w-5 text-sky-700 dark:text-sky-400 shrink-0 mt-0.5" />
           ) : (
-            <RotateCcw className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+            <RotateCcw className="h-5 w-5 text-amber-800 dark:text-amber-400 shrink-0 mt-0.5" />
           )}
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -582,7 +582,7 @@ export function SimulationEvaluation(props: {
           {feedback.focusReview.addressed ? (
             <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
           ) : (
-            <RotateCcw className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+            <RotateCcw className="h-5 w-5 text-amber-800 dark:text-amber-400 shrink-0 mt-0.5" />
           )}
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

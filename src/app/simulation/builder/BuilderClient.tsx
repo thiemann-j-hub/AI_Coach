@@ -277,7 +277,7 @@ export default function BuilderClient() {
     return (
       <AppShell title={ts.builderTitle} actions={backAction}>
         <div className="pn-none glass-panel max-w-xl rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
+          <AlertTriangle className="h-4 w-4 text-amber-800 dark:text-amber-400 mt-0.5 shrink-0" />
           <p>{ts.builderAdminOnly}</p>
         </div>
       </AppShell>
@@ -426,7 +426,7 @@ export default function BuilderClient() {
                       'text-xs font-semibold px-2.5 py-1 rounded-full border',
                       item.status === 'published'
                         ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
-                        : 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
+                        : 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30'
                     )}
                   >
                     {item.status === 'published' ? ts.builderPublished : ts.builderDraft}
@@ -516,7 +516,7 @@ export default function BuilderClient() {
                       </button>
                       {dnaOpen && (
                         <div className="pn-tile mt-2 space-y-2 rounded-xl border border-border bg-muted/40 p-3 text-xs leading-relaxed">
-                          <p className="text-amber-700 dark:text-amber-400 font-semibold">{ts.builderDnaWarning}</p>
+                          <p className="text-amber-800 dark:text-amber-400 font-semibold">{ts.builderDnaWarning}</p>
                           <p>
                             <span className="font-semibold">{ts.builderDnaHidden}:</span>{' '}
                             {s.personaDna.hiddenDrivers.join(' · ')}
@@ -590,7 +590,7 @@ export default function BuilderClient() {
                         <button
                           onClick={() => void setStatus(item.id, 'draft')}
                           disabled={busyId === item.id}
-                          className="pn-none rounded-lg border border-amber-500/40 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                          className="pn-none rounded-lg border border-amber-500/40 px-3 py-2 text-xs font-semibold text-amber-800 dark:text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
                           <EyeOff className="h-3.5 w-3.5" /> {ts.builderUnpublishCta}
                         </button>

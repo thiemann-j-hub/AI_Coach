@@ -235,7 +235,7 @@
    Gleiche Farben wie im Hub. Gilt nur mit Klasse pn-klar auf <html> (Schalter DESIGN_KLAR, Standard an).
    Rückweg: DESIGN_KLAR=off. Unlayered am Dateiende: schlägt :root/.dark; .pn-klar.dark setzt jede
    Variable aus .pn-klar neu, sonst gälten helle Werte im Dunkelmodus.
-   Hell: Knöpfe #006fd6 (Weiß 5,0:1), Nebentext #56657f, Grund #f4f7fb, sichtbarer Kartenschatten.
+   Hell: Knöpfe #0066c7 (Weiß 5,6:1), Nebentext #56657f, Grund #f4f7fb, sichtbarer Kartenschatten.
    Dunkel: Knöpfe #3aa8ff mit dunkler Schrift (6,9:1), Nebentext #a3aed0. Logo bleibt Markenblau (--brand). */
 :root,
 .dark {
@@ -243,16 +243,17 @@
 }
 .pn-klar {
   --background: 214 47% 97%;
-  --primary: 209 100% 42%;
+  --primary: 209 100% 39%;
   --primary-foreground: 0 0% 100%;
-  --primary-dark: 212 90% 37%;
+  --primary-dark: 211 88% 35%;
+  --accent: 271 60% 53%;
   --muted-foreground: 218 19% 42%;
   --text-muted: 218 19% 42%;
   --destructive: 4 74% 49%;
   --destructive-foreground: 0 0% 100%;
   --border: 215 27% 91%;
   --input: 215 29% 87%;
-  --ring: 209 100% 42%;
+  --ring: 209 100% 39%;
   --brand: 206 100% 50%;
   --shadow-card: 4px 6px 16px -4px rgba(10, 25, 47, 0.18);
   --pn-shadow-ruhe: 4px 6px 16px -4px rgba(10, 25, 47, 0.18);
@@ -264,10 +265,11 @@
   --primary: 206 100% 61%;
   --primary-foreground: 216 65% 11%;
   --primary-dark: 206 100% 50%;
+  --accent: 272 70% 56%;
   --muted-foreground: 225 32% 73%;
   --text-muted: 225 32% 73%;
-  --destructive: 2 97% 58%;
-  --destructive-foreground: 0 0% 100%;
+  --destructive: 357 100% 68%;
+  --destructive-foreground: 216 65% 11%;
   --border: 215 25% 20%;
   --input: 215 25% 23%;
   --ring: 206 100% 61%;

@@ -272,7 +272,7 @@ function KpiTiles({ v }: { v: Extract<FactVisual, { kind: 'kpis' }> }) {
         <div key={i} className="pn-none min-w-[110px] flex-1 rounded-lg border border-border bg-background/40 px-3 py-2.5">
           <div className="text-xl font-bold tabular-nums leading-tight">{it.value}</div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">{it.label}</div>
-          {it.sub && <div className="text-[10px] text-muted-foreground/70">{it.sub}</div>}
+          {it.sub && <div className="text-[10px] text-muted-foreground">{it.sub}</div>}
         </div>
       ))}
     </div>
@@ -1311,7 +1311,7 @@ export default function SimulationClient() {
             <div className="truncate">{s.persona.role}</div>
           </div>
         </div>
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
+        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
           {s.locale === 'en' ? ts.englishOnly : ts.germanOnly}
         </div>
       </button>
@@ -1469,7 +1469,7 @@ export default function SimulationClient() {
                             'text-xs px-2 py-0.5 rounded-full border tabular-nums',
                             remainMs > 0
                               ? 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30'
-                              : 'bg-amber-500/15 text-amber-500 border-amber-500/30'
+                              : 'bg-amber-500/15 text-amber-800 dark:text-amber-500 border-amber-500/30'
                           )}
                         >
                           {remainMs > 0
@@ -1782,7 +1782,7 @@ export default function SimulationClient() {
                   ))}
                 </div>
                 {simMode === 'check' && (
-                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">{ts.modeCheckHint}</p>
+                  <p className="mt-2 text-xs text-amber-800 dark:text-amber-400 leading-relaxed">{ts.modeCheckHint}</p>
                 )}
               </div>
 
@@ -2065,7 +2065,7 @@ export default function SimulationClient() {
                   timeUp || remainingMs === 0
                     ? 'border-rose-500/40 text-rose-700 dark:text-rose-400 bg-rose-500/10'
                     : clockWarn
-                      ? 'border-amber-500/40 text-amber-500 bg-amber-500/10'
+                      ? 'border-amber-500/40 text-amber-800 dark:text-amber-500 bg-amber-500/10'
                       : 'border-border text-muted-foreground'
                 )}
                 title={ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
@@ -2105,7 +2105,7 @@ export default function SimulationClient() {
             </button>
             )}
             {simMode === 'check' && (
-              <span className="text-xs font-semibold rounded-lg px-3 py-2 border border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
+              <span className="text-xs font-semibold rounded-lg px-3 py-2 border border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
                 <Flag className="h-3.5 w-3.5" /> {ts.modeCheckBadge}
               </span>
             )}
@@ -2316,7 +2316,7 @@ export default function SimulationClient() {
             {/* CP-3.3 (M17, EU-KI-VO Art. 50): dauerhafter KI-Hinweis — bewusst
                 persistent statt einmal wegklickbar (beweissicher, Abs. 5:
                 spätestens bei der ersten Interaktion). */}
-            <p className="max-w-3xl mx-auto mb-1 text-[10px] leading-tight text-muted-foreground/70">
+            <p className="max-w-3xl mx-auto mb-1 text-[10px] leading-tight text-muted-foreground">
               {ts.aiNotice}
             </p>
             {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
@@ -2399,7 +2399,7 @@ export default function SimulationClient() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="pn-none glass-panel rounded-2xl border border-amber-500/40 p-6 max-w-md w-full space-y-4 bg-card">
               <h3 className="font-semibold text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5 text-amber-500" /> {ts.deadEndTitle}
+                <Clock className="h-5 w-5 text-amber-800 dark:text-amber-500" /> {ts.deadEndTitle}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{ts.deadEndBody}</p>
               {error && errorBanner}
@@ -2609,7 +2609,7 @@ export default function SimulationClient() {
                 {ts.finishCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
               </p>
               {userTurnCount < 3 && (
-                <p className="text-sm text-amber-700 dark:text-amber-400">{ts.notEnoughTurns}</p>
+                <p className="text-sm text-amber-800 dark:text-amber-400">{ts.notEnoughTurns}</p>
               )}
               {error && errorBanner}
               <div className="flex gap-2 justify-end">

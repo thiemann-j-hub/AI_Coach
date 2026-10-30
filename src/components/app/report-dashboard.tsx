@@ -159,7 +159,7 @@ export function CompetencyPanel({ competencies }: { competencies: any[] }) {
                 {reason ? (
                   <p className="text-xs text-muted-foreground leading-snug">{reason}</p>
                 ) : (
-                  <p className="text-xs text-muted-foreground/50">—</p>
+                  <p className="text-xs text-muted-foreground">—</p>
                 )}
 
                 {quotes.length > 0 && (
@@ -234,11 +234,11 @@ function RatingCard({
             className="leading-none transition-transform hover:scale-110 disabled:opacity-60"
             aria-label={`${v}/5`}
           >
-            <Star className={`h-6 w-6 ${shown >= v ? 'fill-amber-400 text-amber-700 dark:text-amber-400' : 'text-foreground/20'}`} />
+            <Star className={`h-6 w-6 ${shown >= v ? 'fill-amber-400 text-amber-800 dark:text-amber-400' : 'text-foreground/20'}`} />
           </button>
         ))}
       </div>
-      {state === 'saved' && <p className="text-xs text-emerald-500 mt-2">{t.report.rateThanks}</p>}
+      {state === 'saved' && <p className="text-xs text-emerald-700 dark:text-emerald-500 mt-2">{t.report.rateThanks}</p>}
       {state === 'error' && <p className="text-xs text-red-700 dark:text-red-400 mt-2">{t.report.rateError}</p>}
     </div>
   );
@@ -413,19 +413,19 @@ export default function ReportDashboard({
       {(ragError || competencyError || groundingWarnings > 0) && (
         <div className="xl:col-span-12 space-y-2">
           {ragError && (
-            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.ragDegraded}
             </div>
           )}
           {competencyError && (
-            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.competencyDegraded}
             </div>
           )}
           {groundingWarnings > 0 && (
-            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.groundingWarning.replace('{count}', String(groundingWarnings))}
             </div>

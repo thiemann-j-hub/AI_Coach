@@ -66,7 +66,7 @@ export function TranscriptDropBar() {
       </span>
     </button>
     {rejected && (
-      <p className="px-1 text-xs text-amber-500" role="status">
+      <p className="px-1 text-xs text-amber-800 dark:text-amber-500" role="status">
         {t.entry.dropWrongType}
       </p>
     )}

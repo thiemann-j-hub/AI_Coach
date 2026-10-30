@@ -144,7 +144,7 @@ export default function CreditsClient() {
 
         {/* Sitzung abgelaufen -> Re-Login statt stiller „0". */}
         {state?.sessionExpired && (
-          <div className="pn-none p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-sm flex flex-wrap items-center justify-between gap-3">
+          <div className="pn-none p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-sm flex flex-wrap items-center justify-between gap-3">
             <span>
               {de
                 ? 'Sitzung abgelaufen — bitte melde dich neu an, um dein Guthaben zu sehen.'
@@ -152,7 +152,7 @@ export default function CreditsClient() {
             </span>
             <button
               onClick={relogin}
-              className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-400/40 px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-200 transition-colors hover:bg-amber-400/10"
+              className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-400/40 px-3 py-1.5 text-sm font-medium text-amber-800 dark:text-amber-200 transition-colors hover:bg-amber-400/10"
             >
               <LogIn className="h-4 w-4" />
               {de ? 'Neu anmelden' : 'Sign in again'}
@@ -174,13 +174,13 @@ export default function CreditsClient() {
             </span>
           </div>
           {state?.sessionExpired ? (
-            <div className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+            <div className="mt-3 text-xs text-amber-800 dark:text-amber-400">
               {de
                 ? 'Guthaben unbekannt — Sitzung abgelaufen.'
                 : 'Balance unknown — session expired.'}
             </div>
           ) : state && !state.central && !state.enabled ? (
-            <div className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+            <div className="mt-3 text-xs text-amber-800 dark:text-amber-400">
               {de
                 ? 'Hinweis: Das Bezahlsystem ist noch nicht aktiviert.'
                 : 'Note: the payment system is not active yet.'}
