@@ -923,7 +923,7 @@ export function SimulationEvaluation(props: {
         </p>
         {saved && !editing ? (
           <div className="pn-none rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5" data-testid="commitment-saved">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-400 flex items-center gap-1">
               <Check className="h-3 w-3" aria-hidden /> {t.evaluation.commitSavedTitle} · {t.evaluation.commitSaved}
             </div>
             <p className="text-sm font-medium leading-snug">{saved}</p>

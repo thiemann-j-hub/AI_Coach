@@ -2439,7 +2439,7 @@ export default function SimulationClient() {
             )}
             {effTimeUp && !deadEnd && !personaEnded && (
               <div className="pn-none max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
-                <span className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
+                <span className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
                   <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
                 </span>
                 <button

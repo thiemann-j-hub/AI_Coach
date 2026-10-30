@@ -620,7 +620,7 @@ export default function AnalyzeClient() {
                       der Schalter selbst bleibt (Owner-Leitplanke: keine
                       Funktionseinbuße), aber die Folge wird benannt. */}
                   {!privacyMode && (
-                    <div className="mt-1 text-xs text-amber-500 dark:text-amber-400">
+                    <div className="mt-1 text-xs text-amber-800 dark:text-amber-400">
                       {t.analyze.anonymizeOffWarning}
                     </div>
                   )}
