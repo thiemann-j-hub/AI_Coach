@@ -82,7 +82,7 @@ export function CreditBalance() {
       return (
         <span
           title={t.common.adminBuys}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-400"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-700 dark:text-amber-400"
         >
           <Coins className="h-4 w-4" />
           <span className="tabular-nums">{state.balance}</span>
@@ -94,7 +94,7 @@ export function CreditBalance() {
         href={href}
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         title={t.common.topUp}
-        className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-1.5 text-sm font-semibold text-amber-400 transition-colors hover:bg-amber-500/25 hover:border-amber-400/70"
+        className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-500/50 bg-amber-500/15 px-3 py-1.5 text-sm font-semibold text-amber-700 dark:text-amber-400 transition-colors hover:bg-amber-500/25 hover:border-amber-400/70"
       >
         <Coins className="h-4 w-4" />
         <span className="tabular-nums">{state.balance}</span>

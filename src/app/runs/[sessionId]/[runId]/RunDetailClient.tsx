@@ -192,7 +192,7 @@ export default function RunDetailClient({
           )}
 
           {!loading && errorText && (
-            <div className="pn-none glass-panel rounded-2xl p-8 text-sm text-red-400 border border-red-500/20">
+            <div className="pn-none glass-panel rounded-2xl p-8 text-sm text-red-700 dark:text-red-400 border border-red-500/20">
               {errorText}
             </div>
           )}

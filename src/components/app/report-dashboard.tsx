@@ -234,12 +234,12 @@ function RatingCard({
             className="leading-none transition-transform hover:scale-110 disabled:opacity-60"
             aria-label={`${v}/5`}
           >
-            <Star className={`h-6 w-6 ${shown >= v ? 'fill-amber-400 text-amber-400' : 'text-foreground/20'}`} />
+            <Star className={`h-6 w-6 ${shown >= v ? 'fill-amber-400 text-amber-700 dark:text-amber-400' : 'text-foreground/20'}`} />
           </button>
         ))}
       </div>
       {state === 'saved' && <p className="text-xs text-emerald-500 mt-2">{t.report.rateThanks}</p>}
-      {state === 'error' && <p className="text-xs text-red-400 mt-2">{t.report.rateError}</p>}
+      {state === 'error' && <p className="text-xs text-red-700 dark:text-red-400 mt-2">{t.report.rateError}</p>}
     </div>
   );
 }
@@ -413,19 +413,19 @@ export default function ReportDashboard({
       {(ragError || competencyError || groundingWarnings > 0) && (
         <div className="xl:col-span-12 space-y-2">
           {ragError && (
-            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.ragDegraded}
             </div>
           )}
           {competencyError && (
-            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.competencyDegraded}
             </div>
           )}
           {groundingWarnings > 0 && (
-            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2">
+            <div className="pn-none p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               {t.report.groundingWarning.replace('{count}', String(groundingWarnings))}
             </div>
@@ -499,7 +499,7 @@ export default function ReportDashboard({
             <div className="absolute top-0 left-0 w-1 bg-red-500 h-full" />
             <div className="p-6">
               <div className="flex items-center gap-3 mb-5">
-                <div className="p-2 rounded-lg bg-red-500/10 text-red-400">
+                <div className="p-2 rounded-lg bg-red-500/10 text-red-700 dark:text-red-400">
                   <AlertTriangle className="h-5 w-5 leading-none" />
                 </div>
                 <h3 className="font-bold text-lg text-foreground">{t.report.risks}</h3>
@@ -512,7 +512,7 @@ export default function ReportDashboard({
                   <p className="text-sm text-muted-foreground leading-relaxed">{riskFlags[0]}</p>
                   {riskFlags.length > 1 && (
                     <div className="mt-4 pt-4 border-t border-border">
-                      <span className="text-xs font-semibold text-red-400 uppercase tracking-wide">{t.report.pitfalls}</span>
+                      <span className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide">{t.report.pitfalls}</span>
                       <ul className="mt-2 space-y-2">
                         {riskFlags.slice(1, 4).map((x, i) => (
                           <li key={i} className="text-xs text-muted-foreground">{x}</li>
@@ -582,13 +582,13 @@ export default function ReportDashboard({
                   <div key={idx} className="p-5 hover:bg-foreground/[0.02] transition group">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="relative pl-3 border-l-2 border-red-500/60">
-                        <span className="text-[10px] font-bold text-red-400 uppercase tracking-wide block mb-1">{t.report.original}</span>
+                        <span className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase tracking-wide block mb-1">{t.report.original}</span>
                         <p className="text-sm text-muted-foreground italic">{r.original ? `"${r.original}"` : '—'}</p>
                       </div>
 
                       <div className="relative pl-3 border-l-2 border-emerald-500/60">
                         <div className="flex justify-between items-start">
-                          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide block mb-1">{t.report.better}</span>
+                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide block mb-1">{t.report.better}</span>
                           <button
                             type="button"
                             className="opacity-0 group-hover:opacity-100 transition text-muted-foreground hover:text-primary"

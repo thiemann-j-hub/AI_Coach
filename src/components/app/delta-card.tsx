@@ -63,7 +63,7 @@ export function DeltaCard({
   const overallDelta = deltas.overall;
   const overallTone =
     typeof overallDelta === 'number'
-      ? overallDelta > 0 ? 'text-emerald-400' : overallDelta < 0 ? 'text-red-400' : 'text-muted-foreground'
+      ? overallDelta > 0 ? 'text-emerald-700 dark:text-emerald-400' : overallDelta < 0 ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground'
       : 'text-muted-foreground';
   const OverallIcon =
     typeof overallDelta === 'number'
@@ -112,9 +112,9 @@ export function DeltaCard({
               key={key}
               className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium tabular-nums ${
                 delta > 0
-                  ? 'bg-emerald-500/10 text-emerald-400'
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
                   : delta < 0
-                    ? 'bg-red-500/10 text-red-400'
+                    ? 'bg-red-500/10 text-red-700 dark:text-red-400'
                     : 'bg-foreground/5 text-muted-foreground'
               }`}
               title={`${key}: ${previous[key]} → ${current[key]} / 4`}

@@ -114,10 +114,10 @@ const ICON_MAP: Record<string, LucideIcon> = {
 /** Farbe nach Prozentwert (W1-8: einheitliche 0–100-%-Darstellung). */
 function getScoreColor(pct: number | null): string {
   if (pct === null || pct === undefined) return 'bg-foreground/5 text-muted-foreground border-border';
-  if (pct >= 90) return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+  if (pct >= 90) return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30';
   if (pct >= 80) return 'bg-accent/15 text-accent border-accent/30';
   if (pct >= 70) return 'bg-primary/15 text-primary border-primary/30';
-  return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+  return 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30';
 }
 
 export default function RunsDashboardClient() {
@@ -362,7 +362,7 @@ export default function RunsDashboardClient() {
 
         {/* Error */}
         {error && (
-          <div className="pn-none bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-red-400">
+          <div className="pn-none bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-red-700 dark:text-red-400">
             <div className="font-semibold mb-1 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               {t.common.error}

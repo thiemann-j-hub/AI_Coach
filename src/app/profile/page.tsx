@@ -230,7 +230,7 @@ export default function ProfilePage() {
 
         {/* ── Speichern ── */}
         <div className="flex items-center justify-end gap-3">
-          {msg === "ok" && <span className="text-sm text-emerald-400">{p.saved}</span>}
+          {msg === "ok" && <span className="text-sm text-emerald-700 dark:text-emerald-400">{p.saved}</span>}
           {msg === "err" && <span className="text-sm text-destructive">{p.saveFailed}</span>}
           <button
             onClick={() => void onSave()}

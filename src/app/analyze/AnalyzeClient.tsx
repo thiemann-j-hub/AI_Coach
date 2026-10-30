@@ -442,7 +442,7 @@ export default function AnalyzeClient() {
                 {t.common.undo}
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-red-500/20 text-muted-foreground hover:text-red-400 rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-red-500/20 text-muted-foreground hover:text-red-700 dark:hover:text-red-400 rounded-lg text-sm transition-colors"
                 onClick={() => {
                   setUndoTranscript(transcriptText);
                   setTranscriptText('');
@@ -658,18 +658,18 @@ export default function AnalyzeClient() {
               )}
 
               {error && (
-                <div className="pn-none p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                <div className="pn-none p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm">
                   {error}
                 </div>
               )}
 
               {reauth && (
-                <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
+                <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
                     <LogIn className="h-4 w-4" />
                     {lang === 'de' ? 'Sitzung abgelaufen' : 'Session expired'}
                   </div>
-                  <p className="text-amber-200/80">
+                  <p className="text-amber-700/80 dark:text-amber-200/80">
                     {lang === 'de'
                       ? 'Deine Anmeldung ist abgelaufen. Bitte melde dich neu an — es wurde kein Credit verbraucht.'
                       : 'Your session has expired. Please sign in again — no credit was used.'}
@@ -685,12 +685,12 @@ export default function AnalyzeClient() {
               )}
 
               {paywall && (
-                <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex flex-col gap-3">
+                <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
                     <Lock className="h-4 w-4" />
                     {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
                   </div>
-                  <p className="text-amber-200/80">
+                  <p className="text-amber-700/80 dark:text-amber-200/80">
                     {paywall.canTopUp === false
                       ? t.common.balanceEmptyMember
                       : lang === 'de'
@@ -718,7 +718,7 @@ export default function AnalyzeClient() {
 
               {pendingSave && !loading && (
                 <button
-                  className="pn-none w-full mb-4 py-3 rounded-xl text-sm font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2"
+                  className="pn-none w-full mb-4 py-3 rounded-xl text-sm font-semibold border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-colors flex items-center justify-center gap-2"
                   onClick={onRetrySave}
                 >
                   <Save className="h-4 w-4" />

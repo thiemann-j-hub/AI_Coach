@@ -1216,7 +1216,7 @@ export default function SimulationClient() {
 
   const errorBanner = error && (
     <div className="pn-none glass-panel rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 flex items-start gap-2 text-sm">
-      <AlertTriangle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
+      <AlertTriangle className="h-4 w-4 text-rose-700 dark:text-rose-400 mt-0.5 shrink-0" />
       <div>
         <span>{error}</span>
         {topUpUrl && (
@@ -1468,7 +1468,7 @@ export default function SimulationClient() {
                           className={cx(
                             'text-xs px-2 py-0.5 rounded-full border tabular-nums',
                             remainMs > 0
-                              ? 'bg-sky-500/15 text-sky-400 border-sky-500/30'
+                              ? 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30'
                               : 'bg-amber-500/15 text-amber-500 border-amber-500/30'
                           )}
                         >
@@ -1479,7 +1479,7 @@ export default function SimulationClient() {
                         {/* Mülleimer mit zweistufiger Bestätigung (endgültig, inkl. DB) */}
                         {confirming ? (
                           <span className="flex items-center gap-1.5">
-                            <span className="text-xs text-rose-400 font-medium hidden sm:inline">
+                            <span className="text-xs text-rose-700 dark:text-rose-400 font-medium hidden sm:inline">
                               {ts.deleteConfirm}
                             </span>
                             <button
@@ -1487,7 +1487,7 @@ export default function SimulationClient() {
                               disabled={deletingId === r.id}
                               title={ts.deleteSim}
                               aria-label={ts.deleteSim}
-                              className="pn-none rounded-lg border border-rose-500/50 bg-rose-500/15 p-1.5 text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
+                              className="pn-none rounded-lg border border-rose-500/50 bg-rose-500/15 p-1.5 text-rose-700 dark:text-rose-400 transition-colors hover:bg-rose-500/25 disabled:opacity-50"
                             >
                               {deletingId === r.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1509,7 +1509,7 @@ export default function SimulationClient() {
                             onClick={() => setPendingDeleteId(r.id)}
                             title={ts.deleteSim}
                             aria-label={ts.deleteSim}
-                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-700 dark:hover:text-rose-400"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -1630,7 +1630,7 @@ export default function SimulationClient() {
               {wishDone ? (
                 <>
                   <p className="text-sm leading-relaxed flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                     {t.entry.wishThanks}
                   </p>
                   <div className="flex justify-end">
@@ -1782,7 +1782,7 @@ export default function SimulationClient() {
                   ))}
                 </div>
                 {simMode === 'check' && (
-                  <p className="mt-2 text-xs text-amber-400 leading-relaxed">{ts.modeCheckHint}</p>
+                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">{ts.modeCheckHint}</p>
                 )}
               </div>
 
@@ -1885,7 +1885,7 @@ export default function SimulationClient() {
                   i === briefStep
                     ? 'border-primary/50 bg-primary/10 text-primary'
                     : i < briefStep
-                      ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400'
+                      ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-400'
                       : 'border-border text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -2063,7 +2063,7 @@ export default function SimulationClient() {
                 className={cx(
                   'text-sm font-semibold rounded-lg px-3 py-2 border tabular-nums flex items-center gap-1.5',
                   timeUp || remainingMs === 0
-                    ? 'border-rose-500/40 text-rose-400 bg-rose-500/10'
+                    ? 'border-rose-500/40 text-rose-700 dark:text-rose-400 bg-rose-500/10'
                     : clockWarn
                       ? 'border-amber-500/40 text-amber-500 bg-amber-500/10'
                       : 'border-border text-muted-foreground'
@@ -2105,7 +2105,7 @@ export default function SimulationClient() {
             </button>
             )}
             {simMode === 'check' && (
-              <span className="text-xs font-semibold rounded-lg px-3 py-2 border border-amber-500/40 text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
+              <span className="text-xs font-semibold rounded-lg px-3 py-2 border border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
                 <Flag className="h-3.5 w-3.5" /> {ts.modeCheckBadge}
               </span>
             )}
@@ -2609,7 +2609,7 @@ export default function SimulationClient() {
                 {ts.finishCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
               </p>
               {userTurnCount < 3 && (
-                <p className="text-sm text-amber-400">{ts.notEnoughTurns}</p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">{ts.notEnoughTurns}</p>
               )}
               {error && errorBanner}
               <div className="flex gap-2 justify-end">

@@ -149,7 +149,7 @@ function DeltaTag({ delta }: { delta: number | null }) {
     <span
       className={cx(
         'inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded-full',
-        up ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'
+        up ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10' : 'text-rose-700 dark:text-rose-400 bg-rose-500/10'
       )}
     >
       {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -226,7 +226,7 @@ function AttemptChart(props: {
               x={x(i)}
               y={y(p.overall as number) - 8}
               textAnchor="middle"
-              className="fill-current text-emerald-400 font-semibold"
+              className="fill-current text-emerald-700 dark:text-emerald-400 font-semibold"
               fontSize="8"
             >
               {props.bestLabel}
@@ -255,10 +255,10 @@ function DeliveryScale(props: { position: 0 | 1 | 2; tone: 'ok' | 'mid' | 'off' 
 }
 
 const EXPECTATION_STYLES: Record<SimEvalDebriefAnchor['expectation'], string> = {
-  exceeds: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  meets: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-  approaching: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  below: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+  exceeds: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+  meets: 'bg-sky-500/15 text-sky-700 dark:text-sky-400 border-sky-500/30',
+  approaching: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30',
+  below: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30',
   'not-observable': 'bg-muted text-muted-foreground border-border',
 };
 
@@ -404,7 +404,7 @@ export function SimulationEvaluation(props: {
           {t.aiWait.aiLimit}
         </p>
         {props.mode === 'check' && (
-          <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400">
+          <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
             {ts.modeCheckBadge}
           </span>
         )}
@@ -431,9 +431,9 @@ export function SimulationEvaluation(props: {
                   className={cx(
                     'text-sm font-bold px-3 py-1 rounded-full border',
                     verdict === 'passed'
-                      ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
                       : verdict === 'failed'
-                        ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                        ? 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
                         : 'bg-muted text-muted-foreground border-border'
                   )}
                 >
@@ -548,11 +548,11 @@ export function SimulationEvaluation(props: {
           )}
         >
           {feedback.selfReview.agreement === 'confirms' ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
           ) : feedback.selfReview.agreement === 'partly' ? (
-            <Minus className="h-5 w-5 text-sky-400 shrink-0 mt-0.5" />
+            <Minus className="h-5 w-5 text-sky-700 dark:text-sky-400 shrink-0 mt-0.5" />
           ) : (
-            <RotateCcw className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <RotateCcw className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
           )}
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -580,9 +580,9 @@ export function SimulationEvaluation(props: {
           )}
         >
           {feedback.focusReview.addressed ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
           ) : (
-            <RotateCcw className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <RotateCcw className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
           )}
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -680,9 +680,9 @@ export function SimulationEvaluation(props: {
           {feedback.checkpoints.map((c) => (
             <div key={c.id} className="pn-tile glass-panel rounded-xl border border-border p-3 flex gap-3">
               {c.hit ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
               ) : (
-                <XCircle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+                <XCircle className="h-5 w-5 text-rose-700 dark:text-rose-400 shrink-0 mt-0.5" />
               )}
               <div className="min-w-0">
                 <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
