@@ -120,8 +120,6 @@ export default function InterviewClient() {
     }
   }
 
-  const beantwortet = turns.filter((x) => x.role === 'person').length;
-
   return (
     <AppShell title={ti.title} subtitle={kursTitel}>
       <div className="max-w-2xl mx-auto space-y-4">
@@ -170,7 +168,7 @@ export default function InterviewClient() {
         {view === 'chat' && (
           <section className="pn-tile glass-panel rounded-2xl border border-border p-4 space-y-3" data-testid="interview-chat">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{ti.progress.replace('{n}', String(Math.min(beantwortet + (fertig ? 0 : 1), gesamt))).replace('{total}', String(gesamt))}</span>
+              <span>{ti.progress.replace('{n}', String(Math.min(frageNr, gesamt))).replace('{total}', String(gesamt))}</span>
               <span>{kursTitel}</span>
             </div>
             <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
