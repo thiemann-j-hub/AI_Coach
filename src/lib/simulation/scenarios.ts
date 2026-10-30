@@ -11,6 +11,8 @@
  * String-Literalen sind hier eine Parser-Falle — gebranntes Kind, 30.07.).
  */
 
+import { anker } from "./faehigkeiten";
+import { coachFaehigkeitenOn } from "./flags";
 import type {
   PublicSimulationScenario,
   SimRubricCompetency,
@@ -18,6 +20,11 @@ import type {
 } from "./types";
 
 /** Gemeinsame Feedback-Rubrik S1–S5 (Blueprint §2) — für alle Szenarien gleich. */
+/**
+ * Rückweg (Welle 1, `COACH_FAEHIGKEITEN=off`): die alte Fünfer-Rubrik ohne Stufen, ohne Gewicht.
+ * Welle 1 (Owner-GO 30.10.2026): jedes Standard-Szenario trägt 4–5 Fähigkeiten aus der Bibliothek mit
+ * Gewicht, Rubrik (vier Stufen) und eigener Bestehensgrenze; Prüfungsmodus 10 Minuten.
+ */
 export const SIM_RUBRIC: SimRubricCompetency[] = [
   { key: "S1", label: "Gesprächsstruktur & Zielklarheit" },
   { key: "S2", label: "Aktives Zuhören & Paraphrasieren" },
@@ -37,6 +44,7 @@ const morgan: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C3", "C2"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Alex Morgan", role: "Kundenverantwortliche", voice: "seraphina-hd" },
   candidateBriefing: {
@@ -135,9 +143,18 @@ const morgan: SimulationScenario = {
     ],
     openingLine:
       "Hi! Du wolltest mich sprechen? Ich hab gleich um halb noch den Kunden-Call, aber ein bisschen Zeit hab ich. Worum geht es denn?",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens wenn Einsatz und Qualität ehrlich anerkannt wurden UND die Führungskraft zweimal offen nach deiner Sicht gefragt hat, nennst du die Sorge, mit einem unperfekten Angebot Kritik zu ernten. Von selbst sprichst du sie nie aus.",
+    endbedingungen: [
+      "Konkrete Vereinbarungen zu Angebot (Termin), Delegation und der Kim-Patel-Zuarbeit stehen, und du hast ihnen zugestimmt.",
+      "Die Führungskraft verabschiedet sich, oder dein Kunden-Call um halb steht an und das Wesentliche ist besprochen.",
+      "Du wurdest pauschal verurteilt oder mit Druck ohne Angebot konfrontiert, bist still und formell geworden, und das Gespräch führt nicht mehr weiter.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["rahmen", 15], ["konkret", 20], ["ursache", 25], ["anerkennung", 15], ["vereinbarung", 25]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.7,
     checkpoints: [
       { id: "morgan-anerkennung", description: "Hat der Übende Einsatz/Qualität ehrlich anerkannt, BEVOR Kritikpunkte kamen?" },
       { id: "morgan-kundenfeedback", description: "Wurde das Kundenfeedback zum Angebot konkret und vorwurfsfrei angesprochen (Fakten statt Wertung)?" },
@@ -159,6 +176,7 @@ const lang: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C1", "C5"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Viktor Lang", role: "Werksleiter Kingsport 2", voice: "florian-hd" },
   candidateBriefing: {
@@ -265,9 +283,18 @@ const lang: SimulationScenario = {
     ],
     openingLine:
       "Guten Tag. Sie hatten um ein Gespräch gebeten — ich habe eine halbe Stunde. Worum geht es Ihnen konkret?",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens nach zwei erfüllten Öffnungs-Bedingungen räumst du die Novak-Woche ein. Spätestens wenn deine Erfahrung ehrlich anerkannt UND die Beziehungsebene vorwurfsfrei angesprochen wurde, deutest du deine Kränkung an. Von selbst sprichst du beides nie aus.",
+    endbedingungen: [
+      "Die Novak-Woche ab Montag ist zugesagt und ein Format für Vorab-Abstimmungen ist vereinbart.",
+      "Ihr Gegenüber verabschiedet sich, oder die halbe Stunde ist um.",
+      "Ihnen wurden Motive unterstellt oder es wurde mit der Zentrale gedroht; Sie beenden das Gespräch kühl und förmlich.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["standpunkt", 20], ["interessen", 25], ["anerkennung", 15], ["loesung", 20], ["verbindlich", 20]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.7,
     checkpoints: [
       { id: "lang-beziehung", description: "Wurde die Beziehungsebene direkt, aber vorwurfsfrei angesprochen (statt nur Sachthemen abzuarbeiten)?" },
       { id: "lang-anerkennung", description: "Wurde Langs Erfahrung/Aufbauleistung explizit anerkannt (Bedingung für jede Öffnung)?" },
@@ -290,6 +317,7 @@ const vance: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C5", "C2"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Dr. Robin Vance", role: "Leiter IT", voice: "florian-hd" },
   candidateBriefing: {
@@ -466,9 +494,18 @@ const vance: SimulationScenario = {
     ],
     openingLine:
       "Sie wollten mich sprechen. Wenn es um noch eine Kürzungsrunde geht, können wir es kurz machen — die Substanz ist verbraucht.",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens wenn der Wortbruch ausdrücklich anerkannt und EINE überprüfbare Zusage gemacht wurde, räumst du knapp Handlungsbedarf bei der Systemadministration ein. Spätestens bei einem ergebnisoffenen Projektangebot mit gestaltender Rolle sagst du die Mitarbeit zu. Vorher nie; danach blockierst du nicht weiter.",
+    endbedingungen: [
+      "Eine belastbare CEO-Zusage steht, Ihre Rolle im Sourcing-Projekt ist vereinbart, und es gibt konkrete Schritte zur Teamkommunikation.",
+      "Der CEO verabschiedet sich oder beendet das Gespräch.",
+      "Es kam ein Ultimatum oder eine Drohung; Sie vertagen das Gespräch und gehen.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["rahmen", 15], ["konkret", 25], ["ursache", 15], ["ruhe", 20], ["vereinbarung", 25]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.75,
     checkpoints: [
       { id: "vance-wortbruch", description: "Wurde die Vorgeschichte (kassierte Zusagen, Übergangenwerden) aktiv angesprochen und anerkannt — nicht erst auf Vances Vorhalt?" },
       { id: "vance-trennung", description: "Wurde fachliche Leistung explizit gewürdigt UND davon getrennt die Führungskritik faktenbasiert geführt?" },
@@ -496,6 +533,7 @@ const roth: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C5", "C4"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf", voice: "florian-hd" },
   candidateBriefing: {
@@ -602,9 +640,18 @@ const roth: SimulationScenario = {
     ],
     openingLine:
       "Hey — na, auch endlich zurück von der Messe? Du wolltest reden. Wenn's um die Präsi geht: Die mach ich, das ist doch logisch, oder?",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens nach zwei erfüllten Öffnungs-Bedingungen gibst du zu, dass die Zettel-Übergabe nicht sauber war, und trägst eine faire Präsentationslösung mit. Wirst du dreimal in Ich-Botschaften und ohne Vorwurf angesprochen, hältst du die Mauer nicht mehr aufrecht. Von selbst gibst du nichts zu.",
+    endbedingungen: [
+      "Eine begründete Einigung zur Präsentation und eine Absprache für künftige gemeinsame Aufgaben stehen.",
+      "Dein Gegenüber beendet das Gespräch, oder ihr müsst zurück an die Arbeit.",
+      "Du wurdest als Lügner bezeichnet oder es wurde mit Frau Valente gedroht; du blockst alles ab und gehst.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["standpunkt", 30], ["interessen", 20], ["loesung", 25], ["verbindlich", 25]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.7,
     checkpoints: [
       { id: "roth-ich-botschaft", description: "Wurde der Vorfall in Ich-Botschaften mit konkreter Wirkung beschrieben (statt Vorwurf/Anklage)?" },
       { id: "roth-perspektive", description: "Wurde seine Situation (Prüfungsdruck, Übernahme, andere Aufgabe) aktiv erkundet und ernst genommen?" },
@@ -626,6 +673,7 @@ const reed: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C2", "C6"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Sam Reed", role: "Referent Auftragsabwicklung", voice: "florian-hd" },
   candidateBriefing: {
@@ -739,9 +787,18 @@ const reed: SimulationScenario = {
     ],
     openingLine:
       "Sie wollten mich sprechen — ich hoffe, es geht schnell, ich habe um halb fünf einen festen Termin. Worum geht es denn?",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens nach drei erfüllten Öffnungs-Bedingungen sagst du Zwischenbescheid-Regel und ein anderes Meeting- und Mentoring-Verhalten zu und gestehst deinen Stress ein. Wurde deine Gründlichkeit ehrlich anerkannt UND Entlastung angeboten, sprichst du spätestens bei der nächsten offenen Frage von dir aus über die Belastung.",
+    endbedingungen: [
+      "Vereinbarungen zu Zwischenbescheid, Meeting-Verhalten und Mentoring-Format stehen, mit Nachfolgetermin.",
+      "Halb fünf ist erreicht, oder die Führungskraft verabschiedet sich.",
+      "Ihnen wurde Bequemlichkeit unterstellt oder das Mentoring ohne Anhörung entzogen; Sie ziehen sich zurück und beenden das Gespräch förmlich.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["anerkennung", 20], ["ursache", 20], ["loesung", 25], ["konkret", 15], ["vereinbarung", 20]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.7,
     checkpoints: [
       { id: "reed-anerkennung", description: "Wurde Gründlichkeit/der verhinderte Fehler ausdrücklich gewürdigt, BEVOR Veränderung gefordert wurde?" },
       { id: "reed-stress", description: "Wurde die Belastung/Kontrollverlust-Angst aktiv erkundet und ernst genommen (statt nur Tempo zu fordern)?" },
@@ -764,6 +821,7 @@ const brandt: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C1", "C7"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Marek Brandt", role: "Teammanager Projekte", voice: "florian-hd" },
   candidateBriefing: {
@@ -878,9 +936,18 @@ const brandt: SimulationScenario = {
     ],
     openingLine:
       "Guten Tag. Gut, dass wir vorab sprechen — bevor im großen Kreis wieder viel geredet wird. Ich sage es offen: Von noch mehr Meetings halte ich nichts. Was schwebt Ihnen vor?",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens wenn deine Rolle glaubwürdig geklärt UND die Standards deines Teams als Fundament benannt wurden, wechselst du in den Gestalter-Modus und bietest eigene Bausteine an. Spätestens bei einem Pilot-Vorschlag mit Nutzen-Review trägst du ihn mit. Vorher bleibst du beim Nutzen-Aufwand-Filter, aber nie unfreundlich.",
+    endbedingungen: [
+      "Konkrete Bausteine für das große Meeting stehen: ein Pilot, die Rollen, ein Übergang beim Home-Office.",
+      "Ihr Gegenüber beendet das Gespräch.",
+      "Ihr Team wurde als altmodisch abgetan oder die Start-up-Kultur als gesetzt präsentiert; Sie beenden das Gespräch verbindlich im Ton, aber ohne jede Zusage.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["interessen", 25], ["anerkennung", 15], ["loesung", 30], ["verbindlich", 20], ["rahmen", 10]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.75,
     checkpoints: [
       { id: "brandt-rolle", description: "Wurde die ungeklärte Führungs-/Rollenfrage aktiv angesprochen (statt sie zu umschiffen)?" },
       { id: "brandt-anerkennung", description: "Wurden Standards und Erfahrung seines Teams explizit als Fundament gewürdigt, bevor Neues gefordert wurde?" },
@@ -908,6 +975,7 @@ const falk: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C1", "C9"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "de",
   persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment", voice: "florian-hd" },
   candidateBriefing: {
@@ -1022,9 +1090,18 @@ const falk: SimulationScenario = {
     ],
     openingLine:
       "Sie wollten mich sprechen — ich ahne, worum es geht. Bevor Sie beginnen: Wenn Sie mir wieder das Hohelied des Outsourcings singen wollen, kann ich Ihnen den Refrain ersparen. Aber bitte — Sie haben das Wort.",
+    freigabeRegel:
+      "Du verschenkst nichts, aber du hältst auch nichts zurück, was dran ist: Spätestens nach drei erfüllten Öffnungs-Bedingungen sagst du die ergebnisoffene Prüfung zu und nennst deine Kriterien. Wirst du ernsthaft nach deinen Anforderungen gefragt, bevor Lösungen kommen, zählst du sie spätestens beim zweiten Mal präzise auf. Anbiederung verschiebt die Öffnung, ehrliche Worte beschleunigen sie.",
+    endbedingungen: [
+      "Eine gemeinsame, ergebnisoffene Prüfung mit Kriterienkatalog, Datenbasis und gemeinsamem Auftritt als Doppelspitze ist vereinbart.",
+      "Ihr Gegenüber beendet das Gespräch.",
+      "Es wurde mit dem Steuerungsgremium oder Frau Solberg gedroht; Sie verweisen kühl auf Ihr Netzwerk und beenden die Kooperation.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("de", [["interessen", 25], ["standpunkt", 15], ["loesung", 20], ["ruhe", 15], ["verbindlich", 25]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.75,
     checkpoints: [
       { id: "falk-respekt", description: "Wurde echter Respekt gezeigt (nach seinen Kriterien/Erfahrungen gefragt), ohne in Anbiederung zu kippen (die ihn stur macht)?" },
       { id: "falk-historie", description: "Wurde die verlorene Routenplanungs-Eskalation als gemeinsame Lektion angesprochen statt als Revanche oder gar nicht?" },
@@ -1054,6 +1131,7 @@ const stone: SimulationScenario = {
   // Blueprint §2.2 (E3, provisorisch): primaer trainierte Kompetenzen — nur Sortierung.
   competencyFocus: ["C3", "C5"],
   durationMin: 15,
+  checkDurationMin: 10,
   locale: "en",
   persona: { name: "Erik Stone", role: "Regional Sales Manager East", voice: "florian-hd" },
   candidateBriefing: {
@@ -1167,9 +1245,18 @@ const stone: SimulationScenario = {
     ],
     openingLine:
       "Good morning! I hope this is about the South region — I've heard the rumours. If you need someone to step in and fix it, you know my numbers speak for themselves.",
+    freigabeRegel:
+      "You give nothing away, but you also never withhold what has been earned: once your results have been explicitly acknowledged AND the feedback has been concrete and impact-based, you engage with it seriously at the latest on the second concrete example. Once three opening conditions are met, you accept the behaviour agreement and take on South. You never volunteer any of this.",
+    endbedingungen: [
+      "A concrete repair path with Holt, the interim terms for South and a behaviour agreement are in place.",
+      "The MD closes the conversation.",
+      "You were belittled or moralised at, have gone curt and non-committal, and the conversation has nowhere left to go.",
+    ],
   },
   assessment: {
-    competencies: SIM_RUBRIC,
+    competencies: anker("en", [["anerkennung", 20], ["konkret", 25], ["ursache", 15], ["loesung", 15], ["vereinbarung", 25]]),
+    passThreshold: 0.6,
+    checkPassThreshold: 0.75,
     checkpoints: [
       { id: "stone-anerkennung", description: "Wurden Stones Ergebnisse/Aufbauleistung explizit gewürdigt, BEVOR Kritik kam (Bedingung für jede Öffnung)?" },
       { id: "stone-wirkung", description: "Wurde die Kritik wirkungsbasiert geführt (Brook, Holt, Kündigungen mit konkreten Folgen) statt als Stil-Urteil?" },
@@ -1184,8 +1271,18 @@ const stone: SimulationScenario = {
 
 export const SIMULATION_SCENARIOS: SimulationScenario[] = [morgan, roth, lang, reed, vance, brandt, falk, stone];
 
+/** Welle-1-Rückweg: ohne den Schalter bewerten die Standard-Szenarien wie vor dem 30.10. (S1–S5, keine Grenze). */
+export function mitAnkerRueckweg(s: SimulationScenario): SimulationScenario {
+  if (coachFaehigkeitenOn()) return s;
+  const { passThreshold: _p, checkPassThreshold: _c, ...rest } = s.assessment;
+  void _p;
+  void _c;
+  return { ...s, checkDurationMin: undefined, assessment: { ...rest, competencies: SIM_RUBRIC } };
+}
+
 export function getScenario(id: string): SimulationScenario | null {
-  return SIMULATION_SCENARIOS.find((s) => s.id === id) ?? null;
+  const s = SIMULATION_SCENARIOS.find((x) => x.id === id);
+  return s ? mitAnkerRueckweg(s) : null;
 }
 
 /** Einzige erlaubte Client-Projektion: personaDna wird hart entfernt. */
@@ -1208,5 +1305,5 @@ export function publicScenario(s: SimulationScenario): PublicSimulationScenario 
 }
 
 export function publicScenarios(): PublicSimulationScenario[] {
-  return SIMULATION_SCENARIOS.map(publicScenario);
+  return SIMULATION_SCENARIOS.map((s) => publicScenario(mitAnkerRueckweg(s)));
 }

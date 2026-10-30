@@ -141,6 +141,17 @@ export interface PersonaDna {
   facts: string[];
   /** Erster Satz der Rolle beim Gesprächseinstieg. */
   openingLine: string;
+  /**
+   * Welle 2 (30.10.2026): Freigabe-Regel = Obergrenze der Verschlossenheit. Sagt, SPÄTESTENS wann die
+   * Rolle etwas preisgibt oder einlenkt („nie von selbst, nie zurückhalten nach …“). Macht das Gespräch
+   * gewinnbar und die Bewertung fair; der Regie-Beobachter und das Spielbuch stützen sich darauf.
+   */
+  freigabeRegel?: string;
+  /**
+   * Welle 2: Endbedingungen. Ist eine erfüllt, verabschiedet sich die Rolle und beendet das Gespräch selbst
+   * (Werkzeug im Live-Modus, Feld im Textweg). Zeitbox bleibt die Notbremse.
+   */
+  endbedingungen?: string[];
 }
 
 export interface SimulationAssessment {

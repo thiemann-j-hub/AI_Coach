@@ -78,7 +78,8 @@ export function createLiveAudio(): LiveAudio {
     if (closed) return;
     await ctx.resume();
     stream = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      // Welle 2: voiceIsolation (Chrome) trennt die Stimme von Raumgeräuschen; andere Browser ignorieren das Feld.
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true, voiceIsolation: true } as MediaTrackConstraints,
     });
     if (closed) {
       stream.getTracks().forEach((t) => t.stop());

@@ -50,7 +50,8 @@ async function main() {
     console.log(`── ${scenario.title} (${c.convoLocale}) ──`);
     for (const u of c.user) {
       const t0 = Date.now();
-      const reply = await runPersonaTurn({ scenario, turns, userMessage: u, convoLocale: c.convoLocale, hardness: "standard" });
+      const { reply, ende } = await runPersonaTurn({ scenario, turns, userMessage: u, convoLocale: c.convoLocale, hardness: "standard" });
+      if (ende) console.log(`  [ENDE durch die Rolle: ${ende.ergebnis} — ${ende.grund}]`);
       const ms = Date.now() - t0;
       turns.push({ role: "user", text: u, ts: new Date().toISOString() }, { role: "persona", text: reply, ts: new Date().toISOString() });
       const leak = scenario.personaDna.hiddenDrivers.some((h) => reply.toLowerCase().includes(h.toLowerCase().slice(0, 40)));

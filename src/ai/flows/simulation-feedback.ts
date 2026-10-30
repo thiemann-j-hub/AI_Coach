@@ -2,17 +2,28 @@ import { anredeBlock } from '@/lib/anrede';
 /**
  * @fileOverview Auswertung der Gesprächssimulation (SIM-2).
  *
- * Rubrik S1–S5 + szenario-spezifische Checkpoints. Feldreihenfolge ist
+ * Rubrik (Anker des Szenarios) + szenario-spezifische Checkpoints. Feldreihenfolge ist
  * load-bearing (Schema-Forced Reasoning wie score-competencies): erst Evidenz,
  * dann Begründung, ERST DANN der Score.
+ *
+ * Welle 1 (Owner-GO 30.10.2026, N4-240):
+ *  - je Anker zusätzlich „Das gelang“ / „Nächstes Mal“ (je 0–2 Sätze, nur mit Beleg),
+ *  - Rubrik mit vier Stufen aus der Fähigkeiten-Bibliothek bestimmt die Stufe 1–4,
+ *  - Richter wählbar: Gemini (Standard) oder Claude Opus @eu (`COACH_RICHTER=opus`, Rückfall Gemini),
+ *  - Gesprächsende (Rolle hat beendet) und Öffnungsverlauf (Regie) als Kontext, nie als Beleg.
+ * Der Prompt ist eine reine Funktion (`buildFeedbackPrompt`), damit beide Richter denselben Text sehen.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import type { SimulationScenario, SimulationTurn } from '@/lib/simulation/types';
+import { coachRichter } from '@/lib/simulation/flags';
 import { assembleTranscript } from '@/lib/server/simulation-store';
 import { OBSERVER_CANON_DE } from '@/lib/coach-canon';
+import { claudeMessage, claudeVertexConfigured } from '@/lib/server/claude-vertex';
+import { logger } from '@/lib/logger';
 import {
   buildCoachQuery,
   cardLang,
@@ -42,7 +53,12 @@ export const SimulationFeedbackInputSchema = z.object({
   cardsBlock: z.string(),
   /** O2: Vorsatz + Rückmeldung aus dem Alltag seit dem letzten Debrief (leer = keine). */
   transferReview: z.string(),
+  /** Welle 2: Wie das Gespräch endete (Rolle hat beendet: Grund + Art); leer = durch die lernende Person / Zeit. */
+  gespraechsende: z.string(),
+  /** Welle 2: Öffnungsverlauf des Regie-Beobachters (Zeilen); leer = keiner. */
+  regieVerlauf: z.string(),
 });
+export type SimulationFeedbackInput = z.infer<typeof SimulationFeedbackInputSchema>;
 
 const RubricRatingSchema = z.object({
   key: z.string(),
@@ -56,12 +72,20 @@ const RubricRatingSchema = z.object({
     .describe(
       'Begründung als DIREKTE ANSPRACHE des Übenden (Du-Form), ausschließlich auf Basis der Evidenz: „Du hast … gesagt — das führte dazu, dass …". Nie „Der/die Übende …" oder „Der/die Teilnehmer:in …". "nicht beobachtbar", wenn keine Evidenz vorliegt.'
     ),
+  wentWell: z
+    .array(z.string())
+    .max(2)
+    .describe('0–2 Sätze „Das gelang“: verb-first, Du-Form, je mit Wirkung und Bezug auf einen Moment des Gesprächs. Leer, wenn nicht beobachtbar.'),
+  tryNext: z
+    .array(z.string())
+    .max(2)
+    .describe('0–2 Sätze „Nächstes Mal“: MOMENT → WIRKUNG → WIRKSAMERER WEG, Du-Form, auf dieses Gespräch bezogen. Leer, wenn nichts zu verbessern oder nicht beobachtbar.'),
   score: z
     .number()
     .min(1)
     .max(4)
     .nullable()
-    .describe('Ganzzahl 1–4 NUR wenn durch Evidenz belegt; sonst null. 1=schwach … 4=vorbildlich.'),
+    .describe('Ganzzahl 1–4 NUR wenn durch Evidenz belegt; sonst null. Mit Rubrik: die Stufe, deren Beschreibung am besten passt. Ohne Rubrik: 1=schwach … 4=vorbildlich.'),
 });
 
 const CheckpointResultSchema = z.object({
@@ -83,6 +107,9 @@ export const SimulationFeedbackOutputSchema = z.object({
     .describe(
       'Der größte Hebel als Du-Botschaft in GENAU dieser Reihenfolge, 3–4 Sätze, max. 90 Wörter: (1) MOMENT — „In dem Moment, als …, hast du … gesagt" mit kurzem wörtlichem Zitat aus dem Gespräch; (2) WIRKUNG — „Das führte dazu, dass …"; (3) WIRKSAMERER WEG — „Ein wirksamerer Weg wäre …" mit EINEM Beispielsatz in Anführungszeichen, der im nächsten Gespräch direkt gesagt werden kann. Kein Lob-Sandwich, kein allgemeiner Rat.'
     ),
+  nextStepKey: z
+    .string()
+    .describe('key des Rubrik-Ankers, zu dem der größte Hebel gehört (genau einer aus der RUBRIK). Leer, wenn keiner passt.'),
   focusReview: z
     .object({
       addressed: z.boolean().describe('true nur, wenn der Fokus-Vorsatz im Gespräch erkennbar umgesetzt wurde.'),
@@ -125,97 +152,110 @@ export type SimulationFeedbackRaw = z.infer<typeof SimulationFeedbackOutputSchem
 /**
  * Persistierter Vertrag (feedbackJson): normalisierte Rubrik/Checkpoints,
  * seit V3 zusätzlich `cards` — die aufgelösten Merkkarten (ohne Volltext).
+ * Seit Welle 1: `judge` (welches Modell geurteilt hat) und je Anker wentWell/tryNext.
  */
 export type SimulationFeedbackOutput = Omit<SimulationFeedbackRaw, 'recommendedCards'> & {
   cards: PublicCoachCard[];
+  judge?: string;
 };
 
-const prompt = ai.definePrompt({
-  name: 'simulationFeedbackPrompt',
-  // W1-5: Anrede-Regel (Du groß, nie Sie; Fremdsprachen höflich) für alles, was die App zur Person sagt.
-  system: anredeBlock(),
-  input: { schema: SimulationFeedbackInputSchema },
-  output: { schema: SimulationFeedbackOutputSchema },
-  prompt: `
-Du bist ein erfahrener Leadership-Coach und wertest eine GESPRÄCHSSIMULATION aus.
-Der/die Übende ("Teilnehmer:in") hat das Szenario "{{scenarioTitle}}" trainiert und mit der
-Rolle {{personaName}} gesprochen. Bewerte AUSSCHLIESSLICH das Verhalten der/des Übenden —
+/** PURE (getestet): der Auswertungs-Prompt — derselbe Text für beide Richter. */
+export function buildFeedbackPrompt(i: SimulationFeedbackInput): string {
+  const block = (cond: string, text: string) => (cond ? text : '');
+  return `Du bist ein erfahrener Leadership-Coach und wertest eine GESPRÄCHSSIMULATION aus.
+Der/die Übende ("Teilnehmer:in") hat das Szenario "${i.scenarioTitle}" trainiert und mit der
+Rolle ${i.personaName} gesprochen. Bewerte AUSSCHLIESSLICH das Verhalten der/des Übenden —
 nie das der Rolle.
 
 ZIELE DES ÜBENDEN LAUT BRIEFING
-{{{goalsList}}}
+${i.goalsList}
 
-RUBRIK (bewerte genau diese Kompetenzen, in dieser Reihenfolge, mit key und label)
-{{{rubricList}}}
+RUBRIK (bewerte genau diese Fähigkeiten, in dieser Reihenfolge, mit key und label)
+${i.rubricList}
 
 CHECKPOINTS (prüfe genau diese Momente, mit exakt diesen ids)
-{{{checkpointList}}}
+${i.checkpointList}
 
 SKALA 1–4
-1 = schwach/kontraproduktiv · 2 = erste solide Ansätze · 3 = gut und überwiegend wirksam · 4 = vorbildlich
+Trägt eine Fähigkeit eine BEWERTUNGS-RUBRIK mit Stufen, dann ist der score die Stufe, deren Beschreibung
+das beobachtete Verhalten am besten trifft (1 = Nicht gezeigt · 2 = Ansätze · 3 = Erfüllt · 4 = Übertroffen).
+Ohne Rubrik: 1 = schwach/kontraproduktiv · 2 = erste solide Ansätze · 3 = gut und überwiegend wirksam · 4 = vorbildlich.
 
-REIHENFOLGE (zwingend, pro Rubrik-Kompetenz):
-1) Sammle zuerst EVIDENCE: 1–2 wörtliche Zitate aus dem Gespräch (mit Sprecher-Prefix "Teilnehmer:in:" bzw. "{{personaName}}:").
+REIHENFOLGE (zwingend, pro Fähigkeit):
+1) Sammle zuerst EVIDENCE: 1–2 wörtliche Zitate aus dem Gespräch (mit Sprecher-Prefix "Teilnehmer:in:" bzw. "${i.personaName}:").
 2) Begründe (why) ausschließlich auf Basis dieser Zitate.
-3) Vergib ERST DANN den score — nur wenn die Evidenz ihn belegt; sonst score = null und why = "nicht beobachtbar".
+3) Fülle wentWell (0–2 Sätze: was gelang, verb-first, mit Wirkung) und tryNext (0–2 Sätze: MOMENT → WIRKUNG → WIRKSAMERER WEG) — beides nur mit Beleg aus dem Gespräch.
+4) Vergib ERST DANN den score — nur wenn die Evidenz ihn belegt; sonst score = null und why = "nicht beobachtbar", wentWell und tryNext leer.
 Erfinde KEINE Zitate; ein Zitat muss wörtlich und zusammenhängend im Gespräch stehen.
 Auch kontraproduktives Verhalten in einer relevanten Situation IST Evidenz (dann score = 1).
 Ein sehr kurzes Gespräch mit wenigen Beiträgen kann viele null-Werte haben — das ist korrekt und ehrlich.
 
 CHECKPOINTS: hit = true NUR, wenn der Moment nachweislich stattfand. Im comment nenne konkret,
 woran du es festmachst — oder was stattdessen passiert ist. Kein Pauschal-Lob.
+${block(
+  i.gespraechsende,
+  `
+GESPRÄCHSENDE (Kontext, kein Beleg für Scores): ${i.gespraechsende}
+`
+)}${block(
+  i.regieVerlauf,
+  `
+ÖFFNUNGSVERLAUF DER ROLLE (objektiv protokolliert von der Spielleitung; Kontext, kein Beleg für Scores — Belege kommen nur aus dem Gespräch):
+${i.regieVerlauf}
+`
+)}
+${
+  i.focus
+    ? `FOKUS-VORSATZ DIESES VERSUCHS (aus dem letzten Debrief): "${i.focus}"
+Bewerte in focusReview, ob der Vorsatz erkennbar umgesetzt wurde — mit Beleg.`
+    : `Kein Fokus-Vorsatz vorgegeben → focusReview = null.`
+}
 
-{{#if focus}}
-FOKUS-VORSATZ DIESES VERSUCHS (aus dem letzten Debrief): "{{focus}}"
-Bewerte in focusReview, ob der Vorsatz erkennbar umgesetzt wurde — mit Beleg.
-{{else}}
-Kein Fokus-Vorsatz vorgegeben → focusReview = null.
-{{/if}}
-
-{{#if selfAssessment}}
-SELBSTEINSCHÄTZUNG DES ÜBENDEN (direkt nach dem Gespräch, vor dieser Auswertung):
-"{{selfAssessment}}"
+${
+  i.selfAssessment
+    ? `SELBSTEINSCHÄTZUNG DES ÜBENDEN (direkt nach dem Gespräch, vor dieser Auswertung):
+"${i.selfAssessment}"
 PFLICHT: Fülle selfReview. Greife die Selbsteinschätzung inhaltlich auf ("Du meintest …")
 und bestätige oder korrigiere sie — ausschließlich mit Beleg aus dem Gespräch.
 Sei ehrlich: Eine zu strenge Selbstsicht verdient genauso eine Korrektur wie eine zu milde.
-Die Selbsteinschätzung ist KEINE Evidenz für die Rubrik-Scores — bewertet wird nur das Gespräch.
-{{else}}
-Keine Selbsteinschätzung abgegeben → selfReview = null.
-{{/if}}
+Die Selbsteinschätzung ist KEINE Evidenz für die Rubrik-Scores — bewertet wird nur das Gespräch.`
+    : `Keine Selbsteinschätzung abgegeben → selfReview = null.`
+}
 
-{{{canon}}}
-Gilt für summary, why, comment und nextStep: Entwicklungspunkte als Du-Botschaft
+${i.canon}
+Gilt für summary, why, wentWell, tryNext, comment und nextStep: Entwicklungspunkte als Du-Botschaft
 MOMENT → WIRKUNG → WIRKSAMERER WEG, Stärken verb-first mit Wirkung und Beleg.
 
-{{#if cardsBlock}}
-KARTEN AUS DER COACHING-BIBLIOTHEK (intern — nie als Quelle nennen, nicht wörtlich zitieren)
-{{{cardsBlock}}}
+${
+  i.cardsBlock
+    ? `KARTEN AUS DER COACHING-BIBLIOTHEK (intern — nie als Quelle nennen, nicht wörtlich zitieren)
+${i.cardsBlock}
 Nutze sie, um nextStep konkret und übbar zu machen (EIN Move, EINE Formulierung, an dieses
 Gespräch angepasst). Trage in recommendedCards die wörtlichen Titel der 1–2 Karten ein, die zur
-schwächsten Rubrik-Kompetenz passen; leer, wenn keine wirklich passt.
-{{else}}
-Kein Karten-Block vorhanden → recommendedCards = [].
-{{/if}}
-
-{{#if transferReview}}
+schwächsten Rubrik-Kompetenz passen; leer, wenn keine wirklich passt.`
+    : `Kein Karten-Block vorhanden → recommendedCards = [].`
+}
+${block(
+  i.transferReview,
+  `
 TRANSFER-RÜCKBLICK (aus dem echten Alltag seit dem letzten Debrief)
-{{transferReview}}
+${i.transferReview}
 Würdige das in summary in EINEM Satz: Zeigt sich dieser Vorsatz in DIESEM Gespräch? Bewerte nur das
 Gespräch, nicht den Alltag.
-{{/if}}
-
+`
+)}
+nextStep: der größte Hebel; nextStepKey = der key der Fähigkeit, zu der er gehört.
 microTransfer: EIN Schritt für den Alltag, der aus dem größten Hebel folgt — imperativ, mit Anlass
 und Zeitpunkt („Morgen im Team-Meeting sagst du zuerst: »…«"). Kein zweiter Schritt, keine Auswahl.
 
 summary und nextStep: direkte Ansprache ("Du …"), konkret, auf DIESES Gespräch bezogen.
-Alle Textausgaben (summary, why, comment, nextStep) auf {{outputLanguage}} — Zitate in der EVIDENCE bleiben wörtlich in der Gesprächssprache.
+Alle Textausgaben (summary, why, wentWell, tryNext, comment, nextStep) auf ${i.outputLanguage} — Zitate in der EVIDENCE bleiben wörtlich in der Gesprächssprache.
 
 GESPRÄCH
-{{{transcript}}}
+${i.transcript}
 
-Gib ausschließlich JSON gemäß Schema zurück.
-`,
-});
+Gib ausschließlich JSON gemäß Schema zurück.`;
+}
 
 /** Deutsch formulierte Sprachnamen fuer die Ausgabesprache des Feedbacks. */
 const FEEDBACK_LANGUAGE: Record<string, string> = {
@@ -224,6 +264,41 @@ const FEEDBACK_LANGUAGE: Record<string, string> = {
   es: 'Spanisch',
   fr: 'Französisch',
 };
+
+/** JSON-Fences entfernen und parsen (Opus-Antwort). */
+export function parseJudgeJson(text: string): unknown {
+  const t = text.trim();
+  const fenced = t.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const body = fenced ? fenced[1] : t;
+  const start = body.indexOf('{');
+  const end = body.lastIndexOf('}');
+  return JSON.parse(start >= 0 && end > start ? body.slice(start, end + 1) : body);
+}
+
+/** Richter Gemini: Genkit-Schreibermodell mit erzwungenem Ausgabeschema (wie bisher). */
+async function judgeGemini(promptText: string): Promise<SimulationFeedbackRaw> {
+  const res = await ai.generate({
+    // W1-5: Anrede-Regel (Du groß, nie Sie; Fremdsprachen höflich) für alles, was die App zur Person sagt.
+    system: anredeBlock(),
+    prompt: promptText,
+    output: { schema: SimulationFeedbackOutputSchema },
+  });
+  if (!res.output) throw new Error('simulation feedback returned empty output');
+  return res.output as SimulationFeedbackRaw;
+}
+
+/** Richter Opus @eu: gleicher Prompt, JSON-Schema als Anweisung, Antwort gegen das Zod-Schema geprüft. */
+async function judgeOpus(promptText: string): Promise<SimulationFeedbackRaw> {
+  const schema = JSON.stringify(zodToJsonSchema(SimulationFeedbackOutputSchema, { target: 'openApi3' }));
+  const reply = await claudeMessage({
+    system:
+      anredeBlock() +
+      '\n\nDu antwortest AUSSCHLIESSLICH mit einem JSON-Objekt nach dem angegebenen Schema — ohne Einleitung, ohne Markdown-Zaun, ohne Kommentar. Alle Schlüssel exakt wie im Schema.',
+    user: promptText + '\n\nJSON-SCHEMA DER ANTWORT:\n' + schema,
+    maxTokens: 6000,
+  });
+  return SimulationFeedbackOutputSchema.parse(parseJudgeJson(reply.text));
+}
 
 export async function generateSimulationFeedback(args: {
   scenario: SimulationScenario;
@@ -236,6 +311,12 @@ export async function generateSimulationFeedback(args: {
   selfAssessment?: string;
   /** O2: Vorsatz + Rückmeldung aus dem Alltag (buildTransferReviewText), optional. */
   transferReview?: string;
+  /** Welle 2: Gesprächsende durch die Rolle (Grund + Art), optional. */
+  gespraechsende?: string;
+  /** Welle 2: Öffnungsverlauf der Regie (Zeilen), optional. */
+  regieVerlauf?: string;
+  /** Richter erzwingen (Vergleichsskript); Standard: Schalter COACH_RICHTER. */
+  richter?: 'gemini' | 'opus';
 }): Promise<SimulationFeedbackOutput> {
   const { scenario, turns } = args;
   const rawTranscript = assembleTranscript(turns, scenario.persona.name);
@@ -263,14 +344,13 @@ export async function generateSimulationFeedback(args: {
     label: 'debrief-cards',
   });
 
-  const { output } = await prompt({
+  const input: SimulationFeedbackInput = {
     scenarioTitle: scenario.title,
     personaName: scenario.persona.name,
     goalsList: scenario.candidateBriefing.goals.map((g, i) => `${i + 1}. ${g}`).join('\n'),
-    // B1: szenariospezifische Rubrik je Anker — Anweisung an den Bewerter
-    // (Synthesia-Muster »Rubrik je Skill«); ohne rubric bleibt die 1–4-Skala.
+    // B1/Welle 1: szenariospezifische Rubrik je Anker — Anweisung an den Bewerter; ohne rubric bleibt die 1–4-Skala.
     rubricList: scenario.assessment.competencies
-      .map((c) => `- ${c.key}: ${c.label}${c.rubric ? ` — BEWERTUNGS-RUBRIK: ${c.rubric}` : ''}`)
+      .map((c) => `- ${c.key}: ${c.label}${c.rubric ? `\n  BEWERTUNGS-RUBRIK:\n  ${c.rubric.replace(/\n/g, '\n  ')}` : ''}`)
       .join('\n'),
     checkpointList: scenario.assessment.checkpoints
       .map((c) => `- id "${c.id}": ${c.description}`)
@@ -289,18 +369,44 @@ export async function generateSimulationFeedback(args: {
     canon: OBSERVER_CANON_DE,
     cardsBlock: cards.length ? cardsToPromptBlock(cards, 900) : '',
     transferReview: (args.transferReview ?? '').slice(0, 600),
-  });
-  if (!output) throw new Error('simulation feedback returned empty output');
+    gespraechsende: (args.gespraechsende ?? '').slice(0, 400),
+    regieVerlauf: (args.regieVerlauf ?? '').slice(0, 1200),
+  };
+  const promptText = buildFeedbackPrompt(input);
+
+  // Welle 1: Richter wählen — Opus @eu nur, wenn konfiguriert; bei Fehler Rückfall auf Gemini.
+  let output: SimulationFeedbackRaw | null = null;
+  let judge = 'gemini';
+  const wunsch = args.richter ?? coachRichter();
+  if (wunsch === 'opus' && claudeVertexConfigured()) {
+    try {
+      output = await judgeOpus(promptText);
+      judge = 'opus';
+    } catch (e) {
+      logger.apiError('simulation-feedback/opus', e, { scenarioId: scenario.id });
+      output = null;
+    }
+  }
+  if (!output) output = await judgeGemini(promptText);
 
   // Ergebnis gegen die Szenario-Definition normalisieren: fehlende Rubrik-Keys/
   // Checkpoints ergänzen (ehrlich als nicht beobachtbar/nicht getroffen),
   // erfundene ids verwerfen — die UI rendert damit immer ein vollständiges Bild.
   const rubricByKey = new Map(output.rubric.map((r) => [r.key, r]));
+  const clip = (xs: string[] | undefined, n: number) => (xs ?? []).map((x) => String(x).trim()).filter(Boolean).slice(0, n);
   const rubric = scenario.assessment.competencies.map((c) => {
     const r = rubricByKey.get(c.key);
-    if (!r) return { key: c.key, label: c.label, evidence: [], why: 'nicht beobachtbar', score: null };
+    if (!r) return { key: c.key, label: c.label, evidence: [], why: 'nicht beobachtbar', wentWell: [], tryNext: [], score: null };
     const score = typeof r.score === 'number' && r.score >= 1 && r.score <= 4 ? Math.round(r.score) : null;
-    return { key: c.key, label: c.label, evidence: r.evidence.slice(0, 2), why: r.why, score };
+    return {
+      key: c.key,
+      label: c.label,
+      evidence: r.evidence.slice(0, 2),
+      why: r.why,
+      wentWell: score == null ? [] : clip(r.wentWell, 2),
+      tryNext: score == null ? [] : clip(r.tryNext, 2),
+      score,
+    };
   });
   const cpById = new Map(output.checkpoints.map((c) => [c.id, c]));
   const checkpoints = scenario.assessment.checkpoints.map((c) => {
@@ -316,12 +422,14 @@ export async function generateSimulationFeedback(args: {
   // zum nächsten Schritt, sofern die Bibliothek erreichbar war.
   const picked = matchCardsByTitle(cards, output.recommendedCards ?? [], 2);
   const cardRefs = (picked.length ? picked : cards.slice(0, 1)).map(toPublicCard);
+  const keys = new Set(scenario.assessment.competencies.map((c) => c.key));
 
   return {
     summary: output.summary,
     rubric,
     checkpoints,
     nextStep: output.nextStep,
+    nextStepKey: keys.has(output.nextStepKey) ? output.nextStepKey : '',
     // focusReview nur, wenn wirklich ein Fokus vorgegeben war (kein LLM-Eigenleben).
     focusReview: args.focus ? (output.focusReview ?? null) : null,
     // selfReview nur bei tatsächlich abgegebener Selbsteinschätzung (A1).
@@ -331,5 +439,6 @@ export async function generateSimulationFeedback(args: {
       step: String(output.microTransfer?.step ?? '').trim().slice(0, 300),
       when: String(output.microTransfer?.when ?? '').trim().slice(0, 60),
     },
+    judge,
   };
 }

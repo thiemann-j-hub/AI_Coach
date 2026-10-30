@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runPersonaTurn, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
+import { beobachteRegie, offeneRegieNotiz, regieStageNote } from "@/ai/flows/simulation-regie";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
-import { simulationEnabled } from "@/lib/simulation/flags";
+import { coachRegieOn, simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   SIM_MAX_TURN_CHARS,
@@ -70,6 +71,10 @@ export async function POST(req: NextRequest) {
     if (doc.closedByTime) {
       return NextResponse.json({ ok: false, code: "TIME_UP" }, { status: 409 });
     }
+    // Welle 2: die Rolle hat das Gespräch selbst beendet — es bleibt nur die Auswertung.
+    if (doc.closedByPersona) {
+      return NextResponse.json({ ok: false, code: "ENDED", ende: doc.closedByPersona }, { status: 409 });
+    }
     if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) {
       return NextResponse.json({ ok: false, code: "TURN_LIMIT" }, { status: 409 });
     }
@@ -106,25 +111,40 @@ export async function POST(req: NextRequest) {
 
     // Spielbuch (Owner-GO 28.10.): aus dem Zwischenspeicher; fehlt es, entsteht es im Hintergrund.
     const spielbuch = await ensureSpielbuch(scenario);
-    const reply = await withRetry(
-      () =>
-        runPersonaTurn({
-          scenario,
-          turns: doc.turns,
-          userMessage: d.message,
-          convoLocale: doc.convoLocale,
-          timeSignal,
-          hardness: doc.hardness,
-          spielbuch,
-        }),
-      { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn", retries: 1 }
-    );
-
+    // Welle 2: Regie-Notiz des Beobachters vom VORIGEN Zug (ein Zug Verzögerung, keine Wartezeit).
+    const offeneNotiz = offeneRegieNotiz(doc.regie);
+    const regieNotiz = offeneNotiz ? regieStageNote(scenario, offeneNotiz) : null;
     const now = new Date().toISOString();
+    const turnsMitNutzer = [...doc.turns, { role: "user" as const, text: d.message, ts: now }];
+    const [result, regie] = await Promise.all([
+      withRetry(
+        () =>
+          runPersonaTurn({
+            scenario,
+            turns: doc.turns,
+            userMessage: d.message,
+            convoLocale: doc.convoLocale,
+            timeSignal,
+            hardness: doc.hardness,
+            spielbuch,
+            regieNotiz,
+          }),
+        { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn", retries: 1 }
+      ),
+      // Beobachter parallel zur Antwort; sein Ergebnis wirkt beim nächsten Zug. Fehler → null.
+      coachRegieOn()
+        ? beobachteRegie({ scenario, turns: turnsMitNutzer, bisher: doc.regie?.length ? doc.regie[doc.regie.length - 1] : null })
+        : Promise.resolve(null),
+    ]);
+    const reply = result.reply;
+
     doc.turns.push({ role: "user", text: d.message, ts: now });
     doc.turns.push({ role: "persona", text: reply, ts: new Date().toISOString() });
     if (timeSignal === "closing") doc.timeWarned = true;
     if (timeSignal === "farewell") doc.closedByTime = true;
+    if (offeneNotiz) offeneNotiz.delivered = true;
+    if (regie) doc.regie = [...(doc.regie ?? []).slice(-40), regie];
+    if (result.ende) doc.closedByPersona = { ...result.ende, at: new Date().toISOString() };
     await saveSimulation(doc);
 
     logger.api("/api/simulation/turn", "ok", {
@@ -132,6 +152,8 @@ export async function POST(req: NextRequest) {
       simId: d.simId,
       turns: doc.turns.length,
       ...(timeSignal ? { timeSignal } : {}),
+      ...(result.ende ? { ende: result.ende.ergebnis } : {}),
+      ...(regie ? { regieStufe: regie.stufe } : {}),
     });
     return NextResponse.json({
       ok: true,
@@ -139,6 +161,8 @@ export async function POST(req: NextRequest) {
       turnCount: doc.turns.length,
       userTurnsLeft: SIM_MAX_USER_TURNS - countUserTurns(doc.turns),
       timeUp: doc.closedByTime === true,
+      // Welle 2: die Rolle hat das Gespräch beendet — der Client zeigt den Hinweis und geht zur Auswertung.
+      ...(result.ende ? { ende: result.ende } : {}),
     });
   } catch (err) {
     // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).

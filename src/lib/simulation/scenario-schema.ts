@@ -67,6 +67,8 @@ export const personaDnaSchema = z.object({
   }),
   knowledgeBounds: z.array(nonEmpty(300)).min(1).max(8),
   facts: z.array(nonEmpty(300)).min(1).max(12),
+  freigabeRegel: z.string().trim().max(600).optional(),
+  endbedingungen: z.array(nonEmpty(300)).min(1).max(5).optional(),
   openingLine: nonEmpty(400),
 });
 
@@ -92,7 +94,8 @@ export const assessmentSchema = z
           key: nonEmpty(20),
           label: nonEmpty(200),
           weight: z.number().positive().max(100).optional(),
-          rubric: z.string().trim().max(800).optional(),
+          // Welle 1: Bibliotheks-Rubriken (Definition + vier Stufen) brauchen Platz; Builder-eigene bleiben kürzer.
+          rubric: z.string().trim().max(1600).optional(),
         })
       )
       .min(2)

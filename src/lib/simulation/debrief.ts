@@ -45,6 +45,10 @@ export interface DebriefAnchor {
   /** 0–100, null wenn nicht beobachtbar. */
   pct: number | null;
   expectation: ExpectationLabel;
+  /** Welle 1: Gewicht in Prozent der beobachteten Anker (Summe 100); fehlt bei Alt-Läufen. */
+  weightPct?: number | null;
+  /** Welle 1: Beitrag dieses Ankers zur Gesamtnote in Punkten (von den 70 Anker-Punkten); fehlt bei Alt-Läufen. */
+  contribution?: number | null;
 }
 
 export interface Debrief {
@@ -112,6 +116,8 @@ export function computeDebrief(args: {
     score: r.score,
     pct: r.score == null ? null : scoreToPct(r.score),
     expectation: expectationForScore(r.score),
+    weightPct: null,
+    contribution: null,
   }));
 
   const observed = anchors.filter((a) => a.pct != null);
@@ -136,6 +142,18 @@ export function computeDebrief(args: {
           (s, a) => s + (a.pct as number) * (weightByKey.get(a.key) ?? 1),
           0
         ) / observedWeightSum;
+
+  // Welle 1: Gewicht und Beitrag je beobachtetem Anker — derselbe Rechenweg wie anchorPct, nur aufgeteilt.
+  const checkpointsTotalForMix = args.checkpoints.length;
+  const ankerAnteil = checkpointsTotalForMix === 0 ? 1 : ANCHOR_WEIGHT;
+  if (observedWeightSum > 0) {
+    for (const a of anchors) {
+      if (a.pct == null) continue;
+      const w = (weightByKey.get(a.key) ?? 1) / observedWeightSum;
+      a.weightPct = Math.round(w * 100);
+      a.contribution = Math.round(ankerAnteil * w * a.pct);
+    }
+  }
 
   const checkpointsTotal = args.checkpoints.length;
   const checkpointsHit = args.checkpoints.filter((c) => c.hit).length;

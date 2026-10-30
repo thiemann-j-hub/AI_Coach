@@ -10,6 +10,8 @@ export interface LiveTurn {
   persona: string | null;
   userTurnsLeft: number;
   timeUp: boolean;
+  /** Welle 2: die Rolle hat das Gespräch mit diesem Zug beendet. */
+  ended: boolean;
 }
 
 export interface LiveEvents {
@@ -21,6 +23,10 @@ export interface LiveEvents {
   onTurn(turn: LiveTurn): void;
   onError(code: string): void;
   onBye(reason: string): void;
+  /** Welle 2: die Rolle hat das Gespräch beendet (Grund in der Autorensprache). */
+  onEnded?(p: { grund: string; ergebnis: string }): void;
+  /** Welle 2: Vorwarnung vor dem Stille-Abbruch. */
+  onIdleWarn?(seconds: number): void;
   /** Immer zuletzt, genau einmal. */
   onClose(): void;
 }
@@ -77,7 +83,14 @@ export function openLiveConnection(path: string, ticket: string, ev: LiveEvents)
           persona: typeof m.persona === "string" ? m.persona : null,
           userTurnsLeft: Number(m.userTurnsLeft ?? 0),
           timeUp: m.timeUp === true,
+          ended: m.ended === true,
         });
+        break;
+      case "ended":
+        ev.onEnded?.({ grund: String(m.grund ?? ""), ergebnis: String(m.ergebnis ?? "") });
+        break;
+      case "idle_warn":
+        ev.onIdleWarn?.(Number(m.seconds ?? 60));
         break;
       case "error":
         ev.onError(String(m.code ?? "UNKNOWN"));

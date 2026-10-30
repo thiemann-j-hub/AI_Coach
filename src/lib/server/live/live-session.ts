@@ -1,4 +1,5 @@
-import { buildPersonaSystemPrompt, personaStageNote, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
+import { buildPersonaSystemPrompt, personaStageNote, type PersonaEndeErgebnis, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
+import { regieStageNote, type RegieStand } from "@/ai/flows/simulation-regie";
 import type { SimulationScenario, SimulationTurn } from "@/lib/simulation/types";
 import {
   SIM_MAX_USER_TURNS,
@@ -23,6 +24,12 @@ import type { LiveTicket } from "./ticket-store";
  *   - hält Zeitbox, Zugbegrenzung und Tagesbudget wie die Turn-Route,
  *   - verbindet nach einem Abriss mit der Wiederaufnahme-Marke neu (Sitzungen über zehn Minuten).
  *
+ * Welle 2 (Owner-GO 30.10.2026, N4-240):
+ *   - die Rolle beendet das Gespräch selbst über das Werkzeug `gespraech_beenden` (Endbedingungen der DNA),
+ *   - der Regie-Beobachter schickt nach jedem Zug der lernenden Person bei Stufenwechsel eine Notiz,
+ *   - Antwortzeit (Ende der Eingabe-Mitschrift → erstes Audio) wird je Zug gemessen und am Lauf gespeichert,
+ *   - vor dem Stille-Abbruch bekommt der Browser eine Vorwarnung.
+ *
  * Alle Außenwelt (Vertex, Cosmos, Budget, Uhr) kommt über `LiveDeps` herein — der Kern ist testbar.
  * Es verlässt nie etwas aus der Rollen-DNA den Server; der Browser sieht nur Audio und Mitschrift.
  */
@@ -36,7 +43,9 @@ export type ServerMessage =
   | { t: "you"; text: string }
   | { t: "persona"; text: string }
   | { t: "interrupted" }
-  | { t: "turn"; user: string | null; persona: string | null; userTurnsLeft: number; timeUp: boolean }
+  | { t: "turn"; user: string | null; persona: string | null; userTurnsLeft: number; timeUp: boolean; ended: boolean }
+  | { t: "ended"; grund: string; ergebnis: PersonaEndeErgebnis }
+  | { t: "idle_warn"; seconds: number }
   | { t: "error"; code: LiveErrorCode }
   | { t: "bye"; reason: LiveByeReason };
 
@@ -44,10 +53,11 @@ export type LiveErrorCode =
   | "NOT_FOUND"
   | "ALREADY_FINISHED"
   | "TIME_UP"
+  | "ENDED"
   | "TURN_LIMIT"
   | "UNKNOWN_SCENARIO"
   | "UPSTREAM";
-export type LiveByeReason = "time_up" | "turn_limit" | "budget" | "idle" | "upstream" | "ended";
+export type LiveByeReason = "time_up" | "ended_by_persona" | "turn_limit" | "budget" | "idle" | "upstream" | "ended";
 
 /** Der Teil eines ws-Sockets, den der Kern braucht (so bleibt er ohne ws-Typen testbar). */
 export interface LiveSocket {
@@ -60,12 +70,20 @@ export interface LiveSocket {
 }
 export const WS_OPEN = 1;
 
+/** Werkzeugaufruf des Live-Modells (Welle 2: `gespraech_beenden`). */
+export interface LiveToolCall {
+  id?: string;
+  name: string;
+  args: Record<string, unknown>;
+}
+
 export interface UpstreamEvents {
   onAudio(pcm24k: Buffer): void;
   onInputText(text: string): void;
   onOutputText(text: string): void;
   onInterrupted(): void;
   onTurnComplete(): void;
+  onToolCall(calls: LiveToolCall[]): void;
   onResumptionHandle(handle: string): void;
   onGoAway(): void;
   onClose(reason: string): void;
@@ -77,6 +95,8 @@ export interface Upstream {
   /** Text in den Kontext legen; `turnComplete` = das Modell soll jetzt antworten. */
   sendText(text: string, turnComplete: boolean): void;
   sendHistory(turns: Array<{ role: "user" | "model"; text: string }>): void;
+  /** Antwort auf einen Werkzeugaufruf (optional — Tests und alte Anschlüsse ohne Werkzeug). */
+  sendToolResponse?(responses: Array<{ id?: string; name: string; response: Record<string, unknown> }>): void;
   close(): void;
 }
 
@@ -86,6 +106,10 @@ export interface UpstreamConfig {
   languageCode: string;
   systemInstruction: string;
   resumeHandle?: string;
+  /** Welle 2: Werkzeug `gespraech_beenden` anbieten. */
+  endeWerkzeug?: boolean;
+  /** Welle 2: Sprechpausen-Erkennung (`kurz` = Satzende früher annehmen). */
+  sprechpause?: "normal" | "kurz";
 }
 
 export type ConnectUpstream = (cfg: UpstreamConfig, events: UpstreamEvents) => Promise<Upstream>;
@@ -97,21 +121,40 @@ export interface LiveDeps {
   loadScenario(uid: string, scenarioId: string, oid: string | null): Promise<SimulationScenario | null>;
   /** Spielbuch des Szenarios (vorbereitet) oder null; optional (Tests, Rückweg). */
   loadSpielbuch?(scenario: SimulationScenario): Promise<string | null>;
+  /** Welle 2: Regie-Beobachter nach einem Zug der lernenden Person; optional (Tests, Rückweg). */
+  regie?(scenario: SimulationScenario, turns: SimulationTurn[], bisher: RegieStand | null): Promise<RegieStand | null>;
   budget(args: { uid: string; email: string | null; estimatedTokens: number }): Promise<{ allowed: boolean }>;
   now(): number;
   log(level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>): void;
   model: string;
+  /** Welle 2: Werkzeug zum Beenden anbieten (Standard: wenn das Szenario Endbedingungen trägt). */
+  endeOn?: boolean;
+  /** Welle 2: Sprechpausen-Erkennung (Standard normal). */
+  sprechpause?: "normal" | "kurz";
   /** Stille vom Browser, nach der die Sitzung endet (Standard 2 Minuten). */
   idleMs?: number;
+  /** Vorwarnung vor dem Stille-Abbruch (Standard 60 s vorher). */
+  idleWarnMs?: number;
   /** Obergrenze je Verbindung (Standard 30 Minuten). */
   maxConnectionMs?: number;
 }
 
-/** Zusatz zur Rollenanweisung: gesprochenes Gespräch, kurze Antworten, Unterbrechungen. */
-export function liveAddendum(locale: SimulationScenario["locale"]): string {
-  return locale === "en"
-    ? `\n\n=== SPOKEN CONVERSATION ===\nThis is a spoken conversation: you hear your counterpart and answer with your voice. Keep replies short (usually 1–3 sentences), natural spoken language, no lists, no markdown, no stage directions. If you get interrupted, listen and respond to what was just said. Never read out notes marked as stage notes.`
-    : `\n\n=== GESPROCHENES GESPRÄCH ===\nDies ist ein gesprochenes Gespräch: Du hörst dein Gegenüber und antwortest mit deiner Stimme. Antworte kurz (meist 1–3 Sätze), in gesprochener Sprache, ohne Aufzählungen, ohne Markdown, ohne Regieanweisungen. Wirst du unterbrochen, hör zu und antworte auf das gerade Gesagte. Lies Regie-Notizen nie vor.`;
+/** Name des Werkzeugs, mit dem die Rolle das Gespräch beendet. */
+export const ENDE_WERKZEUG = "gespraech_beenden";
+
+/** Zusatz zur Rollenanweisung: gesprochenes Gespräch, kurze Antworten, Unterbrechungen, Ende-Werkzeug. */
+export function liveAddendum(locale: SimulationScenario["locale"], mitEndeWerkzeug = false): string {
+  const basis =
+    locale === "en"
+      ? `\n\n=== SPOKEN CONVERSATION ===\nThis is a spoken conversation: you hear your counterpart and answer with your voice. Keep replies short (usually 1–3 sentences), natural spoken language, no lists, no markdown, no stage directions. If you get interrupted, listen and respond to what was just said. Never read out notes marked as stage notes.`
+      : `\n\n=== GESPROCHENES GESPRÄCH ===\nDies ist ein gesprochenes Gespräch: Du hörst dein Gegenüber und antwortest mit deiner Stimme. Antworte kurz (meist 1–3 Sätze), in gesprochener Sprache, ohne Aufzählungen, ohne Markdown, ohne Regieanweisungen. Wirst du unterbrochen, hör zu und antworte auf das gerade Gesagte. Lies Regie-Notizen nie vor.`;
+  if (!mitEndeWerkzeug) return basis;
+  return (
+    basis +
+    (locale === "en"
+      ? `\nENDING: When one of the END conditions is met, first say your goodbye line, THEN call the tool ${ENDE_WERKZEUG} with grund (one sentence why) and ergebnis (ziel, verabschiedung or abbruch). Never call it before that, and never mention the tool.`
+      : `\nENDE: Ist eine der ENDBEDINGUNGEN erfüllt, sprich erst deinen Abschiedssatz und rufe DANN das Werkzeug ${ENDE_WERKZEUG} auf, mit grund (ein Satz, warum) und ergebnis (ziel, verabschiedung oder abbruch). Rufe es nie vorher auf und erwähne es nie.`)
+  );
 }
 
 /** Zeit-Regie (PURE): dieselbe Entscheidung wie in der Turn-Route. */
@@ -130,6 +173,23 @@ export function decideTimeSignal(args: {
 
 export function sessionDurationMin(doc: SimulationDoc, scenario: SimulationScenario): number {
   return doc.mode === "check" ? (scenario.checkDurationMin ?? scenario.durationMin) : scenario.durationMin;
+}
+
+/** Antwortzeiten (ms) → Kennzahlen; PURE. */
+export function latencyStats(samples: number[]): { antworten: number; p50Ms: number; p95Ms: number; maxMs: number } | null {
+  if (!samples.length) return null;
+  const s = [...samples].sort((a, b) => a - b);
+  const q = (p: number) => s[Math.min(s.length - 1, Math.max(0, Math.ceil(p * s.length) - 1))];
+  return { antworten: s.length, p50Ms: Math.round(q(0.5)), p95Ms: Math.round(q(0.95)), maxMs: Math.round(s[s.length - 1]) };
+}
+
+/** Werkzeugaufruf `gespraech_beenden` lesen; PURE. */
+export function parseEndeCall(call: LiveToolCall): { grund: string; ergebnis: PersonaEndeErgebnis } | null {
+  if (call.name !== ENDE_WERKZEUG) return null;
+  const grund = String(call.args.grund ?? "").trim().slice(0, 300);
+  const e = String(call.args.ergebnis ?? "").trim().toLowerCase();
+  const ergebnis: PersonaEndeErgebnis = e === "ziel" || e === "abbruch" ? e : "verabschiedung";
+  return { grund, ergebnis };
 }
 
 function toHistory(turns: SimulationTurn[]): Array<{ role: "user" | "model"; text: string }> {
@@ -172,6 +232,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   if (!doc) return fail("NOT_FOUND", 4404);
   if (doc.status !== "active") return fail("ALREADY_FINISHED", 4409);
   if (doc.closedByTime) return fail("TIME_UP", 4409);
+  if (doc.closedByPersona) return fail("ENDED", 4409);
   if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) return fail("TURN_LIMIT", 4409);
   const scenario = await deps.loadScenario(ticket.uid, doc.scenarioId, ticket.oid);
   if (!scenario) return fail("UNKNOWN_SCENARIO", 4410);
@@ -180,8 +241,11 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   const voice = liveVoiceFor(scenario.persona.voice, scenario.id, scenario.persona.liveVoice);
   const languageCode = liveLanguageCode(doc.convoLocale ?? scenario.locale);
   const spielbuch = deps.loadSpielbuch ? await deps.loadSpielbuch(scenario) : null;
+  const endeWerkzeug =
+    (deps.endeOn ?? true) && Boolean(scenario.personaDna.endbedingungen?.some((x) => x.trim()));
   const systemInstruction =
-    buildPersonaSystemPrompt(scenario, doc.convoLocale, doc.hardness, spielbuch) + liveAddendum(scenario.locale);
+    buildPersonaSystemPrompt(scenario, doc.convoLocale, doc.hardness, spielbuch) +
+    liveAddendum(scenario.locale, endeWerkzeug);
 
   // ── Zustand der Verbindung ────────────────────────────────────────────────
   let upstream: Upstream | null = null;
@@ -189,13 +253,19 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   let reconnects = 0;
   let closing = false; // wir beenden gerade (kein Reconnect mehr)
   let farewellPending = false; // die Verabschiedung wurde angewiesen; ihr Zug schließt den Lauf
+  let personaEnde: { grund: string; ergebnis: PersonaEndeErgebnis } | null = null; // Werkzeug gerufen
   let pendingUser = "";
   let pendingPersona = "";
   let queue: Promise<void> = Promise.resolve();
   let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  let idleWarnTimer: ReturnType<typeof setTimeout> | undefined;
   const timers: Array<ReturnType<typeof setTimeout>> = [];
   let resolveDone: () => void = () => {};
   const done = new Promise<void>((r) => (resolveDone = r));
+  // Antwortzeit: Ende der Eingabe-Mitschrift → erstes Audio der Antwort (ungefähr, je Zug).
+  let lastInputAt = 0;
+  let audioSeenThisTurn = false;
+  const latencies: number[] = [];
 
   const log = (level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>) =>
     deps.log(level, msg, { simId: doc.id, uid: ticket.uid, ...meta });
@@ -223,7 +293,13 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
 
   const resetIdle = () => {
     if (idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => bye("idle"), deps.idleMs ?? 120_000);
+    if (idleWarnTimer) clearTimeout(idleWarnTimer);
+    const idleMs = deps.idleMs ?? 120_000;
+    const warnMs = Math.min(deps.idleWarnMs ?? 60_000, idleMs);
+    if (idleMs - warnMs > 0) {
+      idleWarnTimer = setTimeout(() => sendJson({ t: "idle_warn", seconds: Math.round(warnMs / 1000) }), idleMs - warnMs);
+    }
+    idleTimer = setTimeout(() => bye("idle"), idleMs);
   };
 
   const sendStageNote = (signal: PersonaTimeSignal) => {
@@ -232,17 +308,35 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     if (signal === "farewell") farewellPending = true;
   };
 
+  /** Welle 2: Regie-Beobachter nach dem Zug — Notiz an die Rolle, Verlauf am Lauf (in der Warteschlange). */
+  const beobachten = async () => {
+    if (!deps.regie || closing) return;
+    const last = [...doc.turns].reverse().find((t) => t.role === "user");
+    if (!last) return;
+    const bisher = doc.regie?.length ? doc.regie[doc.regie.length - 1] : null;
+    const stand = await deps.regie(scenario, doc.turns, bisher);
+    if (!stand || closing) return;
+    doc.regie = [...(doc.regie ?? []).slice(-40), { ...stand, delivered: Boolean(stand.notiz) }];
+    await deps.saveSim(doc);
+    if (stand.notiz && upstream) {
+      upstream.sendText(regieStageNote(scenario, stand), false);
+      log("info", "live-regie", { stufe: stand.stufe, eskaliert: stand.eskaliert, turn: stand.turn });
+    }
+  };
+
   /** Ein abgeschlossener Zug: Mitschriften werden Gesprächszüge, dann Regie wie in der Turn-Route. */
   const finalizeTurn = async () => {
     const user = pendingUser.trim();
     const persona = pendingPersona.trim();
     pendingUser = "";
     pendingPersona = "";
-    if (!user && !persona) return;
+    audioSeenThisTurn = false;
+    if (!user && !persona && !personaEnde) return;
     const ts = new Date(deps.now()).toISOString();
     if (user) doc.turns.push({ role: "user", text: user, ts });
     if (persona) doc.turns.push({ role: "persona", text: persona, ts });
     if (farewellPending) doc.closedByTime = true;
+    if (personaEnde && !doc.closedByPersona) doc.closedByPersona = { ...personaEnde, at: ts };
     await deps.saveSim(doc);
     sendJson({
       t: "turn",
@@ -250,8 +344,13 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
       persona: persona || null,
       userTurnsLeft: Math.max(0, SIM_MAX_USER_TURNS - countUserTurns(doc.turns)),
       timeUp: doc.closedByTime === true,
+      ended: Boolean(doc.closedByPersona),
     });
-    log("info", "live-turn", { turns: doc.turns.length, ...(doc.closedByTime ? { timeUp: true } : {}) });
+    log("info", "live-turn", { turns: doc.turns.length, ...(doc.closedByTime ? { timeUp: true } : {}), ...(doc.closedByPersona ? { ended: doc.closedByPersona.ergebnis } : {}) });
+    if (doc.closedByPersona) {
+      sendJson({ t: "ended", grund: doc.closedByPersona.grund, ergebnis: doc.closedByPersona.ergebnis });
+      return bye("ended_by_persona");
+    }
     if (doc.closedByTime) return bye("time_up");
     if (closing) return;
 
@@ -267,6 +366,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     } else if (signal === "farewell" && !farewellPending) {
       sendStageNote("farewell");
     }
+    if (user) await beobachten();
   };
   const enqueueFinalize = () => {
     queue = queue.then(finalizeTurn).catch((e) => log("error", "live-finalize", { err: e instanceof Error ? e.message : String(e) }));
@@ -274,10 +374,18 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
 
   const events: UpstreamEvents = {
     onAudio: (pcm) => {
+      if (!audioSeenThisTurn && lastInputAt) {
+        audioSeenThisTurn = true;
+        const ms = deps.now() - lastInputAt;
+        if (ms >= 0 && ms < 60_000) latencies.push(ms);
+        lastInputAt = 0;
+      }
       if (ws.readyState === WS_OPEN) ws.send(pcm);
     },
     onInputText: (text) => {
       pendingUser += text;
+      lastInputAt = deps.now();
+      audioSeenThisTurn = false;
       sendJson({ t: "you", text: pendingUser });
     },
     onOutputText: (text) => {
@@ -286,6 +394,21 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     },
     onInterrupted: () => sendJson({ t: "interrupted" }),
     onTurnComplete: () => enqueueFinalize(),
+    onToolCall: (calls) => {
+      for (const call of calls) {
+        const ende = parseEndeCall(call);
+        try {
+          upstream?.sendToolResponse?.([{ id: call.id, name: call.name, response: ende ? { ok: true } : { ok: false, error: "unknown tool" } }]);
+        } catch (e) {
+          log("warn", "live-tool-response", { err: e instanceof Error ? e.message : String(e) });
+        }
+        if (!ende) continue;
+        personaEnde = ende;
+        log("info", "live-ende-werkzeug", { ergebnis: ende.ergebnis });
+        // Kommt kein turnComplete mehr (Werkzeug nach dem letzten Satz), schließt der Zug nach kurzer Frist.
+        timers.push(setTimeout(() => { if (!closing && personaEnde && !doc.closedByPersona) enqueueFinalize(); }, 2_500));
+      }
+    },
     onResumptionHandle: (h) => {
       resumeHandle = h;
     },
@@ -312,7 +435,15 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   };
 
   const connectUpstream = async () => {
-    const cfg: UpstreamConfig = { model: deps.model, voice, languageCode, systemInstruction, resumeHandle };
+    const cfg: UpstreamConfig = {
+      model: deps.model,
+      voice,
+      languageCode,
+      systemInstruction,
+      resumeHandle,
+      endeWerkzeug,
+      sprechpause: deps.sprechpause ?? "normal",
+    };
     const up = await deps.connect(cfg, events);
     upstream = up;
     // Verlauf nur beim ersten Verbinden einspielen; die Wiederaufnahme kennt ihn schon.
@@ -343,23 +474,28 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   ws.on("close", () => {
     closing = true;
     if (idleTimer) clearTimeout(idleTimer);
+    if (idleWarnTimer) clearTimeout(idleWarnTimer);
     for (const t of timers) clearTimeout(t);
     try {
       upstream?.close();
     } catch {
       /* egal */
     }
-    // Angefangenes nicht verlieren: was schon mitgeschrieben ist, wird noch gespeichert.
+    // Angefangenes nicht verlieren: was schon mitgeschrieben ist, wird noch gespeichert — und die Antwortzeiten.
     queue = queue.then(async () => {
       const user = pendingUser.trim();
       const persona = pendingPersona.trim();
       pendingUser = "";
       pendingPersona = "";
-      if (!user && !persona) return;
       const ts = new Date(deps.now()).toISOString();
       if (user) doc.turns.push({ role: "user", text: user, ts });
       if (persona) doc.turns.push({ role: "persona", text: persona, ts });
-      await deps.saveSim(doc);
+      const stats = latencyStats(latencies);
+      if (stats) {
+        doc.liveStats = stats;
+        log("info", "live-latency", stats);
+      }
+      if (user || persona || stats) await deps.saveSim(doc);
     }).catch((e) => log("error", "live-close-save", { err: e instanceof Error ? e.message : String(e) }));
     void queue.then(() => resolveDone());
   });
@@ -376,9 +512,9 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   resetIdle();
   timers.push(setTimeout(() => bye("ended"), deps.maxConnectionMs ?? 30 * 60_000));
   sendJson({ t: "ready", persona: scenario.persona.name, voice });
-  log("info", "live-ready", { scenarioId: scenario.id, voice, turns: doc.turns.length });
+  log("info", "live-ready", { scenarioId: scenario.id, voice, turns: doc.turns.length, endeWerkzeug });
 
-  // Wer spät wieder einsteigt, bekommt die Zeit-Regie sofort.
+  // Wer spät wieder einsteigt, bekommt die Zeit-Regie sofort — und die letzte Regie-Notiz noch einmal.
   const signal = decideTimeSignal({ createdAt: doc.createdAt, now: deps.now(), durationMin, timeWarned: doc.timeWarned === true });
   if (signal === "farewell") sendStageNote("farewell");
   else if (signal === "closing") {
@@ -386,5 +522,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     await deps.saveSim(doc);
     sendStageNote("closing");
   }
+  const letzteRegie = doc.regie?.length ? doc.regie[doc.regie.length - 1] : null;
+  if (letzteRegie?.notiz && upstream) (upstream as Upstream).sendText(regieStageNote(scenario, letzteRegie), false);
   return done;
 }

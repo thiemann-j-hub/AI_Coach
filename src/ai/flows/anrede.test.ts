@@ -3,12 +3,12 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { anredeBlock, withAnrede } from "@/lib/anrede";
 
-/** W1-5: jede KI-Stelle, die zur übenden Person spricht, trägt die Anrede-Regel; die Spielfigur bleibt frei, dynamic-feedback delegiert an tailored-feedback. */
+/** W1-5: jede KI-Stelle, die zur übenden Person spricht, trägt die Anrede-Regel; die Spielfigur und ihr Regie-Beobachter (Welle 2, spricht nur zur Rolle) bleiben frei, dynamic-feedback delegiert an tailored-feedback. */
 describe("Anrede-Regel in den Flows (W1-5)", () => {
   const dir = __dirname;
   const flows = readdirSync(dir).filter((f) => f.endsWith(".ts") && !f.endsWith(".test.ts"));
   it("alle Flows außer der Spielfigur binden anredeBlock ein", () => {
-    const missing = flows.filter((f) => f !== "simulation-persona.ts" && f !== "generate-dynamic-feedback.ts" && !readFileSync(path.join(dir, f), "utf8").includes("anredeBlock("));
+    const missing = flows.filter((f) => f !== "simulation-persona.ts" && f !== "simulation-regie.ts" && f !== "generate-dynamic-feedback.ts" && !readFileSync(path.join(dir, f), "utf8").includes("anredeBlock("));
     expect(missing).toEqual([]);
   });
   it("die Regel verlangt Du groß und verbietet Sie", () => {

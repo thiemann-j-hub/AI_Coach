@@ -36,6 +36,8 @@ export function buildSpielbuchPrompt(s: SimulationScenario): string {
       interests: d.interests,
       objectionPlaybook: d.objectionPlaybook,
       concessionConditions: d.concessionConditions,
+      freigabeRegel: d.freigabeRegel,
+      endbedingungen: d.endbedingungen,
       escalationTriggers: d.escalationTriggers,
       personality: d.personality,
       knowledgeBounds: d.knowledgeBounds,
@@ -67,7 +69,7 @@ Write the playbook for ${d.name} in English with exactly these five sections, in
 4–6 ready phrasings, in character, for things the character does not know (see knowledgeBounds). They sound natural, never like a disclaimer.
 
 4. OPENING-UP TRAJECTORY
-Stages 0–3. For each stage: what the learner must have done (see concessionConditions), what the character then admits, offers or asks, and how tone and sentence length change. Also: what throws the character back a stage (see escalationTriggers).
+Stages 0–3. For each stage: what the learner must have done (see concessionConditions), what the character then admits, offers or asks, and how tone and sentence length change. Also: what throws the character back a stage (see escalationTriggers). Respect the release rule (freigabeRegel) as the upper bound of guardedness, and name the moments that end the conversation (endbedingungen).
 
 5. NEVER
 3–5 things the character must never do (e.g. giving in without the conditions, lecturing, breaking character, reading out notes).
@@ -94,7 +96,7 @@ Schreibe das Spielbuch für ${d.name} auf Deutsch mit genau diesen fünf Abschni
 4–6 fertige Formulierungen in der Rolle für Dinge, die die Rolle nicht weiß (siehe knowledgeBounds). Sie klingen natürlich, nie wie ein Hinweis.
 
 4. ÖFFNUNGSVERLAUF
-Stufen 0–3. Je Stufe: Was die lernende Person dafür getan haben muss (siehe concessionConditions), was die Rolle dann zugibt, anbietet oder fragt, und wie sich Ton und Satzlänge verändern. Außerdem: Was die Rolle eine Stufe zurückwirft (siehe escalationTriggers).
+Stufen 0–3. Je Stufe: Was die lernende Person dafür getan haben muss (siehe concessionConditions), was die Rolle dann zugibt, anbietet oder fragt, und wie sich Ton und Satzlänge verändern. Außerdem: Was die Rolle eine Stufe zurückwirft (siehe escalationTriggers). Halte die Freigabe-Regel (freigabeRegel) als Obergrenze der Verschlossenheit ein und benenne die Momente, die das Gespräch beenden (endbedingungen).
 
 5. NIEMALS
 3–5 Dinge, die die Rolle nie tut (z. B. ohne Bedingungen einlenken, dozieren, aus der Rolle fallen, Notizen vorlesen).

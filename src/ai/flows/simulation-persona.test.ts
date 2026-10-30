@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getScenario } from "@/lib/simulation/scenarios";
-import { buildPersonaSystemPrompt } from "./simulation-persona";
+import { buildPersonaSystemPrompt, endeAktiv } from "./simulation-persona";
 
 describe("buildPersonaSystemPrompt", () => {
   const scenario = getScenario("sim-peer-lang")!;
@@ -32,5 +32,23 @@ describe("buildPersonaSystemPrompt", () => {
   it("verlangt Gesprächs-Realismus (kurz, kein Markdown)", () => {
     expect(prompt).toContain("2–5 Sätze");
     expect(prompt).toContain("kein Markdown");
+  });
+
+  // Welle 2 (30.10.2026): Freigabe-Regel, Endbedingungen, Fairness-Klausel.
+  it("trägt Freigabe-Regel, Endbedingungen und Fairness-Klausel", () => {
+    expect(prompt).toContain("FREIGABE-REGEL");
+    expect(prompt).toContain(scenario.personaDna.freigabeRegel!);
+    expect(prompt).toContain("GESPRÄCHSENDE");
+    for (const e of scenario.personaDna.endbedingungen!) expect(prompt).toContain(e);
+    expect(prompt).toContain("7. FAIRNESS");
+    expect(prompt).toContain("nicht unschlagbar");
+    expect(endeAktiv(scenario)).toBe(true);
+  });
+
+  it("englisches Szenario bekommt die englischen Blöcke", () => {
+    const en = buildPersonaSystemPrompt(getScenario("sim-appraisal-stone")!);
+    expect(en).toContain("RELEASE RULE");
+    expect(en).toContain("END OF THE CONVERSATION");
+    expect(en).toContain("7. FAIRNESS: You are demanding, not unwinnable.");
   });
 });

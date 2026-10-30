@@ -5,6 +5,7 @@ import { generateSimulationFeedback } from "@/ai/flows/simulation-feedback";
 import { GENKIT_MODEL_ID } from "@/ai/genkit";
 import { scoreCompetencies } from "@/ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
+import { regieVerlaufText } from "@/ai/flows/simulation-regie";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import {
@@ -183,6 +184,13 @@ export async function POST(req: NextRequest) {
             convoLocale: doc.convoLocale ?? undefined,
             selfAssessment: parsed.data.selfAssessment || undefined,
             transferReview: transferReview || undefined,
+            // Welle 2: Gesprächsende durch die Rolle und Öffnungsverlauf als Kontext (nie als Beleg).
+            gespraechsende: doc.closedByPersona
+              ? `${scenario.persona.name} beendete das Gespräch (${doc.closedByPersona.ergebnis}): ${doc.closedByPersona.grund}`
+              : doc.closedByTime
+                ? "Die Zeit lief ab; die Rolle verabschiedete sich."
+                : undefined,
+            regieVerlauf: regieVerlaufText(doc.regie, scenario.locale) || undefined,
           }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-feedback", retries: 1 }
       ),

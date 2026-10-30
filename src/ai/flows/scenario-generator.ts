@@ -17,6 +17,7 @@ import { ai } from '@/ai/genkit';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import { getScenario } from '@/lib/simulation/scenarios';
 import { validateScenario } from '@/lib/simulation/scenario-schema';
+import { ergaenzeAnker, faehigkeitenKatalog } from '@/lib/simulation/faehigkeiten';
 import type { SimulationScenario } from '@/lib/simulation/types';
 
 /** Stil-Vorlagen: je eine starke Mitarbeiter- und eine Verhandlungs-DNA. */
@@ -63,12 +64,16 @@ AUTORENREGELN (hart, werden maschinell geprüft):
 3. Die Situation lebt in candidateBriefing (yourRole, relationship, incidents) und im objectionPlaybook.
 4. objectionPlaybook: 2–6 Einträge, JEDER mit trigger (wann) und objection (wörtliche Einwand-Idee aus Persona-Sicht). Schreibe den Einwand, NIE die erwartete Antwort des Übenden.
 5. candidateBriefing.goals: GENAU 3 Ziele — Beziehungsziel, Strukturziel, EIN konkretes inhaltliches Anliegen.
-6. assessment.competencies: 3–5 Anker als BEOBACHTBARES Verhalten (nicht "zeigt Empathie", sondern "erkennt die Perspektive an, bevor …"), jeder mit weight (relativ) und rubric (Anweisung an den Bewerter: woran sehen 4 bzw. 1 Punkte aus?). Keys S1…S5 wiederverwenden, wo sie passen.
+6. assessment.competencies: 3–5 Anker. BEVORZUGT Fähigkeiten aus der BIBLIOTHEK (unten): dann ist key exakt die Bibliotheks-Id, label der Titel, rubric leer (wird ergänzt) — gleiche Fähigkeit, gleiche Messlatte über alle Szenarien. Nur wenn keine passt: eigener key, label als BEOBACHTBARES Verhalten (nicht "zeigt Empathie", sondern "erkennt die Perspektive an, bevor …") und rubric (Anweisung an den Bewerter: woran erkennt man Stufe 1 bis 4?). Jeder Anker mit weight (relativ, z. B. 15–30).
+12. personaDna.freigabeRegel: die Obergrenze der Verschlossenheit in 2–3 Sätzen („nie von selbst … spätestens nach …“), damit das Gespräch gewinnbar ist. personaDna.endbedingungen: 2–4 Momente, in denen die Rolle das Gespräch selbst beendet (Ziel erreicht, Gegenüber verabschiedet sich, Abbruch nach Eskalations-Trigger).
 7. assessment.checkpoints: 3–6 prüfbare Schlüsselmomente mit ids im Muster "${args.id.replace(/^ws-/, '')}-…" (eindeutig).
 8. personaDna vollständig: hiddenDrivers (nie aussprechen), positions (sagt sie offen) GETRENNT von interests (gibt sie erst bei ehrlichem Erkunden preis), concessionConditions (wann wird sie kooperativer), escalationTriggers, knowledgeBounds (was sie NICHT weiß), facts (exakte Zahlen/Namen — NUR aus BRIEF/MATERIAL, nie erfunden), openingLine.
 9. Alle Inhalte auf ${args.locale === 'en' ? 'Englisch' : 'Deutsch'}; category "${args.category ?? 'mitarbeiterfuehrung'}"; difficulty ${args.difficulty ?? 2}; durationMin 15, checkDurationMin 10; timeboxMin 15.
 10. persona.name === personaDna.name. Erfinde realistische, aber fiktive Namen — übernimm KEINE echten Personennamen aus dem MATERIAL.
 11. Titel-Konvention: "Motto — Gesprächstyp mit <Name>".
+
+BIBLIOTHEK DER FÄHIGKEITEN (Id in Klammern der Titel):
+${faehigkeitenKatalog(args.locale === 'en' ? 'en' : 'de')}
 
 VORLAGEN (Stil, Tiefe und Feldnutzung — NICHT den Inhalt kopieren):
 ${templates.map((t) => JSON.stringify(t)).join('\n---\n')}
@@ -127,7 +132,9 @@ export async function generateScenarioDraft(
     });
     const text = response.text ?? '';
     try {
-      return validateScenario(parseDraftJson(text));
+      const draft = validateScenario(parseDraftJson(text));
+      // Welle 1: Bibliotheks-Anker bekommen Titel und Vier-Stufen-Rubrik aus der Bibliothek.
+      return { ...draft, assessment: { ...draft.assessment, competencies: ergaenzeAnker(draft.assessment.competencies, draft.locale) } };
     } catch (e) {
       previousIssues = e instanceof Error ? e.message : String(e);
       if (attempt === 2) {

@@ -137,7 +137,18 @@ describe("simulation scenarios — Schema-Vollständigkeit (Rollen-DNA)", () => 
       expect(s.candidateBriefing.goals).toHaveLength(3);
       expect(s.candidateBriefing.incidents.length).toBeGreaterThanOrEqual(2);
       expect(s.assessment.checkpoints.length).toBeGreaterThanOrEqual(4);
-      expect(s.assessment.competencies).toEqual(SIM_RUBRIC);
+      // Welle 1: 4–5 Anker aus der Fähigkeiten-Bibliothek, gewichtet, mit Vier-Stufen-Rubrik.
+      expect(s.assessment.competencies.length).toBeGreaterThanOrEqual(4);
+      expect(s.assessment.competencies.length).toBeLessThanOrEqual(5);
+      for (const c of s.assessment.competencies) {
+        expect(c.weight).toBeGreaterThan(0);
+        expect(c.rubric).toContain(s.locale === "en" ? "Levels:" : "Stufen:");
+      }
+      expect(s.assessment.competencies.reduce((a, c) => a + (c.weight ?? 0), 0)).toBe(100);
+      expect(s.assessment.checkPassThreshold).toBeGreaterThan(s.assessment.passThreshold ?? 0);
+      expect(s.personaDna.freigabeRegel?.length).toBeGreaterThan(40);
+      expect(s.personaDna.endbedingungen?.length).toBe(3);
+      expect(SIM_RUBRIC.length).toBe(5);
       // Persona-Angaben im Public-Teil müssen zur DNA passen (kein Drift).
       expect(s.persona.name).toBe(s.personaDna.name);
     }

@@ -1,14 +1,16 @@
 import "server-only";
 
-import { GoogleGenAI, Modality, type LiveServerMessage } from "@google/genai";
+import { EndSensitivity, GoogleGenAI, Modality, Type, type LiveServerMessage } from "@google/genai";
+import { beobachteRegie } from "@/ai/flows/simulation-regie";
 import { vertexHost } from "@/ai/gemini-backend";
 import { logger } from "@/lib/logger";
 import { checkAndConsumeBudget } from "@/lib/server/cost-cap";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { getSimulation, saveSimulation } from "@/lib/server/simulation-store";
-import { coachLiveLocation, coachLiveModel } from "@/lib/simulation/flags";
+import { coachEndeOn, coachLiveLocation, coachLiveModel, coachLiveSprechpause, coachRegieOn } from "@/lib/simulation/flags";
 import {
+  ENDE_WERKZEUG,
   runLiveSession,
   type ConnectUpstream,
   type LiveDeps,
@@ -75,6 +77,34 @@ export function createVertexLiveConnector(): ConnectUpstream {
         // Wiederaufnahme-Marke + gleitendes Fenster: Gespräche über der Sitzungsgrenze laufen weiter.
         sessionResumption: cfg.resumeHandle ? { handle: cfg.resumeHandle } : {},
         contextWindowCompression: { slidingWindow: {} },
+        // Welle 2: die Rolle beendet das Gespräch selbst (Endbedingungen) über ein Werkzeug.
+        ...(cfg.endeWerkzeug
+          ? {
+              tools: [
+                {
+                  functionDeclarations: [
+                    {
+                      name: ENDE_WERKZEUG,
+                      description:
+                        "Beendet das Gespräch, NACHDEM du dich verabschiedet hast und eine Endbedingung erfüllt ist. grund: ein Satz, warum. ergebnis: ziel (Ergebnis erreicht), verabschiedung (das Gegenüber hat beendet) oder abbruch (du brichst nach einem Eskalations-Trigger ab).",
+                      parameters: {
+                        type: Type.OBJECT,
+                        properties: {
+                          grund: { type: Type.STRING, description: "Ein Satz, warum das Gespräch zu Ende ist." },
+                          ergebnis: { type: Type.STRING, enum: ["ziel", "verabschiedung", "abbruch"] },
+                        },
+                        required: ["grund", "ergebnis"],
+                      },
+                    },
+                  ],
+                },
+              ],
+            }
+          : {}),
+        // Welle 2: Sprechpausen-Erkennung — „kurz“ nimmt das Satzende früher an (schneller, eher Unterbrechung).
+        ...(cfg.sprechpause === "kurz"
+          ? { realtimeInputConfig: { automaticActivityDetection: { endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH, silenceDurationMs: 500 } } }
+          : {}),
       },
       callbacks: {
         onopen: () => {},
@@ -93,6 +123,10 @@ export function createVertexLiveConnector(): ConnectUpstream {
             ev.onResumptionHandle(m.sessionResumptionUpdate.newHandle);
           }
           if (m.goAway) ev.onGoAway();
+          const calls = m.toolCall?.functionCalls;
+          if (calls?.length) {
+            ev.onToolCall(calls.map((c) => ({ id: c.id, name: c.name ?? "", args: (c.args ?? {}) as Record<string, unknown> })));
+          }
         },
         onerror: (e) => ev.onError(e instanceof Error ? e : new Error(String((e as { message?: string })?.message ?? e))),
         onclose: (e) => {
@@ -111,6 +145,8 @@ export function createVertexLiveConnector(): ConnectUpstream {
       sendText: (text, turnComplete) => session.sendClientContent({ turns: [{ role: "user", parts: [{ text }] }], turnComplete }),
       sendHistory: (turns) =>
         session.sendClientContent({ turns: turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })), turnComplete: false }),
+      sendToolResponse: (responses) =>
+        session.sendToolResponse({ functionResponses: responses.map((r) => ({ id: r.id, name: r.name, response: r.response })) }),
       close: () => {
         closedByUs = true;
         try {
@@ -131,6 +167,9 @@ function realDeps(): LiveDeps {
     saveSim: (doc) => saveSimulation(doc),
     loadScenario: (uid, scenarioId, oid) => getScenarioForUser(uid, scenarioId, oid),
     loadSpielbuch: (scenario) => ensureSpielbuch(scenario),
+    regie: (scenario, turns, bisher) => (coachRegieOn() ? beobachteRegie({ scenario, turns, bisher }) : Promise.resolve(null)),
+    endeOn: coachEndeOn(),
+    sprechpause: coachLiveSprechpause(),
     budget: async (a) => ({ allowed: (await checkAndConsumeBudget(a)).allowed }),
     now: () => Date.now(),
     log: (level, msg, meta) => logger[level](`[live] ${msg}`, meta),

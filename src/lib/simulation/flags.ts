@@ -55,6 +55,45 @@ export function coachLiveModel(env: Record<string, string | undefined> = process
  * so argumentiert auch das schnelle Gesprächsmodell (Gemini Live / Flash) mit Substanz.
  *   COACH_SPIELBUCH = on (Standard) | off
  */
+/**
+ * Welle 1 (Owner-GO 30.10.2026, N4-240): Fähigkeiten-Bibliothek mit vier Stufen als Anker der Standard-Szenarien.
+ *   COACH_FAEHIGKEITEN = on (Standard) | off  → off = alte Fünfer-Rubrik S1–S5 ohne Gewicht und Grenze.
+ */
+export function coachFaehigkeitenOn(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.COACH_FAEHIGKEITEN ?? "on").trim().toLowerCase() !== "off";
+}
+
+/**
+ * Welle 1: Richter der Auswertung. `gemini` (Standard) = Genkit-Schreibermodell wie bisher; `opus` = Claude Opus @eu
+ * über claude-vertex.ts mit Rückfall auf Gemini bei Fehler oder Zeitüberschreitung.
+ */
+export function coachRichter(env: Record<string, string | undefined> = process.env): "gemini" | "opus" {
+  return (env.COACH_RICHTER ?? "gemini").trim().toLowerCase() === "opus" ? "opus" : "gemini";
+}
+
+/**
+ * Welle 2: Die Rolle beendet das Gespräch selbst (Werkzeug im Live-Modus, Feld im Textweg), wenn eine
+ * Endbedingung erfüllt ist. COACH_ENDE = on (Standard) | off.
+ */
+export function coachEndeOn(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.COACH_ENDE ?? "on").trim().toLowerCase() !== "off";
+}
+
+/**
+ * Welle 2: Regie-Beobachter im Hintergrund (Öffnungsstufe je Zug, Notiz an die Rolle). COACH_REGIE = on | off.
+ */
+export function coachRegieOn(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.COACH_REGIE ?? "on").trim().toLowerCase() !== "off";
+}
+
+/**
+ * Welle 2: Sprechpausen-Erkennung im Live-Modus. `normal` (Standard) = Google-Voreinstellung; `kurz` = das Modell
+ * nimmt das Satzende früher an (schnellere Antwort, eher Unterbrechung).
+ */
+export function coachLiveSprechpause(env: Record<string, string | undefined> = process.env): "normal" | "kurz" {
+  return (env.COACH_LIVE_SPRECHPAUSE ?? "normal").trim().toLowerCase() === "kurz" ? "kurz" : "normal";
+}
+
 export function coachSpielbuchOn(env: Record<string, string | undefined> = process.env): boolean {
   return (env.COACH_SPIELBUCH ?? "on").trim().toLowerCase() !== "off";
 }
