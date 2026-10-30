@@ -127,7 +127,7 @@ export default function CreditsClient() {
     <AppShell title={de ? 'Credits' : 'Credits'} subtitle={de ? 'Guthaben & Kauf' : 'Balance & purchase'}>
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
         {status === 'success' && (
-          <div className="pn-none p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-sm">
+          <div className="pn-none p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-sm">
             {de
               ? 'Zahlung erfolgreich — deine Credits wurden gutgeschrieben. Die Rechnung findest du in deiner Übersicht.'
               : 'Payment successful — your credits have been added. Your invoice is available in your overview.'}
@@ -139,7 +139,7 @@ export default function CreditsClient() {
           </div>
         )}
         {error && (
-          <div className="pn-none p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm">{error}</div>
+          <div className="pn-none p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-400 text-sm">{error}</div>
         )}
 
         {/* Sitzung abgelaufen -> Re-Login statt stiller „0". */}

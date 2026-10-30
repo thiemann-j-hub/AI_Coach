@@ -324,7 +324,7 @@ export default function AppShell(props: {
             <div className={cx('flex items-center gap-3 border-t border-border p-3', collapsed && 'justify-center')}>
               <Avatar className="h-9 w-9 shrink-0 border border-border">
                 <AvatarImage src={user.photoURL || ''} alt={user.displayName || t.auth.user} />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-sm font-medium text-white">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-sm font-medium text-primary-foreground">
                   {initialsOf(user.displayName, user.email)}
                 </AvatarFallback>
               </Avatar>
@@ -399,7 +399,7 @@ export default function AppShell(props: {
                     >
                       <Avatar className="h-8 w-8 border border-border">
                         <AvatarImage src={user.photoURL || ''} alt={user.displayName || t.auth.user} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-xs font-semibold text-white">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-xs font-semibold text-primary-foreground">
                           {initialsOf(user.displayName, user.email)}
                         </AvatarFallback>
                       </Avatar>

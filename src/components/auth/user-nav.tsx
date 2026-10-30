@@ -47,7 +47,7 @@ export function UserNav() {
       </div>
       <Avatar className="h-10 w-10 border border-border shadow-neon">
         <AvatarImage src={user.photoURL || ""} alt={user.displayName || t.auth.user} />
-        <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-medium text-lg">
+        <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-medium text-lg">
           {(user.displayName?.charAt(0) || user.email?.charAt(0) || "U").toUpperCase()}
         </AvatarFallback>
       </Avatar>

@@ -289,7 +289,7 @@ export default function BuilderClient() {
       <div className="max-w-3xl mx-auto space-y-6">
         {error && (
           <div className="pn-none glass-panel rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 flex items-start gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4 text-rose-700 dark:text-rose-400 mt-0.5 shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-rose-800 dark:text-rose-400 mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -425,7 +425,7 @@ export default function BuilderClient() {
                     className={cx(
                       'text-xs font-semibold px-2.5 py-1 rounded-full border',
                       item.status === 'published'
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                        ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30'
                         : 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30'
                     )}
                   >
@@ -582,7 +582,7 @@ export default function BuilderClient() {
                         <button
                           onClick={() => void setStatus(item.id, 'published')}
                           disabled={busyId === item.id}
-                          className="pn-none rounded-lg border border-emerald-500/40 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                          className="pn-none rounded-lg border border-emerald-500/40 px-3 py-2 text-xs font-semibold text-emerald-800 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
                           <CheckCircle2 className="h-3.5 w-3.5" /> {ts.builderPublishCta}
                         </button>
@@ -599,7 +599,7 @@ export default function BuilderClient() {
                         <button
                           onClick={() => void remove(item.id)}
                           disabled={busyId === item.id}
-                          className="pn-none rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-700 dark:text-rose-400 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                          className="pn-none rounded-lg border border-rose-500/50 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-800 dark:text-rose-400 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                         >
                           {busyId === item.id ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -611,7 +611,7 @@ export default function BuilderClient() {
                       ) : (
                         <button
                           onClick={() => setConfirmDeleteId(item.id)}
-                          className="pn-none rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-rose-500/30 hover:text-rose-700 dark:hover:text-rose-400 transition-colors flex items-center gap-1.5"
+                          className="pn-none rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:border-rose-500/30 hover:text-rose-800 dark:hover:text-rose-400 transition-colors flex items-center gap-1.5"
                         >
                           <Trash2 className="h-3.5 w-3.5" /> {ts.builderDeleteCta}
                         </button>

@@ -37,7 +37,7 @@ export function VersionBanner() {
       className="flex flex-wrap items-center justify-center gap-3 border-b border-sky-500/40 bg-sky-500/15 px-4 py-2 text-sm text-foreground"
     >
       <span className="inline-flex items-center gap-2 font-medium">
-        <RefreshCw className="h-4 w-4 shrink-0 text-sky-700 dark:text-sky-500" aria-hidden />
+        <RefreshCw className="h-4 w-4 shrink-0 text-sky-800 dark:text-sky-500" aria-hidden />
         {t.version.newVersion}
       </span>
       <button

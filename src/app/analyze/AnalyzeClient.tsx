@@ -442,7 +442,7 @@ export default function AnalyzeClient() {
                 {t.common.undo}
               </button>
               <button
-                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-red-500/20 text-muted-foreground hover:text-red-700 dark:hover:text-red-400 rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-red-500/20 text-muted-foreground hover:text-red-800 dark:hover:text-red-400 rounded-lg text-sm transition-colors"
                 onClick={() => {
                   setUndoTranscript(transcriptText);
                   setTranscriptText('');
@@ -566,7 +566,7 @@ export default function AnalyzeClient() {
                     disabled={loading}
                   />
                 ) : detectedSpeakers.length <= 2 ? (
-                  <div className="pn-field w-full bg-background border border-border text-muted-foreground rounded-lg px-4 py-3 opacity-70">
+                  <div className="pn-field w-full bg-background border border-border text-muted-foreground rounded-lg px-4 py-3">
                     {employeeLabel || t.analyze.selectManagerFirst}
                   </div>
                 ) : (
@@ -658,7 +658,7 @@ export default function AnalyzeClient() {
               )}
 
               {error && (
-                <div className="pn-none p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm">
+                <div className="pn-none p-3 mb-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-400 text-sm">
                   {error}
                 </div>
               )}
@@ -669,7 +669,7 @@ export default function AnalyzeClient() {
                     <LogIn className="h-4 w-4" />
                     {lang === 'de' ? 'Sitzung abgelaufen' : 'Session expired'}
                   </div>
-                  <p className="text-amber-800/80 dark:text-amber-200/80">
+                  <p className="text-amber-800 dark:text-amber-200">
                     {lang === 'de'
                       ? 'Deine Anmeldung ist abgelaufen. Bitte melde dich neu an — es wurde kein Credit verbraucht.'
                       : 'Your session has expired. Please sign in again — no credit was used.'}
@@ -690,7 +690,7 @@ export default function AnalyzeClient() {
                     <Lock className="h-4 w-4" />
                     {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
                   </div>
-                  <p className="text-amber-800/80 dark:text-amber-200/80">
+                  <p className="text-amber-800 dark:text-amber-200">
                     {paywall.canTopUp === false
                       ? t.common.balanceEmptyMember
                       : lang === 'de'

@@ -130,7 +130,7 @@ export default function ProfilePage() {
           <CardContent className="flex items-center gap-5">
             <Avatar className="h-24 w-24 border border-border">
               {src ? <AvatarImage src={src} alt={displayName} /> : null}
-              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-xl font-semibold text-white">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-xl font-semibold text-primary-foreground">
                 {(displayName || user?.email || "U")
                   .split(/\s+/)
                   .filter(Boolean)
@@ -230,7 +230,7 @@ export default function ProfilePage() {
 
         {/* ── Speichern ── */}
         <div className="flex items-center justify-end gap-3">
-          {msg === "ok" && <span className="text-sm text-emerald-700 dark:text-emerald-400">{p.saved}</span>}
+          {msg === "ok" && <span className="text-sm text-emerald-800 dark:text-emerald-400">{p.saved}</span>}
           {msg === "err" && <span className="text-sm text-destructive">{p.saveFailed}</span>}
           <button
             onClick={() => void onSave()}

@@ -11,7 +11,7 @@ export function InsightCard({
   items: string[];
 }) {
   const toneBar = tone === 'success' ? 'bg-emerald-500' : tone === 'warning' ? 'bg-amber-500' : 'bg-red-500';
-  const toneText = tone === 'success' ? 'text-emerald-700 dark:text-emerald-400' : tone === 'warning' ? 'text-amber-800 dark:text-amber-400' : 'text-red-700 dark:text-red-400';
+  const toneText = tone === 'success' ? 'text-emerald-800 dark:text-emerald-400' : tone === 'warning' ? 'text-amber-800 dark:text-amber-400' : 'text-red-800 dark:text-red-400';
   const toneBg = tone === 'success' ? 'bg-emerald-500/10' : tone === 'warning' ? 'bg-amber-500/10' : 'bg-red-500/10';
   // lucide statt Material-Symbols-Ligatur (Font nicht geladen -> rendert sonst
   // Rohtext „verified"/„auto_graph"). verified->BadgeCheck (Stärken),
