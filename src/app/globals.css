@@ -280,3 +280,21 @@
   --pn-rand-hover: rgba(58, 168, 255, 0.85);
   --pn-shadow-hover: 0 0 12px 1px rgba(58, 168, 255, 0.45);
 }
+
+/* ── Farbwelt „Klar“: Verläufe mit Schrift (Seitenprüfung 31.10.2026) ──────────
+   Der Scanner der Runden 1–6 hat Schrift auf Verläufen übersprungen; nachgeholt.
+   .btn-gradient (Hauptknöpfe mit weißer Schrift: Rollenspiel starten, Auswerten, Credits …) lief von
+   #0091ff nach #00c6ff = 3,2 bis 2,0:1 → Knopfblau nach Violett (Weiß darauf 5,6 bzw. 5,7:1, in beiden
+   Modi). .text-gradient (Leitsatz der Anmeldeseite) folgt Knopfblau → Akzent des jeweiligen Modus
+   (hell ≥ 5,6:1, dunkel ≥ 6,9:1). Rückweg DESIGN_KLAR=off. */
+.pn-klar .btn-gradient {
+  background: linear-gradient(90deg, #0066c7 0%, #8a3fcf 100%);
+}
+.pn-klar .btn-gradient:hover {
+  box-shadow: 0 0 15px rgba(0, 102, 199, 0.45);
+}
+.pn-klar .text-gradient {
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
