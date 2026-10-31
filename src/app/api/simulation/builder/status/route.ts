@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { requireWorkspaceAdmin } from "@/lib/server/scenario-admin";
 import { setWorkspaceScenarioStatus } from "@/lib/server/scenario-store";
@@ -16,7 +17,11 @@ const requestSchema = z.object({
   status: z.enum(["draft", "published"]),
 });
 
-/** Welle C — POST: Freischalten/Zurückziehen eines Workspace-Szenarios (Admin). */
+/**
+ * Welle C — POST: Freischalten/Zurückziehen eines Workspace-Szenarios (Admin).
+ * A4 (31.10.2026): Freischalten baut im Hintergrund das Spielbuch (KI) — deshalb vorher der KI-Schalter des
+ * Unternehmens (403 KI_AUS, das Szenario bleibt unverändert). Zurückziehen braucht keine KI und bleibt immer möglich.
+ */
 export async function POST(req: NextRequest) {
   if (!simulationEnabled()) {
     return NextResponse.json({ ok: false, code: "SIMULATION_DISABLED" }, { status: 503 });
@@ -32,6 +37,10 @@ export async function POST(req: NextRequest) {
     const parsed = requestSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
+    }
+    if (parsed.data.status === "published") {
+      const ki = await kiSchalterBlockt("/api/simulation/builder/status");
+      if (ki) return ki;
     }
     const doc = await setWorkspaceScenarioStatus(
       gate.workspaceId,

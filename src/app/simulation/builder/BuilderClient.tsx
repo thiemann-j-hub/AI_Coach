@@ -195,6 +195,11 @@ export default function BuilderClient() {
         body: JSON.stringify({ scenarioId: id, status }),
       });
       const json = await res.json().catch(() => null);
+      // A4 (31.10.2026): KI für das Unternehmen aus — Freischalten geht nicht, die Meldung des Servers zeigen.
+      if (res.status === 403 && json?.code === 'KI_AUS') {
+        setError(json.error || ts.genericError);
+        return;
+      }
       if (!res.ok || !json?.ok) throw new Error('status');
       await load();
     } catch {

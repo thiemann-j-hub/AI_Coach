@@ -71,6 +71,11 @@ export default function BerichtClient() {
       try {
         const res = await authFetch(`/api/interview/bericht?kurs=${encodeURIComponent(kursId)}&locale=${locale === 'en' ? 'en' : 'de'}`);
         const json = await res.json().catch(() => null);
+        // A4 (31.10.2026): KI für das Unternehmen aus — neu erzeugen geht nicht, die Meldung des Servers zeigen.
+        if (res.status === 403 && json?.code === 'KI_AUS') {
+          setError(json.error || ti.errorGeneric);
+          return;
+        }
         if (!res.ok || !json?.ok) throw new Error('bericht');
         setBericht({ anzahl: json.anzahl, bericht: json.bericht, erstellt: json.erstellt });
       } catch {

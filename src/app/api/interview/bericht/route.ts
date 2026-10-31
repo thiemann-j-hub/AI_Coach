@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { requireWorkspaceAdmin } from "@/lib/server/scenario-admin";
 import { listFinishedInterviews, listInterviewKurse, readBericht, saveBericht } from "@/lib/server/interview-store";
 import { erstelleBericht } from "@/ai/flows/interview-bericht";
@@ -19,6 +20,8 @@ const LLM_TIMEOUT_MS = timeoutMs("COACH_RICHTER_TIMEOUT_MS", 110_000);
  *   ohne ?kurs=  → Kurse mit Interview-Zählern
  *   mit  ?kurs=  → Themenbericht, erst ab INTERVIEW_MIN_ANTWORTEN abgeschlossenen Interviews; wird am Kurs
  *                  gemerkt und nur neu erzeugt, wenn neue Interviews dazukamen. Keine Namen, keine Einzelsicht.
+ * A4 (31.10.2026): Neu erzeugen ist KI und folgt dem KI-Schalter des Unternehmens (403 KI_AUS). Die Kursliste und ein
+ * schon erzeugter, passender Bericht bleiben lesbar — dafür läuft keine KI.
  */
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -44,6 +47,8 @@ export async function GET(req: NextRequest) {
     if (cached && cached.anzahl === anzahl && cached.locale === locale) {
       return NextResponse.json({ ok: true, anzahl, mindest: INTERVIEW_MIN_ANTWORTEN, bericht: cached.bericht, erstellt: cached.createdAt });
     }
+    const ki = await kiSchalterBlockt("/api/interview/bericht");
+    if (ki) return ki;
     const def = interviewDefinition(docs[0].definitionId);
     if (!def) return NextResponse.json({ ok: false, code: "UNKNOWN_INTERVIEW" }, { status: 404 });
     const bericht = await withRetry(

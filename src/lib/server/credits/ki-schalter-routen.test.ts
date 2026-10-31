@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
  * des Unternehmens (kiSchalterBlockt). Ist er aus, antwortet die Route 403 KI_AUS, BEVOR sie Daten lädt
  * oder die KI ruft — und vor den 503-Antworten, auf die der Browser mit eigener Erkennung/Stimme ausweicht.
  * Ist er an, läuft die Route weiter wie bisher. Alles außer den Routen selbst ist gemockt.
+ * Dazu die beiden KI-Schritte der Admins: Themenbericht neu erzeugen und Spielbuch beim Freischalten im Builder.
  */
 const kiBlock = vi.fn();
 vi.mock("@/lib/server/credits/entitlement", () => ({ kiSchalterBlockt: (ort?: string) => kiBlock(ort) }));
@@ -25,10 +26,13 @@ vi.mock("@/lib/server/simulation-store", () => ({
   getSimulation: (...a: unknown[]) => getSimulation(...a),
   saveSimulation: vi.fn(),
 }));
+const setWorkspaceScenarioStatus = vi.fn(async (_w: string, id: string, status: string) => ({ id, status, scenario: { id } }));
 vi.mock("@/lib/server/scenario-store", () => ({
   getScenarioForUser: vi.fn(async () => null),
   resolveWorkspaceIdForScenarios: vi.fn(async () => "ws-1"),
+  setWorkspaceScenarioStatus: (w: string, id: string, status: string) => setWorkspaceScenarioStatus(w, id, status),
 }));
+vi.mock("@/lib/server/scenario-admin", () => ({ requireWorkspaceAdmin: async () => ({ workspaceId: "ws-1" }) }));
 const runPersonaTurn = vi.fn();
 vi.mock("@/ai/flows/simulation-persona", () => ({ runPersonaTurn: (...a: unknown[]) => runPersonaTurn(...a) }));
 const beobachteRegie = vi.fn();
@@ -64,11 +68,25 @@ vi.mock("@/lib/server/azure-tts", () => ({
 // Sprach-Token (Einwilligungs-Tor hier aus — es hat eigene Tests)
 vi.mock("@/lib/server/credits/member-info", () => ({ consentGateOn: () => false }));
 
-// Interview
+// Interview und Themenbericht
 const readInterview = vi.fn(async (..._a: unknown[]) => null);
-vi.mock("@/lib/server/interview-store", () => ({ readInterview: (...a: unknown[]) => readInterview(...a), saveInterview: vi.fn() }));
+const fertigeInterviews = (n: number) =>
+  Array.from({ length: n }, (_, i) => ({ definitionId: "kursfeedback", kurs: { id: "kurs-1", titel: "Kurs" }, turns: [{ role: "person", frageNr: 1, text: `Antwort ${i}` }] }));
+const listFinishedInterviews = vi.fn(async (..._a: unknown[]) => fertigeInterviews(5));
+const readBericht = vi.fn(async (..._a: unknown[]): Promise<unknown> => null);
+const saveBericht = vi.fn(async (d: Record<string, unknown>) => ({ ...d, createdAt: "2026-10-31T12:00:00.000Z" }));
+vi.mock("@/lib/server/interview-store", () => ({
+  readInterview: (...a: unknown[]) => readInterview(...a),
+  saveInterview: vi.fn(),
+  listFinishedInterviews: (...a: unknown[]) => listFinishedInterviews(...a),
+  listInterviewKurse: async () => [{ id: "kurs-1", titel: "Kurs", fertig: 5, offen: 0, letzte: null }],
+  readBericht: (...a: unknown[]) => readBericht(...a),
+  saveBericht: (d: Record<string, unknown>) => saveBericht(d),
+}));
 const naechsterSchritt = vi.fn();
 vi.mock("@/ai/flows/interview-fuehrung", () => ({ naechsterSchritt: (...a: unknown[]) => naechsterSchritt(...a) }));
+const erstelleBericht = vi.fn(async (..._a: unknown[]) => ({ kurzfassung: "kurz", themen: [], staerken: [], verbesserungen: [], vorhaben: [] }));
+vi.mock("@/ai/flows/interview-bericht", () => ({ erstelleBericht: (...a: unknown[]) => erstelleBericht(...a) }));
 
 const KI_AUS = { ok: false, code: "KI_AUS", error: "Rollenspiele und Gesprächsanalyse sind für Euer Unternehmen ausgeschaltet." };
 const aus = () => kiBlock.mockImplementation(async () => NextResponse.json(KI_AUS, { status: 403 }));
@@ -89,10 +107,13 @@ beforeEach(() => {
   process.env.AZURE_SPEECH_KEY = "key";
   process.env.AZURE_SPEECH_REGION = "westeurope";
   delete process.env.SPEECH_INPUT;
+  process.env.COACH_INTERVIEW = "all";
   ttsConfigured = true;
-  for (const m of [kiBlock, getSimulation, runPersonaTurn, beobachteRegie, ensureSpielbuch, runCoachTimeout, issue, synthesize, readInterview, naechsterSchritt, fetchMock]) {
+  for (const m of [kiBlock, getSimulation, runPersonaTurn, beobachteRegie, ensureSpielbuch, runCoachTimeout, issue, synthesize, readInterview, naechsterSchritt, fetchMock, setWorkspaceScenarioStatus, listFinishedInterviews, readBericht, saveBericht, erstelleBericht]) {
     m.mockClear();
   }
+  readBericht.mockImplementation(async () => null);
+  listFinishedInterviews.mockImplementation(async () => fertigeInterviews(5));
   fetchMock.mockImplementation(async () => new Response("speech-token", { status: 200 }));
   vi.stubGlobal("fetch", fetchMock);
 });
@@ -102,6 +123,7 @@ afterEach(() => {
   delete process.env.AZURE_SPEECH_KEY;
   delete process.env.AZURE_SPEECH_REGION;
   delete process.env.SPEECH_INPUT;
+  delete process.env.COACH_INTERVIEW;
   vi.unstubAllGlobals();
 });
 
@@ -215,5 +237,68 @@ describe("Interview-Zug /api/interview/turn", () => {
     const { POST } = await import("@/app/api/interview/turn/route");
     expect((await POST(post("/api/interview/turn", BODY))).status).toBe(404);
     expect(readInterview).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Themenbericht /api/interview/bericht (Admins)", () => {
+  const get = (q = "") => new NextRequest(`http://localhost/api/interview/bericht${q}`);
+
+  it("Schalter aus: neu erzeugen → 403 KI_AUS, keine KI, nichts gespeichert", async () => {
+    aus();
+    const { GET } = await import("@/app/api/interview/bericht/route");
+    await erwarteKiAus(await GET(get("?kurs=kurs-1")), "/api/interview/bericht");
+    expect(erstelleBericht).not.toHaveBeenCalled();
+    expect(saveBericht).not.toHaveBeenCalled();
+  });
+
+  it("Schalter aus: Kursliste und ein schon erzeugter, passender Bericht bleiben lesbar (dafür läuft keine KI)", async () => {
+    aus();
+    const { GET } = await import("@/app/api/interview/bericht/route");
+    expect((await GET(get())).status).toBe(200);
+    readBericht.mockImplementation(async () => ({ anzahl: 5, locale: "de", bericht: { kurzfassung: "alt" }, createdAt: "2026-10-30T10:00:00.000Z" }));
+    const res = await GET(get("?kurs=kurs-1"));
+    expect(res.status).toBe(200);
+    expect((await res.json()).bericht).toEqual({ kurzfassung: "alt" });
+    expect(kiBlock).not.toHaveBeenCalled();
+    expect(erstelleBericht).not.toHaveBeenCalled();
+  });
+
+  it("Schalter an: der Bericht wird wie bisher erzeugt", async () => {
+    an();
+    const { GET } = await import("@/app/api/interview/bericht/route");
+    const res = await GET(get("?kurs=kurs-1"));
+    expect(res.status).toBe(200);
+    expect(kiBlock).toHaveBeenCalledWith("/api/interview/bericht");
+    expect(erstelleBericht).toHaveBeenCalledTimes(1);
+    expect(saveBericht).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Freischalten im Builder /api/simulation/builder/status (Admins)", () => {
+  const status = (s: "draft" | "published") => post("/api/simulation/builder/status", { scenarioId: "ws-test-1", status: s });
+
+  it("Schalter aus: Freischalten → 403 KI_AUS, Szenario unverändert, kein Spielbuch", async () => {
+    aus();
+    const { POST } = await import("@/app/api/simulation/builder/status/route");
+    await erwarteKiAus(await POST(status("published")), "/api/simulation/builder/status");
+    expect(setWorkspaceScenarioStatus).not.toHaveBeenCalled();
+    expect(ensureSpielbuch).not.toHaveBeenCalled();
+  });
+
+  it("Schalter aus: Zurückziehen braucht keine KI und geht weiter", async () => {
+    aus();
+    const { POST } = await import("@/app/api/simulation/builder/status/route");
+    expect((await POST(status("draft"))).status).toBe(200);
+    expect(setWorkspaceScenarioStatus).toHaveBeenCalledWith("ws-1", "ws-test-1", "draft");
+    expect(kiBlock).not.toHaveBeenCalled();
+    expect(ensureSpielbuch).not.toHaveBeenCalled();
+  });
+
+  it("Schalter an: Freischalten wie bisher, Spielbuch im Hintergrund", async () => {
+    an();
+    const { POST } = await import("@/app/api/simulation/builder/status/route");
+    expect((await POST(status("published"))).status).toBe(200);
+    expect(setWorkspaceScenarioStatus).toHaveBeenCalledWith("ws-1", "ws-test-1", "published");
+    expect(ensureSpielbuch).toHaveBeenCalledTimes(1);
   });
 });
