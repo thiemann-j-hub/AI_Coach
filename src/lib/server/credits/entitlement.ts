@@ -177,21 +177,50 @@ export const PREFLIGHT_TEXT =
 
 export const KI_AUS_TEXT = "Rollenspiele und Gesprächsanalyse sind für Euer Unternehmen ausgeschaltet. Ein Admin kann sie im Hub unter Einstellungen › KI-Funktionen einschalten.";
 
-/** Schritt 9 / A-07: KI-Schalter des Unternehmens (Hub › Einstellungen › KI-Funktionen) — vor jedem Start. */
-export async function kiSchalterBlockt(): Promise<NextResponse | null> {
+/**
+ * A4 (Prüfung Sichtbarkeit, 31.10.2026): Kern der Schalter-Prüfung für EINE Kennung, auch ohne Anfrage
+ * (die Live-Sitzung am Server-Mantel fragt damit zwischen den Zügen nach).
+ * true = der Schalter „Rollenspiele und Gesprächsanalyse (Coach)“ oder der Hauptschalter
+ * „Alle KI-Funktionen … ausschalten“ ist aus. Wie bisher bleibt die KI an, wenn es keine Kennung gibt oder die
+ * Einstellungen nicht lesbar sind (Verfügbarkeit vor Strenge) — neu ist die Warnung im Protokoll dazu.
+ * Die Einstellungen kommen aus dem 60-s-Zwischenspeicher (member-info): Ausschalten wirkt nach spätestens einer Minute.
+ * `ort` steht nur in der Warnung (welcher Einstieg); Kennungen kommen nicht ins Protokoll.
+ */
+export async function kiSchalterAus(oid: string | null | undefined, ort = "coach"): Promise<boolean> {
+  const warnen = (grund: string, meta: Record<string, unknown> = {}) =>
+    logger.warn("[ki-schalter] Einstellungen nicht lesbar, KI bleibt an", { ort, grund, ...meta });
+  if (!oid) {
+    // Zentrale aus (lokal): es gibt keine Einstellungen zu lesen, also auch keinen Lesefehler.
+    if (creditsCentralEnabled()) warnen("ohne-kennung");
+    return false;
+  }
+  try {
+    const { getCentralMemberState, kiErlaubt } = await import("./member-info");
+    const state = await getCentralMemberState(oid);
+    if (state.kind === "info") return !kiErlaubt(state.info, "rollenspiele");
+    if (creditsCentralEnabled()) warnen(state.kind);
+  } catch (e) {
+    warnen("fehler", { err: e instanceof Error ? e.message : String(e) });
+  }
+  return false;
+}
+
+/**
+ * Schritt 9 / A-07: KI-Schalter des Unternehmens (Hub › Einstellungen › KI-Funktionen) — vor jedem Start und
+ * seit A4 (31.10.2026) auch vor jedem KI-Schritt im laufenden Gespräch (Gesprächszug, Time-out-Tipp, Live-Karte,
+ * Vorlesen, Sprach-Token, Interview-Zug). Antwort wie bisher: 403 KI_AUS mit KI_AUS_TEXT.
+ */
+export async function kiSchalterBlockt(ort?: string): Promise<NextResponse | null> {
+  let oid: string | undefined;
   try {
     const { auth } = await import("@/auth");
-    const oid = ((await auth())?.user as { oid?: string } | undefined)?.oid;
-    if (!oid) return null;
-    const { getCentralMemberInfo, kiErlaubt } = await import("./member-info");
-    const central = await getCentralMemberInfo(oid);
-    if (!kiErlaubt(central, "rollenspiele")) {
-      return NextResponse.json({ ok: false, code: "KI_AUS", error: KI_AUS_TEXT }, { status: 403 });
-    }
+    oid = ((await auth())?.user as { oid?: string } | undefined)?.oid;
   } catch (e) {
     logger.apiError("entitlement/ki-schalter", e);
+    return null;
   }
-  return null;
+  if (!(await kiSchalterAus(oid, ort))) return null;
+  return NextResponse.json({ ok: false, code: "KI_AUS", error: KI_AUS_TEXT }, { status: 403 });
 }
 
 export async function preflightEntitlement(): Promise<NextResponse | null> {

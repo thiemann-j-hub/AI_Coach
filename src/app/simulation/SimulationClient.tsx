@@ -582,8 +582,10 @@ export default function SimulationClient() {
       const res = await authFetch('/api/speech-token');
       if (res.status === 403) {
         // Stufe C / W5-4 (20.10.2026): Einwilligung „Sprachaufnahme“ fehlt → Hinweis statt Browser-Notnagel.
-        const j = (await res.json().catch(() => ({}))) as { code?: string; url?: string };
+        const j = (await res.json().catch(() => ({}))) as { code?: string; url?: string; error?: string };
         if (j.code === 'EINWILLIGUNG') { setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme'); setMicActive(false); wantMicRef.current = false; return true; }
+        // A4 (31.10.2026): KI für das Unternehmen aus → Meldung des Servers statt Browser-Notnagel.
+        if (j.code === 'KI_AUS') { setError(j.error || ts.genericError); setMicActive(false); wantMicRef.current = false; return true; }
       }
       if (!res.ok) return false;
       const j = (await res.json()) as { ok?: boolean; token?: string; region?: string };
@@ -606,7 +608,7 @@ export default function SimulationClient() {
     } catch {
       return false;
     }
-  }, [speechLang]);
+  }, [speechLang, ts.genericError]);
 
   /**
    * Sprachmodus Live: Karte holen, Verbindung öffnen, Mikrofon streamen. false = für dieses Szenario
@@ -621,9 +623,16 @@ export default function SimulationClient() {
         method: 'POST',
         body: JSON.stringify({ simId }),
       });
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; ticket?: string; path?: string; code?: string; url?: string };
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; ticket?: string; path?: string; code?: string; url?: string; error?: string };
       if (res.status === 403 && j.code === 'EINWILLIGUNG') {
         setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme');
+        setMicActive(false);
+        wantMicRef.current = false;
+        return true;
+      }
+      // A4 (31.10.2026): KI für das Unternehmen aus → Meldung, keine Kaskade (Diktat und Stimme sind ebenfalls KI).
+      if (res.status === 403 && j.code === 'KI_AUS') {
+        setError(j.error || ts.genericError);
         setMicActive(false);
         wantMicRef.current = false;
         return true;
@@ -677,8 +686,10 @@ export default function SimulationClient() {
         if (turn.timeUp) setTimeUp(true);
         if (turn.ended) setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
       },
-      onError: (code) => {
+      onError: (code, message) => {
         if (code === 'UPSTREAM') setError(ts.genericError);
+        // A4: der Schalter wurde während des Gesprächs ausgeschaltet — die Meldung des Servers zeigen.
+        if (code === 'KI_AUS') setError(message || ts.genericError);
       },
       onBye: (reason) => {
         byeSeen = true;
@@ -842,6 +853,14 @@ export default function SimulationClient() {
           method: 'POST',
           body: JSON.stringify({ text, voice: scenario?.persona.voice, locale: convoLocale }),
         });
+        if (res.status === 403) {
+          // A4 (31.10.2026): KI für das Unternehmen aus → keine Ersatzstimme des Browsers, sondern die Meldung.
+          const j = (await res.json().catch(() => ({}))) as { code?: string; error?: string };
+          if (j.code === 'KI_AUS') {
+            setError(j.error || ts.genericError);
+            return;
+          }
+        }
         if (!res.ok) throw new Error(`tts ${res.status}`);
         const url = URL.createObjectURL(await res.blob());
         const a = new Audio(url);
@@ -855,7 +874,7 @@ export default function SimulationClient() {
         speakBrowser(text);
       }
     },
-    [ttsSupported, stopSpeaking, speakBrowser, scenario, convoLocale]
+    [ttsSupported, stopSpeaking, speakBrowser, scenario, convoLocale, ts.genericError]
   );
 
   // Aufraeumen: beim Verlassen des Chats Mikro und Vorlesen stoppen.
@@ -992,7 +1011,7 @@ export default function SimulationClient() {
 
   async function handleApiFailure(res: Response) {
     let code = '';
-    let body: { code?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean; aiCode?: string; requestId?: string; ende?: { grund: string; ergebnis: string } } = {};
+    let body: { code?: string; error?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean; aiCode?: string; requestId?: string; ende?: { grund: string; ergebnis: string } } = {};
     try {
       body = await res.json();
       code = body.code ?? '';
@@ -1010,6 +1029,10 @@ export default function SimulationClient() {
       setError(aiErrorMessage(t.aiErrors, body, res, ts.genericError) ?? ts.genericError);
     } else if (code === 'CENTRAL_REAUTH') {
       setError(ts.reauth);
+    } else if (code === 'KI_AUS') {
+      // A4 (31.10.2026): Das Unternehmen hat die KI ausgeschaltet — die Meldung des Servers zeigen, Mikro aus.
+      setError(body.error || ts.genericError);
+      stopMic();
     } else if (code === 'CENTRAL_UNAVAILABLE' || res.status === 503) {
       setError(ts.unavailable);
     } else if (code === 'NOT_ENOUGH_TURNS') {

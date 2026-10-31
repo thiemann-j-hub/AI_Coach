@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { consentGateOn } from "@/lib/server/credits/member-info";
 
 /**
@@ -10,12 +11,16 @@ import { consentGateOn } from "@/lib/server/credits/member-info";
  * schickte die Aufnahme an seinen Hersteller (Chrome: Google). Jetzt erkennt Azure Speech in
  * unserer Region; der Browser bekommt nur ein Token für zehn Minuten, nie den Schlüssel.
  * Rückweg: SPEECH_INPUT=browser → 503, der Browser fällt auf seine eigene Erkennung zurück.
+ * A4 (31.10.2026): Ist die KI für das Unternehmen aus, gibt es kein Token (403 KI_AUS) — geprüft vor dem 503,
+ * damit der Browser dann NICHT auf seine eigene Erkennung zurückfällt.
  */
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
+  const ki = await kiSchalterBlockt("/api/speech-token");
+  if (ki) return ki;
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
   if (!key || !region || (process.env.SPEECH_INPUT ?? "").trim().toLowerCase() === "browser") {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { liveConfigured, registerLiveAccept } from "@/lib/server/live/live-accept";
 import { liveVoiceFor } from "@/lib/server/live/live-voice";
 import { sprachaufnahmeEinwilligungFehlt } from "@/lib/server/live/sprachaufnahme-gate";
@@ -21,6 +22,8 @@ import { logger } from "@/lib/logger";
  * Züge nicht erschöpft, Einwilligung „Sprachaufnahme“, Live konfiguriert.
  * Antworten, bei denen der Browser still auf die heutige Kaskade zurückfällt:
  *   404 LIVE_OFF (Schalter aus), 503 LIVE_NOT_CONFIGURED. Alles andere ist ein echter Fehler.
+ * A4 (31.10.2026): Der KI-Schalter des Unternehmens kommt VOR diesen beiden — 403 KI_AUS heißt
+ * „keine KI“, nicht „nimm die Kaskade“. Die laufende Sitzung prüft ihn zwischen den Zügen selbst.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +41,8 @@ export async function POST(req: NextRequest) {
 
   const limited = checkRateLimit(`live-ticket:${auth.uid}`, 20, 10 * 60 * 1000, "Zu viele Anfragen. Bitte kurz warten.");
   if (limited) return limited;
+  const ki = await kiSchalterBlockt("/api/simulation/live/ticket");
+  if (ki) return ki;
 
   const parsed = requestSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

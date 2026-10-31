@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { resolveWorkspaceIdForScenarios } from "@/lib/server/scenario-store";
 import { readInterview, saveInterview } from "@/lib/server/interview-store";
 import { naechsterSchritt } from "@/ai/flows/interview-fuehrung";
@@ -27,6 +28,9 @@ export async function POST(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   const rl = checkRateLimit(rateLimitKey(req, "interview-turn"), 30, 60_000);
   if (rl) return rl;
+  // A4 (31.10.2026): derselbe Schalter wie beim Start, jetzt vor jedem Zug des Interviewers.
+  const ki = await kiSchalterBlockt("/api/interview/turn");
+  if (ki) return ki;
   try {
     const parsed = requestSchema.safeParse(await req.json());
     if (!parsed.success) return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });

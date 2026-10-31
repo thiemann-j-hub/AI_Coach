@@ -16,9 +16,12 @@ vi.mock("@/lib/server/credits/credit-service", () => ({
 }));
 vi.mock("@/lib/server/credits/member-info", () => ({
   getCentralMemberInfo: () => memberInfo(),
+  // KI-Schalter an (A4: die Vorabprüfung fragt ihn ausdrücklich ab; die Fälle stehen in ki-schalter.test.ts).
+  getCentralMemberState: async () => ({ kind: "info", info: {} }),
+  kiErlaubt: () => true,
 }));
 vi.mock("@/auth", () => ({ auth: async () => ({ user: { oid: "oid-test" } }) }));
-vi.mock("@/lib/logger", () => ({ logger: { apiError: vi.fn(), api: vi.fn() } }));
+vi.mock("@/lib/logger", () => ({ logger: { apiError: vi.fn(), api: vi.fn(), warn: vi.fn() } }));
 
 import { preflightEntitlement, PREFLIGHT_TEXT } from "./entitlement";
 

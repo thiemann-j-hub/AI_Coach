@@ -30,6 +30,10 @@ import type { LiveTicket } from "./ticket-store";
  *   - Antwortzeit (Ende der Eingabe-Mitschrift → erstes Audio) wird je Zug gemessen und am Lauf gespeichert,
  *   - vor dem Stille-Abbruch bekommt der Browser eine Vorwarnung.
  *
+ * A4 (Prüfung Sichtbarkeit, 31.10.2026): Der KI-Schalter des Unternehmens gilt auch in der laufenden Sitzung —
+ * geprüft vor dem Verbinden, nach jedem Zug und in festem Takt (auch wenn gerade niemand spricht, geht das
+ * Mikrofon-Audio an das Live-Modell). Ist er aus: Fehler-Frame KI_AUS mit der Meldung, dann Ende.
+ *
  * Alle Außenwelt (Vertex, Cosmos, Budget, Uhr) kommt über `LiveDeps` herein — der Kern ist testbar.
  * Es verlässt nie etwas aus der Rollen-DNA den Server; der Browser sieht nur Audio und Mitschrift.
  */
@@ -46,7 +50,7 @@ export type ServerMessage =
   | { t: "turn"; user: string | null; persona: string | null; userTurnsLeft: number; timeUp: boolean; ended: boolean }
   | { t: "ended"; grund: string; ergebnis: PersonaEndeErgebnis }
   | { t: "idle_warn"; seconds: number }
-  | { t: "error"; code: LiveErrorCode }
+  | { t: "error"; code: LiveErrorCode; message?: string }
   | { t: "bye"; reason: LiveByeReason };
 
 export type LiveErrorCode =
@@ -56,8 +60,9 @@ export type LiveErrorCode =
   | "ENDED"
   | "TURN_LIMIT"
   | "UNKNOWN_SCENARIO"
-  | "UPSTREAM";
-export type LiveByeReason = "time_up" | "ended_by_persona" | "turn_limit" | "budget" | "idle" | "upstream" | "ended";
+  | "UPSTREAM"
+  | "KI_AUS";
+export type LiveByeReason = "time_up" | "ended_by_persona" | "turn_limit" | "budget" | "idle" | "upstream" | "ended" | "ki_aus";
 
 /** Der Teil eines ws-Sockets, den der Kern braucht (so bleibt er ohne ws-Typen testbar). */
 export interface LiveSocket {
@@ -124,6 +129,14 @@ export interface LiveDeps {
   /** Welle 2: Regie-Beobachter nach einem Zug der lernenden Person; optional (Tests, Rückweg). */
   regie?(scenario: SimulationScenario, turns: SimulationTurn[], bisher: RegieStand | null): Promise<RegieStand | null>;
   budget(args: { uid: string; email: string | null; estimatedTokens: number }): Promise<{ allowed: boolean }>;
+  /**
+   * A4: KI-Schalter des Unternehmens für diese Kennung. Liefert die Meldung für die Person, wenn er aus ist,
+   * sonst null — auch wenn die Einstellungen nicht lesbar sind (die Warnung schreibt die Prüfung selbst,
+   * kiSchalterAus in entitlement.ts). Optional (Tests, Rückweg).
+   */
+  kiAusMeldung?(oid: string | null): Promise<string | null>;
+  /** A4: Takt der Schalter-Prüfung, während die Verbindung steht (Standard 60 s, wie der Zwischenspeicher). */
+  kiPruefMs?: number;
   now(): number;
   log(level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>): void;
   model: string;
@@ -219,8 +232,8 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
       }
     }
   };
-  const fail = (code: LiveErrorCode, wsCode = 4400) => {
-    sendJson({ t: "error", code });
+  const fail = (code: LiveErrorCode, wsCode = 4400, message?: string) => {
+    sendJson(message ? { t: "error", code, message } : { t: "error", code });
     try {
       ws.close(wsCode, code);
     } catch {
@@ -236,6 +249,9 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) return fail("TURN_LIMIT", 4409);
   const scenario = await deps.loadScenario(ticket.uid, doc.scenarioId, ticket.oid);
   if (!scenario) return fail("UNKNOWN_SCENARIO", 4410);
+  // A4: Schalter vor dem Verbinden — und vor dem Spielbuch, das fehlende Spielbücher per KI schreiben lässt.
+  const kiAusBeimStart = deps.kiAusMeldung ? await deps.kiAusMeldung(ticket.oid) : null;
+  if (kiAusBeimStart) return fail("KI_AUS", 4403, kiAusBeimStart);
 
   const durationMin = sessionDurationMin(doc, scenario);
   const voice = liveVoiceFor(scenario.persona.voice, scenario.id, scenario.persona.liveVoice);
@@ -259,6 +275,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   let queue: Promise<void> = Promise.resolve();
   let idleTimer: ReturnType<typeof setTimeout> | undefined;
   let idleWarnTimer: ReturnType<typeof setTimeout> | undefined;
+  let kiTimer: ReturnType<typeof setInterval> | undefined;
   const timers: Array<ReturnType<typeof setTimeout>> = [];
   let resolveDone: () => void = () => {};
   const done = new Promise<void>((r) => (resolveDone = r));
@@ -308,6 +325,17 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     if (signal === "farewell") farewellPending = true;
   };
 
+  /** A4: Ist der KI-Schalter inzwischen aus? Dann Meldung an den Browser und Ende. true = beendet. */
+  const kiPruefen = async (): Promise<boolean> => {
+    if (!deps.kiAusMeldung || closing) return false;
+    const meldung = await deps.kiAusMeldung(ticket.oid);
+    if (!meldung || closing) return false;
+    log("info", "live-ki-aus");
+    sendJson({ t: "error", code: "KI_AUS", message: meldung });
+    bye("ki_aus");
+    return true;
+  };
+
   /** Welle 2: Regie-Beobachter nach dem Zug — Notiz an die Rolle, Verlauf am Lauf (in der Warteschlange). */
   const beobachten = async () => {
     if (!deps.regie || closing) return;
@@ -353,6 +381,8 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     }
     if (doc.closedByTime) return bye("time_up");
     if (closing) return;
+    // A4: nach jedem Zug — wie die Turn-Route vor jedem Zug.
+    if (await kiPruefen()) return;
 
     const budget = await deps.budget({ uid: ticket.uid, email: ticket.email, estimatedTokens: estimateTokens(user, persona) });
     if (!budget.allowed) return bye("budget");
@@ -475,6 +505,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     closing = true;
     if (idleTimer) clearTimeout(idleTimer);
     if (idleWarnTimer) clearTimeout(idleWarnTimer);
+    if (kiTimer) clearInterval(kiTimer);
     for (const t of timers) clearTimeout(t);
     try {
       upstream?.close();
@@ -511,6 +542,12 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   if (closing) return done; // Browser hat während des Verbindens aufgelegt
   resetIdle();
   timers.push(setTimeout(() => bye("ended"), deps.maxConnectionMs ?? 30 * 60_000));
+  // A4: Schalter auch zwischen den Zügen — das Mikrofon-Audio fließt, auch wenn kein Zug fertig wird.
+  if (deps.kiAusMeldung) {
+    kiTimer = setInterval(() => {
+      void kiPruefen().catch((e) => log("warn", "live-ki-pruefung", { err: e instanceof Error ? e.message : String(e) }));
+    }, deps.kiPruefMs ?? 60_000);
+  }
   sendJson({ t: "ready", persona: scenario.persona.name, voice });
   log("info", "live-ready", { scenarioId: scenario.id, voice, turns: doc.turns.length, endeWerkzeug });
 

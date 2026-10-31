@@ -5,6 +5,7 @@ import { beobachteRegie } from "@/ai/flows/simulation-regie";
 import { vertexHost } from "@/ai/gemini-backend";
 import { logger } from "@/lib/logger";
 import { checkAndConsumeBudget } from "@/lib/server/cost-cap";
+import { KI_AUS_TEXT, kiSchalterAus } from "@/lib/server/credits/entitlement";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { getSimulation, saveSimulation } from "@/lib/server/simulation-store";
@@ -171,6 +172,8 @@ function realDeps(): LiveDeps {
     endeOn: coachEndeOn(),
     sprechpause: coachLiveSprechpause(),
     budget: async (a) => ({ allowed: (await checkAndConsumeBudget(a)).allowed }),
+    // A4 (31.10.2026): derselbe Schalter wie in den API-Routen, hier mit der Kennung aus der Karte.
+    kiAusMeldung: async (oid) => ((await kiSchalterAus(oid, "/api/simulation/live/ws")) ? KI_AUS_TEXT : null),
     now: () => Date.now(),
     log: (level, msg, meta) => logger[level](`[live] ${msg}`, meta),
     model: coachLiveModel(),

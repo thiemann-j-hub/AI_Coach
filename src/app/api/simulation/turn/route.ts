@@ -5,6 +5,7 @@ import { beobachteRegie, offeneRegieNotiz, regieStageNote } from "@/ai/flows/sim
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { coachRegieOn, simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
 
   const rl = checkRateLimit(rateLimitKey(req, "sim-turn"), 20, 60_000);
   if (rl) return rl;
+  // A4 (31.10.2026): KI-Schalter des Unternehmens vor JEDEM Gesprächszug, nicht nur beim Start.
+  const ki = await kiSchalterBlockt("/api/simulation/turn");
+  if (ki) return ki;
 
   try {
     const parsed = requestSchema.safeParse(await req.json());

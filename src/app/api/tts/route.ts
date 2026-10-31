@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import {
   AzureTtsError,
   TTS_MAX_CHARS,
@@ -17,6 +18,8 @@ import { DEFAULT_PERSONA_VOICE } from "@/lib/simulation/types";
  * Rate-Limit je Konto → Eingabe-Grenzen → Azure. Kein Credit-Charge: die
  * Stimme ist im Preis des Laufs enthalten (Owner-Entscheid), die Zeichen-
  * Obergrenze je Call und das Limit je Konto deckeln die Kosten.
+ * A4 (31.10.2026): Der KI-Schalter des Unternehmens kommt direkt nach der Anmeldung — vor dem 503, auf den
+ * der Browser mit seiner eigenen Stimme antwortet.
  */
 export const runtime = "nodejs";
 
@@ -25,6 +28,8 @@ const LOCALES = new Set(["de", "en", "es", "fr"]);
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
+  const ki = await kiSchalterBlockt("/api/tts");
+  if (ki) return ki;
 
   if (!azureTtsConfigured()) {
     return NextResponse.json({ ok: false, error: "tts_not_configured" }, { status: 503 });

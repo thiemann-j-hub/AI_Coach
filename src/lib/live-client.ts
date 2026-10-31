@@ -21,7 +21,8 @@ export interface LiveEvents {
   onInterrupted(): void;
   onAudio(pcm24k: ArrayBuffer): void;
   onTurn(turn: LiveTurn): void;
-  onError(code: string): void;
+  /** `message`: Meldung für die Person, wenn der Server eine mitschickt (A4: KI_AUS). */
+  onError(code: string, message?: string): void;
   onBye(reason: string): void;
   /** Welle 2: die Rolle hat das Gespräch beendet (Grund in der Autorensprache). */
   onEnded?(p: { grund: string; ergebnis: string }): void;
@@ -93,7 +94,7 @@ export function openLiveConnection(path: string, ticket: string, ev: LiveEvents)
         ev.onIdleWarn?.(Number(m.seconds ?? 60));
         break;
       case "error":
-        ev.onError(String(m.code ?? "UNKNOWN"));
+        ev.onError(String(m.code ?? "UNKNOWN"), typeof m.message === "string" ? m.message : undefined);
         break;
       case "bye":
         ev.onBye(String(m.reason ?? "ended"));

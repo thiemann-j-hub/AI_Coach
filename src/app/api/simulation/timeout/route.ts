@@ -4,6 +4,7 @@ import { runCoachTimeout } from "@/ai/flows/simulation-coach";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
 
   const rl = checkRateLimit(rateLimitKey(req, "sim-timeout"), 6, 60_000);
   if (rl) return rl;
+  // A4 (31.10.2026): Auch der Coach-Tipp ist KI — Schalter des Unternehmens prüfen.
+  const ki = await kiSchalterBlockt("/api/simulation/timeout");
+  if (ki) return ki;
 
   try {
     const parsed = requestSchema.safeParse(await req.json());

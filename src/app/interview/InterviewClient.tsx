@@ -62,6 +62,11 @@ export default function InterviewClient() {
         setError(ti.notEnabled);
         return;
       }
+      // A4 (31.10.2026): KI für das Unternehmen aus — die Meldung des Servers zeigen.
+      if (res.status === 403 && json?.code === 'KI_AUS') {
+        setError(json.error || ti.errorGeneric);
+        return;
+      }
       if (!res.ok || !json?.ok) throw new Error('start');
       setId(json.id);
       setTurns(json.turns ?? []);
@@ -85,6 +90,13 @@ export default function InterviewClient() {
     try {
       const res = await authFetch('/api/interview/turn', { method: 'POST', body: JSON.stringify({ id, text: antwort }) });
       const json = await res.json().catch(() => null);
+      // A4 (31.10.2026): KI inzwischen ausgeschaltet — Antwort zurück ins Feld, Meldung des Servers zeigen.
+      if (res.status === 403 && json?.code === 'KI_AUS') {
+        setTurns((prev) => prev.filter((x) => x !== optimistic));
+        setText(antwort);
+        setError(json.error || ti.errorGeneric);
+        return;
+      }
       if (!res.ok || !json?.ok) throw new Error('turn');
       setTurns(json.turns ?? []);
       setFertig(Boolean(json.fertig));
@@ -106,7 +118,8 @@ export default function InterviewClient() {
     try {
       const res = await authFetch('/api/interview/finish', { method: 'POST', body: JSON.stringify({ id }) });
       const json = await res.json().catch(() => null);
-      if (res.status === 402) {
+      // A4 (31.10.2026): auch KI_AUS (Schalter beim Abbuchen) zeigt die Meldung des Servers.
+      if (res.status === 402 || json?.code === 'KI_AUS') {
         setError(json?.error ?? ti.errorGeneric);
         return;
       }
