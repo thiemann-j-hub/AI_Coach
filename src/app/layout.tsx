@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/providers/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { STORAGE_KEY_THEME } from "@/lib/storage-keys";
+import { PLATTFORM_THEME_KEY, THEME_UEBERNAHME_SKRIPT, themePlattformAn } from "@/lib/theme-plattform";
 import { locales, defaultLocale, localeBcp47, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 // Chatbot Blueprint Teil C, SSOT pulsenorth-ops/chat-widget-kit,
@@ -59,6 +60,8 @@ export default async function RootLayout({
     } catch { /* fail-soft: Seite ohne Namen */ }
   }
 
+  const themePlattform = themePlattformAn();
+
   return (
     <html
       lang={localeBcp47[locale]}
@@ -67,8 +70,11 @@ export default async function RootLayout({
       // betraf v.a. den ausgeloggten Login als ersten Kalt-Load. next-themes
       // (defaultTheme=dark) haelt dunkel bzw. wechselt auf eine gespeicherte
       // Light-Praeferenz; suppressHydrationWarning deckt den Klassen-Abgleich.
+      // Ein Hell/Dunkel-Schalter für alle vier Apps (Owner 01.11.2026, lib/theme-plattform.ts):
+      // Standard hell wie im Hub, dark-first nur noch mit THEME_PLATTFORM=off.
       // Farbwelt „Klar“ (Owner-GO 30.10.2026): pn-klar schaltet die Farben in globals.css um. Rückweg DESIGN_KLAR=off.
-      className={`${sans.variable} ${mono.variable} dark${(process.env.DESIGN_KLAR ?? "on").trim().toLowerCase() !== "off" ? " pn-klar" : ""}`}
+      className={`${sans.variable} ${mono.variable}${themePlattform ? "" : " dark"}${(process.env.DESIGN_KLAR ?? "on").trim().toLowerCase() !== "off" ? " pn-klar" : ""}`}
+      data-theme-key={themePlattform ? PLATTFORM_THEME_KEY : undefined}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased bg-background text-foreground transition-colors duration-300">
@@ -78,11 +84,12 @@ export default async function RootLayout({
         >
           {t.common.skipToContent}
         </a>
+        {themePlattform && <script dangerouslySetInnerHTML={{ __html: THEME_UEBERNAHME_SKRIPT }} />}
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme={themePlattform ? "light" : "dark"}
           enableSystem={false}
-          storageKey={STORAGE_KEY_THEME}
+          storageKey={themePlattform ? PLATTFORM_THEME_KEY : STORAGE_KEY_THEME}
           disableTransitionOnChange
         >
           <AuthProvider>

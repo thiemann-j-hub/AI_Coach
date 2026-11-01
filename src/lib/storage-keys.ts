@@ -8,7 +8,8 @@
  * Präfix "coach_". (Betrifft NUR Client-Storage — Cookie-Namen/env/Hostnamen bleiben.)
  */
 
-/** Theme preference (used by next-themes storageKey + design-preview) */
+/** Theme preference (design-preview; next-themes nur mit THEME_PLATTFORM=off — sonst plattformweit
+ *  pn_theme, lib/theme-plattform.ts, Owner 01.11.2026) */
 export const STORAGE_KEY_THEME = 'coach_theme';
 
 /** Session ID for AnalyzeClient / RunsDashboardClient */
