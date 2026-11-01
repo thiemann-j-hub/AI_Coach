@@ -771,6 +771,38 @@ export default function SimulationClient() {
     })();
   }, [speechSupported, micActive, ttsSupported, startLiveMic, startAzureMic, browserSpeechSupported, startBrowserMic]);
 
+  /**
+   * Check-in nach dem Gespräch (Owner-Befund 01.11.2026): hier wird nur diktiert, nie das Live-Gespräch gestartet —
+   * sonst verband sich die Rolle erneut und sprach weiter („Auf Wiederhören“), während die Person ihre Einschätzung
+   * einsprechen wollte. Reihenfolge: Azure-Diktat → Browser-Notnagel.
+   */
+  const startDictation = useCallback(() => {
+    if (!speechSupported || micActive) return;
+    if (!micAckRef.current) {
+      let acked = false;
+      try {
+        acked = localStorage.getItem(MIC_ACK_KEY) === "1";
+      } catch {
+        acked = false;
+      }
+      if (!acked) {
+        setMicNoticeOpen(true);
+        return;
+      }
+      micAckRef.current = true;
+    }
+    wantMicRef.current = true;
+    void (async () => {
+      if (await startAzureMic()) return;
+      if (!browserSpeechSupported) {
+        wantMicRef.current = false;
+        setMicActive(false);
+        return;
+      }
+      startBrowserMic();
+    })();
+  }, [speechSupported, micActive, startAzureMic, browserSpeechSupported]);
+
   /** Notnagel: Browser-Spracherkennung (Chrome: Google) — nur wenn Azure gerade nicht kann. */
   function startBrowserMic() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1236,6 +1268,7 @@ export default function SimulationClient() {
 
   async function finishSimulation(selfAssessment?: string) {
     if (!simId || finishing) return;
+    stopMic();
     setFinishing(true);
     setError(null);
     try {
@@ -2443,7 +2476,10 @@ export default function SimulationClient() {
                 übernimmt das Banner/Modal — kein doppelter Auswerten-Knopf. */}
             {!effTimeUp && (
               <button
-                onClick={() => setConfirmOpen(true)}
+                onClick={() => {
+                  stopMic();
+                  setConfirmOpen(true);
+                }}
                 disabled={finishing || userTurnCount < 3}
                 className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                 title={userTurnCount < 3 ? ts.finishNeedsTurns : undefined}
@@ -2660,7 +2696,10 @@ export default function SimulationClient() {
                   </span>
                 </span>
                 <button
-                  onClick={() => setConfirmOpen(true)}
+                  onClick={() => {
+                  stopMic();
+                  setConfirmOpen(true);
+                }}
                   disabled={finishing}
                   className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
@@ -2674,7 +2713,10 @@ export default function SimulationClient() {
                   <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
                 </span>
                 <button
-                  onClick={() => setConfirmOpen(true)}
+                  onClick={() => {
+                  stopMic();
+                  setConfirmOpen(true);
+                }}
                   disabled={finishing}
                   className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
@@ -2971,6 +3013,7 @@ export default function SimulationClient() {
                     // A1: erst der Check-in, dann die Auswertung. Das geteilte
                     // Eingabefeld wird geleert — ein liegengebliebener Entwurf
                     // gehört zum beendeten Gespräch, nicht zur Reflexion.
+                    stopMic();
                     setConfirmOpen(false);
                     setCheckinOpen(true);
                     setInput('');
@@ -3011,7 +3054,7 @@ export default function SimulationClient() {
                 />
                 {speechSupported && (
                   <button
-                    onClick={() => (micActive ? stopMic() : startMic())}
+                    onClick={() => (micActive ? stopMic() : startDictation())}
                     className={cx(
                       'pn-none relative rounded-xl p-3 border transition-colors',
                       micActive
