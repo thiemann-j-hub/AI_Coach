@@ -40,6 +40,8 @@ const PERSONAS = [
   { id: "sim-media-vogt", prompt: "Woman in her early 30s, alert curious expression, auburn shoulder-length hair, headphones around her neck, dark casual jacket, radio-studio background softly blurred." },
   { id: "sim-promotion-albrecht", prompt: "Woman in her mid 30s, thoughtful quiet expression with a faint smile, dark hair in a ponytail, white lab coat over a blouse, laboratory background softly blurred." },
   { id: "sim-disengaged-keller", prompt: "Man in his late 30s, tired withdrawn expression, looking slightly past the camera, short dark-blond hair, plain dark polo shirt, logistics office background." },
+  // Kundenszenarien im Owner-Workspace (31.10.2026, Owner-Wunsch): feste ws-Ids, deshalb auch hier statische Porträts.
+  { id: "ws-hr-pitch-mittelstand", prompt: "Woman in her mid 40s, attentive and slightly reserved expression, dark-blonde shoulder-length hair, light grey blazer over a white top, HR-director vibe, modern mid-sized company office softly blurred." },
   { id: "sim-price-faber", prompt: "Man in his late 40s, friendly but firm expression, short grey-blond hair, light-blue shirt under a navy jacket, packaging-industry sales vibe, northern German office background." },
 ];
 

@@ -2089,7 +2089,7 @@ export default function SimulationClient() {
               <div className="pn-none relative overflow-hidden rounded-3xl border border-border shadow-neon aspect-[4/5] bg-muted">
                 {/* Welle 4: Kunden- und private Szenarien haben kein Porträt — dann Verlauf mit Initialen statt Alt-Text. */}
                 {heroImgFailed ? (
-                  <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary to-accent text-6xl font-bold text-primary-foreground" aria-hidden>
+                  <div className="absolute inset-0 flex items-start justify-center pt-[22%] bg-gradient-to-br from-primary to-accent text-7xl font-bold text-primary-foreground/80" aria-hidden>
                     {scenario.persona.name.split(/\s+/).map((p) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
                   </div>
                 ) : (
