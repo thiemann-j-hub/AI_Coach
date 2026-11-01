@@ -41,9 +41,8 @@ type Msg = {
   // (gesetzt, wenn die Nutzer-Nachricht nach Problem-Sprache klingt). Trägt die
   // Vorbefüllung fürs Formular.
   offer?: { category: string; title: string; problemDesc: string };
-  // 01.11.2026 (Bewertung Teil 1, Owner-Ja): Weg zum KI-Hinweis im Hub (und zurück hierher), wenn der Server
-  // den Assistenten bis zur Bestätigung sperrt (403 „einwilligung“).
-  consentUrl?: string;
+  // 01.11.2026 (Bewertung Teil 1): Weg zur Hub-Seite „Einwilligung“ (KI-Hinweis) mit Rückweg, wenn /api/chat 403 sagt.
+  link?: string;
 };
 type FbPrefill = { category?: string; title?: string; problemDesc?: string };
 type Props = {
@@ -92,7 +91,7 @@ const STRINGS = {
     thinking2: "Ich lese die passenden Stellen …",
     thinking3: "Ich formuliere eine Antwort …",
     aiLimit: "Ich kann mich irren – prüfe wichtige Angaben in den Quellen.",
-    consentLink: "→ Lesen und bestätigen",
+    consentLink: "KI-Hinweis öffnen",
   },
   en: {
     title: "PulseNorth Assistant",
@@ -131,7 +130,7 @@ const STRINGS = {
     thinking2: "I am reading the relevant passages …",
     thinking3: "I am writing an answer …",
     aiLimit: "I can be wrong – check important details in the sources.",
-    consentLink: "→ Read and confirm",
+    consentLink: "Open the AI notice",
   },
 };
 
@@ -271,13 +270,12 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
       });
       if (res.status === 403) {
         // Schritt 9: „ki_aus“ / „einwilligung“ — der Server sagt in `hint`, was zu tun ist (statt eines Fehlers).
-        // 01.11.2026 (Bewertung Teil 1, Owner-Ja): wie im Hub; bei „einwilligung“ dazu der Link zum KI-Hinweis, danach zurück auf diese Seite.
-        const j = (await res.json().catch(() => ({}))) as { error?: string; hint?: string };
-        if (j.hint) {
-          const consentUrl = j.error === "einwilligung" ? `/einwilligung?typ=ki&zurueck=${encodeURIComponent(window.location.pathname)}` : undefined;
-          setMsgs((m) => [...m.slice(0, -1), { role: "assistant", text: j.hint as string, consentUrl }]);
-          return;
-        }
+        // 01.11.2026 (Bewertung Teil 1): dazu `url` (/einwilligung?typ=ki) als Link mit Rückweg auf diese Seite.
+        const j = (await res.json().catch(() => ({}))) as { hint?: string; url?: string };
+        const link = typeof j.url === "string" && /^\/einwilligung(?:\?|$)/.test(j.url) && typeof location !== "undefined"
+          ? `${j.url}${j.url.includes("?") ? "&" : "?"}zurueck=${encodeURIComponent(location.pathname + location.search)}`
+          : undefined;
+        if (j.hint) { setMsgs((m) => [...m.slice(0, -1), { role: "assistant", text: j.hint as string, link }]); return; }
       }
       if (!res.ok || !res.body) throw new Error(String(res.status));
       const reader = res.body.getReader();
@@ -383,11 +381,11 @@ export default function ChatWidget({ endpoint = "/api/chat", surface = "hub", an
                   {(m.role === "assistant" ? m.text.replace(/\s*\[(?:Quelle|Source):[^\]]*\]/gi, "") : m.text) ||
                     (m.role === "assistant" && busy && i === msgs.length - 1 ? <WaitSteps steps={[t.thinking1, t.thinking2, t.thinking3]} /> : null)}
                 </div>
+                {m.role === "assistant" && m.link && (
+                  <div className="pnchat-cites"><a href={m.link}>{t.consentLink}</a></div>
+                )}
                 {m.role === "assistant" && m.offer && (
                   <button className="pnchat-offer" onClick={() => openFeedback(m.offer)}>{t.fbOffer}</button>
-                )}
-                {m.role === "assistant" && m.consentUrl && (
-                  <a className="pnchat-offer" href={m.consentUrl}>{t.consentLink}</a>
                 )}
                 {m.role === "assistant" && m.citations && m.citations.length > 0 && (
                   <div className="pnchat-cites">{t.sources}: {m.citations.map((c, j) => (
