@@ -141,7 +141,29 @@ export async function POST(req: NextRequest) {
         ? beobachteRegie({ scenario, turns: turnsMitNutzer, bisher: doc.regie?.length ? doc.regie[doc.regie.length - 1] : null })
         : Promise.resolve(null),
     ]);
-    const reply = result.reply;
+    let reply = result.reply;
+    let ende = result.ende ?? null;
+    let abgelehnt: string | null = null;
+    // Torwächter (01.11.2026): Das Ende gilt nur, wenn die Endbedingung wirklich erfüllt ist. Sonst wird der Zug mit der
+    // Regie-Notiz einmal wiederholt (eine zusätzliche Antwort, nur in diesem Fall), damit der Abschied die Person nie erreicht.
+    if (ende) {
+      const pruefung = await pruefeEnde({ scenario, turns: [...turnsMitNutzer, { role: "persona" as const, text: reply, ts: now }], ende });
+      if (!pruefung.erfuellt) {
+        abgelehnt = pruefung.fehlt;
+        ende = null;
+        const notiz = regieStageNote(scenario, { stufe: 0, erfuellt: [], eskaliert: false, notiz: endeAbgelehntNote(scenario, pruefung.fehlt), turn: turnsMitNutzer.length, ts: now });
+        try {
+          const wieder = await withRetry(
+            () => runPersonaTurn({ scenario, turns: doc.turns, userMessage: d.message, convoLocale: doc.convoLocale, timeSignal, hardness: doc.hardness, spielbuch, regieNotiz: notiz }),
+            { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn-wdh", retries: 0 }
+          );
+          reply = wieder.reply;
+        } catch (e) {
+          logger.apiError("/api/simulation/turn/wdh", e, { simId: d.simId });
+        }
+        logger.api("/api/simulation/turn", "ende-abgelehnt", { uid: auth.uid, simId: d.simId, fehlt: pruefung.fehlt.slice(0, 120) });
+      }
+    }
 
     doc.turns.push({ role: "user", text: d.message, ts: now });
     doc.turns.push({ role: "persona", text: reply, ts: new Date().toISOString() });
@@ -149,20 +171,13 @@ export async function POST(req: NextRequest) {
     if (timeSignal === "farewell") doc.closedByTime = true;
     if (offeneNotiz) offeneNotiz.delivered = true;
     if (regie) doc.regie = [...(doc.regie ?? []).slice(-40), regie];
-    // Torwächter (01.11.2026): Das Ende gilt nur, wenn die Endbedingung wirklich erfüllt ist; sonst bekommt die Rolle
-    // beim nächsten Zug die Notiz, was fehlt, und das Gespräch läuft weiter.
-    if (result.ende) {
-      const pruefung = await pruefeEnde({ scenario, turns: doc.turns, ende: result.ende });
-      if (pruefung.erfuellt) {
-        doc.closedByPersona = { ...result.ende, at: new Date().toISOString() };
-      } else {
-        const letzte = doc.regie?.[doc.regie.length - 1];
-        doc.regie = [
-          ...(doc.regie ?? []).slice(-40),
-          { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz: endeAbgelehntNote(scenario, pruefung.fehlt), turn: doc.turns.length, ts: new Date().toISOString(), fehlt: pruefung.fehlt },
-        ];
-        logger.api("/api/simulation/turn", "ende-abgelehnt", { uid: auth.uid, simId: d.simId, fehlt: pruefung.fehlt.slice(0, 120) });
-      }
+    if (ende) doc.closedByPersona = { ...ende, at: new Date().toISOString() };
+    if (abgelehnt !== null) {
+      const letzte = doc.regie?.[doc.regie.length - 1];
+      doc.regie = [
+        ...(doc.regie ?? []).slice(-40),
+        { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz: endeAbgelehntNote(scenario, abgelehnt), turn: doc.turns.length, ts: new Date().toISOString(), delivered: true, fehlt: abgelehnt },
+      ];
     }
     await saveSimulation(doc);
 

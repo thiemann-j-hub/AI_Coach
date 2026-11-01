@@ -221,6 +221,29 @@ describe("Torwächter (01.11.2026) — Ende-Werkzeug geprüft", () => {
     await run;
   });
 
+  it("Werkzeug zuerst: nach der Freigabe spricht die Rolle den Abschied, der Zug schließt danach mit dem Abschied im Verlauf", async () => {
+    const ws = fakeSocket();
+    const up = fakeUpstream();
+    const { deps: d, saved } = deps(up, doc(), { endePruefen: async () => ({ erfuellt: true, fehlt: "" }) });
+    const run = runLiveSession(ws, ticket, d);
+    await tick();
+    up.ev().onInputText("Dann machen wir den Pilot so.");
+    up.ev().onToolCall([{ id: "c1", name: ENDE_WERKZEUG, args: { grund: "Pilot vereinbart.", ergebnis: "ziel" } }]);
+    await tick();
+    await tick();
+    expect(saved.at(-1)?.closedByPersona).toBeUndefined(); // noch offen: die Rolle spricht erst
+    up.ev().onOutputText("Dann sind wir uns einig. Danke und bis nächste Woche.");
+    up.ev().onTurnComplete();
+    await tick();
+    await tick();
+    const last = saved.at(-1)!;
+    expect(last.closedByPersona?.ergebnis).toBe("ziel");
+    expect(last.turns.at(-1)?.text).toContain("bis nächste Woche");
+    expect(json(ws).find((m) => m.t === "ended")).toBeTruthy();
+    ws.emit("close");
+    await run;
+  });
+
   it("bestätigtes Ende schließt wie zuvor; ein Fehler der Prüfung lässt das Ende gelten (fail-open)", async () => {
     const ws = fakeSocket();
     const up = fakeUpstream();
@@ -253,6 +276,8 @@ describe("Welle 2 — reine Helfer", () => {
   it("liveAddendum nennt das Werkzeug nur, wenn es angeboten wird", () => {
     expect(liveAddendum("de")).not.toContain(ENDE_WERKZEUG);
     expect(liveAddendum("de", true)).toContain(ENDE_WERKZEUG);
+    expect(liveAddendum("de", true)).toContain("ZUERST stumm das Werkzeug");
     expect(liveAddendum("en", true)).toContain("ENDING");
+    expect(liveAddendum("en", true)).toContain("FIRST call the tool");
   });
 });

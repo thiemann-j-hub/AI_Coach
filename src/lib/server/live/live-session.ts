@@ -156,6 +156,8 @@ export interface LiveDeps {
 }
 
 /** Name des Werkzeugs, mit dem die Rolle das Gespräch beendet. */
+/** Stille nach der Ende-Freigabe, nach der der Zug abgeschlossen wird (die Abschiedsrede dauert meist 2–6 s). */
+export const ENDE_STILLE_MS = 3_000;
 export const ENDE_WERKZEUG = "gespraech_beenden";
 
 /** Zusatz zur Rollenanweisung: gesprochenes Gespräch, kurze Antworten, Unterbrechungen, Ende-Werkzeug. */
@@ -168,8 +170,8 @@ export function liveAddendum(locale: SimulationScenario["locale"], mitEndeWerkze
   return (
     basis +
     (locale === "en"
-      ? `\nENDING: When one of the END conditions is met, first say your goodbye line, THEN call the tool ${ENDE_WERKZEUG} with grund (one sentence why) and ergebnis (ziel, verabschiedung or abbruch). Never call it before that, and never mention the tool.`
-      : `\nENDE: Ist eine der ENDBEDINGUNGEN erfüllt, sprich erst deinen Abschiedssatz und rufe DANN das Werkzeug ${ENDE_WERKZEUG} auf, mit grund (ein Satz, warum) und ergebnis (ziel, verabschiedung oder abbruch). Rufe es nie vorher auf und erwähne es nie.`)
+      ? `\nENDING: When one of the END conditions is met, FIRST call the tool ${ENDE_WERKZEUG} silently with grund (one sentence why) and ergebnis (ziel, verabschiedung or abbruch) — before any goodbye. If the tool answers ok, say your goodbye line. If it answers that something is still missing, do NOT say goodbye: stay in the conversation and ask for what is missing. Never mention the tool.`
+      : `\nENDE: Ist eine der ENDBEDINGUNGEN erfüllt, rufe ZUERST stumm das Werkzeug ${ENDE_WERKZEUG} auf, mit grund (ein Satz, warum) und ergebnis (ziel, verabschiedung oder abbruch) — vor jedem Abschied. Antwortet es mit ok, sprich deinen Abschiedssatz. Antwortet es, dass noch etwas fehlt, verabschiede dich NICHT: bleib im Gespräch und verlange, was fehlt. Erwähne das Werkzeug nie.`)
   );
 }
 
@@ -272,7 +274,14 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   let reconnects = 0;
   let closing = false; // wir beenden gerade (kein Reconnect mehr)
   let farewellPending = false; // die Verabschiedung wurde angewiesen; ihr Zug schließt den Lauf
-  let personaEnde: { grund: string; ergebnis: PersonaEndeErgebnis } | null = null; // Werkzeug gerufen
+  let personaEnde: { grund: string; ergebnis: PersonaEndeErgebnis } | null = null; // Werkzeug gerufen und freigegeben
+  let endeTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Nach der Freigabe spricht die Rolle noch ihren Abschied: Abschluss erst nach ENDE_STILLE_MS ohne Ausgabe (oder turnComplete). */
+  const endeTimerNeu = () => {
+    if (endeTimer) clearTimeout(endeTimer);
+    endeTimer = setTimeout(() => { if (!closing && personaEnde && !doc.closedByPersona) enqueueFinalize(); }, ENDE_STILLE_MS);
+    timers.push(endeTimer);
+  };
   let pendingUser = "";
   let pendingPersona = "";
   let queue: Promise<void> = Promise.resolve();
@@ -407,6 +416,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
 
   const events: UpstreamEvents = {
     onAudio: (pcm) => {
+      if (personaEnde && !doc.closedByPersona) endeTimerNeu();
       if (!audioSeenThisTurn && lastInputAt) {
         audioSeenThisTurn = true;
         const ms = deps.now() - lastInputAt;
@@ -423,6 +433,7 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     },
     onOutputText: (text) => {
       pendingPersona += text;
+      if (personaEnde && !doc.closedByPersona) endeTimerNeu();
       sendJson({ t: "persona", text: pendingPersona });
     },
     onInterrupted: () => sendJson({ t: "interrupted" }),
@@ -471,8 +482,8 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
           antworten({ ok: true });
           personaEnde = ende;
           log("info", "live-ende-werkzeug", { ergebnis: ende.ergebnis });
-          // Kommt kein turnComplete mehr (Werkzeug nach dem letzten Satz), schließt der Zug nach kurzer Frist.
-          timers.push(setTimeout(() => { if (!closing && personaEnde && !doc.closedByPersona) enqueueFinalize(); }, 2_500));
+          // Die Rolle spricht jetzt ihren Abschied; geschlossen wird nach turnComplete oder nach kurzer Stille.
+          endeTimerNeu();
         })();
       }
     },
