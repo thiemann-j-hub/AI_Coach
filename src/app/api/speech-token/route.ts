@@ -10,7 +10,10 @@ import { sprachaufnahmeEinwilligungFehlt } from "@/lib/server/live/sprachaufnahm
  * EU-Hosting Weg B (Owner-GO 11.10.2026, N4-138): Vorher wandelte der Browser die Stimme um und
  * schickte die Aufnahme an seinen Hersteller (Chrome: Google). Jetzt erkennt Azure Speech in
  * unserer Region; der Browser bekommt nur ein Token für zehn Minuten, nie den Schlüssel.
- * Rückweg: SPEECH_INPUT=browser → 503, der Browser fällt auf seine eigene Erkennung zurück.
+ * Rückweg: SPEECH_INPUT=browser → 503 mit mode "browser", der Browser nimmt seine eigene Erkennung.
+ * 01.11.2026 (Bewertung Teil 1, Owner-Ja): NUR dieser Rückweg wählt die Browser-Erkennung. Fehlen Schlüssel oder
+ * Region (503 ohne mode), scheitert der Abruf (502) oder greift das Rate-Limit (429), bleibt es beim Fehler — der
+ * Browser schickte die Aufnahme sonst an seinen Hersteller (Chrome: Google), das deckt die Einwilligung nicht.
  * A4 (31.10.2026): Ist die KI für das Unternehmen aus, gibt es kein Token (403 KI_AUS) — geprüft vor dem 503,
  * damit der Browser dann NICHT auf seine eigene Erkennung zurückfällt.
  * 01.11.2026 (Bewertung Teil 1, Owner-Ja): Dasselbe gilt jetzt für die Einwilligung „Sprachaufnahme“ — sie wird
@@ -37,8 +40,9 @@ export async function GET(req: NextRequest) {
   }
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
-  if (!key || !region || (process.env.SPEECH_INPUT ?? "").trim().toLowerCase() === "browser") {
-    return NextResponse.json({ ok: false, error: "stt_disabled" }, { status: 503 });
+  const browser = (process.env.SPEECH_INPUT ?? "").trim().toLowerCase() === "browser";
+  if (!key || !region || browser) {
+    return NextResponse.json({ ok: false, error: "stt_disabled", ...(browser ? { mode: "browser" } : {}) }, { status: 503 });
   }
   const limited = checkRateLimit(`stt-token:${auth.uid}`, 30, 10 * 60 * 1000, "Zu viele Anfragen. Bitte kurz warten.");
   if (limited) return limited;

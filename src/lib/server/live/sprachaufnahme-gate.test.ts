@@ -13,6 +13,8 @@ import { sprachaufnahmeEinwilligungFehlt } from "./sprachaufnahme-gate";
  *  - Sprach-Token: Die Einwilligung kommt VOR dem 503 stt_disabled und vor dem Rate-Limit. Auf beide Antworten
  *    nahm der Browser seine eigene Erkennung (Chrome schickt die Aufnahme an Google), ohne Einwilligung.
  *  - Live-Karte: dasselbe Tor, dieselbe Antwort.
+ *  - Browser-Erkennung nur auf ausdrücklichen Rückweg: Nur SPEECH_INPUT=browser trägt mode "browser"; 503 ohne
+ *    Schlüssel, 502 und 429 tragen keins — der Coach zeigt dann den Fehler statt der Browser-Erkennung.
  */
 const FASSUNG = "2026-11-01";
 const EINWILLIGUNG = { ok: false, error: "consent_required", code: "EINWILLIGUNG", url: "/einwilligung?typ=sprachaufnahme&zurueck=/coach/simulation" };
@@ -21,6 +23,7 @@ let oid = "";
 let lauf = 0;
 let rateLimit: Response | null = null;
 let registerErreichbar = true;
+let azureErreichbar = true;
 let meine: Record<string, { fassung: string; am: string }> = {};
 
 vi.mock("@/lib/api-auth", () => ({ requireAuth: async () => ({ uid: "u1", email: "a@example.com", oid }) }));
@@ -64,7 +67,7 @@ const fetchMock = vi.fn(async (url: string | URL | Request) => {
       ? new Response(JSON.stringify(registerAntwort()), { status: 200, headers: { "content-type": "application/json" } })
       : new Response("", { status: 503 });
   }
-  if (u.includes("/sts/v1.0/issueToken")) return new Response("speech-token", { status: 200 });
+  if (u.includes("/sts/v1.0/issueToken")) return azureErreichbar ? new Response("speech-token", { status: 200 }) : new Response("", { status: 500 });
   throw new Error(`unerwarteter Abruf: ${u}`);
 });
 const azureAbrufe = () => fetchMock.mock.calls.filter(([u]) => String(u).includes("/sts/v1.0/issueToken")).length;
@@ -90,6 +93,7 @@ beforeEach(() => {
   meine = {};
   rateLimit = null;
   registerErreichbar = true;
+  azureErreichbar = true;
   process.env.CREDITS_CENTRAL = "on";
   process.env.SIMULATION_ENABLED = "on";
   process.env.COACH_LIVE = "all";
@@ -148,12 +152,12 @@ describe("Sprach-Token /api/speech-token — Einwilligung vor dem 503", () => {
     expect(azureAbrufe()).toBe(0);
   });
 
-  it("Einwilligung erteilt + Spracherkennung aus → 503 stt_disabled wie bisher", async () => {
+  it("Einwilligung erteilt + Rückweg SPEECH_INPUT=browser → 503 mit mode „browser“ (nur dann Browser-Erkennung)", async () => {
     eingewilligt();
     process.env.SPEECH_INPUT = "browser";
     const res = await tokenHolen();
     expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ ok: false, error: "stt_disabled" });
+    expect(await res.json()).toEqual({ ok: false, error: "stt_disabled", mode: "browser" });
     expect(azureAbrufe()).toBe(0);
   });
 
@@ -176,6 +180,34 @@ describe("Sprach-Token /api/speech-token — Einwilligung vor dem 503", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ ok: true, token: "speech-token", region: "westeurope" });
     expect(azureAbrufe()).toBe(1);
+  });
+});
+
+describe("Sprach-Token — Browser-Erkennung nur auf ausdrücklichen Rückweg", () => {
+  const ohneMode = async (res: Response, status: number) => {
+    expect(res.status).toBe(status);
+    expect(await res.json()).not.toHaveProperty("mode");
+  };
+
+  it("Schlüssel oder Region fehlt → 503 OHNE mode: Fehler im Coach, keine Browser-Erkennung", async () => {
+    eingewilligt();
+    delete process.env.AZURE_SPEECH_KEY;
+    await ohneMode(await tokenHolen(), 503);
+    process.env.AZURE_SPEECH_KEY = "key";
+    delete process.env.AZURE_SPEECH_REGION;
+    await ohneMode(await tokenHolen(), 503);
+  });
+
+  it("Azure gestört → 502 ohne mode", async () => {
+    eingewilligt();
+    azureErreichbar = false;
+    await ohneMode(await tokenHolen(), 502);
+  });
+
+  it("Rate-Limit (mit Einwilligung) → 429 ohne mode", async () => {
+    eingewilligt();
+    rateLimit = NextResponse.json({ ok: false, error: "Zu viele Anfragen. Bitte kurz warten." }, { status: 429 });
+    await ohneMode(await tokenHolen(), 429);
   });
 });
 

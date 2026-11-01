@@ -576,8 +576,14 @@ export default function SimulationClient() {
     setMicActive(false);
   }, [stopLive]);
 
-  /** Azure-Diktat (EU): Token holen, SDK laden, erkennen; null = nicht verfügbar → Browser-Notnagel. */
+  /**
+   * Azure-Diktat (EU): Token holen, SDK laden, erkennen. false NUR, wenn der Server die Browser-Erkennung ausdrücklich
+   * wählt (Rückweg SPEECH_INPUT=browser → mode "browser"). 01.11.2026 (Bewertung Teil 1, Owner-Ja): Bei jedem anderen
+   * Fehler (502/503/429/Netz) kein Browser-Notnagel mehr — Chrome schickte die Aufnahme an Google, das deckt die
+   * Einwilligung nicht; stattdessen „nicht erreichbar“, Mikro aus, Tippen geht weiter.
+   */
   const startAzureMic = useCallback(async (): Promise<boolean> => {
+    const ausfall = () => { setError(ts.unavailable); setMicActive(false); wantMicRef.current = false; return true; };
     try {
       const res = await authFetch('/api/speech-token');
       if (res.status === 403) {
@@ -587,9 +593,9 @@ export default function SimulationClient() {
         // A4 (31.10.2026): KI für das Unternehmen aus → Meldung des Servers statt Browser-Notnagel.
         if (j.code === 'KI_AUS') { setError(j.error || ts.genericError); setMicActive(false); wantMicRef.current = false; return true; }
       }
-      if (!res.ok) return false;
+      if (!res.ok) return ((await res.json().catch(() => ({}))) as { mode?: string }).mode === 'browser' ? false : ausfall();
       const j = (await res.json()) as { ok?: boolean; token?: string; region?: string };
-      if (!j.ok || !j.token || !j.region) return false;
+      if (!j.ok || !j.token || !j.region) return ausfall();
       const { startAzureDictation } = await import('@/lib/azure-stt');
       const d = startAzureDictation({
         token: j.token,
@@ -606,9 +612,9 @@ export default function SimulationClient() {
       setMicActive(true);
       return true;
     } catch {
-      return false;
+      return ausfall();
     }
-  }, [speechLang, ts.genericError]);
+  }, [speechLang, ts.genericError, ts.unavailable]);
 
   /**
    * Sprachmodus Live: Karte holen, Verbindung öffnen, Mikrofon streamen. false = für dieses Szenario
@@ -803,7 +809,7 @@ export default function SimulationClient() {
     })();
   }, [speechSupported, micActive, startAzureMic, browserSpeechSupported]);
 
-  /** Notnagel: Browser-Spracherkennung (Chrome: Google) — nur wenn Azure gerade nicht kann. */
+  /** Browser-Spracherkennung (Chrome: Google) — nur, wenn der Server sie ausdrücklich wählt (Rückweg SPEECH_INPUT=browser). */
   function startBrowserMic() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
