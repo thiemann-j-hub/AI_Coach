@@ -299,9 +299,9 @@
       "lively": "żywy",
       "knowledgeable": "kompetentny"
     },
-    "consentTitle": "Wyrażenie zgody przed rozpoczęciem wypowiedzi",
-    "consentBody": "Państwa firma prosi o wyrażenie zgody przed pierwszą rejestracją głosu: Państwa głos jest konwertowany na tekst w Europie Zachodniej, a nagranie nie jest przechowywane. W każdej chwili mogą Państwo zamiast tego pisać.",
-    "consentLater": "Później, będę pisać",
+    "consentTitle": "Mówienie zamiast pisania",
+    "consentBody": "Do mówienia potrzebna jest Twoja dobrowolna zgoda, której udzielasz swojej firmie (dyktowanie przez Microsoft Azure w Europie Zachodniej, rozmowa na żywo przez Google Vertex AI w UE; możesz ją w każdej chwili wycofać w swoim profilu, bez żadnych negatywnych skutków).",
+    "consentLater": "Wolę pisać",
     "consentGo": "Przejdź do zgody",
     "variantLabel": "Wariant",
     "ergebnisZiel": "Cel osiągnięty",

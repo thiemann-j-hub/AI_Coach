@@ -299,9 +299,9 @@
       "lively": "viva",
       "knowledgeable": "experiente"
     },
-    "consentTitle": "Dê o seu consentimento uma vez antes de falar",
-    "consentBody": "A sua empresa solicita o seu consentimento antes da primeira gravação de voz: a sua voz é convertida em texto na Europa Ocidental e a gravação não é guardada. Pode sempre optar por escrever.",
-    "consentLater": "Mais tarde, irei escrever",
+    "consentTitle": "Falar em vez de escrever",
+    "consentBody": "Para falar, é necessário o teu consentimento voluntário, que dás à tua empresa (ditado através do Microsoft Azure na Europa Ocidental, conversa ao vivo através do Google Vertex AI na UE; podes retirá-lo a qualquer momento no teu perfil, sem qualquer desvantagem).",
+    "consentLater": "Prefiro escrever",
     "consentGo": "Ir para o consentimento",
     "variantLabel": "Variante",
     "ergebnisZiel": "Objetivo alcançado",

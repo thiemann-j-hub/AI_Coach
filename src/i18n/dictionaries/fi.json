@@ -299,9 +299,9 @@
       "lively": "eloisa",
       "knowledgeable": "asiantunteva"
     },
-    "consentTitle": "Antakaa suostumuksenne kerran ennen kuin puhutte",
-    "consentBody": "Yrityksenne pyytää suostumustanne ennen ensimmäistä äänitallennetta: äänenne muunnetaan tekstiksi Länsi-Euroopassa, eikä tallennetta tallenneta. Voitte sen sijaan aina kirjoittaa.",
-    "consentLater": "Myöhemmin, kirjoitan",
+    "consentTitle": "Puhuminen kirjoittamisen sijaan",
+    "consentBody": "Puhumiseen tarvitaan vapaaehtoinen suostumuksesi, jonka annat yrityksellesi (sanelu Microsoft Azuren kautta Länsi-Euroopassa, livekeskustelu Google Vertex AI:n kautta EU:ssa; voit peruuttaa sen milloin tahansa profiilissasi ilman haittaa).",
+    "consentLater": "Kirjoitan mieluummin",
     "consentGo": "Siirry suostumukseen",
     "variantLabel": "Muunnelma",
     "ergebnisZiel": "Tavoite saavutettu",

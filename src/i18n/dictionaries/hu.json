@@ -299,9 +299,9 @@
       "lively": "élénk",
       "knowledgeable": "hozzáértő"
     },
-    "consentTitle": "Adja meg hozzájárulását egyszer, mielőtt beszélni kezd",
-    "consentBody": "A vállalata az első hangfelvétel előtt a hozzájárulását kéri: a hangját Nyugat-Európában alakítják szöveggé, a felvételt pedig nem tárolják. Ehelyett bármikor gépelhet is.",
-    "consentLater": "Később, inkább gépelek",
+    "consentTitle": "Beszéd gépelés helyett",
+    "consentBody": "A beszédhez az önkéntes hozzájárulásodra van szükség, amelyet a cégednek adsz meg (diktálás a Microsoft Azure segítségével Nyugat-Európában, élő beszélgetés a Google Vertex AI segítségével az EU-ban; a profilodban bármikor visszavonhatod, hátrány nélkül).",
+    "consentLater": "Inkább gépelek",
     "consentGo": "Tovább a hozzájáruláshoz",
     "variantLabel": "Változat",
     "ergebnisZiel": "Cél elérve",

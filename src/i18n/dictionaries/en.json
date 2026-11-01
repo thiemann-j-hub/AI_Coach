@@ -299,9 +299,9 @@
       "lively": "lively",
       "knowledgeable": "knowledgeable"
     },
-    "consentTitle": "Consent once before you speak",
-    "consentBody": "Your company asks for your consent before the first voice recording: your voice is converted to text in Western Europe, the recording is not stored. You can always type instead.",
-    "consentLater": "Later, I will type",
+    "consentTitle": "Speaking instead of typing",
+    "consentBody": "Speaking requires your voluntary consent, which you give to your company (dictation via Microsoft Azure in Western Europe, live conversation via Google Vertex AI in the EU; you can withdraw it at any time in your profile, without any disadvantage).",
+    "consentLater": "I'd rather type",
     "consentGo": "Go to consent",
     "variantLabel": "Variant",
     "ergebnisZiel": "Goal reached",

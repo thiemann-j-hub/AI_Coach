@@ -299,9 +299,9 @@
       "lively": "beoga",
       "knowledgeable": "eolach"
     },
-    "consentTitle": "Tabhair toiliú uair amháin sula labhraíonn tú",
-    "consentBody": "Tá do chuideachta ag iarraidh do thoiliú roimh an gcéad taifeadadh gutha: tiontaítear do ghuth go téacs in Iarthar na hEorpa, agus ní stóráiltear an taifeadadh. Is féidir leat clóscríobh i gcónaí ina ionad sin.",
-    "consentLater": "Níos déanaí, clóscríobhfaidh mé",
+    "consentTitle": "Labhairt seachas clóscríobh",
+    "consentBody": "Chun labhairt, teastaíonn do thoiliú deonach, a thugann tú do do chuideachta (deachtú trí Microsoft Azure in Iarthar na hEorpa, comhrá beo trí Google Vertex AI san AE; is féidir leat é a tharraingt siar am ar bith i do phróifíl, gan aon mhíbhuntáiste).",
+    "consentLater": "B'fhearr liom clóscríobh",
     "consentGo": "Téigh chuig an toiliú",
     "variantLabel": "Leagan",
     "ergebnisZiel": "Sprioc bainte amach",

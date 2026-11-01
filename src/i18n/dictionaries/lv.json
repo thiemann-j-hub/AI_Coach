@@ -299,9 +299,9 @@
       "lively": "dzīva",
       "knowledgeable": "zinoša"
     },
-    "consentTitle": "Sniedziet piekrišanu vienreiz, pirms runājat",
-    "consentBody": "Jūsu uzņēmums lūdz Jūsu piekrišanu pirms pirmā balss ieraksta: Jūsu balss tiek pārveidota tekstā Rietumeiropā, ieraksts netiek saglabāts. Tā vietā Jūs jebkurā laikā varat rakstīt.",
-    "consentLater": "Vēlāk, es rakstīšu",
+    "consentTitle": "Runāt, nevis rakstīt",
+    "consentBody": "Lai runātu, ir vajadzīga tava brīvprātīgā piekrišana, ko tu sniedz savam uzņēmumam (diktēšana ar Microsoft Azure Rietumeiropā, tiešsaruna ar Google Vertex AI Eiropas Savienībā; to vari jebkurā laikā atsaukt savā profilā, bez nelabvēlīgām sekām).",
+    "consentLater": "Labāk rakstīšu",
     "consentGo": "Doties uz piekrišanu",
     "variantLabel": "Variants",
     "ergebnisZiel": "Mērķis sasniegts",

@@ -299,9 +299,9 @@
       "lively": "vivaç",
       "knowledgeable": "experta"
     },
-    "consentTitle": "Doni el consentiment una vegada abans de parlar",
-    "consentBody": "La seva empresa li demana el seu consentiment abans de la primera gravació de veu: la seva veu es converteix en text a l'Europa occidental, la gravació no es desa. Sempre pot escriure en comptes de parlar.",
-    "consentLater": "Més tard, escriuré",
+    "consentTitle": "Parlar en lloc d'escriure",
+    "consentBody": "Per parlar cal el teu consentiment voluntari, que dones a la teva empresa (dictat amb Microsoft Azure a l'Europa occidental, conversa en directe amb Google Vertex AI a la UE; el pots retirar en qualsevol moment al teu perfil, sense cap desavantatge).",
+    "consentLater": "Prefereixo escriure",
     "consentGo": "Anar al consentiment",
     "variantLabel": "Variant",
     "ergebnisZiel": "Objectiu assolit",

@@ -299,9 +299,9 @@
       "lively": "livlig",
       "knowledgeable": "kunnig"
     },
-    "consentTitle": "Samtyck en gång innan Ni talar",
-    "consentBody": "Ert företag ber om Ert samtycke före den första röstinspelningen: Er röst omvandlas till text i Västeuropa, inspelningen sparas inte. Ni kan alltid skriva i stället.",
-    "consentLater": "Senare, jag skriver",
+    "consentTitle": "Tala i stället för att skriva",
+    "consentBody": "För att tala behövs ditt frivilliga samtycke, som du ger ditt företag (diktering via Microsoft Azure i Västeuropa, livesamtal via Google Vertex AI i EU; du kan när som helst återkalla det i din profil, utan nackdelar).",
+    "consentLater": "Jag skriver hellre",
     "consentGo": "Gå till samtycke",
     "variantLabel": "Variant",
     "ergebnisZiel": "Mål uppnått",

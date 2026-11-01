@@ -299,9 +299,9 @@
       "lively": "levendig",
       "knowledgeable": "deskundig"
     },
-    "consentTitle": "Eenmalig toestemming geven voordat u spreekt",
-    "consentBody": "Uw bedrijf vraagt om uw toestemming voor de eerste spraakopname: uw stem wordt in West-Europa omgezet in tekst, de opname wordt niet opgeslagen. U kunt in plaats daarvan altijd typen.",
-    "consentLater": "Later, ik typ",
+    "consentTitle": "Spreken in plaats van typen",
+    "consentBody": "Om te spreken is je vrijwillige toestemming nodig, die je aan je bedrijf geeft (dicteren via Microsoft Azure in West-Europa, live gesprek via Google Vertex AI in de EU; je kunt die op elk moment in je profiel intrekken, zonder nadelen).",
+    "consentLater": "Liever typen",
     "consentGo": "Naar toestemming",
     "variantLabel": "Variant",
     "ergebnisZiel": "Doel bereikt",

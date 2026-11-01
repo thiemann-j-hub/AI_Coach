@@ -299,9 +299,9 @@
       "lively": "elav",
       "knowledgeable": "asjatundlik"
     },
-    "consentTitle": "Nõustuge üks kord enne rääkimist",
-    "consentBody": "Teie ettevõte küsib Teilt nõusolekut enne esimest häälesalvestust: Teie hääl teisendatakse tekstiks Lääne-Euroopas, salvestist ei salvestata. Võite selle asemel igal ajal tippida.",
-    "consentLater": "Hiljem, tipin",
+    "consentTitle": "Rääkimine trükkimise asemel",
+    "consentBody": "Rääkimiseks on vaja sinu vabatahtlikku nõusolekut, mille annad oma ettevõttele (dikteerimine Microsoft Azure'i kaudu Lääne-Euroopas, otsevestlus Google Vertex AI kaudu ELis; saad selle igal ajal oma profiilis tagasi võtta, ilma et see sulle kahjuks tuleks).",
+    "consentLater": "Pigem trükin",
     "consentGo": "Nõusoleku juurde",
     "variantLabel": "Variant",
     "ergebnisZiel": "Eesmärk saavutatud",

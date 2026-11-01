@@ -299,9 +299,9 @@
       "lively": "briosa",
       "knowledgeable": "esperta"
     },
-    "consentTitle": "Acconsenta una volta prima di parlare",
-    "consentBody": "La Sua azienda Le chiede il consenso prima della prima registrazione vocale: la Sua voce viene convertita in testo nell'Europa occidentale e la registrazione non viene memorizzata. In alternativa, può sempre digitare.",
-    "consentLater": "Più tardi, digiterò",
+    "consentTitle": "Parlare invece di scrivere",
+    "consentBody": "Per parlare serve il tuo consenso volontario, che dai alla tua azienda (dettatura tramite Microsoft Azure in Europa occidentale, conversazione dal vivo tramite Google Vertex AI nell'UE; puoi revocarlo in qualsiasi momento nel tuo profilo, senza alcuno svantaggio).",
+    "consentLater": "Preferisco scrivere",
     "consentGo": "Procedi al consenso",
     "variantLabel": "Variante",
     "ergebnisZiel": "Obiettivo raggiunto",

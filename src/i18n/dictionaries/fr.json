@@ -299,9 +299,9 @@
       "lively": "animée",
       "knowledgeable": "avertie"
     },
-    "consentTitle": "Donnez votre consentement une fois avant de parler",
-    "consentBody": "Votre entreprise vous demande votre consentement avant le premier enregistrement vocal : votre voix est convertie en texte en Europe de l'Ouest, l'enregistrement n'est pas conservé. Vous pouvez toujours écrire à la place.",
-    "consentLater": "Plus tard, j'écrirai",
+    "consentTitle": "Parler au lieu d'écrire",
+    "consentBody": "Pour parler, il faut votre consentement libre, que vous donnez à votre entreprise (dictée via Microsoft Azure en Europe de l'Ouest, conversation en direct via Google Vertex AI dans l'UE ; vous pouvez le retirer à tout moment dans votre profil, sans aucun désavantage).",
+    "consentLater": "Je préfère écrire",
     "consentGo": "Accéder au consentement",
     "variantLabel": "Variante",
     "ergebnisZiel": "Objectif atteint",

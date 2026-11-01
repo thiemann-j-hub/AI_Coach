@@ -299,9 +299,9 @@
       "lively": "livlig",
       "knowledgeable": "kunnskapsrik"
     },
-    "consentTitle": "Samtykk én gang før De snakker",
-    "consentBody": "Deres bedrift ber om Deres samtykke før den første taleinnspillingen: Stemmen Deres konverteres til tekst i Vest-Europa, innspillingen blir ikke lagret. De kan alltid skrive i stedet.",
-    "consentLater": "Senere, jeg skriver",
+    "consentTitle": "Snakke i stedet for å skrive",
+    "consentBody": "For å snakke trengs ditt frivillige samtykke, som du gir bedriften din (diktering via Microsoft Azure i Vest-Europa, direktesamtale via Google Vertex AI i EU; du kan når som helst trekke det tilbake i profilen din, uten ulemper).",
+    "consentLater": "Jeg skriver heller",
     "consentGo": "Gå til samtykke",
     "variantLabel": "Variant",
     "ergebnisZiel": "Mål nådd",

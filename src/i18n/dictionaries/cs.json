@@ -299,9 +299,9 @@
       "lively": "živý",
       "knowledgeable": "znalý"
     },
-    "consentTitle": "Udělte souhlas předtím, než budete mluvit",
-    "consentBody": "Vaše společnost vás před první hlasovou nahrávkou žádá o souhlas: váš hlas je v západní Evropě převeden na text, nahrávka se neukládá. Místo toho můžete kdykoli psát.",
-    "consentLater": "Později, budu psát",
+    "consentTitle": "Mluvení místo psaní",
+    "consentBody": "K mluvení je potřeba tvůj dobrovolný souhlas, který dáváš své firmě (diktování přes Microsoft Azure v západní Evropě, živý rozhovor přes Google Vertex AI v EU; souhlas můžeš kdykoli odvolat ve svém profilu, bez jakýchkoli nevýhod).",
+    "consentLater": "Raději budu psát",
     "consentGo": "Přejít k souhlasu",
     "variantLabel": "Varianta",
     "ergebnisZiel": "Cíl dosažen",
