@@ -27,6 +27,14 @@ import { generateSimulationFeedback } from "../src/ai/flows/simulation-feedback"
 import { scoreCompetencies } from "../src/ai/flows/score-competencies";
 import { normalizeCompetencyRatings } from "../src/lib/competency-model";
 import { collectQualityNotes, type QualityNote } from "../src/lib/quality-core";
+// Opus-Richter braucht den Vertex-Schlüssel im Prozess (GOOGLE_SA_KEY_JSON); ohne ihn fällt der Flow STILL auf Gemini
+// zurück (Befund 01.11.2026: Nachrechnung lief versehentlich mit Gemini). Schlüsseldatei per GOOGLE_SA_KEY_JSON_FILE.
+import { readFileSync } from "node:fs";
+if (!process.env.GOOGLE_SA_KEY_JSON && process.env.GOOGLE_SA_KEY_JSON_FILE) process.env.GOOGLE_SA_KEY_JSON = readFileSync(process.env.GOOGLE_SA_KEY_JSON_FILE, "utf8");
+if ((process.env.COACH_RICHTER ?? "").toLowerCase() === "opus" && !(process.env.GOOGLE_SA_KEY_JSON && process.env.VERTEX_PROJECT)) {
+  console.error("COACH_RICHTER=opus, aber GOOGLE_SA_KEY_JSON/VERTEX_PROJECT fehlen — der Richter würde still auf Gemini zurückfallen. Abbruch.");
+  process.exit(2);
+}
 import { CHECK_PASS_THRESHOLD, computeDebrief } from "../src/lib/simulation/debrief";
 import { bestimmeErgebnis, tatsachenText } from "../src/lib/simulation/tatsachen";
 import { regieVerlaufText } from "../src/ai/flows/simulation-regie";
@@ -126,7 +134,7 @@ async function main() {
       ergebnis: bestimmeErgebnis({ closedByPersona: doc.closedByPersona, zielErreicht: feedback.zielErreicht ?? null }),
     });
     console.log(
-      `${doc.id.slice(0, 8)} ${doc.scenarioId} ${String(doc.finishedAt ?? doc.createdAt).slice(0, 10)} — vorher ${before?.overall ?? "–"} % ${before?.verdict ?? "–"} (zurückgehalten ${beforeWithheld.join(",") || "–"}) → nachher ${debrief.overall ?? "–"} % ${debrief.verdict} (zurückgehalten ${[...fabricated].join(",") || "–"}) · Rubrik ${feedback.rubric.map((r) => `${r.key}=${r.score ?? "∅"}`).join(" ")}`
+      `${doc.id.slice(0, 8)} ${doc.scenarioId} ${String(doc.finishedAt ?? doc.createdAt).slice(0, 10)} — vorher ${before?.overall ?? "–"} % ${before?.verdict ?? "–"} (zurückgehalten ${beforeWithheld.join(",") || "–"}) → nachher ${debrief.overall ?? "–"} % ${debrief.verdict} (zurückgehalten ${[...fabricated].join(",") || "–"}) · Richter ${feedback.judge ?? "?"} · Ergebnis ${debrief.ergebnis ?? "–"}/${debrief.verdictGrund ?? "–"} · Rubrik ${feedback.rubric.map((r) => `${r.key}=${r.score ?? "∅"}`).join(" ")}`
     );
     if (!apply) continue;
 
