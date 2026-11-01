@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
-import { consentGateOn } from "@/lib/server/credits/member-info";
+import { sprachaufnahmeEinwilligungFehlt } from "@/lib/server/live/sprachaufnahme-gate";
 
 /**
  * GET /api/speech-token — kurzlebiges Token für die Spracheingabe über Azure Speech (West-Europa).
@@ -13,6 +13,8 @@ import { consentGateOn } from "@/lib/server/credits/member-info";
  * Rückweg: SPEECH_INPUT=browser → 503, der Browser fällt auf seine eigene Erkennung zurück.
  * A4 (31.10.2026): Ist die KI für das Unternehmen aus, gibt es kein Token (403 KI_AUS) — geprüft vor dem 503,
  * damit der Browser dann NICHT auf seine eigene Erkennung zurückfällt.
+ * 01.11.2026 (Bewertung Teil 1, Owner-Ja): Dasselbe gilt jetzt für die Einwilligung „Sprachaufnahme“ — sie wird
+ * VOR dem 503 und vor dem Rate-Limit geprüft (403 EINWILLIGUNG statt Browser-Erkennung ohne Einwilligung).
  */
 export const runtime = "nodejs";
 
@@ -21,6 +23,18 @@ export async function GET(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   const ki = await kiSchalterBlockt("/api/speech-token");
   if (ki) return ki;
+  // Stufe C / LXT W5-4 (20.10.2026): Ohne Einwilligung „Sprachaufnahme“ gibt es kein Token, und der Browser fällt
+  // NICHT auf seine eigene Erkennung zurück (Antwort-Code EINWILLIGUNG öffnet im Coach den Hinweis).
+  // 01.11.2026 (Bewertung Teil 1, Owner-Ja): Die Prüfung steht jetzt VOR dem 503 stt_disabled und vor dem
+  // Rate-Limit — auf beide Antworten nahm der Browser seine eigene Erkennung (Chrome schickt die Aufnahme an
+  // Google), auch ohne Einwilligung. Dasselbe Tor wie vor der Live-Karte (sprachaufnahme-gate.ts); seit der
+  // Fassung 2026-11-01 verlangt der Credit-Dienst die Einwilligung für jedes Unternehmen. Rückweg: CONSENT_GATE=off.
+  if (await sprachaufnahmeEinwilligungFehlt(auth.oid)) {
+    return NextResponse.json(
+      { ok: false, error: "consent_required", code: "EINWILLIGUNG", url: "/einwilligung?typ=sprachaufnahme&zurueck=/coach/simulation" },
+      { status: 403 }
+    );
+  }
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
   if (!key || !region || (process.env.SPEECH_INPUT ?? "").trim().toLowerCase() === "browser") {
@@ -28,23 +42,6 @@ export async function GET(req: NextRequest) {
   }
   const limited = checkRateLimit(`stt-token:${auth.uid}`, 30, 10 * 60 * 1000, "Zu viele Anfragen. Bitte kurz warten.");
   if (limited) return limited;
-  // Stufe C / LXT W5-4 (20.10.2026): Verlangt das Unternehmen die Einwilligung „Sprachaufnahme“, gibt es ohne sie
-  // kein Token — und der Browser fällt NICHT auf seine eigene Erkennung zurück (Antwort-Code EINWILLIGUNG).
-  // Rückweg: CONSENT_GATE=off.
-  if (consentGateOn()) {
-    try {
-      const { auth: session } = await import("@/auth");
-      const oid = ((await session())?.user as { oid?: string } | undefined)?.oid;
-      if (oid) {
-        const { getCentralMemberInfo, einwilligungFehlt } = await import("@/lib/server/credits/member-info");
-        if (einwilligungFehlt(await getCentralMemberInfo(oid), "sprachaufnahme")) {
-          return NextResponse.json({ ok: false, error: "consent_required", code: "EINWILLIGUNG", url: "/einwilligung?typ=sprachaufnahme&zurueck=/coach/simulation" }, { status: 403 });
-        }
-      }
-    } catch (e) {
-      console.error("[speech-token] einwilligung", e instanceof Error ? e.message : e);
-    }
-  }
   try {
     const res = await fetch(`https://${region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`, {
       method: "POST",

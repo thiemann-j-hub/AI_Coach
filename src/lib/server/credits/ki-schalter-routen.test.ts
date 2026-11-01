@@ -50,6 +50,8 @@ vi.mock("@/ai/flows/simulation-coach", () => ({ runCoachTimeout: (...a: unknown[
 const issue = vi.fn(() => "karte");
 vi.mock("@/lib/server/live/live-accept", () => ({ liveConfigured: () => true, registerLiveAccept: vi.fn() }));
 vi.mock("@/lib/server/live/ticket-store", () => ({ liveTicketStore: () => ({ issue }) }));
+// Einwilligungs-Tor „Sprachaufnahme“ (Live-Karte UND Sprach-Token fragen dieses eine Tor): hier aus, damit nur der
+// KI-Schalter wirkt. Das Tor selbst und die Reihenfolge (Einwilligung vor dem 503) prüft live/sprachaufnahme-gate.test.ts.
 vi.mock("@/lib/server/live/sprachaufnahme-gate", () => ({ sprachaufnahmeEinwilligungFehlt: async () => false }));
 
 // Vorlesen
@@ -64,9 +66,6 @@ vi.mock("@/lib/server/azure-tts", () => ({
   isPersonaVoice: () => false,
   synthesizeTtsMp3: (...a: unknown[]) => synthesize(...a),
 }));
-
-// Sprach-Token (Einwilligungs-Tor hier aus — es hat eigene Tests)
-vi.mock("@/lib/server/credits/member-info", () => ({ consentGateOn: () => false }));
 
 // Interview und Themenbericht
 const readInterview = vi.fn(async (..._a: unknown[]) => null);
