@@ -303,7 +303,12 @@
     "consentBody": "Dein Unternehmen bittet Dich vor der ersten Sprachaufnahme um Deine Zustimmung: Deine Stimme wird in Westeuropa in Text umgewandelt, die Aufnahme wird nicht gespeichert. Du kannst stattdessen jederzeit tippen.",
     "consentLater": "Später, ich tippe",
     "consentGo": "Zur Zustimmung",
-    "variantLabel": "Variante"
+    "variantLabel": "Variante",
+    "ergebnisZiel": "Ziel erreicht",
+    "ergebnisOffen": "Ziel offen",
+    "ergebnisAbbruch": "Abgebrochen",
+    "passedByGoal": "Bestanden · Ziel erreicht",
+    "failedByAbort": "Nicht bestanden · Gespräch abgebrochen"
   },
   "auth": {
     "signIn": "Anmelden",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Dieses Thema grundlegender angehen?",
     "studioBridgeBody": "Erstelle einen Kurs im Learning Studio — zugeschnitten auf {c}.",
     "studioBridgeCta": "Kurs im Studio erstellen",
-    "microTransferTitle": "Dein Schritt für den Alltag"
+    "microTransferTitle": "Dein Schritt für den Alltag",
+    "calcGoal": "Die Rolle hat das Ziel freigegeben – deshalb bestanden, unabhängig von der Punktzahl.",
+    "calcAbort": "Die Rolle hat das Gespräch abgebrochen – deshalb nicht bestanden, unabhängig von der Punktzahl."
   },
   "profilePage": {
     "title": "Profil",

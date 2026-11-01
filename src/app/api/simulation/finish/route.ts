@@ -6,6 +6,7 @@ import { GENKIT_MODEL_ID } from "@/ai/genkit";
 import { scoreCompetencies } from "@/ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
 import { regieVerlaufText } from "@/ai/flows/simulation-regie";
+import { bestimmeErgebnis, tatsachenText } from "@/lib/simulation/tatsachen";
 import { RICHTER_OPUS_TIMEOUT_MS } from "@/ai/flows/simulation-feedback";
 import { coachRichter } from "@/lib/simulation/flags";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
@@ -193,6 +194,8 @@ export async function POST(req: NextRequest) {
                 ? "Die Zeit lief ab; die Rolle verabschiedete sich."
                 : undefined,
             regieVerlauf: regieVerlaufText(doc.regie, scenario.locale) || undefined,
+            // Bewertung 2.0 (01.11.2026): Ergebnis und erfüllte Bedingungen der Rolle als Tatsachen (Konsistenzregel).
+            tatsachen: tatsachenText({ personaName: scenario.persona.name, locale: scenario.locale, regie: doc.regie, closedByPersona: doc.closedByPersona, closedByTime: doc.closedByTime === true }) || undefined,
           }),
         // Welle 1: der Opus-Richter braucht länger (40–90 s); seine Frist plus Rückfall liegt im Flow.
         { ms: coachRichter() === "opus" ? RICHTER_OPUS_TIMEOUT_MS + 50_000 : LLM_TIMEOUT_MS, label: "sim-feedback", retries: 1 }
@@ -312,6 +315,8 @@ export async function POST(req: NextRequest) {
       })),
       checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
       passThreshold,
+      // Bewertung 2.0: Ziel freigegeben → bestanden; Abbruch → nicht bestanden; sonst Punkte.
+      ergebnis: bestimmeErgebnis({ closedByPersona: doc.closedByPersona, zielErreicht: feedback.zielErreicht ?? null }),
     });
     let delta: (ReturnType<typeof computeDelta> & {
       competencies?: Record<string, number | null>;

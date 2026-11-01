@@ -57,6 +57,8 @@ export const SimulationFeedbackInputSchema = z.object({
   gespraechsende: z.string(),
   /** Welle 2: Öffnungsverlauf des Regie-Beobachters (Zeilen); leer = keiner. */
   regieVerlauf: z.string(),
+  /** Bewertung 2.0: Ergebnis und erfüllte Bedingungen der Rolle als Tatsachen; leer = keine. */
+  tatsachen: z.string(),
 });
 export type SimulationFeedbackInput = z.infer<typeof SimulationFeedbackInputSchema>;
 
@@ -100,6 +102,10 @@ export const SimulationFeedbackOutputSchema = z.object({
   summary: z
     .string()
     .describe('3–5 Sätze Gesamtbild: was gelang, was das zentrale Muster war. Direkte Ansprache ("Du …"), wertschätzend UND ehrlich.'),
+  zielErreicht: z
+    .boolean()
+    .nullable()
+    .describe('Bewertung 2.0: true, wenn die ZIELE DES ÜBENDEN laut Briefing im Gespräch nachweislich erreicht wurden (das inhaltliche Anliegen vereinbart, nicht nur angesprochen); false, wenn klar nicht; null, wenn nicht entscheidbar.'),
   rubric: z.array(RubricRatingSchema),
   checkpoints: z.array(CheckpointResultSchema),
   nextStep: z
@@ -180,6 +186,8 @@ SKALA 1–4
 Trägt eine Fähigkeit eine BEWERTUNGS-RUBRIK mit Stufen, dann ist der score die Stufe, deren Beschreibung
 das beobachtete Verhalten am besten trifft (1 = Nicht gezeigt · 2 = Ansätze · 3 = Erfüllt · 4 = Übertroffen).
 Ohne Rubrik: 1 = schwach/kontraproduktiv · 2 = erste solide Ansätze · 3 = gut und überwiegend wirksam · 4 = vorbildlich.
+KALIBRIERUNG: „Erfüllt“ (3) heißt solide und wirksam gezeigt, nicht perfekt. „Übertroffen“ (4) ist selten. „Nicht gezeigt“ (1) nur,
+wenn die Fähigkeit in einer relevanten Situation ausblieb oder kontraproduktiv war — nicht, wenn sie lediglich besser hätte sein können.
 
 REIHENFOLGE (zwingend, pro Fähigkeit):
 1) Sammle zuerst EVIDENCE: 1–2 wörtliche Zitate aus dem Gespräch (mit Sprecher-Prefix "Teilnehmer:in:" bzw. "${i.personaName}:").
@@ -202,6 +210,17 @@ GESPRÄCHSENDE (Kontext, kein Beleg für Scores): ${i.gespraechsende}
   `
 ÖFFNUNGSVERLAUF DER ROLLE (objektiv protokolliert von der Spielleitung; Kontext, kein Beleg für Scores — Belege kommen nur aus dem Gespräch):
 ${i.regieVerlauf}
+`
+)}${block(
+  i.tatsachen,
+  `
+TATSACHEN AUS DEM GESPRÄCH (Bewertung 2.0): Die Rolle öffnet sich nur, wenn ihre Bedingungen erfüllt wurden, und beendet nur, wenn eine
+Endbedingung galt. Diese Tatsachen stehen fest:
+${i.tatsachen}
+KONSISTENZREGEL: Fähigkeiten, deren Verhalten diese Bedingungen erfüllt hat, bewertest du mindestens mit 3 (Erfüllt) — belege es mit dem
+Zitat, das die Bedingung erfüllt hat. Was darüber hinaus fehlte, nennst du in tryNext, ohne den Score dafür unter 3 zu drücken.
+Wurde das Ziel erreicht, beginnt summary mit dem Ergebnis, danach kommen die Verbesserungen. Hat die Rolle laut Protokoll
+vorschnell eingelenkt, zählt das NICHT als erfüllte Bedingung.
 `
 )}
 ${
@@ -319,6 +338,7 @@ export function normalizeJudgeOutput(raw: unknown): unknown {
     if (!v || typeof v !== 'object') o[k] = null;
   }
   if (!Array.isArray(o.recommendedCards)) o.recommendedCards = [];
+  if (typeof o.zielErreicht !== 'boolean') o.zielErreicht = null;
   if (typeof o.nextStepKey !== 'string') o.nextStepKey = '';
   if (!o.microTransfer || typeof o.microTransfer !== 'object') o.microTransfer = { step: '', when: '' };
   if (Array.isArray(o.rubric)) {
@@ -348,6 +368,8 @@ export async function generateSimulationFeedback(args: {
   gespraechsende?: string;
   /** Welle 2: Öffnungsverlauf der Regie (Zeilen), optional. */
   regieVerlauf?: string;
+  /** Bewertung 2.0: Tatsachen (Ergebnis, erfüllte Bedingungen), optional. */
+  tatsachen?: string;
   /** Richter erzwingen (Vergleichsskript); Standard: Schalter COACH_RICHTER. */
   richter?: 'gemini' | 'opus';
 }): Promise<SimulationFeedbackOutput> {
@@ -404,6 +426,7 @@ export async function generateSimulationFeedback(args: {
     transferReview: (args.transferReview ?? '').slice(0, 600),
     gespraechsende: (args.gespraechsende ?? '').slice(0, 400),
     regieVerlauf: (args.regieVerlauf ?? '').slice(0, 1200),
+    tatsachen: (args.tatsachen ?? '').slice(0, 1200),
   };
   const promptText = buildFeedbackPrompt(input);
 
@@ -459,6 +482,8 @@ export async function generateSimulationFeedback(args: {
 
   return {
     summary: output.summary,
+    // Bewertung 2.0: Urteil des Richters zum Ziel (null = nicht entscheidbar); die Rolle hat im Debrief Vorrang.
+    zielErreicht: typeof output.zielErreicht === 'boolean' ? output.zielErreicht : null,
     rubric,
     checkpoints,
     nextStep: output.nextStep,

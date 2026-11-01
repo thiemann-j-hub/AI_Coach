@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runPersonaTurn, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
 import { beobachteRegie, offeneRegieNotiz, regieStageNote } from "@/ai/flows/simulation-regie";
+import { endeAbgelehntNote, pruefeEnde } from "@/ai/flows/simulation-ende-pruefung";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
@@ -148,7 +149,21 @@ export async function POST(req: NextRequest) {
     if (timeSignal === "farewell") doc.closedByTime = true;
     if (offeneNotiz) offeneNotiz.delivered = true;
     if (regie) doc.regie = [...(doc.regie ?? []).slice(-40), regie];
-    if (result.ende) doc.closedByPersona = { ...result.ende, at: new Date().toISOString() };
+    // Torwächter (01.11.2026): Das Ende gilt nur, wenn die Endbedingung wirklich erfüllt ist; sonst bekommt die Rolle
+    // beim nächsten Zug die Notiz, was fehlt, und das Gespräch läuft weiter.
+    if (result.ende) {
+      const pruefung = await pruefeEnde({ scenario, turns: doc.turns, ende: result.ende });
+      if (pruefung.erfuellt) {
+        doc.closedByPersona = { ...result.ende, at: new Date().toISOString() };
+      } else {
+        const letzte = doc.regie?.[doc.regie.length - 1];
+        doc.regie = [
+          ...(doc.regie ?? []).slice(-40),
+          { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz: endeAbgelehntNote(scenario, pruefung.fehlt), turn: doc.turns.length, ts: new Date().toISOString(), fehlt: pruefung.fehlt },
+        ];
+        logger.api("/api/simulation/turn", "ende-abgelehnt", { uid: auth.uid, simId: d.simId, fehlt: pruefung.fehlt.slice(0, 120) });
+      }
+    }
     await saveSimulation(doc);
 
     logger.api("/api/simulation/turn", "ok", {

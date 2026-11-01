@@ -303,7 +303,12 @@
     "consentBody": "Compania dumneavoastră vă solicită acordul înainte de prima înregistrare vocală: vocea dumneavoastră este transformată în text în Europa de Vest, iar înregistrarea nu este stocată. Puteți scrie în schimb oricând.",
     "consentLater": "Mai târziu, voi scrie",
     "consentGo": "Către acord",
-    "variantLabel": "Variantă"
+    "variantLabel": "Variantă",
+    "ergebnisZiel": "Obiectiv atins",
+    "ergebnisOffen": "Obiectiv deschis",
+    "ergebnisAbbruch": "Întreruptă",
+    "passedByGoal": "Promovat · obiectiv atins",
+    "failedByAbort": "Nepromovat · conversație întreruptă"
   },
   "auth": {
     "signIn": "Conectare",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Abordezi tema mai în profunzime?",
     "studioBridgeBody": "Creează un curs în Learning Studio — croit pe {c}.",
     "studioBridgeCta": "Creează curs în Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Rolul a acordat obiectivul – de aceea promovat, indiferent de punctaj.",
+    "calcAbort": "Rolul a întrerupt conversația – de aceea nepromovat, indiferent de punctaj."
   },
   "profilePage": {
     "title": "Profil",

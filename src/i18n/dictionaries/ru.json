@@ -303,7 +303,12 @@
     "consentBody": "Ваша компания просит ваше согласие перед первой записью голоса: ваш голос преобразуется в текст в Западной Европе, запись не сохраняется. Вы всегда можете вместо этого вводить текст.",
     "consentLater": "Позже, я буду вводить текст",
     "consentGo": "Перейти к согласию",
-    "variantLabel": "Вариант"
+    "variantLabel": "Вариант",
+    "ergebnisZiel": "Цель достигнута",
+    "ergebnisOffen": "Цель открыта",
+    "ergebnisAbbruch": "Прервано",
+    "passedByGoal": "Сдано · цель достигнута",
+    "failedByAbort": "Не сдано · разговор прерван"
   },
   "auth": {
     "signIn": "Войти",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Взяться за тему основательнее?",
     "studioBridgeBody": "Создай курс в Learning Studio — под {c}.",
     "studioBridgeCta": "Создать курс в Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Роль уступила цель – поэтому сдано, независимо от баллов.",
+    "calcAbort": "Роль прервала разговор – поэтому не сдано, независимо от баллов."
   },
   "profilePage": {
     "title": "Профиль",

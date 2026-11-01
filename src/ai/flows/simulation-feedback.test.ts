@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildFeedbackPrompt, parseJudgeJson, type SimulationFeedbackInput } from "./simulation-feedback";
+import { buildFeedbackPrompt, normalizeJudgeOutput, parseJudgeJson, type SimulationFeedbackInput } from "./simulation-feedback";
 
 const base: SimulationFeedbackInput = {
   scenarioTitle: "Test",
@@ -16,6 +16,7 @@ const base: SimulationFeedbackInput = {
   transferReview: "",
   gespraechsende: "",
   regieVerlauf: "",
+  tatsachen: "",
 };
 
 describe("Auswertungs-Prompt (Welle 1)", () => {
@@ -36,6 +37,20 @@ describe("Auswertungs-Prompt (Welle 1)", () => {
     expect(p).toContain("GESPRÄCHSENDE (Kontext, kein Beleg für Scores): Alex beendete");
     expect(p).toContain("ÖFFNUNGSVERLAUF DER ROLLE");
     expect(p).toContain("Zug 3: Stufe 1");
+    expect(p).not.toContain("TATSACHEN AUS DEM GESPRÄCH");
+  });
+
+  it("Bewertung 2.0: Tatsachen mit Konsistenzregel, Kalibrierung immer, zielErreicht normalisiert", () => {
+    const p = buildFeedbackPrompt({ ...base, tatsachen: "Alex hat das Ziel freigegeben: Termin steht.\nBedingung erfüllt (Zug 4): Anerkennung" });
+    expect(p).toContain("TATSACHEN AUS DEM GESPRÄCH");
+    expect(p).toContain("Bedingung erfüllt (Zug 4): Anerkennung");
+    expect(p).toContain("KONSISTENZREGEL");
+    expect(p).toContain("mindestens mit 3 (Erfüllt)");
+    expect(p).toContain("KALIBRIERUNG");
+    expect(buildFeedbackPrompt(base)).toContain("KALIBRIERUNG");
+    const n = normalizeJudgeOutput({ summary: "s", rubric: [], checkpoints: [] }) as Record<string, unknown>;
+    expect(n.zielErreicht).toBeNull();
+    expect((normalizeJudgeOutput({ zielErreicht: true, rubric: [] }) as Record<string, unknown>).zielErreicht).toBe(true);
   });
 
   it("parseJudgeJson verträgt Zäune und Vortext", () => {

@@ -303,7 +303,12 @@
     "consentBody": "Państwa firma prosi o wyrażenie zgody przed pierwszą rejestracją głosu: Państwa głos jest konwertowany na tekst w Europie Zachodniej, a nagranie nie jest przechowywane. W każdej chwili mogą Państwo zamiast tego pisać.",
     "consentLater": "Później, będę pisać",
     "consentGo": "Przejdź do zgody",
-    "variantLabel": "Wariant"
+    "variantLabel": "Wariant",
+    "ergebnisZiel": "Cel osiągnięty",
+    "ergebnisOffen": "Cel otwarty",
+    "ergebnisAbbruch": "Przerwana",
+    "passedByGoal": "Zaliczone · cel osiągnięty",
+    "failedByAbort": "Niezaliczone · rozmowa przerwana"
   },
   "auth": {
     "signIn": "Zaloguj się",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Podejść do tematu bardziej gruntownie?",
     "studioBridgeBody": "Stwórz kurs w Learning Studio — skrojony pod {c}.",
     "studioBridgeCta": "Stwórz kurs w Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Rola uwolniła cel – dlatego zaliczone, niezależnie od liczby punktów.",
+    "calcAbort": "Rola przerwała rozmowę – dlatego niezaliczone, niezależnie od liczby punktów."
   },
   "profilePage": {
     "title": "Profil",

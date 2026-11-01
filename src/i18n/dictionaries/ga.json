@@ -303,7 +303,12 @@
     "consentBody": "Tá do chuideachta ag iarraidh do thoiliú roimh an gcéad taifeadadh gutha: tiontaítear do ghuth go téacs in Iarthar na hEorpa, agus ní stóráiltear an taifeadadh. Is féidir leat clóscríobh i gcónaí ina ionad sin.",
     "consentLater": "Níos déanaí, clóscríobhfaidh mé",
     "consentGo": "Téigh chuig an toiliú",
-    "variantLabel": "Leagan"
+    "variantLabel": "Leagan",
+    "ergebnisZiel": "Sprioc bainte amach",
+    "ergebnisOffen": "Sprioc oscailte",
+    "ergebnisAbbruch": "Briste",
+    "passedByGoal": "Rith · sprioc bainte amach",
+    "failedByAbort": "Níor rith · comhrá briste"
   },
   "auth": {
     "signIn": "Sínigh isteach",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "An téama seo a láimhseáil níos bunúsaí?",
     "studioBridgeBody": "Cruthaigh cúrsa sa Learning Studio — saincheaptha do {c}.",
     "studioBridgeCta": "Cruthaigh cúrsa sa Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Scaoil an ról an sprioc – mar sin rith tú, beag beann ar an scór.",
+    "calcAbort": "Bhris an ról an comhrá – mar sin níor rith tú, beag beann ar an scór."
   },
   "profilePage": {
     "title": "Próifíl",

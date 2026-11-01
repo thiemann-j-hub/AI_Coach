@@ -33,3 +33,30 @@ describe("computeDebrief — Welle 1: Gewicht und Beitrag je Anker", () => {
     expect(d.overall).toBe(67);
   });
 });
+
+describe("computeDebrief — Bewertung 2.0: Ergebnis entscheidet über das Urteil", () => {
+  const rubric = [{ key: "a", label: "A", score: 1, weight: 50 }, { key: "b", label: "B", score: 2, weight: 50 }];
+  it("Ziel freigegeben → bestanden, auch unter der Punktegrenze; Grund „ziel“", () => {
+    const d = computeDebrief({ rubric, checkpoints: [], passThreshold: 0.6, ergebnis: "ziel" });
+    expect(d.overall).toBeLessThan(60);
+    expect(d.verdict).toBe("passed");
+    expect(d.verdictGrund).toBe("ziel");
+    expect(d.ergebnis).toBe("ziel");
+  });
+  it("Abbruch → nicht bestanden, auch über der Grenze; Grund „abbruch“", () => {
+    const d = computeDebrief({ rubric: [{ key: "a", label: "A", score: 4 }], checkpoints: [], passThreshold: 0.6, ergebnis: "abbruch" });
+    expect(d.verdict).toBe("failed");
+    expect(d.verdictGrund).toBe("abbruch");
+  });
+  it("offen → Punkte entscheiden; ohne Ergebnis bleibt das alte Debrief unverändert", () => {
+    const d = computeDebrief({ rubric, checkpoints: [], passThreshold: 0.6, ergebnis: "offen" });
+    expect(d.verdict).toBe("failed");
+    expect(d.verdictGrund).toBe("punkte");
+    const alt = computeDebrief({ rubric, checkpoints: [], passThreshold: 0.6 });
+    expect("ergebnis" in alt).toBe(false);
+  });
+  it("nicht bewertbar bleibt nicht bewertbar, auch bei freigegebenem Ziel", () => {
+    const d = computeDebrief({ rubric: [{ key: "a", label: "A", score: null }, { key: "b", label: "B", score: null }], checkpoints: [], ergebnis: "ziel" });
+    expect(d.verdict).toBe("unrated");
+  });
+});

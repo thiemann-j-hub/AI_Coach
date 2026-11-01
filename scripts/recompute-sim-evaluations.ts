@@ -28,6 +28,8 @@ import { scoreCompetencies } from "../src/ai/flows/score-competencies";
 import { normalizeCompetencyRatings } from "../src/lib/competency-model";
 import { collectQualityNotes, type QualityNote } from "../src/lib/quality-core";
 import { CHECK_PASS_THRESHOLD, computeDebrief } from "../src/lib/simulation/debrief";
+import { bestimmeErgebnis, tatsachenText } from "../src/lib/simulation/tatsachen";
+import { regieVerlaufText } from "../src/ai/flows/simulation-regie";
 import { emitCoachMeasurement } from "../src/lib/server/radar-emit";
 
 const args = process.argv.slice(2);
@@ -90,7 +92,20 @@ async function main() {
 
     const transcript = assembleTranscript(doc.turns, scenario.persona.name);
     const [feedback, comp] = await Promise.all([
-      generateSimulationFeedback({ scenario, turns: doc.turns, focus: doc.focus ?? undefined, convoLocale: doc.convoLocale ?? undefined, selfAssessment: doc.selfAssessment ?? undefined }),
+      generateSimulationFeedback({
+        scenario,
+        turns: doc.turns,
+        focus: doc.focus ?? undefined,
+        convoLocale: doc.convoLocale ?? undefined,
+        selfAssessment: doc.selfAssessment ?? undefined,
+        gespraechsende: doc.closedByPersona
+          ? `${scenario.persona.name} beendete das Gespräch (${doc.closedByPersona.ergebnis}): ${doc.closedByPersona.grund}`
+          : doc.closedByTime
+            ? "Die Zeit lief ab; die Rolle verabschiedete sich."
+            : undefined,
+        regieVerlauf: regieVerlaufText(doc.regie, scenario.locale) || undefined,
+        tatsachen: tatsachenText({ personaName: scenario.persona.name, locale: scenario.locale, regie: doc.regie, closedByPersona: doc.closedByPersona, closedByTime: doc.closedByTime === true }) || undefined,
+      }),
       scoreCompetencies({ transcriptText: transcript, lang: doc.convoLocale ?? "de", leaderLabel: "Teilnehmer:in", employeeLabel: scenario.persona.name, scenarioCategory: scenario.category } as any),
     ]);
     let ratings = normalizeCompetencyRatings(comp, { lang: doc.convoLocale ?? "de", leaderLabel: "Teilnehmer:in", employeeLabel: scenario.persona.name });
@@ -108,6 +123,7 @@ async function main() {
       rubric: feedback.rubric.map((r) => ({ key: r.key, label: r.label, score: r.score, weight: weightByKey.get(r.key) })),
       checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
       passThreshold,
+      ergebnis: bestimmeErgebnis({ closedByPersona: doc.closedByPersona, zielErreicht: feedback.zielErreicht ?? null }),
     });
     console.log(
       `${doc.id.slice(0, 8)} ${doc.scenarioId} ${String(doc.finishedAt ?? doc.createdAt).slice(0, 10)} — vorher ${before?.overall ?? "–"} % ${before?.verdict ?? "–"} (zurückgehalten ${beforeWithheld.join(",") || "–"}) → nachher ${debrief.overall ?? "–"} % ${debrief.verdict} (zurückgehalten ${[...fabricated].join(",") || "–"}) · Rubrik ${feedback.rubric.map((r) => `${r.key}=${r.score ?? "∅"}`).join(" ")}`
@@ -124,7 +140,7 @@ async function main() {
       qualityNotes: notes,
       updatedAt: recomputedAt,
       recomputedAt,
-      recomputeNote: "Gate-Korrektur N4-84 (27.09.2026): Auswertung mit korrigiertem Beleg-Vergleich neu berechnet.",
+      recomputeNote: "Bewertung 2.0 (01.11.2026): Auswertung mit Ergebnis, Tatsachen und kalibriertem Richter neu berechnet.",
     };
     if (feedback.microTransfer?.step && !doc.commitment) {
       updated.commitment = { text: feedback.microTransfer.step, source: "model", createdAt: recomputedAt, dueHint: feedback.microTransfer.when || null };

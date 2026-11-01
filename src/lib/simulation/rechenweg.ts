@@ -14,6 +14,9 @@ export interface RechenwegDebrief {
   anchorPct?: number | null;
   checkpointPct?: number | null;
   weights?: { anchors: number; checkpoints: number };
+  /** Bewertung 2.0 */
+  ergebnis?: "ziel" | "offen" | "abbruch" | null;
+  verdictGrund?: "punkte" | "ziel" | "abbruch";
 }
 
 export interface RechenwegLabels {
@@ -25,6 +28,9 @@ export interface RechenwegLabels {
   onlyCheckpoints: string;
   pass: string;
   unrated: string;
+  /** Bewertung 2.0: Urteil aus dem Ergebnis (Ziel freigegeben / Abbruch); optional für Alt-Aufrufer. */
+  goal?: string;
+  abort?: string;
 }
 
 function fill(s: string, vars: Record<string, string | number>): string {
@@ -61,6 +67,8 @@ export function rechenweg(d: RechenwegDebrief, l: RechenwegLabels): string[] {
     else if (aPct != null) out.push(fill(l.onlyAnchors, { overall: d.overall }));
     else if (cPct != null) out.push(fill(l.onlyCheckpoints, { overall: d.overall }));
   }
-  out.push(d.verdict === "unrated" ? l.unrated : fill(l.pass, { passMark: d.passMarkPct }));
+  if (d.verdictGrund === "ziel" && l.goal) out.push(l.goal);
+  else if (d.verdictGrund === "abbruch" && l.abort) out.push(l.abort);
+  else out.push(d.verdict === "unrated" ? l.unrated : fill(l.pass, { passMark: d.passMarkPct }));
   return out;
 }

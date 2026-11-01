@@ -49,7 +49,15 @@ const LANGUAGE_NAME_EN: Record<SimConversationLocale, string> = {
 export type SimPersonaHardness = 'mild' | 'standard' | 'hart';
 
 function hardnessDirective(s: SimulationScenario, hardness: SimPersonaHardness | undefined): string {
-  if (!hardness || hardness === 'standard') return '';
+  // Torwächter (Owner-GO 01.11.2026): auch „Standard“ ist spürbar — ein Einwand gilt erst als behandelt, wenn die
+  // Bedingung dahinter erfüllt ist, nicht wenn ein gutes Argument kam. Befund: Katja Brenner lenkte bei jedem Punkt ein.
+  if (!hardness || hardness === 'standard') {
+    return s.locale === 'en'
+      ? `
+STANDARD SETTING: An objection counts as handled only when the condition behind it has been met and you let it go explicitly. A good argument alone is not enough: ask what is still missing (how, by when, with whom, what if), and do not agree to a next step before it is concrete. Give in only as far as your opening conditions allow.`
+      : `
+STANDARD-EINSTELLUNG: Ein Einwand gilt erst als behandelt, wenn die Bedingung dahinter erfüllt ist und du ihn ausdrücklich fallen lässt. Ein gutes Argument allein reicht nicht: Frag nach, was dir noch fehlt (wie, bis wann, mit wem, was wenn), und sag einem nächsten Schritt erst zu, wenn er konkret ist. Lenke nur so weit ein, wie deine Öffnungs-Bedingungen es erlauben.`;
+  }
   if (hardness === 'mild') {
     return s.locale === 'en'
       ? `\nSOFTER SETTING: You are somewhat more approachable today. Your concession conditions kick in at the FIRST honest attempt in their direction; use at most one objection per reply and de-escalate quickly once your counterpart shows genuine interest.`

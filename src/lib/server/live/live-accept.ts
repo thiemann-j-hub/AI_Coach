@@ -8,6 +8,7 @@ import { checkAndConsumeBudget } from "@/lib/server/cost-cap";
 import { KI_AUS_TEXT, kiSchalterAus } from "@/lib/server/credits/entitlement";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
+import { pruefeEnde } from "@/ai/flows/simulation-ende-pruefung";
 import { getSimulation, saveSimulation } from "@/lib/server/simulation-store";
 import { coachEndeOn, coachLiveLocation, coachLiveModel, coachLiveSprechpause, coachRegieOn } from "@/lib/simulation/flags";
 import {
@@ -167,6 +168,8 @@ function realDeps(): LiveDeps {
     loadSim: (uid, simId) => getSimulation(uid, simId),
     saveSim: (doc) => saveSimulation(doc),
     loadScenario: (uid, scenarioId, oid) => getScenarioForUser(uid, scenarioId, oid),
+    // Torwächter (01.11.2026): Ende nur, wenn die Endbedingung wirklich erfüllt ist.
+    endePruefen: (scenario, turns, ende) => pruefeEnde({ scenario, turns, ende }),
     loadSpielbuch: (scenario) => ensureSpielbuch(scenario),
     regie: (scenario, turns, bisher) => (coachRegieOn() ? beobachteRegie({ scenario, turns, bisher }) : Promise.resolve(null)),
     endeOn: coachEndeOn(),

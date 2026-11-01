@@ -187,6 +187,59 @@ describe("Sprachmodus Live — Welle 2", () => {
   });
 });
 
+describe("Torwächter (01.11.2026) — Ende-Werkzeug geprüft", () => {
+  it("abgelehntes Ende: Werkzeug-Antwort „noch nicht“, Regie-Notiz an die Rolle, kein Abschluss", async () => {
+    const ws = fakeSocket();
+    const up = fakeUpstream();
+    const d0 = doc();
+    const gepruefte: Array<{ grund: string; ergebnis: string; turns: number }> = [];
+    const { deps: d, saved } = deps(up, d0, {
+      endePruefen: async (_s, turns, ende) => {
+        gepruefte.push({ grund: ende.grund, ergebnis: ende.ergebnis, turns: turns.length });
+        return { erfuellt: false, fehlt: "Umfang und Termin des Pilots" };
+      },
+    });
+    const run = runLiveSession(ws, ticket, d);
+    await tick();
+    up.ev().onInputText("Dann starten wir einen Pilot.");
+    up.ev().onOutputText("Gut, dann machen wir das.");
+    up.ev().onToolCall([{ id: "c1", name: ENDE_WERKZEUG, args: { grund: "Pilot vereinbart.", ergebnis: "ziel" } }]);
+    await tick();
+    up.ev().onTurnComplete();
+    await tick();
+    await tick();
+    expect(gepruefte).toEqual([{ grund: "Pilot vereinbart.", ergebnis: "ziel", turns: 3 }]);
+    const tool = up.calls.find((c) => c.k === "tool")?.v as Array<{ response: Record<string, unknown> }>;
+    expect(tool[0].response.ok).toBe(false);
+    expect(String(tool[0].response.hinweis)).toContain("Umfang und Termin des Pilots");
+    const notiz = up.calls.find((c) => c.k === "text" && String((c.v as { text: string }).text).includes("[REGIE"));
+    expect(String((notiz?.v as { text: string }).text)).toContain("Beende das Gespräch noch nicht");
+    expect(json(ws).find((m) => m.t === "ended")).toBeUndefined();
+    expect(saved.at(-1)?.closedByPersona).toBeUndefined();
+    expect(saved.at(-1)?.regie?.at(-1)?.fehlt).toBe("Umfang und Termin des Pilots");
+    ws.emit("close");
+    await run;
+  });
+
+  it("bestätigtes Ende schließt wie zuvor; ein Fehler der Prüfung lässt das Ende gelten (fail-open)", async () => {
+    const ws = fakeSocket();
+    const up = fakeUpstream();
+    const { deps: d, saved } = deps(up, doc(), { endePruefen: async () => { throw new Error("kaputt"); } });
+    const run = runLiveSession(ws, ticket, d);
+    await tick();
+    up.ev().onOutputText("Danke, bis dann.");
+    up.ev().onToolCall([{ id: "c1", name: ENDE_WERKZEUG, args: { grund: "Termin vereinbart.", ergebnis: "ziel" } }]);
+    await tick();
+    up.ev().onTurnComplete();
+    await tick();
+    await tick();
+    expect((up.calls.find((c) => c.k === "tool")?.v as Array<{ response: Record<string, unknown> }>)[0].response).toEqual({ ok: true });
+    expect(saved.at(-1)?.closedByPersona?.ergebnis).toBe("ziel");
+    ws.emit("close");
+    await run;
+  });
+});
+
 describe("Welle 2 — reine Helfer", () => {
   it("latencyStats rechnet p50/p95/max", () => {
     expect(latencyStats([])).toBeNull();

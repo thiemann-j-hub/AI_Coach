@@ -94,7 +94,7 @@ export interface SimulationDoc {
   /** Die Rolle hat das Gespräch selbst beendet (Endbedingung erfüllt): Grund, Ergebnis-Art, Zeitpunkt. */
   closedByPersona?: { grund: string; ergebnis: "ziel" | "verabschiedung" | "abbruch"; at: string } | null;
   /** Regie-Beobachter: Öffnungsstufe je Zug (Notizen an die Rolle, Verlauf für den Richter). */
-  regie?: Array<{ stufe: number; erfuellt: string[]; eskaliert: boolean; notiz: string; turn: number; ts: string; delivered?: boolean }>;
+  regie?: Array<{ stufe: number; erfuellt: string[]; eskaliert: boolean; notiz: string; turn: number; ts: string; delivered?: boolean; vorschnell?: boolean; fehlt?: string }>;
   /** Live-Modus: Antwortzeiten (Ende der Eingabe-Mitschrift → erstes Audio), ungefähr. */
   liveStats?: { antworten: number; p50Ms: number; p95Ms: number; maxMs: number } | null;
 }

@@ -1,0 +1,63 @@
+import type { DebriefErgebnis } from "./debrief";
+
+/**
+ * Bewertung 2.0 (Owner-GO 01.11.2026): Was im Gespräch FESTSTEHT, bevor der Richter urteilt — das Ergebnis der Rolle
+ * (Ziel freigegeben, verabschiedet, abgebrochen) und die Bedingungen, die die Rolle laut Regie erfüllt sah. Der Richter
+ * bekommt das als Tatsachen (Konsistenzregel im Prompt); das Debrief leitet daraus das Urteil ab. Reine Funktionen.
+ */
+export interface TatsachenRegieEintrag {
+  turn: number;
+  stufe: number;
+  erfuellt: string[];
+  vorschnell?: boolean;
+}
+
+export interface TatsachenEnde {
+  ergebnis: "ziel" | "verabschiedung" | "abbruch";
+  grund: string;
+}
+
+export interface TatsachenArgs {
+  personaName: string;
+  locale: "de" | "en";
+  regie?: TatsachenRegieEintrag[] | null;
+  closedByPersona?: TatsachenEnde | null;
+  closedByTime?: boolean;
+}
+
+/** Zeilen für den Richter; leer, wenn nichts feststeht. */
+export function tatsachenText(a: TatsachenArgs): string {
+  const en = a.locale === "en";
+  const zeilen: string[] = [];
+  const ende = a.closedByPersona;
+  if (ende?.ergebnis === "ziel") {
+    zeilen.push(en ? `${a.personaName} released the goal and ended the conversation: ${ende.grund}` : `${a.personaName} hat das Ziel freigegeben und das Gespräch beendet: ${ende.grund}`);
+  } else if (ende?.ergebnis === "abbruch") {
+    zeilen.push(en ? `${a.personaName} broke off the conversation: ${ende.grund}` : `${a.personaName} hat das Gespräch abgebrochen: ${ende.grund}`);
+  } else if (ende?.ergebnis === "verabschiedung") {
+    zeilen.push(en ? `The learner said goodbye; the goal stayed open: ${ende.grund}` : `Die lernende Person hat sich verabschiedet; das Ziel blieb offen: ${ende.grund}`);
+  } else if (a.closedByTime) {
+    zeilen.push(en ? "Time ran out before the goal was settled." : "Die Zeit lief ab, bevor das Ziel geklärt war.");
+  }
+  // Erfüllte Bedingungen: die zuletzt gültige Liste (die Regie führt sie kumulativ), ohne vorschnelle Einträge.
+  const gueltig = [...(a.regie ?? [])].reverse().find((r) => !r.vorschnell && r.erfuellt.length);
+  for (const b of gueltig?.erfuellt ?? []) {
+    zeilen.push(en ? `Condition met (turn ${gueltig!.turn}): ${b}` : `Bedingung erfüllt (Zug ${gueltig!.turn}): ${b}`);
+  }
+  const vorschnell = (a.regie ?? []).filter((r) => r.vorschnell).map((r) => r.turn);
+  if (vorschnell.length) {
+    zeilen.push(en ? `The role gave in too early in turn(s) ${vorschnell.join(", ")} — those concessions do not count as met conditions.` : `Die Rolle lenkte in Zug ${vorschnell.join(", ")} vorschnell ein — diese Zugeständnisse zählen nicht als erfüllte Bedingungen.`);
+  }
+  return zeilen.join("\n");
+}
+
+/**
+ * Ergebnis des Gesprächs für das Debrief: Die Rolle hat Vorrang (sie hat das Ziel freigegeben oder abgebrochen);
+ * sonst entscheidet das Urteil des Richters (zielErreicht), sonst „offen“.
+ */
+export function bestimmeErgebnis(a: { closedByPersona?: TatsachenEnde | null; zielErreicht?: boolean | null }): DebriefErgebnis {
+  if (a.closedByPersona?.ergebnis === "ziel") return "ziel";
+  if (a.closedByPersona?.ergebnis === "abbruch") return "abbruch";
+  if (a.zielErreicht === true) return "ziel";
+  return "offen";
+}

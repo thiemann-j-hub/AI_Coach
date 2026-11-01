@@ -303,7 +303,12 @@
     "consentBody": "La seva empresa li demana el seu consentiment abans de la primera gravació de veu: la seva veu es converteix en text a l'Europa occidental, la gravació no es desa. Sempre pot escriure en comptes de parlar.",
     "consentLater": "Més tard, escriuré",
     "consentGo": "Anar al consentiment",
-    "variantLabel": "Variant"
+    "variantLabel": "Variant",
+    "ergebnisZiel": "Objectiu assolit",
+    "ergebnisOffen": "Objectiu obert",
+    "ergebnisAbbruch": "Interromput",
+    "passedByGoal": "Aprovat · objectiu assolit",
+    "failedByAbort": "No aprovat · conversa interrompuda"
   },
   "auth": {
     "signIn": "Inicia la sessió",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Abordar aquest tema més a fons?",
     "studioBridgeBody": "Crea un curs al Learning Studio — a mida de {c}.",
     "studioBridgeCta": "Crear curs a l'Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "El rol ha concedit l'objectiu – per això has aprovat, independentment de la puntuació.",
+    "calcAbort": "El rol ha interromput la conversa – per això no has aprovat, independentment de la puntuació."
   },
   "profilePage": {
     "title": "Perfil",

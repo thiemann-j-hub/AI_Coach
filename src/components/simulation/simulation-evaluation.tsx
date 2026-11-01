@@ -91,6 +91,9 @@ export interface SimEvalDebrief {
   anchorPct?: number | null;
   checkpointPct?: number | null;
   weights?: { anchors: number; checkpoints: number };
+  /** Bewertung 2.0 (01.11.2026): Ergebnis des Gesprächs und Grund des Urteils; fehlen bei Alt-Läufen. */
+  ergebnis?: 'ziel' | 'offen' | 'abbruch' | null;
+  verdictGrund?: 'punkte' | 'ziel' | 'abbruch';
 }
 
 /** Hub `/api/lernbereich/courses` (same-origin, Sitzungs-Cookie): eigene Kurse mit Kompetenz-Tags. */
@@ -449,8 +452,32 @@ export function SimulationEvaluation(props: {
                         : 'bg-muted text-muted-foreground border-border'
                   )}
                 >
-                  {verdict === 'passed' ? ts.passed : verdict === 'failed' ? ts.failed : ts.unrated}
+                  {verdict === 'passed'
+                    ? debrief.verdictGrund === 'ziel'
+                      ? ts.passedByGoal
+                      : ts.passed
+                    : verdict === 'failed'
+                      ? debrief.verdictGrund === 'abbruch'
+                        ? ts.failedByAbort
+                        : ts.failed
+                      : ts.unrated}
                 </span>
+                {/* Bewertung 2.0: das Ergebnis des Gesprächs als eigene Dimension neben der Punktzahl. */}
+                {debrief.ergebnis && debrief.verdictGrund === 'punkte' && (
+                  <span
+                    className={cx(
+                      'text-xs font-semibold px-2 py-0.5 rounded-full border',
+                      debrief.ergebnis === 'ziel'
+                        ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30'
+                        : debrief.ergebnis === 'abbruch'
+                          ? 'bg-rose-500/10 text-rose-800 dark:text-rose-400 border-rose-500/30'
+                          : 'bg-muted text-muted-foreground border-border'
+                    )}
+                    data-testid="ergebnis-badge"
+                  >
+                    {debrief.ergebnis === 'ziel' ? ts.ergebnisZiel : debrief.ergebnis === 'abbruch' ? ts.ergebnisAbbruch : ts.ergebnisOffen}
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {ts.passMark}: {debrief.passMarkPct} %
                 </span>
@@ -488,6 +515,8 @@ export function SimulationEvaluation(props: {
                       onlyCheckpoints: t.evaluation.calcOnlyCheckpoints,
                       pass: t.evaluation.calcPass,
                       unrated: t.evaluation.calcUnrated,
+                      goal: t.evaluation.calcGoal,
+                      abort: t.evaluation.calcAbort,
                     }).map((line, i) => (
                       <li key={i}>{line}</li>
                     ))}

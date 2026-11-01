@@ -38,6 +38,14 @@ export type ExpectationLabel =
 
 export type DebriefVerdict = "passed" | "failed" | "unrated";
 
+/**
+ * Bewertung 2.0 (Owner-GO 01.11.2026): Ergebnis des Gesprächs als eigene Größe, getrennt von der Punktzahl.
+ * `ziel` = die Rolle hat das Gespräch beendet, weil ihre Endbedingung „Ziel erreicht“ galt (oder der Richter sah die
+ * Szenario-Ziele erreicht); `abbruch` = die Rolle hat abgebrochen; `offen` = alles andere (Zeit, Verabschiedung, Person).
+ */
+export type DebriefErgebnis = "ziel" | "offen" | "abbruch";
+export type DebriefVerdictGrund = "punkte" | "ziel" | "abbruch";
+
 export interface DebriefAnchor {
   key: string;
   label: string;
@@ -67,6 +75,9 @@ export interface Debrief {
   /** Rechenweg (N17, 11.10.2026): die beiden Teilwerte, gerundet; fehlt bei Alt-Läufen. */
   anchorPct?: number | null;
   checkpointPct?: number | null;
+  /** Bewertung 2.0: Ergebnis des Gesprächs und worauf das Urteil beruht; fehlt bei Alt-Läufen. */
+  ergebnis?: DebriefErgebnis | null;
+  verdictGrund?: DebriefVerdictGrund;
 }
 
 export interface DebriefDelta {
@@ -102,6 +113,8 @@ export function computeDebrief(args: {
   rubric: DebriefRubricInput[];
   checkpoints: DebriefCheckpointInput[];
   passThreshold?: number;
+  /** Bewertung 2.0: Ergebnis des Gesprächs (siehe DebriefErgebnis); fehlt = Alt-Lauf, Urteil nur aus Punkten. */
+  ergebnis?: DebriefErgebnis | null;
 }): Debrief {
   const passThreshold =
     typeof args.passThreshold === "number" &&
@@ -171,15 +184,27 @@ export function computeDebrief(args: {
   }
 
   const passMarkPct = Math.round(passThreshold * 100);
-  const verdict: DebriefVerdict =
+  const ausPunkten: DebriefVerdict =
     overall == null || coverage < MIN_COVERAGE_FOR_VERDICT
       ? "unrated"
       : overall >= passMarkPct
         ? "passed"
         : "failed";
+  // Bewertung 2.0: Die Punktzahl bleibt die Punktzahl (vergleichbar über Versuche). Das Urteil kennt zusätzlich das
+  // Ergebnis: Hat die Rolle das Ziel freigegeben, ist der Lauf bestanden; hat sie abgebrochen, nicht bestanden.
+  // Beides nur, wenn überhaupt ein Wert da ist — ohne Beobachtung bleibt es „nicht bewertbar“.
+  let verdict = ausPunkten;
+  let verdictGrund: DebriefVerdictGrund = "punkte";
+  if (args.ergebnis === "ziel" && overall != null) {
+    verdict = "passed";
+    verdictGrund = "ziel";
+  } else if (args.ergebnis === "abbruch" && overall != null) {
+    verdict = "failed";
+    verdictGrund = "abbruch";
+  }
 
   return {
-    overall: verdict === "unrated" ? overall : overall,
+    overall,
     verdict,
     passMarkPct,
     coverage: Math.round(coverage * 100) / 100,
@@ -189,6 +214,7 @@ export function computeDebrief(args: {
     weights: { anchors: ANCHOR_WEIGHT, checkpoints: CHECKPOINT_WEIGHT },
     anchorPct: anchorPct == null ? null : Math.round(anchorPct),
     checkpointPct: checkpointPct == null ? null : Math.round(checkpointPct),
+    ...(args.ergebnis !== undefined ? { ergebnis: args.ergebnis ?? "offen", verdictGrund } : {}),
   };
 }
 

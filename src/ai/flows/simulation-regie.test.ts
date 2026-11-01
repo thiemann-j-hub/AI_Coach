@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getScenario } from "@/lib/simulation/scenarios";
-import { buildRegiePrompt, offeneRegieNotiz, regieStageNote, regieVerlaufText, type RegieStand } from "./simulation-regie";
+import { buildRegiePrompt, halteNotiz, offeneRegieNotiz, regieStageNote, regieVerlaufText, type RegieStand } from "./simulation-regie";
 
 const morgan = getScenario("sim-coaching-morgan")!;
 const stone = getScenario("sim-appraisal-stone")!;
@@ -37,5 +37,16 @@ describe("Regie-Beobachter (Welle 2)", () => {
     expect(text).toContain("Zug 7: Stufe 2");
     expect(text).not.toContain("Zug 5");
     expect(regieVerlaufText(regie, "en")).toContain("turn 7: level 2");
+  });
+
+  it("Torwächter: Beobachter prüft vorschnelles Einlenken; Halte-Notiz nennt, was fehlt; Verlauf zeigt es dem Richter", () => {
+    expect(buildRegiePrompt(morgan, [], null)).toContain("vorschnell = true");
+    const n = halteNotiz(morgan, 0, "nach der Ursache fragen", true);
+    expect(n).toContain("Halte deine Position");
+    expect(n).toContain("vorschnell eingelenkt");
+    expect(n).toContain("Es fehlt: nach der Ursache fragen");
+    expect(halteNotiz(stone, 1, "", false)).toContain("Hold your position");
+    const regie: RegieStand[] = [{ stufe: 0, erfuellt: [], eskaliert: false, notiz: "", turn: 4, ts: "t", vorschnell: true, fehlt: "x" }];
+    expect(regieVerlaufText(regie, "de")).toContain("Zug 4: Stufe 0, Rolle lenkte vorschnell ein");
   });
 });

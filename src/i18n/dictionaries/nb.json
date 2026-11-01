@@ -303,7 +303,12 @@
     "consentBody": "Deres bedrift ber om Deres samtykke før den første taleinnspillingen: Stemmen Deres konverteres til tekst i Vest-Europa, innspillingen blir ikke lagret. De kan alltid skrive i stedet.",
     "consentLater": "Senere, jeg skriver",
     "consentGo": "Gå til samtykke",
-    "variantLabel": "Variant"
+    "variantLabel": "Variant",
+    "ergebnisZiel": "Mål nådd",
+    "ergebnisOffen": "Mål åpent",
+    "ergebnisAbbruch": "Avbrutt",
+    "passedByGoal": "Bestått · mål nådd",
+    "failedByAbort": "Ikke bestått · samtalen avbrutt"
   },
   "auth": {
     "signIn": "Logg inn",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Ta tak i temaet mer grunnleggende?",
     "studioBridgeBody": "Lag et kurs i Learning Studio — skreddersydd for {c}.",
     "studioBridgeCta": "Lag kurs i Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Rollen ga målet fri – derfor bestått, uavhengig av poengsummen.",
+    "calcAbort": "Rollen avbrøt samtalen – derfor ikke bestått, uavhengig av poengsummen."
   },
   "profilePage": {
     "title": "Profil",

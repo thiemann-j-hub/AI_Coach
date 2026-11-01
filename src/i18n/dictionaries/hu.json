@@ -303,7 +303,12 @@
     "consentBody": "A vállalata az első hangfelvétel előtt a hozzájárulását kéri: a hangját Nyugat-Európában alakítják szöveggé, a felvételt pedig nem tárolják. Ehelyett bármikor gépelhet is.",
     "consentLater": "Később, inkább gépelek",
     "consentGo": "Tovább a hozzájáruláshoz",
-    "variantLabel": "Változat"
+    "variantLabel": "Változat",
+    "ergebnisZiel": "Cél elérve",
+    "ergebnisOffen": "Cél nyitott",
+    "ergebnisAbbruch": "Megszakítva",
+    "passedByGoal": "Megfelelt · cél elérve",
+    "failedByAbort": "Nem felelt meg · a beszélgetés megszakadt"
   },
   "auth": {
     "signIn": "Bejelentkezés",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Alaposabban nekimennél ennek a témának?",
     "studioBridgeBody": "Készíts kurzust a Learning Studióban — a(z) {c} területre szabva.",
     "studioBridgeCta": "Kurzus létrehozása a Studióban",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "A szerep elengedte a célt – ezért megfelelt, a pontszámtól függetlenül.",
+    "calcAbort": "A szerep megszakította a beszélgetést – ezért nem felelt meg, a pontszámtól függetlenül."
   },
   "profilePage": {
     "title": "Profil",

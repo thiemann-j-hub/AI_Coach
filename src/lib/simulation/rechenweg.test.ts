@@ -29,3 +29,16 @@ describe("Rechenweg (N17)", () => {
     expect(z).toEqual(["S", "A 0/2 – 70", "C 1/2 50 30", "unrated"]);
   });
 });
+
+describe("Rechenweg — Bewertung 2.0", () => {
+  const L2 = { ...L, goal: "ZIEL-ZEILE", abort: "ABBRUCH-ZEILE" };
+  it("zeigt die Ziel-Zeile statt der Punktegrenze, wenn die Rolle das Ziel freigegeben hat", () => {
+    const z = rechenweg({ overall: 46, verdict: "passed", passMarkPct: 60, anchors: [{ pct: 33 }], checkpointsHit: 0, checkpointsTotal: 0, anchorPct: 46, checkpointPct: null, ergebnis: "ziel", verdictGrund: "ziel" }, L2);
+    expect(z.at(-1)).toBe("ZIEL-ZEILE");
+  });
+  it("Abbruch-Zeile bei Abbruch; Punkte-Zeile, wenn Punkte entschieden haben oder Alt-Aufrufer keine Zeilen liefern", () => {
+    expect(rechenweg({ overall: 80, verdict: "failed", passMarkPct: 60, anchors: [{ pct: 80 }], checkpointsHit: 0, checkpointsTotal: 0, verdictGrund: "abbruch" }, L2).at(-1)).toBe("ABBRUCH-ZEILE");
+    expect(rechenweg({ overall: 80, verdict: "passed", passMarkPct: 60, anchors: [{ pct: 80 }], checkpointsHit: 0, checkpointsTotal: 0, verdictGrund: "punkte" }, L2).at(-1)).toBe("ab 60");
+    expect(rechenweg({ overall: 46, verdict: "passed", passMarkPct: 60, anchors: [{ pct: 46 }], checkpointsHit: 0, checkpointsTotal: 0, verdictGrund: "ziel" }, L).at(-1)).toBe("ab 60");
+  });
+});

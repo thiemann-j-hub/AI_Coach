@@ -303,7 +303,12 @@
     "consentBody": "Teie ettevõte küsib Teilt nõusolekut enne esimest häälesalvestust: Teie hääl teisendatakse tekstiks Lääne-Euroopas, salvestist ei salvestata. Võite selle asemel igal ajal tippida.",
     "consentLater": "Hiljem, tipin",
     "consentGo": "Nõusoleku juurde",
-    "variantLabel": "Variant"
+    "variantLabel": "Variant",
+    "ergebnisZiel": "Eesmärk saavutatud",
+    "ergebnisOffen": "Eesmärk lahtine",
+    "ergebnisAbbruch": "Katkestatud",
+    "passedByGoal": "Sooritatud · eesmärk saavutatud",
+    "failedByAbort": "Sooritamata · vestlus katkestatud"
   },
   "auth": {
     "signIn": "Logi sisse",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Käsitle seda teemat põhjalikumalt?",
     "studioBridgeBody": "Loo kursus Learning Studios — rätsepatööna kompetentsile {c}.",
     "studioBridgeCta": "Loo kursus Studios",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Roll andis eesmärgi vabaks – seega sooritatud, olenemata punktidest.",
+    "calcAbort": "Roll katkestas vestluse – seega sooritamata, olenemata punktidest."
   },
   "profilePage": {
     "title": "Profiil",

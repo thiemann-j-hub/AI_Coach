@@ -303,7 +303,12 @@
     "consentBody": "Jūsu uzņēmums lūdz Jūsu piekrišanu pirms pirmā balss ieraksta: Jūsu balss tiek pārveidota tekstā Rietumeiropā, ieraksts netiek saglabāts. Tā vietā Jūs jebkurā laikā varat rakstīt.",
     "consentLater": "Vēlāk, es rakstīšu",
     "consentGo": "Doties uz piekrišanu",
-    "variantLabel": "Variants"
+    "variantLabel": "Variants",
+    "ergebnisZiel": "Mērķis sasniegts",
+    "ergebnisOffen": "Mērķis atvērts",
+    "ergebnisAbbruch": "Pārtraukta",
+    "passedByGoal": "Nokārtots · mērķis sasniegts",
+    "failedByAbort": "Nav nokārtots · saruna pārtraukta"
   },
   "auth": {
     "signIn": "Pierakstīties",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Ķerties pie šīs tēmas pamatīgāk?",
     "studioBridgeBody": "Izveido kursu Learning Studio — pielāgotu {c}.",
     "studioBridgeCta": "Izveidot kursu Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Loma piešķīra mērķi – tāpēc nokārtots neatkarīgi no punktu skaita.",
+    "calcAbort": "Loma pārtrauca sarunu – tāpēc nav nokārtots neatkarīgi no punktu skaita."
   },
   "profilePage": {
     "title": "Profils",

@@ -303,7 +303,12 @@
     "consentBody": "Your company asks for your consent before the first voice recording: your voice is converted to text in Western Europe, the recording is not stored. You can always type instead.",
     "consentLater": "Later, I will type",
     "consentGo": "Go to consent",
-    "variantLabel": "Variant"
+    "variantLabel": "Variant",
+    "ergebnisZiel": "Goal reached",
+    "ergebnisOffen": "Goal open",
+    "ergebnisAbbruch": "Broken off",
+    "passedByGoal": "Passed · goal reached",
+    "failedByAbort": "Not passed · conversation broken off"
   },
   "auth": {
     "signIn": "Sign In",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Tackle this topic more fundamentally?",
     "studioBridgeBody": "Create a course in the Learning Studio — tailored to {c}.",
     "studioBridgeCta": "Create course in Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "The role released the goal – so you passed, regardless of the score.",
+    "calcAbort": "The role broke off the conversation – so not passed, regardless of the score."
   },
   "profilePage": {
     "title": "Profile",

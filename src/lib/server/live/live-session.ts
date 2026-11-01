@@ -1,5 +1,6 @@
 import { buildPersonaSystemPrompt, personaStageNote, type PersonaEndeErgebnis, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
 import { regieStageNote, type RegieStand } from "@/ai/flows/simulation-regie";
+import { endeAbgelehntNote } from "@/ai/flows/simulation-ende-pruefung";
 import type { SimulationScenario, SimulationTurn } from "@/lib/simulation/types";
 import {
   SIM_MAX_USER_TURNS,
@@ -128,6 +129,8 @@ export interface LiveDeps {
   loadSpielbuch?(scenario: SimulationScenario): Promise<string | null>;
   /** Welle 2: Regie-Beobachter nach einem Zug der lernenden Person; optional (Tests, Rückweg). */
   regie?(scenario: SimulationScenario, turns: SimulationTurn[], bisher: RegieStand | null): Promise<RegieStand | null>;
+  /** Torwächter (01.11.2026): prüft das gewünschte Ende gegen die Endbedingungen; optional (fehlt = Ende gilt). */
+  endePruefen?(scenario: SimulationScenario, turns: SimulationTurn[], ende: { grund: string; ergebnis: "ziel" | "verabschiedung" | "abbruch" }): Promise<{ erfuellt: boolean; fehlt: string }>;
   budget(args: { uid: string; email: string | null; estimatedTokens: number }): Promise<{ allowed: boolean }>;
   /**
    * A4: KI-Schalter des Unternehmens für diese Kennung. Liefert die Meldung für die Person, wenn er aus ist,
@@ -427,16 +430,50 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     onToolCall: (calls) => {
       for (const call of calls) {
         const ende = parseEndeCall(call);
-        try {
-          upstream?.sendToolResponse?.([{ id: call.id, name: call.name, response: ende ? { ok: true } : { ok: false, error: "unknown tool" } }]);
-        } catch (e) {
-          log("warn", "live-tool-response", { err: e instanceof Error ? e.message : String(e) });
+        const antworten = (response: Record<string, unknown>) => {
+          try {
+            upstream?.sendToolResponse?.([{ id: call.id, name: call.name, response }]);
+          } catch (e) {
+            log("warn", "live-tool-response", { err: e instanceof Error ? e.message : String(e) });
+          }
+        };
+        if (!ende) {
+          antworten({ ok: false, error: "unknown tool" });
+          continue;
         }
-        if (!ende) continue;
-        personaEnde = ende;
-        log("info", "live-ende-werkzeug", { ergebnis: ende.ergebnis });
-        // Kommt kein turnComplete mehr (Werkzeug nach dem letzten Satz), schließt der Zug nach kurzer Frist.
-        timers.push(setTimeout(() => { if (!closing && personaEnde && !doc.closedByPersona) enqueueFinalize(); }, 2_500));
+        // Torwächter (01.11.2026): Das Ende gilt erst, wenn die Endbedingung wirklich erfüllt ist. Sonst bekommt die
+        // Rolle die Werkzeug-Antwort „noch nicht“ plus eine Regie-Notiz, was fehlt — das Gespräch läuft weiter.
+        void (async () => {
+          const ts = new Date(deps.now()).toISOString();
+          const turnsJetzt: SimulationTurn[] = [
+            ...doc.turns,
+            ...(pendingUser.trim() ? [{ role: "user" as const, text: pendingUser.trim(), ts }] : []),
+            ...(pendingPersona.trim() ? [{ role: "persona" as const, text: pendingPersona.trim(), ts }] : []),
+          ];
+          const pruefung = deps.endePruefen
+            ? await deps.endePruefen(scenario, turnsJetzt, ende).catch(() => ({ erfuellt: true, fehlt: "" }))
+            : { erfuellt: true, fehlt: "" };
+          if (closing) return;
+          if (!pruefung.erfuellt) {
+            const notiz = endeAbgelehntNote(scenario, pruefung.fehlt);
+            antworten({ ok: false, hinweis: notiz });
+            const letzte = doc.regie?.[doc.regie.length - 1];
+            const stand: RegieStand = { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz, turn: turnsJetzt.length, ts, delivered: true, fehlt: pruefung.fehlt };
+            doc.regie = [...(doc.regie ?? []).slice(-40), stand];
+            try {
+              upstream?.sendText(regieStageNote(scenario, stand), false);
+            } catch (e) {
+              log("warn", "live-ende-notiz", { err: e instanceof Error ? e.message : String(e) });
+            }
+            log("info", "live-ende-abgelehnt", { ergebnis: ende.ergebnis, fehlt: pruefung.fehlt.slice(0, 120) });
+            return;
+          }
+          antworten({ ok: true });
+          personaEnde = ende;
+          log("info", "live-ende-werkzeug", { ergebnis: ende.ergebnis });
+          // Kommt kein turnComplete mehr (Werkzeug nach dem letzten Satz), schließt der Zug nach kurzer Frist.
+          timers.push(setTimeout(() => { if (!closing && personaEnde && !doc.closedByPersona) enqueueFinalize(); }, 2_500));
+        })();
       }
     },
     onResumptionHandle: (h) => {

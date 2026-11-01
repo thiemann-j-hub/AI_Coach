@@ -303,7 +303,12 @@
     "consentBody": "Uw bedrijf vraagt om uw toestemming voor de eerste spraakopname: uw stem wordt in West-Europa omgezet in tekst, de opname wordt niet opgeslagen. U kunt in plaats daarvan altijd typen.",
     "consentLater": "Later, ik typ",
     "consentGo": "Naar toestemming",
-    "variantLabel": "Variant"
+    "variantLabel": "Variant",
+    "ergebnisZiel": "Doel bereikt",
+    "ergebnisOffen": "Doel open",
+    "ergebnisAbbruch": "Afgebroken",
+    "passedByGoal": "Geslaagd · doel bereikt",
+    "failedByAbort": "Niet geslaagd · gesprek afgebroken"
   },
   "auth": {
     "signIn": "Aanmelden",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Dit thema grondiger aanpakken?",
     "studioBridgeBody": "Maak een cursus in de Learning Studio — op maat van {c}.",
     "studioBridgeCta": "Cursus in Studio maken",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "De rol heeft het doel vrijgegeven – daarom geslaagd, ongeacht de score.",
+    "calcAbort": "De rol heeft het gesprek afgebroken – daarom niet geslaagd, ongeacht de score."
   },
   "profilePage": {
     "title": "Profiel",

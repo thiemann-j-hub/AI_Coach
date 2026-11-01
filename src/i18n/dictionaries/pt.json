@@ -303,7 +303,12 @@
     "consentBody": "A sua empresa solicita o seu consentimento antes da primeira gravação de voz: a sua voz é convertida em texto na Europa Ocidental e a gravação não é guardada. Pode sempre optar por escrever.",
     "consentLater": "Mais tarde, irei escrever",
     "consentGo": "Ir para o consentimento",
-    "variantLabel": "Variante"
+    "variantLabel": "Variante",
+    "ergebnisZiel": "Objetivo alcançado",
+    "ergebnisOffen": "Objetivo em aberto",
+    "ergebnisAbbruch": "Interrompida",
+    "passedByGoal": "Aprovado · objetivo alcançado",
+    "failedByAbort": "Não aprovado · conversa interrompida"
   },
   "auth": {
     "signIn": "Iniciar sessão",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Abordar este tema mais a fundo?",
     "studioBridgeBody": "Cria um curso no Learning Studio — à medida de {c}.",
     "studioBridgeCta": "Criar curso no Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "O papel concedeu o objetivo – por isso aprovado, independentemente da pontuação.",
+    "calcAbort": "O papel interrompeu a conversa – por isso não aprovado, independentemente da pontuação."
   },
   "profilePage": {
     "title": "Perfil",

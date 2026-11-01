@@ -303,7 +303,12 @@
     "consentBody": "Yrityksenne pyytää suostumustanne ennen ensimmäistä äänitallennetta: äänenne muunnetaan tekstiksi Länsi-Euroopassa, eikä tallennetta tallenneta. Voitte sen sijaan aina kirjoittaa.",
     "consentLater": "Myöhemmin, kirjoitan",
     "consentGo": "Siirry suostumukseen",
-    "variantLabel": "Muunnelma"
+    "variantLabel": "Muunnelma",
+    "ergebnisZiel": "Tavoite saavutettu",
+    "ergebnisOffen": "Tavoite avoin",
+    "ergebnisAbbruch": "Keskeytetty",
+    "passedByGoal": "Hyväksytty · tavoite saavutettu",
+    "failedByAbort": "Hylätty · keskustelu keskeytettiin"
   },
   "auth": {
     "signIn": "Kirjaudu sisään",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Käsittele aihetta perusteellisemmin?",
     "studioBridgeBody": "Luo kurssi Learning Studiossa — räätälöity kohteelle {c}.",
     "studioBridgeCta": "Luo kurssi Studiossa",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Rooli vapautti tavoitteen – siksi hyväksytty pistemäärästä riippumatta.",
+    "calcAbort": "Rooli keskeytti keskustelun – siksi hylätty pistemäärästä riippumatta."
   },
   "profilePage": {
     "title": "Profiili",

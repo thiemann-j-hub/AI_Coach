@@ -303,7 +303,12 @@
     "consentBody": "Vaše společnost vás před první hlasovou nahrávkou žádá o souhlas: váš hlas je v západní Evropě převeden na text, nahrávka se neukládá. Místo toho můžete kdykoli psát.",
     "consentLater": "Později, budu psát",
     "consentGo": "Přejít k souhlasu",
-    "variantLabel": "Varianta"
+    "variantLabel": "Varianta",
+    "ergebnisZiel": "Cíl dosažen",
+    "ergebnisOffen": "Cíl otevřený",
+    "ergebnisAbbruch": "Přerušeno",
+    "passedByGoal": "Splněno · cíl dosažen",
+    "failedByAbort": "Nesplněno · rozhovor přerušen"
   },
   "auth": {
     "signIn": "Přihlásit se",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Vzít téma důkladněji?",
     "studioBridgeBody": "Vytvoř kurz v Learning Studiu — na míru {c}.",
     "studioBridgeCta": "Vytvořit kurz ve Studiu",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Role cíl uvolnila – proto splněno, bez ohledu na počet bodů.",
+    "calcAbort": "Role rozhovor přerušila – proto nesplněno, bez ohledu na počet bodů."
   },
   "profilePage": {
     "title": "Profil",

@@ -303,7 +303,12 @@
     "consentBody": "La Sua azienda Le chiede il consenso prima della prima registrazione vocale: la Sua voce viene convertita in testo nell'Europa occidentale e la registrazione non viene memorizzata. In alternativa, può sempre digitare.",
     "consentLater": "Più tardi, digiterò",
     "consentGo": "Procedi al consenso",
-    "variantLabel": "Variante"
+    "variantLabel": "Variante",
+    "ergebnisZiel": "Obiettivo raggiunto",
+    "ergebnisOffen": "Obiettivo aperto",
+    "ergebnisAbbruch": "Interrotto",
+    "passedByGoal": "Superato · obiettivo raggiunto",
+    "failedByAbort": "Non superato · colloquio interrotto"
   },
   "auth": {
     "signIn": "Accedi",
@@ -568,7 +573,9 @@
     "studioBridgeTitle": "Affrontare questo tema più a fondo?",
     "studioBridgeBody": "Crea un corso nel Learning Studio — su misura per {c}.",
     "studioBridgeCta": "Crea corso nello Studio",
-    "microTransferTitle": "Your step for real life"
+    "microTransferTitle": "Your step for real life",
+    "calcGoal": "Il ruolo ha concesso l'obiettivo – quindi superato, indipendentemente dal punteggio.",
+    "calcAbort": "Il ruolo ha interrotto il colloquio – quindi non superato, indipendentemente dal punteggio."
   },
   "profilePage": {
     "title": "Profilo",
