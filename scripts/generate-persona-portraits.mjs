@@ -51,7 +51,8 @@ async function generate(p) {
 
   const res = await fetch("https://fal.run/fal-ai/nano-banana", {
     method: "POST",
-    headers: { Authorization: `Key ${KEY}`, "Content-Type": "application/json" },
+    // Datenschutz (01.11.2026): fal.ai speichert Ein-/Ausgaben sonst 90 Tage; Bild-Datei auf dem fal-CDN verfällt nach einer Stunde.
+    headers: { Authorization: `Key ${KEY}`, "Content-Type": "application/json", "X-Fal-Store-IO": "0", "X-Fal-Object-Lifecycle-Preference": JSON.stringify({ expiration_duration_seconds: 3600 }) },
     body: JSON.stringify({
       prompt: `${p.prompt} ${BASE_STYLE}`,
       num_images: 1,
