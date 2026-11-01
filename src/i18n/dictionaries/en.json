@@ -263,7 +263,7 @@
     "builderCardCta": "Open builder",
     "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
     "micNoticeTitle": "About voice input",
-    "micNoticeBody": "Your voice is converted to text in our data centre in Western Europe (Microsoft Azure) and is not stored there. If this service is currently unavailable, your browser uses its own speech recognition and sends the recording to its maker (Chrome: Google). If you prefer not to, type your answer.",
+    "micNoticeBody": "For dictation, Microsoft Azure in Western Europe converts your voice to text and does not store the recording. In a live conversation, Google Vertex AI in the EU processes your voice. If the service is currently unavailable, just keep typing.",
     "micNoticeAccept": "Got it, use the microphone",
     "micNoticeDecline": "I'd rather type",
     "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",

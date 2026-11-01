@@ -263,7 +263,7 @@
     "builderCardCta": "Builder öffnen",
     "aiNotice": "Du sprichst mit einer KI. Deine Eingaben werden zur Auswertung an ein KI-Modell übertragen.",
     "micNoticeTitle": "Hinweis zur Spracheingabe",
-    "micNoticeBody": "Deine Stimme wird in unserem Rechenzentrum in West-Europa (Microsoft Azure) in Text umgewandelt und dort nicht gespeichert. Ist dieser Dienst gerade nicht erreichbar, nutzt Dein Browser seine eigene Spracherkennung und überträgt die Aufnahme an seinen Hersteller (bei Chrome: Google). Wenn Du das nicht möchtest, tippe Deine Antwort.",
+    "micNoticeBody": "Beim Diktat wandelt Microsoft Azure in Westeuropa Deine Stimme in Text um und speichert die Aufnahme nicht. Im Live-Gespräch verarbeitet Google Vertex AI in der EU Deine Stimme. Ist der Dienst gerade nicht erreichbar, tippst Du einfach weiter.",
     "micNoticeAccept": "Verstanden, Mikro nutzen",
     "micNoticeDecline": "Lieber tippen",
     "aiStartNotice": "Du trainierst mit einem KI-Agenten. Person, Stimme und Antworten sind computergeneriert.",

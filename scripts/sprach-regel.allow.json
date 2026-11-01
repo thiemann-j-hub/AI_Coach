@@ -1,3 +1,4 @@
 [
-  "src/i18n/dictionaries/de.json#simulation.consentBody#Anbietername"
+  "src/i18n/dictionaries/de.json#simulation.consentBody#Anbietername",
+  "src/i18n/dictionaries/de.json#simulation.micNoticeBody#Anbietername"
 ]
