@@ -30,8 +30,9 @@ export async function GET(req: NextRequest) {
   // NICHT auf seine eigene Erkennung zurück (Antwort-Code EINWILLIGUNG öffnet im Coach den Hinweis).
   // 01.11.2026 (Bewertung Teil 1, Owner-Ja): Die Prüfung steht jetzt VOR dem 503 stt_disabled und vor dem
   // Rate-Limit — auf beide Antworten nahm der Browser seine eigene Erkennung (Chrome schickt die Aufnahme an
-  // Google), auch ohne Einwilligung. Dasselbe Tor wie vor der Live-Karte (sprachaufnahme-gate.ts); seit der
-  // Fassung 2026-11-01 verlangt der Credit-Dienst die Einwilligung für jedes Unternehmen. Rückweg: CONSENT_GATE=off.
+  // Google), auch ohne Einwilligung. Dasselbe Tor wie vor der Live-Karte (sprachaufnahme-gate.ts). Owner 01.11.2026
+  // („nicht übertreiben“): Der Credit-Dienst verlangt die Bestätigung nicht mehr — das Tor greift nur, falls sie wieder
+  // verlangt wird; vor dem ersten Mikrofon zeigt der Coach seinen Hinweis. Rückweg: CONSENT_GATE=off.
   if (await sprachaufnahmeEinwilligungFehlt(auth.oid)) {
     return NextResponse.json(
       { ok: false, error: "consent_required", code: "EINWILLIGUNG", url: "/einwilligung?typ=sprachaufnahme&zurueck=/coach/simulation" },
