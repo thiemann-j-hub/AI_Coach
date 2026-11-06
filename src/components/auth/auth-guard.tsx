@@ -167,8 +167,8 @@ function LoginScreen() {
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
         <p>
           {de
-            ? "100 % EU-Hosting · DSGVO-konform · Kein Training mit deinen Daten."
-            : "100% EU hosting · GDPR-compliant · No training on your data."}
+            ? "EU-Hosting · DSGVO-konform · Kein Training mit Deinen Daten."
+            : "EU hosting · GDPR-compliant · No training on your data."}
         </p>
         <nav className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           {legalLinks.map(([label, slug]) => (
