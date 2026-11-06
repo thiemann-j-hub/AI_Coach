@@ -4,6 +4,7 @@
  * nie Werte, nie Geheimnisse. Rückweg: DIAGNOSE_REPORT=off → `diagnose:false`.
  */
 import { NextResponse } from "next/server";
+import { buildStamp } from "@/lib/server/build-stamp";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,18 +30,14 @@ function switchState(name: string): string {
 
 export function GET() {
   const diagnose = (process.env.DIAGNOSE_REPORT ?? "").trim().toLowerCase() !== "off";
+  const stamp = buildStamp();
   return NextResponse.json(
     {
       service: "coach",
-      // W1-9-Nachfix (14.10.2026): die beim Build eingebackene Kennung zuerst — das App-Setting
-      // BUILD_SHA wird vom GitHub-Deploy nicht gepflegt und stand auf einem alten Stand (4ca30a9);
-      // damit hätte der Versions-Banner im Coach nie ausgelöst.
-      sha:
-        (process.env.NEXT_PUBLIC_BUILD_SHA ? process.env.NEXT_PUBLIC_BUILD_SHA.slice(0, 7) : undefined) ??
-        process.env.BUILD_SHA ??
-        "unstamped",
-      branch: process.env.BUILD_BRANCH ?? null,
-      builtAt: process.env.BUILD_STAMPED_AT ?? null,
+      // Stand aus dem Bau (build-stamp.ts): Die App-Settings BUILD_* pflegt die Auslieferung nicht.
+      sha: stamp.sha,
+      branch: stamp.branch,
+      builtAt: stamp.builtAt,
       diagnose,
       // W1-9: Banner „neue Version“ abschaltbar (VERSION_BANNER=off).
       banner: (process.env.VERSION_BANNER ?? "").trim().toLowerCase() !== "off",
