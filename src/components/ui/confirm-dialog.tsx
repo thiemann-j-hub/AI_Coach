@@ -8,8 +8,10 @@
  * 47 eigener Dialog-Zustände. Unsere Fassung: EIN Provider mit shadcn AlertDialog, Haken
  * `useConfirm()`; der Fokus liegt beim Öffnen auf „Abbrechen“ (Enter löscht nie versehentlich);
  * `typeToConfirm` verlangt ein Wort (Standard „LÖSCHEN“ in der Sprache der Oberfläche) für
- * endgültige Löschungen. Dieselbe Datei in Studio, Coach und Jobmap; die Texte reicht jede App
- * über `labels` herein (eigene Sprachdateien).
+ * endgültige Löschungen — dann liegt der Fokus im Eingabefeld, das Feld hat keinen Platzhalter,
+ * und Enter bestätigt erst, wenn das Wort richtig dasteht (Owner-Befund 07.11.2026).
+ * Dieselbe Datei in Studio, Coach und Jobmap; die Texte reicht jede App über `labels` herein
+ * (eigene Sprachdateien).
  */
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import {
@@ -49,10 +51,11 @@ export interface ConfirmOptions {
 
 export type ConfirmFn = (input: ConfirmOptions | string) => Promise<boolean>;
 
-/** Reine Regel: ist das eingetippte Wort das verlangte? (Groß/Klein egal, Rand-Leerzeichen egal.) */
+/** Reine Regel: ist das eingetippte Wort das verlangte? (Groß/Klein egal, Rand-Leerzeichen egal, Umlaut-Schreibweise des Tastaturtreibers egal.) */
 export function typedWordMatches(required: string | null, typed: string): boolean {
   if (!required) return true;
-  return typed.trim().toLocaleUpperCase() === required.trim().toLocaleUpperCase();
+  const norm = (s: string) => s.normalize("NFKC").trim().toLocaleUpperCase();
+  return norm(typed) === norm(required);
 }
 
 const ConfirmContext = createContext<ConfirmFn | null>(null);
@@ -61,6 +64,7 @@ export function ConfirmProvider({ labels, children }: { labels: ConfirmLabels; c
   const [state, setState] = useState<{ opts: ConfirmOptions; resolve: (v: boolean) => void } | null>(null);
   const [typed, setTyped] = useState("");
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const confirm = useCallback<ConfirmFn>(
     (input) =>
@@ -99,9 +103,12 @@ export function ConfirmProvider({ labels, children }: { labels: ConfirmLabels; c
         <AlertDialogContent
           data-testid="confirm-dialog"
           onOpenAutoFocus={(e) => {
-            // LXT-Regel übernommen: Fokus auf „Abbrechen“, nie auf dem gefährlichen Knopf.
+            // LXT-Regel übernommen: nie Fokus auf dem gefährlichen Knopf. Mit Wort liegt der Fokus im
+            // Eingabefeld (Owner-Befund 07.11.2026: Tippen ging ins Leere, weil „Abbrechen“ den Fokus
+            // hatte, und der Platzhalter „LÖSCHEN“ sah aus wie eingegeben), sonst auf „Abbrechen“.
             e.preventDefault();
-            cancelRef.current?.focus();
+            if (word) inputRef.current?.focus();
+            else cancelRef.current?.focus();
           }}
         >
           <AlertDialogHeader>
@@ -112,11 +119,16 @@ export function ConfirmProvider({ labels, children }: { labels: ConfirmLabels; c
             <div className="space-y-2 py-1">
               <p className="text-sm text-muted-foreground">{labels.typeWord.replace("{word}", word)}</p>
               <Input
+                ref={inputRef}
                 value={typed}
                 onChange={(e) => setTyped(e.target.value)}
-                placeholder={word}
+                onKeyDown={(e) => {
+                  // Enter bestätigt nur, wenn das Wort schon richtig dasteht — sonst passiert nichts.
+                  if (e.key === "Enter" && ready) { e.preventDefault(); close(true); }
+                }}
                 aria-label={word}
                 autoComplete="off"
+                spellCheck={false}
                 data-testid="confirm-type-word"
               />
             </div>
@@ -139,6 +151,7 @@ export function ConfirmProvider({ labels, children }: { labels: ConfirmLabels; c
     </ConfirmContext.Provider>
   );
 }
+
 
 /** `const confirm = useConfirm(); if (!(await confirm({ title, typeToConfirm: true }))) return;` */
 export function useConfirm(): ConfirmFn {
