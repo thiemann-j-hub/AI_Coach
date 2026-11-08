@@ -261,7 +261,7 @@
     "builderCardTitle": "Luo oma skenaario",
     "builderCardBody": "Rakenna roolipeli teidän oikeasta keskustelustanne — teidän vastaväitteillänne ja faktoillanne.",
     "builderCardCta": "Avaa työkalu",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Puhut tekoälyn kanssa. Syötteesi lähetetään tekoälymallille arviointia varten.",
     "micNoticeTitle": "Tietoa puhesyötteestä",
     "micNoticeBody": "Sanelussa Microsoft Azure muuntaa puheesi tekstiksi Länsi-Euroopassa eikä säilytä tallennetta. Livekeskustelussa puhettasi käsittelee Google Vertex AI EU:ssa. Jos palvelu ei ole juuri nyt käytettävissä, jatka vain kirjoittamista.",
     "micNoticeAccept": "Selvä, käytä mikrofonia",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Tallentaa analysoidun (anonymisoidun) tekstin, jotta voit tarkastella sitä myöhemmin raportissa.",
     "retrySave": "Yritä tallennusta uudelleen",
     "saveFailed": "Analyysi onnistui, mutta tallennus epäonnistui. Tuloksesi säilyy — yritä tallennusta uudelleen.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Ilman anonymisointia litteroinnin oikeat nimet lähetetään tekoälymallille.",
+    "aiNotice": "Arvioinnin tekee tekoäly. Litterointisi lähetetään sitä varten tekoälymallille."
   },
   "dashboard": {
     "title": "Istuntohistoria",

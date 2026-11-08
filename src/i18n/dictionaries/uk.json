@@ -261,7 +261,7 @@
     "builderCardTitle": "Створіть власний сценарій",
     "builderCardBody": "Побудуйте рольову гру з вашої справжньої розмови — з вашими запереченнями та фактами.",
     "builderCardCta": "Відкрити конструктор",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Ти спілкуєшся зі штучним інтелектом. Твої відповіді передаються ШІ-моделі для оцінювання.",
     "micNoticeTitle": "Про голосове введення",
     "micNoticeBody": "Під час диктування Microsoft Azure у Західній Європі перетворює твій голос на текст і не зберігає запис. У живій розмові твій голос обробляє Google Vertex AI в ЄС. Якщо сервіс зараз недоступний, просто продовжуй друкувати.",
     "micNoticeAccept": "Зрозуміло, увімкнути мікрофон",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Зберігає проаналізований (анонімізований) текст, щоб пізніше переглянути його у звіті.",
     "retrySave": "Повторити збереження",
     "saveFailed": "Аналіз виконано, але зберегти не вдалося. Результат не втрачено — повтори збереження.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Без анонімізації справжні імена з розшифровки передаються ШІ-моделі.",
+    "aiNotice": "Оцінювання виконує штучний інтелект. Для цього твоя розшифровка передається ШІ-моделі."
   },
   "dashboard": {
     "title": "Історія сесій",

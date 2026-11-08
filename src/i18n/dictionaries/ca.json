@@ -261,7 +261,7 @@
     "builderCardTitle": "Crea el teu propi escenari",
     "builderCardBody": "Construeix un roleplay a partir de la vostra conversa real — amb les vostres objeccions i fets.",
     "builderCardCta": "Obre el constructor",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Parles amb una IA. Les teves entrades s'envien a un model d'IA per a l'avaluació.",
     "micNoticeTitle": "Sobre l'entrada de veu",
     "micNoticeBody": "En el dictat, Microsoft Azure a l'Europa occidental converteix la teva veu en text i no desa la gravació. En la conversa en directe, Google Vertex AI a la UE processa la teva veu. Si el servei no està disponible en aquest moment, simplement continua escrivint.",
     "micNoticeAccept": "Entesos, fes servir el micròfon",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Desa el text analitzat (anonimitzat) perquè el puguis consultar més tard a l'informe.",
     "retrySave": "Torna a intentar desar",
     "saveFailed": "L'anàlisi s'ha completat, però no s'ha pogut desar. El teu resultat es conserva — torna a intentar desar.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Sense anonimització, els noms reals de la transcripció s'envien al model d'IA.",
+    "aiNotice": "L'avaluació la fa una IA. Per a això, la teva transcripció s'envia a un model d'IA."
   },
   "dashboard": {
     "title": "Historial de sessions",

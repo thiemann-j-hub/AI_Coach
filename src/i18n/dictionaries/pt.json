@@ -261,7 +261,7 @@
     "builderCardTitle": "Cria o teu próprio cenário",
     "builderCardBody": "Constrói um roleplay a partir da vossa conversa real — com as vossas objeções e factos.",
     "builderCardCta": "Abrir construtor",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Estás a falar com uma IA. As tuas entradas são enviadas a um modelo de IA para avaliação.",
     "micNoticeTitle": "Sobre a entrada de voz",
     "micNoticeBody": "No ditado, o Microsoft Azure na Europa Ocidental converte a tua voz em texto e não guarda a gravação. Na conversa ao vivo, o Google Vertex AI na UE processa a tua voz. Se o serviço não estiver disponível de momento, continua simplesmente a escrever.",
     "micNoticeAccept": "Entendido, usar o microfone",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Guarda o texto analisado (anonimizado) para o poderes consultar mais tarde no relatório.",
     "retrySave": "Tentar guardar novamente",
     "saveFailed": "Análise concluída, mas a gravação falhou. O teu resultado mantém-se — tenta guardar novamente.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Sem anonimização, os nomes reais da transcrição são enviados ao modelo de IA.",
+    "aiNotice": "A avaliação é feita por uma IA. Para isso, a tua transcrição é enviada a um modelo de IA."
   },
   "dashboard": {
     "title": "Histórico de sessões",

@@ -261,7 +261,7 @@
     "builderCardTitle": "Creează-ți propriul scenariu",
     "builderCardBody": "Construiește un roleplay din conversația voastră reală — cu obiecțiile și faptele voastre.",
     "builderCardCta": "Deschide constructorul",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Vorbești cu o inteligență artificială. Datele introduse de tine sunt trimise unui model IA pentru evaluare.",
     "micNoticeTitle": "Despre introducerea vocală",
     "micNoticeBody": "La dictare, Microsoft Azure din Europa de Vest îți transformă vocea în text și nu stochează înregistrarea. În conversația live, Google Vertex AI din UE îți procesează vocea. Dacă serviciul nu este disponibil momentan, continuă pur și simplu să tastezi.",
     "micNoticeAccept": "Am înțeles, folosește microfonul",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Stochează textul analizat (anonimizat), ca să îl poți revedea mai târziu în raport.",
     "retrySave": "Reîncearcă salvarea",
     "saveFailed": "Analiza a reușit, dar salvarea a eșuat. Rezultatul tău se păstrează — reîncearcă salvarea.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Fără anonimizare, numele reale din transcriere sunt trimise modelului IA.",
+    "aiNotice": "Evaluarea este realizată de o inteligență artificială. În acest scop, transcrierea ta este trimisă unui model IA."
   },
   "dashboard": {
     "title": "Istoricul sesiunilor",

@@ -261,7 +261,7 @@
     "builderCardTitle": "Maak je eigen scenario",
     "builderCardBody": "Bouw een rollenspel uit jullie echte gesprek — met jullie bezwaren en feiten.",
     "builderCardCta": "Bouwer openen",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Je praat met een AI. Je invoer wordt ter beoordeling naar een AI-model gestuurd.",
     "micNoticeTitle": "Over spraakinvoer",
     "micNoticeBody": "Bij het dicteren zet Microsoft Azure in West-Europa je stem om in tekst en slaat de opname niet op. In het live gesprek verwerkt Google Vertex AI in de EU je stem. Is de dienst even niet bereikbaar, typ dan gewoon verder.",
     "micNoticeAccept": "Begrepen, microfoon gebruiken",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Slaat de geanalyseerde (geanonimiseerde) tekst op, zodat je die later in het rapport kunt bekijken.",
     "retrySave": "Opslaan opnieuw proberen",
     "saveFailed": "Analyse gelukt, maar opslaan mislukt. Je resultaat blijft bewaard — probeer het opslaan opnieuw.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Zonder anonimisering worden echte namen uit het transcript naar het AI-model gestuurd.",
+    "aiNotice": "De beoordeling wordt door een AI gedaan. Je transcript wordt daarvoor naar een AI-model gestuurd."
   },
   "dashboard": {
     "title": "Sessiegeschiedenis",

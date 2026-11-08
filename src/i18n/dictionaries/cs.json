@@ -261,7 +261,7 @@
     "builderCardTitle": "Vytvořte vlastní scénář",
     "builderCardBody": "Postavte scénku z vašeho skutečného rozhovoru — s vašimi námitkami a fakty.",
     "builderCardCta": "Otevřít tvůrce",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Mluvíš s umělou inteligencí. Tvoje vstupy se k vyhodnocení odesílají modelu AI.",
     "micNoticeTitle": "Informace o hlasovém zadávání",
     "micNoticeBody": "Při diktování převádí Microsoft Azure v západní Evropě tvůj hlas na text a nahrávku neukládá. V živém rozhovoru zpracovává tvůj hlas Google Vertex AI v EU. Pokud služba zrovna není dostupná, prostě piš dál.",
     "micNoticeAccept": "Rozumím, použít mikrofon",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Uloží analyzovaný (anonymizovaný) text, abyste si jej mohli později prohlédnout v reportu.",
     "retrySave": "Zopakovat uložení",
     "saveFailed": "Analýza proběhla úspěšně, ale uložení selhalo. Výsledek zůstává zachován — zopakujte uložení.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Bez anonymizace se modelu AI odesílají skutečná jména z přepisu.",
+    "aiNotice": "Vyhodnocení provádí umělá inteligence. Tvůj přepis se k tomu odesílá modelu AI."
   },
   "dashboard": {
     "title": "Historie relací",

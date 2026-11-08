@@ -261,7 +261,7 @@
     "builderCardTitle": "Создайте свой сценарий",
     "builderCardBody": "Постройте ролевую игру из вашего реального разговора — с вашими возражениями и фактами.",
     "builderCardCta": "Открыть конструктор",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Ты общаешься с искусственным интеллектом. Твои ответы передаются ИИ-модели для оценки.",
     "micNoticeTitle": "О голосовом вводе",
     "micNoticeBody": "При диктовке Microsoft Azure в Западной Европе преобразует твой голос в текст и не сохраняет запись. В живом разговоре твой голос обрабатывает Google Vertex AI в ЕС. Если сервис сейчас недоступен, просто продолжай печатать.",
     "micNoticeAccept": "Понятно, включить микрофон",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Сохраняет проанализированный (анонимизированный) текст, чтобы позже просмотреть его в отчёте.",
     "retrySave": "Повторить сохранение",
     "saveFailed": "Анализ выполнен, но сохранить не удалось. Результат не потерян — повтори сохранение.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Без анонимизации настоящие имена из расшифровки передаются ИИ-модели.",
+    "aiNotice": "Оценку выполняет искусственный интеллект. Для этого твоя расшифровка передаётся ИИ-модели."
   },
   "dashboard": {
     "title": "История сессий",

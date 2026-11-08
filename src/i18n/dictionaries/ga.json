@@ -261,7 +261,7 @@
     "builderCardTitle": "Cruthaigh do chás féin",
     "builderCardBody": "Tóg rólghlacadh as bhur bhfíorchomhrá — le bhur n-agóidí agus fíricí féin.",
     "builderCardCta": "Oscail an tógálaí",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Tá tú ag labhairt le hintleacht shaorga. Seoltar d'ionchur chuig samhail IS lena mheasúnú.",
     "micNoticeTitle": "Faoi ionchur gutha",
     "micNoticeBody": "Le linn deachtaithe, tiontaíonn Microsoft Azure in Iarthar na hEorpa do ghuth go téacs agus ní stórálann sé an taifeadadh. Sa chomhrá beo, próiseálann Google Vertex AI san AE do ghuth. Mura bhfuil an tseirbhís ar fáil faoi láthair, lean ort ag clóscríobh.",
     "micNoticeAccept": "Tuigim, úsáid an micreafón",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Sábhálann sé an téacs a ndearnadh anailís air (anaithnidithe), ionas gur féidir leat é a athbhreithniú sa tuairisc níos déanaí.",
     "retrySave": "Bain triail eile as an sábháil",
     "saveFailed": "D'éirigh leis an anailís, ach theip ar an sábháil. Coinnítear do thoradh — bain triail eile as an sábháil.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Gan anaithnidiú, seoltar fíorainmneacha ón tras-scríbhinn chuig an tsamhail IS.",
+    "aiNotice": "Is intleacht shaorga a dhéanann an measúnú. Seoltar do thras-scríbhinn chuig samhail IS chuige sin."
   },
   "dashboard": {
     "title": "Stair na seisiún",

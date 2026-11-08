@@ -261,7 +261,7 @@
     "builderCardTitle": "Byg dit eget scenarie",
     "builderCardBody": "Byg et rollespil ud fra jeres virkelige samtale — med jeres indvendinger og fakta.",
     "builderCardCta": "Åbn byggeren",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Du taler med en AI. Dine input sendes til en AI-model til vurdering.",
     "micNoticeTitle": "Om stemmeinput",
     "micNoticeBody": "Ved diktering omsætter Microsoft Azure i Vesteuropa din stemme til tekst og gemmer ikke optagelsen. I live-samtalen behandler Google Vertex AI i EU din stemme. Er tjenesten ikke tilgængelig lige nu, skriver du bare videre.",
     "micNoticeAccept": "Forstået, brug mikrofonen",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Gemmer den analyserede (anonymiserede) tekst, så du senere kan se den i rapporten.",
     "retrySave": "Prøv at gemme igen",
     "saveFailed": "Analysen lykkedes, men den kunne ikke gemmes. Dit resultat er bevaret — prøv at gemme igen.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Uden anonymisering sendes rigtige navne fra transskriptionen til AI-modellen.",
+    "aiNotice": "Vurderingen foretages af en AI. Din transskription sendes til det formål til en AI-model."
   },
   "dashboard": {
     "title": "Sessionshistorik",

@@ -261,7 +261,7 @@
     "builderCardTitle": "Stwórz własny scenariusz",
     "builderCardBody": "Zbuduj scenkę z waszej prawdziwej rozmowy — z waszymi obiekcjami i faktami.",
     "builderCardCta": "Otwórz kreator",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Rozmawiasz ze sztuczną inteligencją. Twoje wpisy są przesyłane do modelu AI w celu oceny.",
     "micNoticeTitle": "Informacja o wprowadzaniu głosowym",
     "micNoticeBody": "Przy dyktowaniu Microsoft Azure w Europie Zachodniej zamienia Twój głos na tekst i nie zapisuje nagrania. W rozmowie na żywo Twój głos przetwarza Google Vertex AI w UE. Jeśli usługa jest chwilowo niedostępna, po prostu pisz dalej.",
     "micNoticeAccept": "Rozumiem, użyj mikrofonu",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Zapisuje przeanalizowany (zanonimizowany) tekst, aby można było później przejrzeć go w raporcie.",
     "retrySave": "Ponów zapisywanie",
     "saveFailed": "Analiza powiodła się, ale zapisywanie nie. Twój wynik został zachowany — ponów zapisywanie.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Bez anonimizacji prawdziwe nazwiska z transkrypcji są przesyłane do modelu AI.",
+    "aiNotice": "Ocenę przeprowadza sztuczna inteligencja. W tym celu Twoja transkrypcja jest przesyłana do modelu AI."
   },
   "dashboard": {
     "title": "Historia sesji",

@@ -261,7 +261,7 @@
     "builderCardTitle": "Készítsd el a saját forgatókönyved",
     "builderCardBody": "Építs szerepjátékot a valódi beszélgetésetekből — a ti ellenvetéseitekkel és tényeitekkel.",
     "builderCardCta": "Készítő megnyitása",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Egy mesterséges intelligenciával beszélsz. A bevitt adataidat kiértékelésre egy MI-modellnek küldjük el.",
     "micNoticeTitle": "Tudnivalók a hangbevitelről",
     "micNoticeBody": "Diktáláskor a Microsoft Azure Nyugat-Európában szöveggé alakítja a hangodat, és nem tárolja a felvételt. Élő beszélgetésben a Google Vertex AI dolgozza fel a hangodat az EU-ban. Ha a szolgáltatás éppen nem érhető el, egyszerűen gépelj tovább.",
     "micNoticeAccept": "Értem, mikrofon használata",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Elmenti az elemzett (anonimizált) szöveget, hogy később megnézhesd a jelentésben.",
     "retrySave": "Mentés újrapróbálása",
     "saveFailed": "Az elemzés sikerült, de a mentés nem. Az eredményed megmarad — próbáld újra a mentést.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Anonimizálás nélkül az átirat valódi nevei az MI-modellhez kerülnek.",
+    "aiNotice": "A kiértékelést mesterséges intelligencia végzi. Ehhez az átiratodat egy MI-modellnek küldjük el."
   },
   "dashboard": {
     "title": "Munkamenet-előzmények",

@@ -261,7 +261,7 @@
     "builderCardTitle": "Loo oma stsenaarium",
     "builderCardBody": "Ehita rollimäng teie päris vestlusest — teie vastuväidete ja faktidega.",
     "builderCardCta": "Ava looja",
-    "aiNotice": "You are talking to an AI. Your input is sent to an AI model for evaluation.",
+    "aiNotice": "Sa räägid tehisintellektiga. Sinu sisestused saadetakse hindamiseks AI-mudelile.",
     "micNoticeTitle": "Teave häälsisestuse kohta",
     "micNoticeBody": "Dikteerimisel muudab Microsoft Azure Lääne-Euroopas sinu hääle tekstiks ega säilita salvestist. Otsevestluses töötleb sinu häält Google Vertex AI ELis. Kui teenus pole parasjagu saadaval, jätka lihtsalt trükkimist.",
     "micNoticeAccept": "Selge, kasuta mikrofoni",
@@ -384,8 +384,8 @@
     "saveTranscriptHint": "Salvestab analüüsitud (anonümiseeritud) teksti, et saaksid seda hiljem raportis üle vaadata.",
     "retrySave": "Proovi salvestamist uuesti",
     "saveFailed": "Analüüs õnnestus, kuid salvestamine ebaõnnestus. Sinu tulemus säilib — proovi salvestamist uuesti.",
-    "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "anonymizeOffWarning": "Ilma anonüümimiseta saadetakse transkriptsioonis olevad pärisnimed AI-mudelile.",
+    "aiNotice": "Hindamise teeb tehisintellekt. Selleks saadetakse sinu transkriptsioon AI-mudelile."
   },
   "dashboard": {
     "title": "Seansside ajalugu",
