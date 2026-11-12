@@ -74,6 +74,18 @@ export function cardWhenToUse(chunkText: string, maxChars = 160): string {
   return raw.length > maxChars ? raw.slice(0, maxChars - 1).trimEnd() + '…' : raw;
 }
 
+/**
+ * U8 (12.11.2026): Die Karten der Bibliothek schreiben „du“, „dir“, „dein“ klein, die App schreibt „Du“ groß.
+ * Beim Abruf deutscher Karten wird die Anrede in Titel und Kurzhinweis großgeschrieben, also in dem, was Lernende
+ * lesen. Der Volltext für den Prompt und die Karten in der Datenbank bleiben, wie sie sind.
+ */
+export function duGross(text: string): string {
+  return String(text ?? '').replace(
+    /(?<![\p{L}\p{N}])(du|dir|dich|dein(?:e[mnrs]?)?)(?![\p{L}\p{N}])/gu,
+    (m) => m[0].toUpperCase() + m.slice(1)
+  );
+}
+
 /** Titel aus TITLE: … (Fallback, falls metadata.title fehlt). */
 function titleFromChunk(chunkText: string): string {
   const m = /^TITLE:\s*(.+)$/m.exec(String(chunkText ?? ''));
@@ -141,6 +153,7 @@ export async function retrieveCoachCards(args: {
       args.label ?? 'coach-cards'
     );
     const cards: CoachCardRef[] = [];
+    const anrede = (s: string) => (args.lang === 'de' ? duGross(s) : s);
     for (const r of res.results ?? []) {
       const md = (r.metadata ?? {}) as Record<string, unknown>;
       const chunk = String(md.chunk_text ?? '');
@@ -149,8 +162,8 @@ export async function retrieveCoachCards(args: {
       cards.push({
         id: String(r.id ?? ''),
         groupId: String(md.card_group_id ?? ''),
-        title,
-        hint: cardWhenToUse(chunk),
+        title: anrede(title),
+        hint: anrede(cardWhenToUse(chunk)),
         cardType: String(md.card_type ?? ''),
         chunkText: chunk,
       });

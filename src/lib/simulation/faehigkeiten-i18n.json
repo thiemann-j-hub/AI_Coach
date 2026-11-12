@@ -2,253 +2,625 @@
   "fr": {
     "rahmen": {
       "titel": "Cadrer la conversation et rassurer",
-      "definition": "Dès le début, clarifier l'objet et l'intention de la conversation, et séparer le problème de la personne."
+      "definition": "Dès le début, clarifier l'objet et l'intention de la conversation, et séparer le problème de la personne.",
+      "stufen": [
+        "Entre en matière par un reproche, un jugement ou sans motif apparent ; l'interlocuteur ne sait pas de quoi il s'agit et se met sur la défensive.",
+        "Finit par nommer le sujet, mais sans préciser l'intention ni montrer que la démarche est constructive ; l'échange reste poli, mais sans cap.",
+        "Énonce clairement le motif et l'intention (« Je veux te parler de l'offre pour qu'on puisse l'envoyer ») ; l'interlocuteur sait qu'il ne s'agit pas d'un piège.",
+        "Présente aussi la conversation comme une marque d'intérêt pour l'interlocuteur, distingue expressément le comportement de la valeur de la personne et revient à ce cadre quand la tension monte."
+      ]
     },
     "konkret": {
       "titel": "Rester concret",
-      "definition": "Décrire les comportements observables et leurs effets plutôt que d'utiliser des étiquettes, et maintenir cette approche même face à la contradiction."
+      "definition": "Décrire les comportements observables et leurs effets plutôt que d'utiliser des étiquettes, et maintenir cette approche même face à la contradiction.",
+      "stufen": [
+        "Aucune observation concrète ; la conversation ne permet pas de dire de quel comportement il est question.",
+        "Uniquement des étiquettes (« peu fiable », « difficile »), sans exemple ni effet ; quand on lui demande de préciser, répète l'étiquette.",
+        "Au moins une fois, un comportement concret avec son effet (« L'offre est restée deux semaines en attente, le client s'est plaint »), assez précis pour que l'interlocuteur sache de quoi il s'agit.",
+        "Décrit à plusieurs reprises le comportement et son effet ; le propos porte sur le comportement et non sur la personne, le lien avec la norme attendue est clair, et tout reste concret quand l'interlocuteur minimise ou réclame des preuves."
+      ]
     },
     "ursache": {
       "titel": "Écouter jusqu'à la cause profonde",
-      "definition": "Demander le point de vue de l'interlocuteur, rebondir sur ses réponses et persévérer jusqu'à ce que la véritable raison apparaisse, avant de proposer des solutions."
+      "definition": "Demander le point de vue de l'interlocuteur, rebondir sur ses réponses et persévérer jusqu'à ce que la véritable raison apparaisse, avant de proposer des solutions.",
+      "stufen": [
+        "Ne demande jamais le point de vue de l'interlocuteur ; parle ou juge à sens unique.",
+        "Tout au plus une question pour la forme, dont la réponse ne change rien ; interrompt ou passe à une conclusion arrêtée d'avance.",
+        "Demande le point de vue et en tient visiblement compte (rebondit, répond, ajuste), mais reste en surface.",
+        "Pose des questions ouvertes, creuse jusqu'à ce que le véritable moteur du comportement apparaisse, et retient les solutions tant que la cause n'est pas claire."
+      ]
     },
     "ruhe": {
       "titel": "Garder son calme face à la résistance",
-      "definition": "Rester serein et respectueux face à la contradiction, la défense ou l'attaque, maintenir le message clé et apaiser la situation."
+      "definition": "Rester serein et respectueux face à la contradiction, la défense ou l'attaque, maintenir le message clé et apaiser la situation.",
+      "stufen": [
+        "Adopte à un moment ou à un autre un ton cassant ou sarcastique, s'en prend à la personne, menace ou refuse le dialogue ; un seul moment de ce genre suffit.",
+        "Ne montre pas d'hostilité, mais perd pied : se trouble ou se met sur la défensive, en rajoute dans la critique ou abandonne le message pour évacuer la tension.",
+        "Face aux réactions de défense, garde son calme et reste dans le respect, reconnaît l'émotion (« Je sais que ce n'est pas facile à entendre ») et maintient le message clé sans envenimer les choses ni céder.",
+        "Rétablit activement un climat de sécurité : nomme ouvertement la difficulté, allie chaleur et fermeté, réaffirme son respect, maintient le message et ramène la conversation sur un terrain constructif."
+      ]
     },
     "vereinbarung": {
       "titel": "Convenir ensemble de la prochaine étape",
-      "definition": "Conclure par une étape concrète et datée, co-construite avec l'interlocuteur, incluant le soutien nécessaire et un suivi."
+      "definition": "Conclure par une étape concrète et datée, co-construite avec l'interlocuteur, incluant le soutien nécessaire et un suivi.",
+      "stufen": [
+        "Aucune étape convenue : rien de concret n'est nommé, attribué ni daté.",
+        "Soit une injonction vague (« J'attends plus de toi ») sans action, soit un plan tout fait, annoncé sans que l'interlocuteur y ait pris part.",
+        "Une étape concrète est convenue et l'interlocuteur y a réellement contribué : ses propositions ont été sollicitées ou le plan a été ajusté à la suite de ses objections.",
+        "Un plan concret et daté, construit ensemble ; faisabilité vérifiée, soutien nécessaire convenu, point de suivi fixé, et l'interlocuteur peut reformuler l'étape avec ses propres mots."
+      ]
     },
     "anerkennung": {
       "titel": "Reconnaissance étayée",
-      "definition": "Valoriser concrètement et de manière crédible les performances et l'engagement, avec des exemples, sans que ce soit une formule creuse ou un préambule à la critique."
+      "definition": "Valoriser concrètement et de manière crédible les performances et l'engagement, avec des exemples, sans que ce soit une formule creuse ou un préambule à la critique.",
+      "stufen": [
+        "Aucune reconnaissance, ou seulement comme appât avant la critique (« Tu fais du bon travail, mais… »).",
+        "Éloge général sans exemple (« Tu fais un travail formidable ») qui ne touche pas l'interlocuteur.",
+        "Reconnaissance étayée par un exemple concret (quoi précisément, avec quel effet), exprimée séparément de la critique.",
+        "Reconnaissance si concrète et crédible que l'interlocuteur l'accueille visiblement ; elle porte la conversation comme un socle, pas comme un passage obligé."
+      ]
     },
     "luecke": {
       "titel": "Nommer honnêtement l'écart",
-      "definition": "Aborder clairement la différence entre la performance actuelle et l'étape suivante, avec des exemples, sans enjoliver ni blesser."
+      "definition": "Aborder clairement la différence entre la performance actuelle et l'étape suivante, avec des exemples, sans enjoliver ni blesser.",
+      "stufen": [
+        "Esquive l'écart ou le noie dans des généralités ; l'interlocuteur repart sans y voir clair.",
+        "Nomme l'écart, mais de façon vague ou unilatérale (« il manque encore quelque chose »), sans exemple ni lien avec le prochain poste.",
+        "Nomme clairement l'écart avec au moins un exemple et explique pourquoi il compte pour l'étape suivante.",
+        "Nomme l'écart avec précision, exemples à l'appui et en lien avec le poste visé, vérifie si l'interlocuteur le voit de la même façon et garde cette clarté même face à la déception."
+      ]
     },
     "entwicklung": {
       "titel": "Concrétiser le parcours de développement",
-      "definition": "Transformer l'écart en expériences, missions et soutien qui mènent visiblement à l'objectif."
+      "definition": "Transformer l'écart en expériences, missions et soutien qui mènent visiblement à l'objectif.",
+      "stufen": [
+        "Pas de parcours : rien d'autre qu'une injonction (« rends-toi plus visible »), sans mission, soutien ni calendrier.",
+        "Quelques idées, mais sans lien entre elles ou irréalistes ; ni soutien, ni calendrier.",
+        "Deux ou trois expériences ou missions concrètes, adaptées à l'écart, avec un soutien et un calendrier approximatif.",
+        "Un parcours cohérent avec des missions, un soutien, des jalons et des critères clairs qui permettent à chacun de reconnaître que le moment est venu de passer à l'étape suivante."
+      ]
     },
     "interessen": {
       "titel": "Explorer les intérêts derrière les positions",
-      "definition": "Demander ce dont l'interlocuteur a réellement besoin, plutôt que de négocier ou de réfuter ses exigences."
+      "definition": "Demander ce dont l'interlocuteur a réellement besoin, plutôt que de négocier ou de réfuter ses exigences.",
+      "stufen": [
+        "Se contente de négocier ou de réfuter des positions ; ne demande jamais ce qu'il y a derrière.",
+        "Demande une fois les raisons, mais ne fait rien de la réponse et retourne au bras de fer sur les positions.",
+        "Interroge sur les motivations, rebondit dessus et nomme avec justesse au moins un intérêt de l'interlocuteur.",
+        "Met au jour les intérêts des deux parties, les reformule de sorte que l'interlocuteur acquiesce, et bâtit les solutions sur ces intérêts plutôt que sur les positions."
+      ]
     },
     "standpunkt": {
       "titel": "Affirmer clairement son point de vue",
-      "definition": "Aborder directement et sans reproche les incidents et ses propres besoins, en tant qu'observation avec impact, et maintenir cette position."
+      "definition": "Aborder directement et sans reproche les incidents et ses propres besoins, en tant qu'observation avec impact, et maintenir cette position.",
+      "stufen": [
+        "N'aborde pas l'incident, ou seulement sous forme d'accusation avec procès d'intention (« Tu l'as fait exprès… »).",
+        "L'aborde, mais de façon floue, en s'excusant ou par des reproches en « tu », et bat en retraite à la première résistance.",
+        "Formule l'observation et l'impact à la première personne (« Vendredi soir, il ne restait plus que moi ») et tient sa position sans attaquer.",
+        "Nomme clairement l'incident et son impact, s'y tient calmement malgré la résistance, distingue l'intention de l'impact et laisse en même temps de la place au point de vue de l'interlocuteur."
+      ]
     },
     "loesung": {
       "titel": "Solution conjointe, pas un compromis de façade",
-      "definition": "Développer avec l'interlocuteur des options qui répondent aux intérêts des deux parties, et décider sur la base de critères plutôt que du pouvoir."
+      "definition": "Développer avec l'interlocuteur des options qui répondent aux intérêts des deux parties, et décider sur la base de critères plutôt que du pouvoir.",
+      "stufen": [
+        "Impose sa propre solution, abandonne, ou aucune solution n'est trouvée.",
+        "Un compromis rapide qui sacrifie l'un des intérêts, sans examiner d'autres options.",
+        "Au moins une option qui répond aux intérêts des deux parties est développée et argumentée ensemble.",
+        "Plusieurs options, décision prise selon des critères énoncés ouvertement ; l'interlocuteur adhère visiblement à la solution et y apporte ses propres éléments."
+      ]
     },
     "verbindlich": {
       "titel": "Établir l'engagement",
-      "definition": "Sécuriser concrètement les engagements : qui, quoi, pour quand, et vérifier si l'engagement a de la substance."
+      "definition": "Sécuriser concrètement les engagements : qui, quoi, pour quand, et vérifier si l'engagement a de la substance.",
+      "stufen": [
+        "Aucun engagement, ou un engagement que les deux parties comprendraient différemment.",
+        "Une déclaration d'intention générale (« on se coordonne ») sans préciser qui, quoi, ni pour quand.",
+        "Au moins un engagement précisant qui, quoi et pour quand, confirmé par l'interlocuteur.",
+        "Tous les points en suspens ont un responsable et une échéance, la substance est vérifiée (« À quoi t'engages-tu exactement ? »), le prochain point de contact est convenu."
+      ]
     },
     "einstieg": {
       "titel": "Accroche et permission",
-      "definition": "Gagner le droit de poursuivre dès les premières phrases : nom, raison, pertinence pour l'interlocuteur et un moment où il accepte d'écouter."
+      "definition": "Gagner le droit de poursuivre dès les premières phrases : nom, raison, pertinence pour l'interlocuteur et un moment où il accepte d'écouter.",
+      "stufen": [
+        "Aucune raison de rester : pas de présentation, pas de lien avec l'interlocuteur, argumentaire d'emblée ; celui-ci a toutes les raisons de raccrocher.",
+        "Se présente et donne une raison, mais générale et de son propre point de vue ; ne demande pas la permission, rien ne se rapporte à l'interlocuteur.",
+        "Présentation claire, raison concise en lien plausible avec la fonction de l'interlocuteur, et demande explicite de temps ou d'accord.",
+        "Une accroche concrète tirée de l'univers de l'interlocuteur, une adaptation à sa réaction, une vraie curiosité plutôt qu'un temps d'écoute simplement toléré."
+      ]
     },
     "abwimmeln": {
       "titel": "Gérer le rejet",
-      "definition": "Rester calme face au premier « pas intéressé » ou « envoyez-moi de la documentation », répondre à l'objection spécifique et maintenir le contact sans insister."
+      "definition": "Rester calme face au premier « pas intéressé » ou « envoyez-moi de la documentation », répondre à l'objection spécifique et maintenir le contact sans insister.",
+      "stufen": [
+        "Abandonne au premier rejet, ou s'obstine à argumenter sans laisser parler l'interlocuteur.",
+        "Prend acte du rejet, mais répond de façon générique ou récitée ; la raison de l'interlocuteur reste entière.",
+        "Garde son calme et répond directement à l'objection spécifique (à un « pas le temps », par une vraie proposition de créneau), si bien que l'interlocuteur reste en ligne.",
+        "Perçoit ou fait préciser la vraie raison du rejet (temps, pertinence, confiance), y répond et en fait, avec les mots de l'interlocuteur, une raison de poursuivre l'échange."
+      ]
     },
     "relevanz": {
       "titel": "Établir la pertinence",
-      "definition": "Relier sa propre offre à une préoccupation concrète de l'interlocuteur, avec des preuves plutôt que des slogans."
+      "definition": "Relier sa propre offre à une préoccupation concrète de l'interlocuteur, avec des preuves plutôt que des slogans.",
+      "stufen": [
+        "Ne parle que de l'offre ; aucun lien avec la situation de l'interlocuteur.",
+        "Affirme la pertinence en termes généraux (« cela aide des entreprises comme la vôtre »), sans question ni preuve.",
+        "Pose au moins une question ciblée sur la situation de l'interlocuteur et relie l'offre à la réponse par une preuve concrète.",
+        "Mène en quelques questions incisives du symptôme à l'impact, y rattache l'offre avec précision et laisse l'interlocuteur nommer lui-même le bénéfice."
+      ]
     },
     "qualifizieren": {
       "titel": "Qualifier",
-      "definition": "Clarifier si l'effort en vaut la peine : impact, urgence, parties prenantes, tentatives précédentes."
+      "definition": "Clarifier si l'effort en vaut la peine : impact, urgence, parties prenantes, tentatives précédentes.",
+      "stufen": [
+        "N'explore rien au-delà du motif immédiat ; ne saurait pas dire pourquoi ni pour qui le sujet est important.",
+        "Aborde un ou deux points superficiellement (« Ce serait pour quand ? »), sans les relier ni évaluer l'urgence.",
+        "Clarifie au moins deux dimensions (par exemple impact et urgence, ou parties prenantes et échéance) suffisamment pour évaluer l'opportunité.",
+        "Amène l'interlocuteur à formuler l'impact avec ses propres mots (coûts, risques, ce qui se passe si rien ne bouge), clarifie le circuit de décision et les tentatives précédentes, et en tire une vision partagée."
+      ]
     },
     "naechster-schritt": {
       "titel": "Sécuriser la prochaine étape",
-      "definition": "Mener à une étape de suivi concrète à laquelle l'interlocuteur adhère réellement : objectif, échéance, participants."
+      "definition": "Mener à une étape de suivi concrète à laquelle l'interlocuteur adhère réellement : objectif, échéance, participants.",
+      "stufen": [
+        "Ne demande pas de prochaine étape, ou laisse la conversation se terminer sur un « Je vous recontacte ».",
+        "Demande de façon vague (« un moment la semaine prochaine ? ») et se contente d'un peut-être sans engagement.",
+        "Fait une proposition claire avec un objectif, l'interlocuteur donne son accord de principe ; la date ou les participants peuvent rester à préciser.",
+        "Demande au bon moment, fixe la date, les participants et l'objectif, et l'interlocuteur a visiblement envie du prochain échange."
+      ]
     },
     "agenda": {
       "titel": "Convenir de l'ordre du jour",
-      "definition": "Clarifier dès le début l'objectif, le déroulement et le résultat souhaité, et obtenir l'accord de l'interlocuteur."
+      "definition": "Clarifier dès le début l'objectif, le déroulement et le résultat souhaité, et obtenir l'accord de l'interlocuteur.",
+      "stufen": [
+        "Démarre par des questions ou par l'argumentaire, sans objectif ni structure ; l'interlocuteur doit demander de quoi il s'agit.",
+        "Énumère des sujets, mais sans objectif ni accord ; cela ressemble à une feuille de route personnelle.",
+        "Déroulement bref et clair avec un objectif, validé en quelques mots (« Cela vous convient ? »), puis transition nette.",
+        "Invite l'interlocuteur à façonner l'ordre du jour, le relie à ses objectifs et crée des attentes partagées."
+      ]
     },
     "fragen": {
       "titel": "Questionner et relancer",
-      "definition": "Poser des questions ouvertes et bien structurées, et relancer jusqu'à ce que de véritables problèmes apparaissent, au lieu de réponses superficielles."
+      "definition": "Poser des questions ouvertes et bien structurées, et relancer jusqu'à ce que de véritables problèmes apparaissent, au lieu de réponses superficielles.",
+      "stufen": [
+        "Presque aucune question de fond, ou des questions qui ne servent que de tremplin à l'argumentaire.",
+        "Quelques questions fermées ou générales, aucune relance ; reste en surface.",
+        "Des questions majoritairement ouvertes, au moins un vrai problème apparaît, au moins une relance.",
+        "Quelques questions incisives mènent du symptôme à l'impact ; des problèmes apparaissent que l'interlocuteur n'avait pas encore formulés lui-même ; de la curiosité, jamais un interrogatoire."
+      ]
     },
     "spiegeln": {
       "titel": "Écouter et reformuler",
-      "definition": "Montrer de la compréhension en résumant fidèlement et en basant la question suivante sur la réponse."
+      "definition": "Montrer de la compréhension en résumant fidèlement et en basant la question suivante sur la réponse.",
+      "stufen": [
+        "Ignore les réponses et déroule un scénario écrit d'avance.",
+        "Se contente d'acquiescer (« je vois », « d'accord »), ne reformule rien et ne construit rien sur ce qui a été dit.",
+        "Restitue fidèlement les points principaux, la question suivante s'y rattache, mais reste en surface.",
+        "Résume la préoccupation sous-jacente avec une telle justesse que l'interlocuteur confirme (« exactement »), et oriente visiblement la conversation en conséquence."
+      ]
     },
     "bedarf-entscheider": {
       "titel": "Clarifier besoin, décideur, budget, échéance",
-      "definition": "Établir en conversation s'il existe un problème réel, qui décide, comment les projets sont financés et s'il y a une échéance."
+      "definition": "Établir en conversation s'il existe un problème réel, qui décide, comment les projets sont financés et s'il y a une échéance.",
+      "stufen": [
+        "Vise le rendez-vous sans connaître le problème, le décideur, la logique budgétaire ni l'échéance.",
+        "Quelques amorces vagues et isolées ; problème non confirmé, budget non abordé.",
+        "Confirme un problème plausible, demande qui en est responsable et clarifie l'échéance ou la logique budgétaire ; quelques signaux manquent encore.",
+        "Les quatre points sont clarifiés naturellement au fil de la conversation et servent de base à la prochaine étape, au lieu de pousser prématurément au rendez-vous."
+      ]
     },
     "bedarf-finden": {
       "titel": "Écouter et identifier le besoin réel",
-      "definition": "Explorer la situation de l'interlocuteur avant de proposer une solution, et trouver le besoin réel derrière la demande."
+      "definition": "Explorer la situation de l'interlocuteur avant de proposer une solution, et trouver le besoin réel derrière la demande.",
+      "stufen": [
+        "Pousse dès le début sa propre solution ou la règle ; aucune vraie question.",
+        "Une question, mais superficielle ; passe à la suite avant que la vraie préoccupation soit sur la table.",
+        "Pose des questions ouvertes et nomme avec justesse la préoccupation principale ; la réponse y correspond, et non à une version standard.",
+        "Questionne au-delà de la demande jusqu'au besoin réel (par exemple : la marchandise à temps, pas l'avoir), le fait confirmer et bâtit la solution dessus."
+      ]
     },
     "empathie": {
       "titel": "Empathie concrète",
-      "definition": "Nommer concrètement et de manière crédible le sentiment ou l'engagement de l'interlocuteur avant de résoudre quoi que ce soit."
+      "definition": "Nommer concrètement et de manière crédible le sentiment ou l'engagement de l'interlocuteur avant de résoudre quoi que ce soit.",
+      "stufen": [
+        "Ignore l'émotion, la minimise ou traite l'interlocuteur comme un dossier.",
+        "S'en tient à une formule toute faite (« Toutes nos excuses pour la gêne occasionnée »), ne nomme ni le sentiment ni sa raison.",
+        "Nomme le sentiment ou l'effort précis (« devoir appeler une deuxième fois, c'est usant ») ; le ton est adapté au moment.",
+        "Nomme aussi ce que l'interlocuteur n'a pas encore exprimé, anticipe ses inquiétudes, garde le ton juste, et l'interlocuteur s'apaise visiblement."
+      ]
     },
     "verantwortung": {
       "titel": "Prendre ses responsabilités",
-      "definition": "Assumer personnellement la résolution du problème spécifique, sans pointer du doigt les autres, le système ou les règles."
+      "definition": "Assumer personnellement la résolution du problème spécifique, sans pointer du doigt les autres, le système ou les règles.",
+      "stufen": [
+        "Se défausse sur un autre service, le système, la règle ou l'interlocuteur ; se met sur la défensive ou prend ses distances (« je n'y peux rien »).",
+        "Évite de désigner un coupable, mais s'en tient à des promesses de routine (« je transmets ») ou se retranche derrière la procédure.",
+        "Assume à la première personne la responsabilité de résoudre ce cas, même sans en être à l'origine.",
+        "Nomme ouvertement l'erreur là où il y en a eu une, et associe la responsabilité à un engagement qui rétablit visiblement la confiance."
+      ]
     },
     "klar-relevant": {
       "titel": "Expliquer clairement et pertinemment",
-      "definition": "Expliquer de manière compréhensible et relier les informations à ce qui est important pour cet interlocuteur."
+      "definition": "Expliquer de manière compréhensible et relier les informations à ce qui est important pour cet interlocuteur.",
+      "stufen": [
+        "Une liste de règles, de termes techniques ou de faits sans rapport avec son cas ; l'interlocuteur se demande ce que cela signifie pour lui.",
+        "Explication claire, mais générale ; sans lien avec la situation, sans vérifier que le message est passé.",
+        "Langage simple ; le point essentiel est relié à quelque chose qui compte pour l'interlocuteur.",
+        "Traduit systématiquement l'information en bénéfices pour cette situation, écarte l'accessoire et vérifie la compréhension."
+      ]
     },
     "verbindlich-kunde": {
       "titel": "Prochaine étape engageante",
-      "definition": "Mener à une action concrète et crédible que l'interlocuteur accepte explicitement, avec une responsabilité et une échéance."
+      "definition": "Mener à une action concrète et crédible que l'interlocuteur accepte explicitement, avec une responsabilité et une échéance.",
+      "stufen": [
+        "Aucune étape concrète, ou une promesse impossible à tenir.",
+        "Une étape est évoquée, mais de façon vague ou unilatérale : sans responsable, sans échéance ou sans accord (« on vous recontacte »).",
+        "Une action concrète est proposée et l'interlocuteur l'accepte explicitement.",
+        "Action avec un responsable, une échéance et des attentes réalistes ; chacun pourrait dire de son côté ce qui se passe ensuite."
+      ]
     },
     "kernbotschaft": {
       "titel": "Maintenir le message clé",
-      "definition": "Avoir un message clair et le répéter constamment malgré les distractions, la pression et les relances."
+      "definition": "Avoir un message clair et le répéter constamment malgré les distractions, la pression et les relances.",
+      "stufen": [
+        "Aucun message identifiable ; suit chaque question là où elle mène.",
+        "Un message est identifiable, mais il se perd ou n'est énoncé qu'une seule fois.",
+        "Message clairement formulé et placé au moins deux fois, y compris après une mise sous pression.",
+        "Message percutant, placé plusieurs fois sous des formes variées et étayé par des preuves ; la conversation se termine visiblement sur ce message."
+      ]
     },
     "bruecke": {
       "titel": "Faire le pont vers le message",
-      "definition": "Répondre brièvement et honnêtement à la question, puis orienter vers son propre message sans esquiver."
+      "definition": "Répondre brièvement et honnêtement à la question, puis orienter vers son propre message sans esquiver.",
+      "stufen": [
+        "Esquive ou ne répond pas du tout ; ou bien répond et se perd dans le sujet de la personne qui interroge.",
+        "Fait le pont mécaniquement (« ce qui compte, c'est… ») sans prendre la question en considération ; donne l'impression d'esquiver.",
+        "Répond à la question brièvement et honnêtement, puis amène au message par un enchaînement logique.",
+        "Prend la question en considération, répond honnêtement, fait le pont avec un tel naturel qu'il ne passe pas pour une technique, et garde sa cohérence face aux relances."
+      ]
     },
     "keine-spekulation": {
       "titel": "Pas de spéculation",
-      "definition": "Ne dire que ce qui est avéré, séparer les faits des suppositions et nommer ouvertement ce qui n'est pas encore connu."
+      "definition": "Ne dire que ce qui est avéré, séparer les faits des suppositions et nommer ouvertement ce qui n'est pas encore connu.",
+      "stufen": [
+        "Spécule sur les causes, les chiffres ou les responsabilités, ou invente des détails.",
+        "Esquive par une réponse passe-partout (« je ne peux rien dire à ce sujet ») sans expliquer pourquoi, ou mélange faits et suppositions.",
+        "Sépare nettement : énonce ce qui est avéré, désigne l'inconnu comme inconnu et dit quand on en saura plus.",
+        "Tient cette ligne sous une pression répétée, sans laisser paraître d'hésitation, et fait de l'inconnu une prochaine étape claire."
+      ]
     },
     "druck": {
       "titel": "Calme sous pression",
-      "definition": "Rester calme, courtois et pertinent face aux questions incisives, interruptives ou suggestives."
+      "definition": "Rester calme, courtois et pertinent face aux questions incisives, interruptives ou suggestives.",
+      "stufen": [
+        "S'irrite, se met sur la défensive ou attaque la personne qui interroge.",
+        "Garde sa courtoisie, mais perd le fil, bafouille ou cède à ce que la question suggère.",
+        "Garde son calme et sa courtoisie, corrige les fausses prémisses de façon factuelle et revient au sujet.",
+        "Tire parti de la pression avec aisance : prend la question au sérieux, corrige sereinement, garde son rythme et son ton, et en ressort plus crédible qu'avant."
+      ]
     },
     "verantwortung-zeigen": {
       "titel": "Faire preuve de responsabilité, les personnes concernées d'abord",
-      "definition": "Placer les personnes concernées et la solution avant la justification, et montrer que l'entreprise agit."
+      "definition": "Placer les personnes concernées et la solution avant la justification, et montrer que l'entreprise agit.",
+      "stufen": [
+        "Se justifie, minimise ou renvoie à d'autres ; les personnes concernées sont absentes du propos.",
+        "Mentionne les personnes concernées pour la forme, sans action concrète.",
+        "Cite d'abord les personnes concernées, annonce des mesures concrètes et précise qui en est responsable.",
+        "Affiche une posture crédible : les personnes concernées d'abord, des étapes concrètes avec des échéances, un moyen de joindre l'entreprise, le tout sans pathos."
+      ]
     }
   },
   "es": {
     "rahmen": {
       "titel": "Establecer el marco y generar confianza",
-      "definition": "Indica al principio de qué se trata y con qué intención, y separa el asunto de la persona."
+      "definition": "Indica al principio de qué se trata y con qué intención, y separa el asunto de la persona.",
+      "stufen": [
+        "Empieza con un reproche, un juicio o sin motivo aparente; el interlocutor no sabe de qué se trata y se pone a la defensiva.",
+        "Menciona el tema en algún momento, pero sin indicar la intención ni dar señales de que el propósito es constructivo; con cortesía, pero sin rumbo.",
+        "Expone con claridad el motivo y la intención («Quiero hablar contigo de la oferta para que podamos enviarla»); el interlocutor sabe que no es una emboscada.",
+        "Además, enmarca la conversación como una muestra de interés por el interlocutor, separa expresamente el comportamiento del valor de la persona y vuelve a ese marco cuando surge tensión."
+      ]
     },
     "konkret": {
       "titel": "Mantenerse concreto",
-      "definition": "Nombra el comportamiento observable y su impacto en lugar de etiquetas, y lo mantiene incluso ante la objeción."
+      "definition": "Nombra el comportamiento observable y su impacto en lugar de etiquetas, y lo mantiene incluso ante la objeción.",
+      "stufen": [
+        "Ninguna observación concreta; a partir de la conversación no se podría decir de qué comportamiento se habla.",
+        "Solo etiquetas («poco fiable», «difícil») sin ejemplo ni impacto; cuando se le pide concretar, repite la etiqueta.",
+        "Al menos una vez, un comportamiento concreto con su impacto («La oferta estuvo dos semanas parada y el cliente se quejó»), con la precisión suficiente para que el interlocutor sepa a qué se refiere.",
+        "Describe varias veces el comportamiento y su impacto; el lenguaje se centra en el comportamiento y no en la persona, la relación con la norma esperada queda clara y todo sigue siendo concreto cuando el interlocutor le quita importancia o exige pruebas."
+      ]
     },
     "ursache": {
       "titel": "Escuchar hasta la causa raíz",
-      "definition": "Pregunta por el punto de vista del interlocutor, retoma las respuestas y persiste hasta que la verdadera razón sea visible, antes de proponer soluciones."
+      "definition": "Pregunta por el punto de vista del interlocutor, retoma las respuestas y persiste hasta que la verdadera razón sea visible, antes de proponer soluciones.",
+      "stufen": [
+        "Nunca pregunta por el punto de vista del interlocutor; habla o juzga en una sola dirección.",
+        "Como mucho, una pregunta de puro trámite cuya respuesta no cambia nada; interrumpe o pasa a una conclusión que ya traía hecha.",
+        "Pregunta por el punto de vista y lo tiene en cuenta de forma visible (lo retoma, responde, ajusta), pero se queda en la superficie.",
+        "Formula preguntas abiertas, sigue indagando hasta que aflora el verdadero motor del comportamiento y se reserva las soluciones hasta que la causa está clara."
+      ]
     },
     "ruhe": {
       "titel": "Mantener la calma ante la resistencia",
-      "definition": "Se mantiene sereno y respetuoso ante la contradicción, la defensa o el ataque, mantiene el mensaje central y baja la tensión."
+      "definition": "Se mantiene sereno y respetuoso ante la contradicción, la defensa o el ataque, mantiene el mensaje central y baja la tensión.",
+      "stufen": [
+        "En algún momento adopta un tono cortante o sarcástico, lleva el asunto a lo personal, amenaza o se niega a dialogar; basta un solo momento así.",
+        "No muestra hostilidad, pero pierde pie: se atropella o se pone a la defensiva, añade más críticas o abandona el mensaje para librarse de la tensión.",
+        "Ante la actitud defensiva, mantiene la calma y el respeto, reconoce la emoción («Sé que no es fácil escuchar esto») y sostiene el mensaje central sin agravar el conflicto ni ceder.",
+        "Reconstruye activamente el clima de confianza: nombra abiertamente la dificultad, combina calidez y firmeza, reafirma el respeto, mantiene el mensaje y devuelve la conversación a un terreno productivo."
+      ]
     },
     "vereinbarung": {
       "titel": "Acordar juntos el siguiente paso",
-      "definition": "Concluye con un paso concreto y con fecha límite, que el interlocutor ha ayudado a diseñar, incluyendo apoyo y una fecha de seguimiento."
+      "definition": "Concluye con un paso concreto y con fecha límite, que el interlocutor ha ayudado a diseñar, incluyendo apoyo y una fecha de seguimiento.",
+      "stufen": [
+        "Ningún paso acordado: nada concreto nombrado, asignado ni fechado.",
+        "O bien una exhortación vaga («Espero más de ti») sin ninguna acción, o bien un plan ya cerrado que se anuncia sin la participación del interlocutor.",
+        "Se acuerda un paso concreto y el interlocutor ha participado de verdad en él: se le pidieron propuestas o el plan se ajustó a raíz de sus objeciones.",
+        "Un plan concreto y con fechas, elaborado en común; viabilidad comprobada, apoyo necesario acordado, fecha de seguimiento fijada, y el interlocutor puede explicar el paso con sus propias palabras."
+      ]
     },
     "anerkennung": {
       "titel": "Reconocimiento con evidencia",
-      "definition": "Valora el rendimiento y el esfuerzo de forma concreta y creíble, con un ejemplo, no como una frase hecha o un preámbulo a la crítica."
+      "definition": "Valora el rendimiento y el esfuerzo de forma concreta y creíble, con un ejemplo, no como una frase hecha o un preámbulo a la crítica.",
+      "stufen": [
+        "Ningún reconocimiento, o solo como anzuelo antes de la crítica («Lo haces bien, pero…»).",
+        "Elogio genérico sin ejemplo («Estás haciendo un gran trabajo») que no llega al interlocutor.",
+        "Reconocimiento con una evidencia concreta (qué exactamente, con qué impacto), expresado aparte de la crítica.",
+        "Reconocimiento tan concreto y creíble que el interlocutor lo acepta de forma visible; sostiene la conversación como base, no como mero trámite."
+      ]
     },
     "luecke": {
       "titel": "Identificar la brecha con honestidad",
-      "definition": "Aborda claramente la diferencia entre el rendimiento actual y el siguiente paso, con ejemplos, sin adornar ni herir."
+      "definition": "Aborda claramente la diferencia entre el rendimiento actual y el siguiente paso, con ejemplos, sin adornar ni herir.",
+      "stufen": [
+        "Elude la brecha o la diluye en generalidades; el interlocutor se va sin una imagen clara.",
+        "Menciona la brecha, pero de forma vaga o unilateral («todavía falta algo»), sin ejemplo ni relación con el siguiente puesto.",
+        "Nombra la brecha con claridad, con al menos un ejemplo, y explica por qué importa para el siguiente paso.",
+        "Nombra la brecha con precisión, con ejemplos y en relación con el puesto objetivo, comprueba si el interlocutor la ve igual y mantiene la claridad incluso ante la decepción."
+      ]
     },
     "entwicklung": {
       "titel": "Concretar la ruta de desarrollo",
-      "definition": "Transforma la brecha en experiencias, tareas y apoyo que conducen visiblemente al objetivo."
+      "definition": "Transforma la brecha en experiencias, tareas y apoyo que conducen visiblemente al objetivo.",
+      "stufen": [
+        "Sin ruta: todo se queda en una exhortación («hazte más visible») sin tarea, apoyo ni plazo.",
+        "Algunas ideas, pero inconexas o poco realistas; sin apoyo ni plazo.",
+        "Dos o tres experiencias o tareas concretas que encajan con la brecha, con apoyo y un plazo aproximado.",
+        "Una ruta coherente con tareas, apoyo, hitos y criterios claros con los que ambos reconocen que ha llegado el momento del siguiente paso."
+      ]
     },
     "interessen": {
       "titel": "Explorar los intereses detrás de las posiciones",
-      "definition": "Pregunta qué necesita realmente el interlocutor, en lugar de negociar o refutar demandas."
+      "definition": "Pregunta qué necesita realmente el interlocutor, en lugar de negociar o refutar demandas.",
+      "stufen": [
+        "Solo negocia o refuta posiciones; nunca pregunta qué hay detrás.",
+        "Pregunta una vez por los motivos, pero no aprovecha la respuesta y vuelve al pulso entre posiciones.",
+        "Pregunta por las motivaciones, las retoma y nombra con acierto al menos un interés del interlocutor.",
+        "Saca a la luz los intereses de ambas partes, los refleja de modo que el interlocutor asiente, y construye las soluciones sobre ellos y no sobre las posiciones."
+      ]
     },
     "standpunkt": {
       "titel": "Expresar claramente el propio punto de vista",
-      "definition": "Aborda incidentes y necesidades propias de forma directa y sin reproches, como una observación con impacto, y la sostiene."
+      "definition": "Aborda incidentes y necesidades propias de forma directa y sin reproches, como una observación con impacto, y la sostiene.",
+      "stufen": [
+        "No aborda el incidente, o solo como acusación con juicio de intenciones («Lo hiciste a propósito…»).",
+        "Lo aborda, pero de forma difusa, disculpándose o con reproches en segunda persona, y se echa atrás a la primera resistencia.",
+        "Expresa la observación y el impacto en primera persona («El viernes por la tarde no quedaba nadie más que yo») y lo sostiene sin atacar.",
+        "Nombra con claridad el incidente y su impacto, se mantiene en ello con calma ante la resistencia, distingue la intención del impacto y, al mismo tiempo, abre espacio al punto de vista del interlocutor."
+      ]
     },
     "loesung": {
       "titel": "Solución conjunta, no un compromiso fácil",
-      "definition": "Desarrolla opciones con el interlocutor que contemplan ambos intereses, y decide basándose en criterios en lugar de en el poder."
+      "definition": "Desarrolla opciones con el interlocutor que contemplan ambos intereses, y decide basándose en criterios en lugar de en el poder.",
+      "stufen": [
+        "Impone su propia solución, se rinde, o no hay solución.",
+        "Un compromiso rápido que sacrifica uno de los intereses sin examinar alternativas.",
+        "Al menos una opción que recoge los intereses de ambas partes se desarrolla y se fundamenta en común.",
+        "Varias opciones y una decisión basada en criterios nombrados abiertamente; el interlocutor hace suya la solución de forma visible y aporta elementos propios."
+      ]
     },
     "verbindlich": {
       "titel": "Establecer el compromiso",
-      "definition": "Asegura los compromisos de forma concreta: quién, qué, para cuándo, y verifica si el compromiso tiene sustancia."
+      "definition": "Asegura los compromisos de forma concreta: quién, qué, para cuándo, y verifica si el compromiso tiene sustancia.",
+      "stufen": [
+        "Ningún compromiso, o uno que cada parte entendería de manera distinta.",
+        "Una declaración de intenciones general («ya nos coordinamos») sin concretar quién, qué ni para cuándo.",
+        "Al menos un compromiso que concreta quién, qué y para cuándo, confirmado por el interlocutor.",
+        "Todos los puntos pendientes tienen responsable y fecha, se comprueba la sustancia («¿A qué te comprometes exactamente?») y se acuerda el próximo punto de contacto."
+      ]
     },
     "einstieg": {
       "titel": "Inicio y permiso",
-      "definition": "Se gana el derecho a continuar hablando en las primeras frases: nombre, motivo, relevancia para el interlocutor y un momento en el que este acepta escuchar."
+      "definition": "Se gana el derecho a continuar hablando en las primeras frases: nombre, motivo, relevancia para el interlocutor y un momento en el que este acepta escuchar.",
+      "stufen": [
+        "Ningún motivo para quedarse: sin presentación, sin relación con el interlocutor, directo al discurso de venta; este tiene todos los motivos para colgar.",
+        "Se presenta y da un motivo, pero genérico y desde su propia perspectiva; no pide permiso y nada hace referencia al interlocutor.",
+        "Presentación clara, un motivo breve con una relación verosímil con la función del interlocutor y una petición expresa de tiempo o de conformidad.",
+        "Un gancho concreto del mundo del interlocutor, adaptación a su reacción, curiosidad auténtica en lugar de una escucha meramente tolerada."
+      ]
     },
     "abwimmeln": {
       "titel": "Manejar el desinterés",
-      "definition": "Se mantiene tranquilo ante el primer «no me interesa» o «envíe la información», responde a la objeción específica y mantiene la comunicación abierta, sin presionar."
+      "definition": "Se mantiene tranquilo ante el primer «no me interesa» o «envíe la información», responde a la objeción específica y mantiene la comunicación abierta, sin presionar.",
+      "stufen": [
+        "Se rinde ante la primera muestra de desinterés, o rebate y habla por encima del interlocutor.",
+        "Toma nota del desinterés, pero responde de forma genérica o de memoria; el motivo del interlocutor sigue en pie.",
+        "Mantiene la calma y responde directamente a la objeción específica (ante un «no tengo tiempo», con una propuesta real de horario), de modo que el interlocutor sigue en la conversación.",
+        "Detecta o averigua el verdadero motivo del desinterés (tiempo, relevancia, confianza), le da respuesta y lo convierte, con las palabras del interlocutor, en un motivo para seguir hablando."
+      ]
     },
     "relevanz": {
       "titel": "Generar relevancia",
-      "definition": "Conecta la propia oferta con una preocupación concreta del interlocutor, con pruebas en lugar de eslóganes."
+      "definition": "Conecta la propia oferta con una preocupación concreta del interlocutor, con pruebas en lugar de eslóganes.",
+      "stufen": [
+        "Solo habla de la oferta; ninguna relación con la situación del interlocutor.",
+        "Afirma la relevancia en términos generales («esto ayuda a empresas como la suya»), sin preguntas ni pruebas.",
+        "Formula al menos una pregunta específica sobre la situación del interlocutor y conecta la oferta con la respuesta mediante una prueba concreta.",
+        "Con pocas preguntas certeras lleva del síntoma al impacto, conecta la oferta con precisión a ese impacto y deja que el interlocutor nombre por sí mismo el beneficio."
+      ]
     },
     "qualifizieren": {
       "titel": "Calificar",
-      "definition": "Aclara si vale la pena: impacto, urgencia, partes involucradas, intentos previos."
+      "definition": "Aclara si vale la pena: impacto, urgencia, partes involucradas, intentos previos.",
+      "stufen": [
+        "No explora nada más allá del motivo inmediato; no sabría decir por qué ni para quién es importante el tema.",
+        "Toca uno o dos puntos por encima («¿Para cuándo sería?»), sin relacionarlos ni sopesar la urgencia.",
+        "Aclara al menos dos dimensiones (por ejemplo, impacto y urgencia, o partes involucradas y plazo) lo suficiente para valorar la oportunidad.",
+        "Consigue que el interlocutor describa el impacto con sus propias palabras (lo que cuesta, el riesgo, qué pasa si no se hace nada), aclara el proceso de decisión y los intentos previos, y construye con ello una imagen compartida."
+      ]
     },
     "naechster-schritt": {
       "titel": "Asegurar el siguiente paso",
-      "definition": "Conduce a un paso de seguimiento concreto que el interlocutor realmente acepta: propósito, momento, participantes."
+      "definition": "Conduce a un paso de seguimiento concreto que el interlocutor realmente acepta: propósito, momento, participantes.",
+      "stufen": [
+        "No pide un siguiente paso o deja que la conversación termine con un «Ya le llamaré».",
+        "Pregunta de forma vaga («¿algún día de la semana que viene?») y se conforma con un quizá sin compromiso.",
+        "Hace una propuesta clara con un propósito y el interlocutor está de acuerdo en principio; la fecha o los participantes pueden quedar todavía abiertos.",
+        "Pregunta en el momento oportuno, asegura fecha, participantes y propósito, y se nota que el interlocutor quiere la siguiente conversación."
+      ]
     },
     "agenda": {
       "titel": "Acordar la agenda",
-      "definition": "Aclara al principio el propósito, el desarrollo y el resultado deseado, y obtiene para ello el consentimiento del interlocutor."
+      "definition": "Aclara al principio el propósito, el desarrollo y el resultado deseado, y obtiene para ello el consentimiento del interlocutor.",
+      "stufen": [
+        "Empieza con preguntas o con el discurso de venta, sin propósito ni estructura; el interlocutor tiene que preguntar de qué se trata.",
+        "Enumera temas, pero sin propósito ni acuerdo; parece una hoja de ruta propia.",
+        "Un desarrollo breve y claro con propósito, validado en pocas palabras («¿Le parece bien?»), y después una transición limpia.",
+        "Invita al interlocutor a dar forma a la agenda, la vincula a sus objetivos y crea expectativas compartidas."
+      ]
     },
     "fragen": {
       "titel": "Preguntar y hacer seguimiento",
-      "definition": "Formula preguntas abiertas y bien estructuradas, y hace seguimiento hasta que los problemas reales, en lugar de respuestas superficiales, sean visibles."
+      "definition": "Formula preguntas abiertas y bien estructuradas, y hace seguimiento hasta que los problemas reales, en lugar de respuestas superficiales, sean visibles.",
+      "stufen": [
+        "Casi ninguna pregunta de fondo, o las preguntas solo sirven de trampolín para el discurso de venta.",
+        "Algunas preguntas cerradas o genéricas, sin preguntas de seguimiento; se queda en la superficie.",
+        "Preguntas en su mayoría abiertas, aflora al menos un problema real y hay al menos una pregunta de seguimiento.",
+        "Unas pocas preguntas certeras llevan del síntoma al impacto; afloran problemas que el propio interlocutor aún no había formulado; con curiosidad, nunca como un interrogatorio."
+      ]
     },
     "spiegeln": {
       "titel": "Escuchar y reflejar",
-      "definition": "Demuestra comprensión resumiendo con precisión y construyendo la siguiente pregunta sobre la respuesta."
+      "definition": "Demuestra comprensión resumiendo con precisión y construyendo la siguiente pregunta sobre la respuesta.",
+      "stufen": [
+        "Ignora las respuestas y se limita a seguir un guion.",
+        "Solo asiente («entiendo», «de acuerdo»), no refleja nada y no construye nada sobre lo dicho.",
+        "Recoge con precisión los puntos principales y la siguiente pregunta parte de ellos, pero se queda en la superficie.",
+        "Resume la preocupación de fondo con tal acierto que el interlocutor lo confirma («exacto»), y orienta visiblemente la conversación en consecuencia."
+      ]
     },
     "bedarf-entscheider": {
       "titel": "Aclarar necesidad, decisor, presupuesto, plazo",
-      "definition": "Aclara en la conversación si existe un problema real, quién decide, cómo se financian las iniciativas y si hay un plazo."
+      "definition": "Aclara en la conversación si existe un problema real, quién decide, cómo se financian las iniciativas y si hay un plazo.",
+      "stufen": [
+        "Busca ya la reunión sin conocer el problema, el decisor, la lógica presupuestaria ni el plazo.",
+        "Algunos intentos vagos y aislados; problema sin confirmar, presupuesto sin tocar.",
+        "Confirma un problema verosímil, pregunta quién es responsable y aclara el plazo o la lógica presupuestaria; faltan algunas señales.",
+        "Los cuatro puntos se aclaran con naturalidad en la conversación y sirven de base para el siguiente paso, en lugar de presionar antes de tiempo para conseguir la reunión."
+      ]
     },
     "bedarf-finden": {
       "titel": "Escuchar y encontrar la necesidad",
-      "definition": "Explora la situación del interlocutor antes de resolver, y encuentra la necesidad real detrás de la demanda."
+      "definition": "Explora la situación del interlocutor antes de resolver, y encuentra la necesidad real detrás de la demanda.",
+      "stufen": [
+        "Desde el principio insiste en su propia solución o en la norma; ninguna pregunta auténtica.",
+        "Una pregunta, pero superficial; sigue adelante antes de que la verdadera preocupación esté sobre la mesa.",
+        "Formula preguntas abiertas y nombra con acierto la preocupación principal; la respuesta se ajusta a ella y no a una versión estándar.",
+        "Pregunta más allá de la demanda hasta llegar a la necesidad real (por ejemplo: la mercancía a tiempo, no la nota de crédito), pide confirmación y construye la solución sobre ella."
+      ]
     },
     "empathie": {
       "titel": "Empatía concreta",
-      "definition": "Nombra el sentimiento o el esfuerzo del interlocutor de forma concreta y creíble, antes de resolver."
+      "definition": "Nombra el sentimiento o el esfuerzo del interlocutor de forma concreta y creíble, antes de resolver.",
+      "stufen": [
+        "Pasa por alto la emoción, le resta importancia o trata al interlocutor como un expediente.",
+        "Se queda en la fórmula («Disculpe las molestias»); no nombra ni el sentimiento ni el motivo.",
+        "Nombra el sentimiento o el esfuerzo concreto («tener que llamar por segunda vez es desesperante»); el tono se ajusta al momento.",
+        "Nombra también lo que el interlocutor aún no ha expresado, se anticipa a sus inquietudes, mantiene el tono, y el interlocutor se tranquiliza visiblemente."
+      ]
     },
     "verantwortung": {
       "titel": "Asumir la responsabilidad",
-      "definition": "Asume personalmente la resolución del problema concreto, sin señalar a otros, al sistema o a las normas."
+      "definition": "Asume personalmente la resolución del problema concreto, sin señalar a otros, al sistema o a las normas.",
+      "stufen": [
+        "Traslada la responsabilidad a otro departamento, al sistema, a la norma o al interlocutor; se pone a la defensiva o se distancia («ahí no puedo hacer nada»).",
+        "Evita culpar a nadie, pero se queda en promesas rutinarias («lo paso a quien corresponda») o se escuda en el procedimiento.",
+        "Asume en primera persona la responsabilidad de resolver este caso, aunque no lo haya causado.",
+        "Nombra abiertamente el error cuando lo hubo y une la responsabilidad a un compromiso que devuelve la confianza de forma visible."
+      ]
     },
     "klar-relevant": {
       "titel": "Explicar de forma clara y relevante",
-      "definition": "Explica de forma comprensible y vincula la información con lo que es importante para este interlocutor."
+      "definition": "Explica de forma comprensible y vincula la información con lo que es importante para este interlocutor.",
+      "stufen": [
+        "Una lista de normas, tecnicismos o datos sin relación con su caso; el interlocutor se pregunta qué significa eso para él.",
+        "Explicación clara, pero genérica; sin relación con la situación y sin comprobar si se ha entendido.",
+        "Lenguaje sencillo; el punto clave está vinculado a algo que le importa al interlocutor.",
+        "Traduce en todo momento la información en beneficios para esta situación, deja fuera lo accesorio y comprueba que se ha entendido."
+      ]
     },
     "verbindlich-kunde": {
       "titel": "Siguiente paso vinculante",
-      "definition": "Conduce a una acción concreta y creíble que el interlocutor acepta explícitamente, con responsabilidad y plazo."
+      "definition": "Conduce a una acción concreta y creíble que el interlocutor acepta explícitamente, con responsabilidad y plazo.",
+      "stufen": [
+        "Ningún paso concreto, o una promesa que no se puede cumplir.",
+        "Se insinúa un paso, pero de forma vaga o unilateral: sin responsable, plazo o conformidad («ya le llamaremos»).",
+        "Se propone una acción concreta y el interlocutor la acepta explícitamente.",
+        "Acción con responsable, plazo y expectativas realistas; ambos podrían decir por separado qué ocurre a continuación."
+      ]
     },
     "kernbotschaft": {
       "titel": "Mantener el mensaje central",
-      "definition": "Tiene un mensaje claro y lo reitera a pesar de las distracciones, la presión y las preguntas de seguimiento."
+      "definition": "Tiene un mensaje claro y lo reitera a pesar de las distracciones, la presión y las preguntas de seguimiento.",
+      "stufen": [
+        "Ningún mensaje reconocible; sigue cada pregunta hasta donde lleve.",
+        "Se reconoce un mensaje, pero se pierde o solo se menciona una vez.",
+        "Mensaje formulado con claridad e introducido al menos dos veces, también después de recibir presión.",
+        "Mensaje conciso, colocado varias veces con variaciones y respaldado con pruebas; la conversación termina de forma visible con ese mensaje."
+      ]
     },
     "bruecke": {
       "titel": "Puente hacia el mensaje",
-      "definition": "Responde a la pregunta de forma breve y honesta, y luego conduce al propio mensaje, sin evadir."
+      "definition": "Responde a la pregunta de forma breve y honesta, y luego conduce al propio mensaje, sin evadir.",
+      "stufen": [
+        "Esquiva la pregunta o no responde en absoluto; o bien responde y se pierde en el tema de quien pregunta.",
+        "Tiende el puente de forma mecánica («lo importante es…») sin reconocer el valor de la pregunta; da la impresión de esquivarla.",
+        "Responde a la pregunta de forma breve y honesta, y luego conduce al mensaje de manera coherente.",
+        "Reconoce el valor de la pregunta, responde con honestidad, tiende el puente con tanta naturalidad que no parece una técnica y mantiene la coherencia ante las preguntas de seguimiento."
+      ]
     },
     "keine-spekulation": {
       "titel": "Sin especulación",
-      "definition": "Dice solo lo que está probado, separa el conocimiento de la suposición y nombra abiertamente lo que aún no se conoce."
+      "definition": "Dice solo lo que está probado, separa el conocimiento de la suposición y nombra abiertamente lo que aún no se conoce.",
+      "stufen": [
+        "Especula sobre causas, cifras o culpas, o inventa detalles.",
+        "Responde con una evasiva general («sobre eso no puedo decir nada») sin explicar por qué, o mezcla conocimiento y suposición.",
+        "Separa con nitidez: expone lo que está probado, nombra lo desconocido como desconocido y dice cuándo se sabrá más.",
+        "Mantiene esa línea bajo presión repetida, sin transmitir inseguridad, y convierte lo desconocido en un siguiente paso claro."
+      ]
     },
     "druck": {
       "titel": "Calma bajo presión",
-      "definition": "Se mantiene tranquilo, cortés y centrado ante preguntas incisivas, que interrumpen o sugestivas."
+      "definition": "Se mantiene tranquilo, cortés y centrado ante preguntas incisivas, que interrumpen o sugestivas.",
+      "stufen": [
+        "Se irrita, se pone a la defensiva o ataca a quien pregunta.",
+        "Mantiene la cortesía, pero pierde el hilo, balbucea o cede a lo que la pregunta sugiere.",
+        "Mantiene la calma y la cortesía, corrige las premisas falsas de forma objetiva y vuelve al tema.",
+        "Aprovecha la presión con aplomo: toma en serio la pregunta, corrige con serenidad, mantiene el ritmo y el tono, y así resulta más creíble que antes."
+      ]
     },
     "verantwortung-zeigen": {
       "titel": "Mostrar responsabilidad, los afectados primero",
-      "definition": "Prioriza a los afectados y la solución antes que la justificación, y demuestra que la empresa está actuando."
+      "definition": "Prioriza a los afectados y la solución antes que la justificación, y demuestra que la empresa está actuando.",
+      "stufen": [
+        "Se justifica, relativiza o remite a otros; los afectados no aparecen.",
+        "Menciona a los afectados por pura fórmula, sin ninguna acción concreta.",
+        "Menciona primero a los afectados, nombra medidas concretas y quién responde de ellas.",
+        "Muestra una postura creíble: los afectados primero, pasos concretos con fechas, vías de contacto, y todo ello sin grandilocuencia."
+      ]
     }
   },
   "it": {

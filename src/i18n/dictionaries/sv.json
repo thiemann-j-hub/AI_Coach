@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Nivå",
     "builderGenerateCta": "Generera utkast",
     "builderCostNote": "Varje generering kostar 1 kredit.",
-    "builderGenerating": "Utkastet skapas — det kan ta upp till en minut …",
+    "builderGenerating": "Utkastet skapas — det kan ta upp till två minuter …",
     "builderGenerateFailed": "Genereringen misslyckades. Försök igen eller gör briefen mer konkret.",
     "builderNoCredits": "Inte tillräckligt med krediter för en generering.",
     "builderLimit": "Maxantal egna scenarier nått — ta bort ett befintligt först.",

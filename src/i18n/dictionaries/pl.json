@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Poziom",
     "builderGenerateCta": "Wygeneruj szkic",
     "builderCostNote": "Każda generacja kosztuje 1 kredyt.",
-    "builderGenerating": "Tworzenie szkicu — może potrwać do minuty …",
+    "builderGenerating": "Tworzenie szkicu — może potrwać do dwóch minut …",
     "builderGenerateFailed": "Generowanie nie powiodło się. Spróbuj ponownie lub doprecyzuj brief.",
     "builderNoCredits": "Za mało kredytów na generację.",
     "builderLimit": "Osiągnięto maksymalną liczbę scenariuszy — najpierw usuń istniejący.",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { faehigkeit } from './faehigkeiten';
+import { FAEHIGKEITEN, faehigkeit, faehigkeitStufen } from './faehigkeiten';
 import { messlatte } from './messlatte';
 
 describe('messlatte (S11)', () => {
@@ -23,11 +23,22 @@ describe('messlatte (S11)', () => {
     expect(messlatte('ursache', 2.6, 'de')?.stufe).toBe(3);
   });
 
+  it('Französisch und Spanisch: alle 31 Fähigkeiten tragen vier Stufentexte, die Messlatte erscheint (12.11.2026)', () => {
+    for (const loc of ['fr', 'es']) {
+      for (const f of FAEHIGKEITEN) expect(faehigkeitStufen(f, loc), `${loc}/${f.id}`).toHaveLength(4);
+    }
+    const fr = messlatte('ursache', 2, 'fr-FR');
+    expect(fr?.deine).toBe(faehigkeitStufen(ursache, 'fr')![1]);
+    expect(fr?.naechste).toBe(faehigkeitStufen(ursache, 'fr')![2]);
+    expect(fr?.deine).not.toBe(ursache.stufen[1].en);
+    expect(messlatte('ursache', 4, 'es')?.naechste).toBeNull();
+  });
+
   it('entfällt still: freie Fähigkeit, nicht beobachtbar, Sprache ohne Stufentexte', () => {
     expect(messlatte('eigener-anker', 3, 'de')).toBeNull();
     expect(messlatte('ursache', null, 'de')).toBeNull();
     expect(messlatte('ursache', Number.NaN, 'de')).toBeNull();
-    expect(messlatte('ursache', 3, 'fr')).toBeNull();
+    expect(messlatte('ursache', 3, 'it')).toBeNull();
     expect(messlatte('ursache', 3, null)).toBeNull();
     expect(messlatte(null, 3, 'de')).toBeNull();
   });

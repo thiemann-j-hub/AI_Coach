@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Nível",
     "builderGenerateCta": "Gerar rascunho",
     "builderCostNote": "Cada geração custa 1 crédito.",
-    "builderGenerating": "A criar o rascunho — pode demorar até um minuto …",
+    "builderGenerating": "A criar o rascunho — pode demorar até dois minutos …",
     "builderGenerateFailed": "A geração falhou. Tenta novamente ou torna o brief mais concreto.",
     "builderNoCredits": "Créditos insuficientes para uma geração.",
     "builderLimit": "Número máximo de cenários atingido — elimina primeiro um existente.",

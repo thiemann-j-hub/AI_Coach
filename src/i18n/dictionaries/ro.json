@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Nivel",
     "builderGenerateCta": "Generează schița",
     "builderCostNote": "Fiecare generare costă 1 credit.",
-    "builderGenerating": "Schița se creează — poate dura până la un minut …",
+    "builderGenerating": "Schița se creează — poate dura până la două minute …",
     "builderGenerateFailed": "Generarea a eșuat. Încearcă din nou sau fă brieful mai concret.",
     "builderNoCredits": "Credite insuficiente pentru o generare.",
     "builderLimit": "Ai atins numărul maxim de scenarii — șterge mai întâi unul existent.",

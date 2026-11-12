@@ -102,7 +102,9 @@ describe('SimulationEvaluation (vier Reiter)', () => {
     expect(html).toContain('Deine Stufe');
     expect(html).toContain('So sieht die nächste aus');
     expect(html).toContain('Höchstens eine Alibi-Frage');
-    expect(render({ convoLocale: 'fr' })).not.toContain('data-testid="messlatte"');
+    // Seit 12.11.2026 gibt es die Stufentexte auch auf Französisch und Spanisch; andere Gesprächssprachen gibt es nicht.
+    expect(count(render({ convoLocale: 'fr' }), 'data-testid="messlatte"')).toBe(1);
+    expect(render({ convoLocale: 'it' })).not.toContain('data-testid="messlatte"');
   });
 
   it('Gespräch: alle Züge stehen da, der Beleg ist markiert und Zitate führen zur Stelle', () => {

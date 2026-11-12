@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Tase",
     "builderGenerateCta": "Loo mustand",
     "builderCostNote": "Iga genereerimine maksab 1 krediidi.",
-    "builderGenerating": "Mustandit luuakse — see võib võtta kuni minuti …",
+    "builderGenerating": "Mustandit luuakse — see võib võtta kuni kaks minutit …",
     "builderGenerateFailed": "Genereerimine ebaõnnestus. Proovi uuesti või täpsusta briifi.",
     "builderNoCredits": "Genereerimiseks pole piisavalt krediite.",
     "builderLimit": "Stsenaariumide maksimum on käes — kustuta enne üks olemasolev.",

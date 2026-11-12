@@ -8,6 +8,7 @@ import {
   cardLang,
   cardWhenToUse,
   cardsToPromptBlock,
+  duGross,
   matchCardsByTitle,
   retrieveCoachCards,
   type CoachCardRef,
@@ -58,6 +59,18 @@ describe("coach-cards (V3)", () => {
     expect(matchCardsByTitle(cards, ["gibt es nicht"])).toEqual([]);
   });
 
+  it("duGross: schreibt die Anrede groß und lässt andere Wörter in Ruhe (U8)", () => {
+    expect(duGross("Sag, was du brauchst, und was dir und deinem Team hilft.")).toBe(
+      "Sag, was Du brauchst, und was Dir und Deinem Team hilft."
+    );
+    expect(duGross("Frag dich: Sind deine Ziele klar? Das sind deiner Meinung nach die Ursachen.")).toBe(
+      "Frag Dich: Sind Deine Ziele klar? Das sind Deiner Meinung nach die Ursachen."
+    );
+    expect(duGross("Du und dein Reduktionsplan: Indizien, Bedeinung, dulden.")).toBe(
+      "Du und Dein Reduktionsplan: Indizien, Bedeinung, dulden."
+    );
+  });
+
   it("retrieveCoachCards: mappt Treffer und ist fail-open", async () => {
     searchMock.mockResolvedValueOnce({
       count: 1,
@@ -78,6 +91,9 @@ describe("coach-cards (V3)", () => {
     expect(ok.error).toBeNull();
     expect(ok.cards).toHaveLength(1);
     expect(ok.cards[0].hint).toMatch(/mehr redest/);
+    // U8: Anrede im Kurzhinweis groß, der Volltext für den Prompt bleibt wie in der Datenbank.
+    expect(ok.cards[0].hint).toBe("Wenn Du merkst, dass Du mehr redest als Dein Gegenüber.");
+    expect(ok.cards[0].chunkText).toBe(CHUNK);
     expect(searchMock).toHaveBeenCalledWith(expect.objectContaining({ lang: "de", topK: 5 }));
     expect(cardsToPromptBlock(ok.cards)).toMatch(/^### Redeanteil steuern/);
 

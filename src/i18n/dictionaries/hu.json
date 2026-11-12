@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Szint",
     "builderGenerateCta": "Vázlat generálása",
     "builderCostNote": "Minden generálás 1 kreditbe kerül.",
-    "builderGenerating": "A vázlat készül — akár egy percig is eltarthat …",
+    "builderGenerating": "A vázlat készül — akár két percig is eltarthat …",
     "builderGenerateFailed": "A generálás nem sikerült. Próbáld újra, vagy pontosítsd a briefet.",
     "builderNoCredits": "Nincs elég kredit a generáláshoz.",
     "builderLimit": "Elérted a saját forgatókönyvek maximumát — előbb törölj egyet.",

@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Taso",
     "builderGenerateCta": "Luo luonnos",
     "builderCostNote": "Jokainen luonti maksaa 1 kredititin.",
-    "builderGenerating": "Luonnosta luodaan — voi kestää jopa minuutin …",
+    "builderGenerating": "Luonnosta luodaan — voi kestää jopa kaksi minuuttia …",
     "builderGenerateFailed": "Luonti epäonnistui. Yritä uudelleen tai tarkenna briefiä.",
     "builderNoCredits": "Krediittejä ei ole tarpeeksi.",
     "builderLimit": "Skenaarioiden enimmäismäärä saavutettu — poista ensin yksi.",

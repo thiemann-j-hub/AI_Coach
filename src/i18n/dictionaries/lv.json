@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Līmenis",
     "builderGenerateCta": "Ģenerēt melnrakstu",
     "builderCostNote": "Katra ģenerēšana maksā 1 kredītu.",
-    "builderGenerating": "Melnraksts top — tas var ilgt līdz minūtei …",
+    "builderGenerating": "Melnraksts top — tas var ilgt līdz divām minūtēm …",
     "builderGenerateFailed": "Ģenerēšana neizdevās. Mēģini vēlreiz vai precizē aprakstu.",
     "builderNoCredits": "Ģenerēšanai nepietiek kredītu.",
     "builderLimit": "Sasniegts scenāriju maksimums — vispirms izdzēs kādu esošo.",

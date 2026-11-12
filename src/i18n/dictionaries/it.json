@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Livello",
     "builderGenerateCta": "Genera bozza",
     "builderCostNote": "Ogni generazione costa 1 credito.",
-    "builderGenerating": "Creazione della bozza — può richiedere fino a un minuto …",
+    "builderGenerating": "Creazione della bozza — può richiedere fino a due minuti …",
     "builderGenerateFailed": "Generazione non riuscita. Riprova o rendi il brief più concreto.",
     "builderNoCredits": "Crediti insufficienti per una generazione.",
     "builderLimit": "Numero massimo di scenari raggiunto — eliminane prima uno.",

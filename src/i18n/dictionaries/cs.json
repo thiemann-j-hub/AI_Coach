@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Úroveň",
     "builderGenerateCta": "Vygenerovat návrh",
     "builderCostNote": "Každá generace stojí 1 kredit.",
-    "builderGenerating": "Návrh se vytváří — může to trvat až minutu …",
+    "builderGenerating": "Návrh se vytváří — může to trvat až dvě minuty …",
     "builderGenerateFailed": "Generování selhalo. Zkuste to znovu nebo brief upřesněte.",
     "builderNoCredits": "Nedostatek kreditů na generování.",
     "builderLimit": "Dosažen maximální počet scénářů — nejprve jeden smažte.",

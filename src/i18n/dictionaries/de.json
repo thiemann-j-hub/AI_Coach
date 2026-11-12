@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Stufe",
     "builderGenerateCta": "Entwurf generieren",
     "builderCostNote": "Jede Generierung kostet 1 Credit.",
-    "builderGenerating": "Der Entwurf entsteht — das dauert bis zu einer Minute …",
+    "builderGenerating": "Der Entwurf entsteht — das dauert bis zu zwei Minuten …",
     "builderGenerateFailed": "Die Generierung ist fehlgeschlagen. Bitte versuche es erneut oder formuliere den Brief konkreter.",
     "builderNoCredits": "Nicht genug Credits für eine Generierung.",
     "builderLimit": "Maximalzahl eigener Szenarien erreicht — lösche zuerst ein bestehendes.",

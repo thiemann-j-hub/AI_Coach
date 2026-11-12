@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Επίπεδο",
     "builderGenerateCta": "Δημιουργία προσχεδίου",
     "builderCostNote": "Κάθε δημιουργία κοστίζει 1 credit.",
-    "builderGenerating": "Το προσχέδιο δημιουργείται — μπορεί να διαρκέσει έως ένα λεπτό …",
+    "builderGenerating": "Το προσχέδιο δημιουργείται — μπορεί να διαρκέσει έως δύο λεπτά …",
     "builderGenerateFailed": "Η δημιουργία απέτυχε. Δοκίμασε ξανά ή κάνε το brief πιο συγκεκριμένο.",
     "builderNoCredits": "Δεν υπάρχουν αρκετά credits.",
     "builderLimit": "Έφτασες το μέγιστο σεναρίων — διάγραψε πρώτα ένα υπάρχον.",

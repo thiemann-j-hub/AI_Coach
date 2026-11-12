@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Level",
     "builderGenerateCta": "Generate draft",
     "builderCostNote": "Each generation costs 1 credit.",
-    "builderGenerating": "Drafting — this can take up to a minute …",
+    "builderGenerating": "Drafting — this can take up to two minutes …",
     "builderGenerateFailed": "Generation failed. Please try again or make the brief more specific.",
     "builderNoCredits": "Not enough credits for a generation.",
     "builderLimit": "Maximum number of custom scenarios reached — delete an existing one first.",

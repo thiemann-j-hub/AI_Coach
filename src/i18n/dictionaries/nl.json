@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Niveau",
     "builderGenerateCta": "Concept genereren",
     "builderCostNote": "Elke generatie kost 1 credit.",
-    "builderGenerating": "Concept wordt gemaakt — dit kan tot een minuut duren …",
+    "builderGenerating": "Concept wordt gemaakt — dit kan tot twee minuten duren …",
     "builderGenerateFailed": "Genereren mislukt. Probeer opnieuw of maak de brief concreter.",
     "builderNoCredits": "Onvoldoende credits voor een generatie.",
     "builderLimit": "Maximum aantal eigen scenario's bereikt — verwijder er eerst een.",

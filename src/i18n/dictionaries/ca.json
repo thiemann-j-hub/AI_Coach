@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Nivell",
     "builderGenerateCta": "Generar esborrany",
     "builderCostNote": "Cada generació costa 1 crèdit.",
-    "builderGenerating": "S'està creant l'esborrany — pot trigar fins a un minut …",
+    "builderGenerating": "S'està creant l'esborrany — pot trigar fins a dos minuts …",
     "builderGenerateFailed": "La generació ha fallat. Torna-ho a provar o concreta més el brief.",
     "builderNoCredits": "No hi ha prou crèdits per a una generació.",
     "builderLimit": "S'ha assolit el màxim d'escenaris — esborra'n primer un.",

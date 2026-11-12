@@ -909,6 +909,9 @@ export function faehigkeit(id: string): Faehigkeit | undefined {
 
 export type FaehigkeitLocale = "de" | "en";
 
+type FaehigkeitI18n = { titel: string; definition: string; stufen?: string[] };
+const I18N = FAEHIGKEITEN_I18N as Record<string, Record<string, FaehigkeitI18n | undefined> | undefined>;
+
 /**
  * Welle 3 Nachtrag (30.10.2026): Titel und Definition in den 20 weiteren Oberflächensprachen (erzeugt per
  * `scripts/_faehigkeiten-uebersetzen.mts`, Datei `faehigkeiten-i18n.json`). Rubrik-Stufen bleiben de/en — sie
@@ -917,10 +920,21 @@ export type FaehigkeitLocale = "de" | "en";
 export function faehigkeitText(f: Faehigkeit, locale: string): { titel: string; definition: string } {
   if (locale === "de") return { titel: f.titel.de, definition: f.definition.de };
   if (locale !== "en") {
-    const t = (FAEHIGKEITEN_I18N as Record<string, Record<string, { titel: string; definition: string } | undefined> | undefined>)[locale]?.[f.id];
-    if (t?.titel && t?.definition) return t;
+    const t = I18N[locale]?.[f.id];
+    if (t?.titel && t?.definition) return { titel: t.titel, definition: t.definition };
   }
   return { titel: f.titel.en, definition: f.definition.en };
+}
+
+/**
+ * Die vier Stufentexte in einer Gesprächssprache, für die Messlatte der Auswertung (12.11.2026): Deutsch und
+ * Englisch aus der Bibliothek, Französisch und Spanisch aus `faehigkeiten-i18n.json` (Feld `stufen`). Andere
+ * Sprachen gibt es als Gesprächssprache nicht: null. Der Richter liest weiter nur die Rubrik auf de/en.
+ */
+export function faehigkeitStufen(f: Faehigkeit, locale: string): string[] | null {
+  if (locale === "de" || locale === "en") return f.stufen.map((s) => s[locale]);
+  const s = I18N[locale]?.[f.id]?.stufen;
+  return Array.isArray(s) && s.length === 4 && s.every((x) => typeof x === "string" && x.trim()) ? s : null;
 }
 
 /** Bewertungs-Rubrik für den Richter: Definition plus vier Stufen (unsere Skala 1–4). */

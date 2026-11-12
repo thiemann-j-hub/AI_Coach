@@ -213,7 +213,7 @@
     "builderDifficultyLabel": "Nivel",
     "builderGenerateCta": "Generar borrador",
     "builderCostNote": "Cada generación cuesta 1 crédito.",
-    "builderGenerating": "Creando el borrador — puede tardar hasta un minuto …",
+    "builderGenerating": "Creando el borrador — puede tardar hasta dos minutos …",
     "builderGenerateFailed": "La generación ha fallado. Inténtalo de nuevo o concreta más el brief.",
     "builderNoCredits": "No hay créditos suficientes para una generación.",
     "builderLimit": "Se alcanzó el máximo de escenarios propios — borra uno primero.",

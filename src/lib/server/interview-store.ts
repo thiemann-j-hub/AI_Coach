@@ -31,6 +31,8 @@ export interface InterviewDoc {
   updatedAt: string;
   finishedAt?: string;
   centralSpendTxId?: string | null;
+  /** Zahl der gelungenen Rückbuchungen nach einem technischen Fehler; sie macht die Buchungskennung je Versuch neu. */
+  chargeRefunds?: number;
 }
 
 export interface InterviewBerichtDoc {
@@ -54,6 +56,12 @@ export async function createInterview(doc: Omit<InterviewDoc, "sessionId" | "doc
   const full: InterviewDoc = { ...doc, sessionId: interviewPartitionKey(doc.workspaceId), docType: INTERVIEW_DOC_TYPE };
   await upsertItem(runsContainer(), full);
   return full;
+}
+
+/** Kennung der Buchung je Versuch: `intv:<id>`, nach n gelungenen Rückbuchungen `intv:<id>:<n>`. */
+export function interviewBuchungsKennung(id: string, rueckbuchungen: number | undefined): string {
+  const n = Math.max(0, Math.trunc(rueckbuchungen ?? 0));
+  return n > 0 ? `intv:${id}:${n}` : `intv:${id}`;
 }
 
 export async function readInterview(workspaceId: string, id: string): Promise<InterviewDoc | null> {
