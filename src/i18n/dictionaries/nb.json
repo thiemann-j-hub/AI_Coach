@@ -308,7 +308,17 @@
     "ergebnisOffen": "Mål åpent",
     "ergebnisAbbruch": "Avbrutt",
     "passedByGoal": "Bestått · mål nådd",
-    "failedByAbort": "Ikke bestått · samtalen avbrutt"
+    "failedByAbort": "Ikke bestått · samtalen avbrutt",
+    "rateLimited": "Vent {n} sekunder, og prøv igjen.",
+    "scenarioGone": "Dette scenarioet er ikke tilgjengelig akkurat nå. Prøv igjen om litt, eller velg et annet.",
+    "evaluateCta": "Evaluer",
+    "micDenied": "Gi nettleseren tilgang til mikrofonen, og klikk så på mikrofonen igjen.",
+    "micUnavailable": "Mikrofonen din lar seg ikke starte. Sjekk at den er koblet til, og at ingen andre programmer bruker den.",
+    "micIdleOff": "Jeg har ikke hørt noe på en stund og har slått av mikrofonen. Klikk på mikrofonen for å snakke videre.",
+    "liveMaxTime": "Taleforbindelsen avsluttes etter 30 minutter. Klikk på mikrofonen for å snakke videre.",
+    "voiceLost": "Taleforbindelsen ble brutt. Klikk på mikrofonen igjen, eller skriv videre.",
+    "liveReplaced": "Denne samtalen går nå i et annet vindu. Her er mikrofonen slått av.",
+    "zielOhneMindestpunkte": "Du har nådd målet. For å bestå prøven trenger du også minst {passMark} %."
   },
   "auth": {
     "signIn": "Logg inn",

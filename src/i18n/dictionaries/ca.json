@@ -308,7 +308,17 @@
     "ergebnisOffen": "Objectiu obert",
     "ergebnisAbbruch": "Interromput",
     "passedByGoal": "Aprovat · objectiu assolit",
-    "failedByAbort": "No aprovat · conversa interrompuda"
+    "failedByAbort": "No aprovat · conversa interrompuda",
+    "rateLimited": "Espera {n} segons i torna-ho a provar.",
+    "scenarioGone": "Aquest escenari no està disponible ara mateix. Torna-ho a provar d'aquí a un moment o tria'n un altre.",
+    "evaluateCta": "Avalua",
+    "micDenied": "Permet l'accés al micròfon al navegador i torna a fer clic al micròfon.",
+    "micUnavailable": "No s'ha pogut iniciar el micròfon. Comprova que està connectat i que cap altre programa l'està fent servir.",
+    "micIdleOff": "Fa una estona que no sento res i he apagat el micròfon. Fes clic al micròfon per continuar parlant.",
+    "liveMaxTime": "La connexió de veu s'acaba al cap de 30 minuts. Fes clic al micròfon per continuar parlant.",
+    "voiceLost": "La connexió de veu s'ha interromput. Torna a fer clic al micròfon o continua escrivint.",
+    "liveReplaced": "Aquesta conversa continua ara en una altra finestra. Aquí el micròfon està apagat.",
+    "zielOhneMindestpunkte": "Has assolit l'objectiu. Per superar l'avaluació, també necessites com a mínim un {passMark} %."
   },
   "auth": {
     "signIn": "Inicia la sessió",

@@ -28,8 +28,11 @@ export interface LiveEvents {
   onEnded?(p: { grund: string; ergebnis: string }): void;
   /** Welle 2: Vorwarnung vor dem Stille-Abbruch. */
   onIdleWarn?(seconds: number): void;
-  /** Immer zuletzt, genau einmal. */
-  onClose(): void;
+  /**
+   * Immer zuletzt, genau einmal. `wsCode`: Schließ-Code des Sockets (Paket 1, C10, 12.11.2026) —
+   * 4401 = Karte abgelaufen, 1011 = Sitzung gescheitert, 1006 = Abriss; der Client entscheidet damit über den Satz.
+   */
+  onClose(wsCode: number): void;
 }
 
 export interface LiveConnection {
@@ -48,10 +51,10 @@ export function openLiveConnection(path: string, ticket: string, ev: LiveEvents)
   const ws = new WebSocket(liveSocketUrl(path));
   ws.binaryType = "arraybuffer";
   let closed = false;
-  const finish = () => {
+  const finish = (wsCode: number) => {
     if (closed) return;
     closed = true;
-    ev.onClose();
+    ev.onClose(wsCode);
   };
   ws.onopen = () => ws.send(JSON.stringify({ t: "hello", ticket }));
   ws.onmessage = (e: MessageEvent) => {
@@ -104,7 +107,7 @@ export function openLiveConnection(path: string, ticket: string, ev: LiveEvents)
   ws.onerror = () => {
     /* der folgende close trägt das Ende */
   };
-  ws.onclose = () => finish();
+  ws.onclose = (e: CloseEvent) => finish(e.code);
   return {
     sendAudio: (pcm) => {
       if (ws.readyState === WebSocket.OPEN) ws.send(pcm);

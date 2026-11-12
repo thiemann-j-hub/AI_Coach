@@ -17,13 +17,21 @@ export interface AzureDictation {
   stop: () => void;
 }
 
+/**
+ * Paket 1, C26 (12.11.2026): Das Token gilt rund zehn Minuten (/api/speech-token). Ohne Erneuerung brach das Diktat
+ * danach still ab, sobald das SDK neu verbinden musste. Alle acht Minuten holt die laufende Erkennung ein frisches.
+ */
+export const TOKEN_REFRESH_MS = 8 * 60_000;
+
 export function startAzureDictation(args: {
   token: string;
   region: string;
   /** BCP-47, z. B. de-DE */
   lang: string;
   onText: (text: string) => void;
-  /** Erkennung wurde beendet (Fehler oder Stop). */
+  /** Frisches Token für die laufende Erkennung; null = gerade keines (nächster Versuch im nächsten Takt). */
+  refreshToken?: () => Promise<string | null>;
+  /** Erkennung wurde beendet (Fehler oder Stop). `error` nennt den Grund eines Abbruchs. */
   onEnd: (error?: string) => void;
 }): AzureDictation {
   const cfg = SpeechConfig.fromAuthorizationToken(args.token, args.region);
@@ -31,6 +39,20 @@ export function startAzureDictation(args: {
   const audio = AudioConfig.fromDefaultMicrophoneInput();
   const rec = new SpeechRecognizer(cfg, audio);
   let stopped = false;
+  const refresh = args.refreshToken;
+  const refreshTimer = refresh
+    ? setInterval(() => {
+        void refresh()
+          .catch(() => null)
+          .then((token) => {
+            if (token && !stopped) rec.authorizationToken = token;
+          });
+      }, TOKEN_REFRESH_MS)
+    : null;
+  const end = (error?: string) => {
+    if (refreshTimer) clearInterval(refreshTimer);
+    args.onEnd(error);
+  };
   rec.recognized = (_s: unknown, e: SpeechRecognitionEventArgs) => {
     if (e.result?.reason === ResultReason.RecognizedSpeech && e.result.text?.trim()) {
       args.onText(e.result.text.trim());
@@ -44,7 +66,7 @@ export function startAzureDictation(args: {
     } catch {
       /* schon zu */
     }
-    args.onEnd(e?.errorDetails || 'canceled');
+    end(e?.errorDetails || 'canceled');
   };
   rec.sessionStopped = () => {
     if (stopped) return;
@@ -54,12 +76,12 @@ export function startAzureDictation(args: {
     } catch {
       /* schon zu */
     }
-    args.onEnd();
+    end();
   };
   rec.startContinuousRecognitionAsync(undefined, (err) => {
     if (stopped) return;
     stopped = true;
-    args.onEnd(String(err));
+    end(String(err));
   });
   return {
     stop: () => {
@@ -72,9 +94,9 @@ export function startAzureDictation(args: {
           } catch {
             /* schon zu */
           }
-          args.onEnd();
+          end();
         },
-        () => args.onEnd()
+        () => end()
       );
     },
   };

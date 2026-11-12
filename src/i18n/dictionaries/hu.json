@@ -308,7 +308,17 @@
     "ergebnisOffen": "Cél nyitott",
     "ergebnisAbbruch": "Megszakítva",
     "passedByGoal": "Megfelelt · cél elérve",
-    "failedByAbort": "Nem felelt meg · a beszélgetés megszakadt"
+    "failedByAbort": "Nem felelt meg · a beszélgetés megszakadt",
+    "rateLimited": "Várj {n} másodpercet, majd próbáld újra.",
+    "scenarioGone": "Ez a forgatókönyv most nem érhető el. Próbáld újra egy pillanat múlva, vagy válassz másikat.",
+    "evaluateCta": "Kiértékelés",
+    "micDenied": "Engedélyezd a mikrofont a böngészőben, majd kattints újra a mikrofonra.",
+    "micUnavailable": "A mikrofonod nem indítható el. Ellenőrizd, hogy csatlakoztatva van-e, és hogy más program nem használja-e.",
+    "micIdleOff": "Egy ideje nem hallottam semmit, ezért kikapcsoltam a mikrofont. Kattints a mikrofonra a folytatáshoz.",
+    "liveMaxTime": "A hangkapcsolat 30 perc után véget ér. Kattints a mikrofonra a folytatáshoz.",
+    "voiceLost": "A hangkapcsolat megszakadt. Kattints újra a mikrofonra, vagy írj tovább.",
+    "liveReplaced": "Ez a beszélgetés most egy másik ablakban folytatódik. Itt a mikrofon ki van kapcsolva.",
+    "zielOhneMindestpunkte": "Elérted a célt. A vizsgán a megfeleléshez ezenfelül legalább {passMark} % kell."
   },
   "auth": {
     "signIn": "Bejelentkezés",

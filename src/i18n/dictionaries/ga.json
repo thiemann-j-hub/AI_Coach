@@ -308,7 +308,17 @@
     "ergebnisOffen": "Sprioc oscailte",
     "ergebnisAbbruch": "Briste",
     "passedByGoal": "Rith · sprioc bainte amach",
-    "failedByAbort": "Níor rith · comhrá briste"
+    "failedByAbort": "Níor rith · comhrá briste",
+    "rateLimited": "Fan {n} soicind agus bain triail eile as ansin.",
+    "scenarioGone": "Níl an cás seo ar fáil faoi láthair. Bain triail eile as i gceann nóiméid nó roghnaigh ceann eile.",
+    "evaluateCta": "Measúnaigh",
+    "micDenied": "Ceadaigh an micreafón i do bhrabhsálaí, le do thoil, agus cliceáil ar an micreafón arís ansin.",
+    "micUnavailable": "Níorbh fhéidir do mhicreafón a thosú. Seiceáil go bhfuil sé ceangailte agus nach bhfuil clár eile á úsáid.",
+    "micIdleOff": "Níor chuala mé rud ar bith le tamall agus mhúch mé an micreafón. Cliceáil ar an micreafón le leanúint ort ag caint.",
+    "liveMaxTime": "Críochnaíonn an nasc gutha tar éis 30 nóiméad. Cliceáil ar an micreafón le leanúint ort ag caint.",
+    "voiceLost": "Briseadh an nasc gutha. Cliceáil ar an micreafón arís nó lean ort ag scríobh.",
+    "liveReplaced": "Tá an comhrá seo ar siúl i bhfuinneog eile anois. Tá an micreafón múchta anseo.",
+    "zielOhneMindestpunkte": "Bhain tú an sprioc amach. Chun pas a fháil sa mheasúnú, teastaíonn {passMark} % ar a laghad uait freisin."
   },
   "auth": {
     "signIn": "Sínigh isteach",

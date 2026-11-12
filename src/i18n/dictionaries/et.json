@@ -308,7 +308,17 @@
     "ergebnisOffen": "Eesmärk lahtine",
     "ergebnisAbbruch": "Katkestatud",
     "passedByGoal": "Sooritatud · eesmärk saavutatud",
-    "failedByAbort": "Sooritamata · vestlus katkestatud"
+    "failedByAbort": "Sooritamata · vestlus katkestatud",
+    "rateLimited": "Palun oota {n} sekundit ja proovi siis uuesti.",
+    "scenarioGone": "See stsenaarium pole praegu saadaval. Proovi hetke pärast uuesti või vali mõni teine.",
+    "evaluateCta": "Hinda",
+    "micDenied": "Palun luba brauseris mikrofon ja klõpsa siis uuesti mikrofonil.",
+    "micUnavailable": "Sinu mikrofoni ei saanud käivitada. Kontrolli, et see on ühendatud ja et ükski teine programm seda ei kasuta.",
+    "micIdleOff": "Ma pole mõnda aega midagi kuulnud ja lülitasin mikrofoni välja. Jätkamiseks klõpsa mikrofonil.",
+    "liveMaxTime": "Kõneühendus lõpeb 30 minuti järel. Jätkamiseks klõpsa mikrofonil.",
+    "voiceLost": "Kõneühendus katkes. Klõpsa uuesti mikrofonil või jätka kirjutades.",
+    "liveReplaced": "See vestlus käib nüüd teises aknas. Siin on mikrofon välja lülitatud.",
+    "zielOhneMindestpunkte": "Sa saavutasid eesmärgi. Eksami läbimiseks on sul lisaks vaja vähemalt {passMark} %."
   },
   "auth": {
     "signIn": "Logi sisse",

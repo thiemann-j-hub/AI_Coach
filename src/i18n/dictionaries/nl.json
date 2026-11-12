@@ -308,7 +308,17 @@
     "ergebnisOffen": "Doel open",
     "ergebnisAbbruch": "Afgebroken",
     "passedByGoal": "Geslaagd · doel bereikt",
-    "failedByAbort": "Niet geslaagd · gesprek afgebroken"
+    "failedByAbort": "Niet geslaagd · gesprek afgebroken",
+    "rateLimited": "Wacht {n} seconden en probeer het dan opnieuw.",
+    "scenarioGone": "Dit scenario is nu niet beschikbaar. Probeer het zo opnieuw of kies een ander.",
+    "evaluateCta": "Beoordelen",
+    "micDenied": "Sta de microfoon toe in je browser en klik daarna opnieuw op de microfoon.",
+    "micUnavailable": "Je microfoon kan niet worden gestart. Controleer of hij is aangesloten en of geen ander programma hem gebruikt.",
+    "micIdleOff": "Ik heb een tijdje niets gehoord en heb de microfoon uitgezet. Klik op de microfoon om verder te praten.",
+    "liveMaxTime": "De spraakverbinding stopt na 30 minuten. Klik op de microfoon om verder te praten.",
+    "voiceLost": "De spraakverbinding is onderbroken. Klik opnieuw op de microfoon of typ verder.",
+    "liveReplaced": "Dit gesprek loopt nu in een ander venster. Hier staat de microfoon uit.",
+    "zielOhneMindestpunkte": "Je hebt het doel bereikt. Om voor de toets te slagen heb je ook minstens {passMark} % nodig."
   },
   "auth": {
     "signIn": "Aanmelden",

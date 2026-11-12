@@ -308,7 +308,17 @@
     "ergebnisOffen": "Objectif ouvert",
     "ergebnisAbbruch": "Interrompu",
     "passedByGoal": "Réussi · objectif atteint",
-    "failedByAbort": "Non réussi · entretien interrompu"
+    "failedByAbort": "Non réussi · entretien interrompu",
+    "rateLimited": "Attends {n} secondes, puis réessaie.",
+    "scenarioGone": "Ce scénario n'est pas disponible pour le moment. Réessaie dans un instant ou choisis-en un autre.",
+    "evaluateCta": "Évaluer",
+    "micDenied": "Autorise le micro dans ton navigateur, puis clique de nouveau sur le micro.",
+    "micUnavailable": "Ton micro ne démarre pas. Vérifie qu'il est branché et qu'aucun autre programme ne l'utilise.",
+    "micIdleOff": "Je n'ai plus rien entendu depuis un moment et j'ai coupé le micro. Clique sur le micro pour continuer à parler.",
+    "liveMaxTime": "La connexion vocale s'arrête au bout de 30 minutes. Clique sur le micro pour continuer à parler.",
+    "voiceLost": "La connexion vocale est interrompue. Clique de nouveau sur le micro ou continue par écrit.",
+    "liveReplaced": "Cette conversation se poursuit maintenant dans une autre fenêtre. Ici, le micro est coupé.",
+    "zielOhneMindestpunkte": "Tu as atteint l'objectif. Pour réussir l'évaluation, il te faut aussi au moins {passMark} %."
   },
   "auth": {
     "signIn": "Se connecter",

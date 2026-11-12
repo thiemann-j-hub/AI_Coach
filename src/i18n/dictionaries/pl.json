@@ -308,7 +308,17 @@
     "ergebnisOffen": "Cel otwarty",
     "ergebnisAbbruch": "Przerwana",
     "passedByGoal": "Zaliczone · cel osiągnięty",
-    "failedByAbort": "Niezaliczone · rozmowa przerwana"
+    "failedByAbort": "Niezaliczone · rozmowa przerwana",
+    "rateLimited": "Poczekaj {n} s i spróbuj ponownie.",
+    "scenarioGone": "Ten scenariusz jest teraz niedostępny. Spróbuj ponownie za chwilę lub wybierz inny.",
+    "evaluateCta": "Oceń",
+    "micDenied": "Zezwól na mikrofon w przeglądarce, a potem ponownie kliknij mikrofon.",
+    "micUnavailable": "Nie udało się uruchomić mikrofonu. Sprawdź, czy jest podłączony i czy nie używa go inny program.",
+    "micIdleOff": "Od dłuższej chwili nic nie słychać, więc mikrofon został wyłączony. Kliknij mikrofon, aby mówić dalej.",
+    "liveMaxTime": "Połączenie głosowe kończy się po 30 minutach. Kliknij mikrofon, aby mówić dalej.",
+    "voiceLost": "Połączenie głosowe zostało przerwane. Kliknij ponownie mikrofon albo pisz dalej.",
+    "liveReplaced": "Ta rozmowa toczy się teraz w innym oknie. Tutaj mikrofon jest wyłączony.",
+    "zielOhneMindestpunkte": "Cel udało ci się osiągnąć. Aby zaliczyć egzamin, potrzebujesz też co najmniej {passMark} %."
   },
   "auth": {
     "signIn": "Zaloguj się",

@@ -308,7 +308,17 @@
     "ergebnisOffen": "Ziel offen",
     "ergebnisAbbruch": "Abgebrochen",
     "passedByGoal": "Bestanden · Ziel erreicht",
-    "failedByAbort": "Nicht bestanden · Gespräch abgebrochen"
+    "failedByAbort": "Nicht bestanden · Gespräch abgebrochen",
+    "rateLimited": "Bitte warte {n} Sekunden und versuche es dann noch einmal.",
+    "scenarioGone": "Dieses Szenario ist gerade nicht verfügbar. Versuche es gleich noch einmal oder wähle ein anderes.",
+    "evaluateCta": "Auswerten",
+    "micDenied": "Bitte gib das Mikrofon im Browser frei und klicke dann noch einmal auf das Mikrofon.",
+    "micUnavailable": "Dein Mikrofon lässt sich nicht starten. Prüfe, ob es angeschlossen ist und kein anderes Programm es nutzt.",
+    "micIdleOff": "Ich habe länger nichts gehört und das Mikrofon ausgeschaltet. Klicke auf das Mikrofon, um weiterzusprechen.",
+    "liveMaxTime": "Nach 30 Minuten endet die Sprachverbindung. Klicke auf das Mikrofon, um weiterzusprechen.",
+    "voiceLost": "Die Sprachverbindung ist unterbrochen. Klicke noch einmal auf das Mikrofon oder schreibe weiter.",
+    "liveReplaced": "Dieses Gespräch läuft jetzt in einem anderen Fenster. Hier ist das Mikrofon aus.",
+    "zielOhneMindestpunkte": "Du hast das Ziel erreicht. Zum Bestehen der Prüfung brauchst Du außerdem mindestens {passMark} %."
   },
   "auth": {
     "signIn": "Anmelden",

@@ -89,6 +89,8 @@ export function createLiveAudio(): LiveAudio {
     if (ctx.audioWorklet) {
       workletUrl = URL.createObjectURL(new Blob([WORKLET_SOURCE], { type: "application/javascript" }));
       await ctx.audioWorklet.addModule(workletUrl);
+      // Paket 1, C11 (12.11.2026): Während des Ladens geschlossen → das Mikrofon ist schon freigegeben, nichts mehr anschließen.
+      if (closed) return;
       const node = new AudioWorkletNode(ctx, "pn-live-mic", { numberOfInputs: 1, numberOfOutputs: 0 });
       node.port.onmessage = (e: MessageEvent<ArrayBuffer>) => onChunk(e.data);
       source.connect(node);

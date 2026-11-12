@@ -55,6 +55,8 @@ import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
 import { maxEurHint } from '@/lib/pricing-display';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
 import { recommendScenarios } from '@/lib/simulation/empfehlung';
+import { decideApiFailure, type ApiFailureBody } from '@/lib/simulation/api-failure';
+import { decideLiveEnd, dictationEndMessage, type LiveEndCause, type VoiceMessage } from '@/lib/simulation/live-failure';
 
 /** Wirkungsrichtungen in fester Anzeige-Reihenfolge (Blueprint §2.1). */
 const CATEGORY_ORDER = [
@@ -504,10 +506,16 @@ export default function SimulationClient() {
   /** Zeit-Regie: Persona hat sich verabschiedet — Eingabe zu, nur noch Auswertung. */
   const [timeUp, setTimeUp] = useState(false);
   // Welle 2: die Rolle hat das Gespräch selbst beendet (Grund in der Autorensprache, Art).
-  const [personaEnded, setPersonaEnded] = useState<{ grund: string; ergebnis: string } | null>(null);
+  const [personaEnded, setPersonaEnded] = useState<{ grund: string; ergebnis: string; at?: string } | null>(null);
   // Welle 2: Statuszeile im Live-Modus (Stille-Vorwarnung, Wiederverbindung).
   const [liveNotice, setLiveNotice] = useState<{ kind: 'idle' | 'reconnecting' | 'reconnected'; seconds?: number } | null>(null);
   const liveRetryRef = useRef(0);
+  // Paket 1, C12 (12.11.2026): Der Neuverbinden-Timer wird gemerkt, damit „Mikro aus“ und der Abbau ihn löschen.
+  const liveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Paket 1, C11 (12.11.2026): „Das Mikrofon startet“ gilt ab dem Klick — Refs für die Logik, State für den Knopf.
+  const micStartingRef = useRef(false);
+  const liveStartingRef = useRef(false);
+  const [micStarting, setMicStarting] = useState(false);
   // ── W2-1 sichtbare Uhr: Client-Anzeige ab createdAt; Server bleibt Wahrheit. ──
   const [simStartedAt, setSimStartedAt] = useState<string | null>(null);
   const [nowTs, setNowTs] = useState(() => Date.now());
@@ -549,6 +557,12 @@ export default function SimulationClient() {
   const [livePersona, setLivePersona] = useState('');
 
   const stopLive = useCallback(() => {
+    // Paket 1, C12 (12.11.2026): Ein geplanter Neuversuch startet nach „Mikro aus“ oder dem Verlassen nicht mehr.
+    if (liveRetryTimerRef.current) {
+      clearTimeout(liveRetryTimerRef.current);
+      liveRetryTimerRef.current = null;
+      setLiveNotice((n) => (n?.kind === 'reconnecting' ? null : n));
+    }
     const l = liveRef.current;
     liveRef.current = null;
     if (l) {
@@ -577,33 +591,109 @@ export default function SimulationClient() {
   }, [stopLive]);
 
   /**
+   * Paket 1, C1 (12.11.2026): Fehlerantwort einer Route → Satz und Verhalten. Der Aufrufer übergibt den schon
+   * gelesenen Körper. Vorher wurde die Antwort hier ein zweites Mal gelesen; das scheiterte still, und es blieb
+   * fast immer bei der allgemeinen Meldung. Die Entscheidung steht getestet in src/lib/simulation/api-failure.ts.
+   */
+  const handleApiFailure = useCallback(
+    (res: Response, body: ApiFailureBody | null) => {
+      const d = decideApiFailure(res.status, body, res.headers.get('retry-after'));
+      // Der Kauf-Link gehört nur zur Guthaben-Meldung.
+      setTopUpUrl(d.kind === 'credits' ? d.topUpUrl : null);
+      switch (d.kind) {
+        case 'credits':
+          setError(d.text === 'member' ? t.common.balanceEmptyMember : ts[d.text]);
+          break;
+        case 'ai':
+          // W1-1/W1-2: Du-Text je KI-Fehlerart + Fehler-Nr.
+          setError(aiErrorMessage(t.aiErrors, body, res, ts.genericError) ?? ts.genericError);
+          break;
+        case 'kiAus':
+          // A4 (31.10.2026): Das Unternehmen hat die KI ausgeschaltet — die Meldung des Servers zeigen, Mikro aus.
+          setError(d.text ?? ts.genericError);
+          stopMic();
+          break;
+        case 'server':
+          setError(d.text);
+          break;
+        case 'wait':
+          // Paket 1, C5: eigener Satz für 429.
+          setError(ts.rateLimited.replace('{n}', String(d.seconds)));
+          break;
+        case 'timeUp':
+          // Kein Fehler: die Zeit ist um — Banner statt roter Meldung.
+          setTimeUp(true);
+          stopMic();
+          break;
+        case 'ended':
+          // Welle 2: die Rolle hat das Gespräch beendet — Karte statt Fehler.
+          setPersonaEnded(d.ende);
+          stopMic();
+          break;
+        case 'text':
+          setError(ts[d.key]);
+          break;
+      }
+    },
+    [t, ts, stopMic]
+  );
+
+  /** Paket 1, C10 (12.11.2026): der Satz, warum das Mikrofon aus ist. */
+  const voiceText = useCallback(
+    (m: VoiceMessage): string =>
+      m.type === 'server'
+        ? m.text
+        : m.type === 'ai'
+          ? aiErrorMessage(t.aiErrors, { aiCode: m.aiCode }, null, ts.genericError) ?? ts.genericError
+          : ts[m.key],
+    [t, ts]
+  );
+
+  /**
    * Azure-Diktat (EU): Token holen, SDK laden, erkennen. false NUR, wenn der Server die Browser-Erkennung ausdrücklich
    * wählt (Rückweg SPEECH_INPUT=browser → mode "browser"). 01.11.2026 (Bewertung Teil 1, Owner-Ja): Bei jedem anderen
    * Fehler (502/503/429/Netz) kein Browser-Notnagel mehr — Chrome schickte die Aufnahme an Google, das deckt die
    * Einwilligung nicht; stattdessen „nicht erreichbar“, Mikro aus, Tippen geht weiter.
    */
   const startAzureMic = useCallback(async (): Promise<boolean> => {
-    const ausfall = () => { setError(ts.unavailable); setMicActive(false); wantMicRef.current = false; return true; };
+    const micAus = () => { setMicActive(false); wantMicRef.current = false; return true; };
+    const ausfall = () => { setError(ts.unavailable); return micAus(); };
     try {
       const res = await authFetch('/api/speech-token');
+      // Paket 1, C1 (12.11.2026): den Körper genau einmal lesen.
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; token?: string; region?: string; code?: string; url?: string; error?: string; mode?: string };
       if (res.status === 403) {
         // Stufe C / W5-4 (20.10.2026): Einwilligung „Sprachaufnahme“ fehlt → Hinweis statt Browser-Notnagel.
-        const j = (await res.json().catch(() => ({}))) as { code?: string; url?: string; error?: string };
-        if (j.code === 'EINWILLIGUNG') { setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme'); setMicActive(false); wantMicRef.current = false; return true; }
+        if (j.code === 'EINWILLIGUNG') { setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme'); return micAus(); }
         // A4 (31.10.2026): KI für das Unternehmen aus → Meldung des Servers statt Browser-Notnagel.
-        if (j.code === 'KI_AUS') { setError(j.error || ts.genericError); setMicActive(false); wantMicRef.current = false; return true; }
+        if (j.code === 'KI_AUS') { setError(j.error || ts.genericError); return micAus(); }
       }
-      if (!res.ok) return ((await res.json().catch(() => ({}))) as { mode?: string }).mode === 'browser' ? false : ausfall();
-      const j = (await res.json()) as { ok?: boolean; token?: string; region?: string };
+      if (!res.ok) {
+        if (j.mode === 'browser') return false;
+        // Paket 1, C5: Limit erreicht → der Warte-Satz statt „nicht erreichbar“.
+        if (res.status === 429) { handleApiFailure(res, j); return micAus(); }
+        return ausfall();
+      }
       if (!j.ok || !j.token || !j.region) return ausfall();
       const { startAzureDictation } = await import('@/lib/azure-stt');
+      // Paket 1, C12: inzwischen ausgeschaltet oder die Seite verlassen → kein Mikrofon mehr öffnen.
+      if (!wantMicRef.current) return true;
       const d = startAzureDictation({
         token: j.token,
         region: j.region,
         lang: speechLang,
         onText: (text) => setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text),
-        onEnd: () => {
+        // Paket 1, C26: Das Token gilt rund zehn Minuten — die laufende Erkennung holt rechtzeitig ein frisches.
+        refreshToken: async () => {
+          const r = await authFetch('/api/speech-token');
+          const x = (await r.json().catch(() => null)) as { ok?: boolean; token?: string } | null;
+          return r.ok && x?.ok && x.token ? x.token : null;
+        },
+        onEnd: (error) => {
           if (recognitionRef.current === d) recognitionRef.current = null;
+          // Paket 1, C26: Bricht das Diktat ab, steht der Grund da (nicht, wenn die Person selbst ausschaltet).
+          const grund = dictationEndMessage(error, !wantMicRef.current);
+          if (grund) setError(voiceText(grund));
           setMicActive(false);
           wantMicRef.current = false;
         },
@@ -614,15 +704,24 @@ export default function SimulationClient() {
     } catch {
       return ausfall();
     }
-  }, [speechLang, ts.genericError, ts.unavailable]);
+  }, [speechLang, ts.genericError, ts.unavailable, handleApiFailure, voiceText]);
 
   /**
    * Sprachmodus Live: Karte holen, Verbindung öffnen, Mikrofon streamen. false = für dieses Szenario
    * aus (404 LIVE_OFF) oder nicht konfiguriert (503) → der Aufrufer nimmt die Kaskade wie bisher.
-   * true = Live läuft (oder die Einwilligung „Sprachaufnahme“ fehlt und der Hinweis steht).
+   * true = Live läuft oder baut sich auf — oder der Grund steht schon da (Einwilligung fehlt, KI aus, Lauf zu, Limit).
    */
   const startLiveMic = useCallback(async (): Promise<boolean> => {
-    if (!simId || !liveAudioSupported() || liveRef.current) return false;
+    if (!simId || !liveAudioSupported()) return false;
+    // Paket 1, C11 (12.11.2026): Die Sperre gilt ab dem Klick, nicht erst nach dem Ticket-Abruf. Läuft schon ein
+    // Aufbau oder eine Verbindung, gibt es keine zweite und kein Diktat daneben.
+    if (liveRef.current || liveStartingRef.current) return true;
+    liveStartingRef.current = true;
+    const micAus = () => {
+      setMicActive(false);
+      wantMicRef.current = false;
+      return true;
+    };
     let karte: { ticket: string; path: string } | null = null;
     try {
       const res = await authFetch('/api/simulation/live/ticket', {
@@ -632,34 +731,47 @@ export default function SimulationClient() {
       const j = (await res.json().catch(() => ({}))) as { ok?: boolean; ticket?: string; path?: string; code?: string; url?: string; error?: string };
       if (res.status === 403 && j.code === 'EINWILLIGUNG') {
         setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme');
-        setMicActive(false);
-        wantMicRef.current = false;
-        return true;
+        return micAus();
       }
       // A4 (31.10.2026): KI für das Unternehmen aus → Meldung, keine Kaskade (Diktat und Stimme sind ebenfalls KI).
       if (res.status === 403 && j.code === 'KI_AUS') {
         setError(j.error || ts.genericError);
-        setMicActive(false);
-        wantMicRef.current = false;
-        return true;
+        return micAus();
+      }
+      // Paket 1, C10: Der Lauf ist zu (Zeit um, Zuggrenze, Szenario fehlt) oder ein Limit greift → der passende
+      // Satz oder das Banner, kein stilles Diktat stattdessen.
+      if (res.status === 409 || res.status === 410 || res.status === 429) {
+        handleApiFailure(res, j);
+        return micAus();
       }
       if (!res.ok || !j.ok || !j.ticket || !j.path) return false;
       karte = { ticket: j.ticket, path: j.path };
     } catch {
       return false;
+    } finally {
+      // Ab hier läuft alles ohne Warten bis `liveRef.current` gesetzt ist — die Sperre geht nahtlos über.
+      liveStartingRef.current = false;
     }
+    // Paket 1, C12: inzwischen ausgeschaltet oder die Seite verlassen → keine Verbindung mehr öffnen.
+    if (!wantMicRef.current) return true;
     setLiveState('connecting');
     setLiveYou('');
     setLivePersona('');
     setError(null);
-    let byeSeen = false;
+    // Paket 1, C10: der erste Grund, den diese Verbindung für ihr Ende nennt (Mikrofon, Fehler, Abschied).
+    let cause: LiveEndCause | null = null;
     const audio = createLiveAudio();
     const conn = openLiveConnection(karte.path, karte.ticket, {
       onReady: () => {
         void audio
           .startMic((pcm) => conn.sendAudio(pcm))
           .then(() => {
-            if (liveRef.current?.conn !== conn) return;
+            if (liveRef.current?.conn !== conn) {
+              // Paket 1, C11: verwaiste Verbindung → ihr Mikrofon freigeben und sie schließen.
+              audio.close();
+              conn.close();
+              return;
+            }
             setLiveState('on');
             setMicActive(true);
             if (liveRetryRef.current > 0) {
@@ -669,7 +781,12 @@ export default function SimulationClient() {
               liveRetryRef.current = 0;
             }
           })
-          .catch(() => conn.close()); // Mikrofon verweigert → Verbindung zu, Kaskade bleibt wählbar
+          .catch((e: unknown) => {
+            // Paket 1, C10: Ein verweigertes oder nicht startbares Mikrofon ist kein Abriss. Verbindung zu,
+            // der Satz folgt in onClose, es wird nicht neu verbunden.
+            if (!cause) cause = { art: 'mic', error: e };
+            conn.end();
+          });
       },
       onYou: (text) => {
         setLiveYou(text);
@@ -692,32 +809,46 @@ export default function SimulationClient() {
         if (turn.timeUp) setTimeUp(true);
         if (turn.ended) setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
       },
+      // Paket 1, C10: Fehler und Abschied merken; was daraus folgt, entscheidet onClose für alle Gründe an einer Stelle.
       onError: (code, message) => {
-        if (code === 'UPSTREAM') setError(ts.genericError);
-        // A4: der Schalter wurde während des Gesprächs ausgeschaltet — die Meldung des Servers zeigen.
-        if (code === 'KI_AUS') setError(message || ts.genericError);
+        if (!cause) cause = { art: 'error', code, message };
       },
       onBye: (reason) => {
-        byeSeen = true;
-        if (reason === 'upstream') setError(ts.genericError);
+        if (!cause) cause = { art: 'bye', reason };
       },
-      onClose: () => {
-        if (liveRef.current?.conn !== conn) return; // schon über stopMic abgeräumt
+      onClose: (wsCode) => {
+        if (liveRef.current?.conn !== conn) {
+          // Schon über stopMic abgeräumt oder verwaist (Paket 1, C11): das Mikrofon dieser Verbindung freigeben.
+          audio.close();
+          return;
+        }
         liveRef.current = null;
         audio.finish(); // die letzte Antwort (z. B. die Verabschiedung) noch zu Ende spielen
         setLiveState('off');
         setLiveYou('');
         setLivePersona('');
         setMicActive(false);
-        // Welle 2: Abriss ohne Abschied vom Server (Netz, Schlaf) → einmal still neu verbinden.
-        if (!byeSeen && wantMicRef.current && liveRetryRef.current < 1) {
+        // Paket 1, C10: je Grund ein Satz oder ein Banner (src/lib/simulation/live-failure.ts). Neu verbunden wird
+        // nur beim Abriss ohne Grund (Netz, Schlaf), einmal und nur, solange das Mikro gewollt ist.
+        const d = decideLiveEnd(cause ?? { art: 'close', wsCode }, liveRetryRef.current >= 1);
+        if (d.banner === 'timeUp') setTimeUp(true);
+        if (d.banner === 'ended') setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
+        if (d.reconnect && wantMicRef.current) {
           liveRetryRef.current += 1;
           setLiveNotice({ kind: 'reconnecting' });
-          setTimeout(() => {
+          // Paket 1, C12: Timer merken (stopLive löscht ihn) und vor dem Neustart prüfen, ob das Mikro noch gewollt ist.
+          liveRetryTimerRef.current = setTimeout(() => {
+            liveRetryTimerRef.current = null;
+            if (!wantMicRef.current) {
+              setLiveNotice(null);
+              return;
+            }
             void startLiveMic().then((ok) => {
+              if (liveRef.current) return; // die neue Verbindung baut sich auf
+              setLiveNotice(null);
               if (!ok) {
-                setLiveNotice(null);
                 wantMicRef.current = false;
+                setError(ts.voiceLost);
               }
             });
           }, 1000);
@@ -725,11 +856,12 @@ export default function SimulationClient() {
         }
         wantMicRef.current = false;
         setLiveNotice(null);
+        if (d.message) setError(voiceText(d.message));
       },
     });
     liveRef.current = { conn, audio };
     return true;
-  }, [simId, ts.genericError]);
+  }, [simId, ts.genericError, ts.voiceLost, handleApiFailure, voiceText]);
 
   // CP-3.4 (M21 Option 1, Compliance-Blueprint 31.08.): Aufklärung vor der
   // ERSTEN Mikrofon-Nutzung je Gerät. Die Browser-Spracherkennung überträgt
@@ -747,7 +879,8 @@ export default function SimulationClient() {
 
   /** Diktat: erkannter Text wird ans Eingabefeld ANGEHÄNGT (nichts überschreiben). */
   const startMic = useCallback(() => {
-    if (!speechSupported || micActive) return;
+    // Paket 1, C11 (12.11.2026): Läuft schon ein Start, eine Live-Verbindung oder ein Neuversuch, tut ein zweiter Klick nichts.
+    if (!speechSupported || micActive || micStartingRef.current || liveStartingRef.current || liveRef.current || liveRetryTimerRef.current) return;
     if (!micAckRef.current) {
       let acked = false;
       try {
@@ -762,20 +895,31 @@ export default function SimulationClient() {
       micAckRef.current = true;
     }
     wantMicRef.current = true;
+    liveRetryRef.current = 0;
+    micStartingRef.current = true;
+    setMicStarting(true);
     // Sprich-Modus: wer ins Mikro spricht, bekommt die Antwort auch zu hören.
     if (ttsSupported) setSpeakReplies(true);
     void (async () => {
-      // Reihenfolge: Live (wenn für das Szenario an) → Azure-Diktat → Browser-Notnagel.
-      if (await startLiveMic()) return;
-      if (await startAzureMic()) return;
-      if (!browserSpeechSupported) {
-        wantMicRef.current = false;
-        setMicActive(false);
-        return;
+      try {
+        // Reihenfolge: Live (wenn für das Szenario an) → Azure-Diktat → Browser-Notnagel.
+        if (await startLiveMic()) return;
+        if (!wantMicRef.current) return;
+        if (await startAzureMic()) return;
+        if (!wantMicRef.current) return;
+        if (!browserSpeechSupported) {
+          wantMicRef.current = false;
+          setMicActive(false);
+          setError(ts.unavailable);
+          return;
+        }
+        startBrowserMic();
+      } finally {
+        micStartingRef.current = false;
+        setMicStarting(false);
       }
-      startBrowserMic();
     })();
-  }, [speechSupported, micActive, ttsSupported, startLiveMic, startAzureMic, browserSpeechSupported, startBrowserMic]);
+  }, [speechSupported, micActive, ttsSupported, startLiveMic, startAzureMic, browserSpeechSupported, startBrowserMic, ts.unavailable]);
 
   /**
    * Check-in nach dem Gespräch (Owner-Befund 01.11.2026): hier wird nur diktiert, nie das Live-Gespräch gestartet —
@@ -783,7 +927,7 @@ export default function SimulationClient() {
    * einsprechen wollte. Reihenfolge: Azure-Diktat → Browser-Notnagel.
    */
   const startDictation = useCallback(() => {
-    if (!speechSupported || micActive) return;
+    if (!speechSupported || micActive || micStartingRef.current) return;
     if (!micAckRef.current) {
       let acked = false;
       try {
@@ -798,16 +942,25 @@ export default function SimulationClient() {
       micAckRef.current = true;
     }
     wantMicRef.current = true;
+    micStartingRef.current = true;
+    setMicStarting(true);
     void (async () => {
-      if (await startAzureMic()) return;
-      if (!browserSpeechSupported) {
-        wantMicRef.current = false;
-        setMicActive(false);
-        return;
+      try {
+        if (await startAzureMic()) return;
+        if (!wantMicRef.current) return;
+        if (!browserSpeechSupported) {
+          wantMicRef.current = false;
+          setMicActive(false);
+          setError(ts.unavailable);
+          return;
+        }
+        startBrowserMic();
+      } finally {
+        micStartingRef.current = false;
+        setMicStarting(false);
       }
-      startBrowserMic();
     })();
-  }, [speechSupported, micActive, startAzureMic, browserSpeechSupported]);
+  }, [speechSupported, micActive, startAzureMic, browserSpeechSupported, ts.unavailable]);
 
   /** Browser-Spracherkennung (Chrome: Google) — nur, wenn der Server sie ausdrücklich wählt (Rückweg SPEECH_INPUT=browser). */
   function startBrowserMic() {
@@ -839,7 +992,11 @@ export default function SimulationClient() {
       }
       setMicActive(false);
     };
-    rec.onerror = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onerror = (e: any) => {
+      // Paket 1, C10 (12.11.2026): Auch hier steht der Grund da, wenn das Mikrofon ausgeht.
+      const grund = dictationEndMessage(typeof e?.error === 'string' ? e.error : undefined, !wantMicRef.current);
+      if (grund) setError(voiceText(grund));
       wantMicRef.current = false;
       setMicActive(false);
     };
@@ -922,15 +1079,29 @@ export default function SimulationClient() {
       stopSpeaking();
     }
   }, [view, stopMic, stopSpeaking]);
-  // Sprachmodus Live: beim Abbau der Seite die Verbindung und das Mikrofon freigeben.
-  useEffect(() => () => stopLive(), [stopLive]);
+  // Paket 1, C12 (12.11.2026): Beim Abbau der Seite alles freigeben — Live-Verbindung, Diktat, Neuverbinden-Timer
+  // und Sprachausgabe. Vorher endete nur die Live-Verbindung; ein laufendes Diktat hielt das Mikrofon offen.
+  useEffect(
+    () => () => {
+      stopMic();
+      stopSpeaking();
+    },
+    [stopMic, stopSpeaking]
+  );
 
   // W2-1: Uhr tickt nur im Chat (1 s Auflösung genügt für mm:ss).
+  // U11 (Paket 1, 12.11.2026): Hat die Rolle das Gespräch beendet, bleibt die Uhr stehen.
   useEffect(() => {
-    if (view !== 'chat' || !simStartedAt || timeUp) return;
+    if (view !== 'chat' || !simStartedAt || timeUp || personaEnded) return;
     const id = setInterval(() => setNowTs(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [view, simStartedAt, timeUp]);
+  }, [view, simStartedAt, timeUp, personaEnded]);
+  // U11: Sie zeigt den Stand beim Ende (Zeitpunkt vom Server, sonst jetzt).
+  useEffect(() => {
+    if (!personaEnded) return;
+    const at = personaEnded.at ? Date.parse(personaEnded.at) : NaN;
+    setNowTs(Number.isFinite(at) ? at : Date.now());
+  }, [personaEnded]);
 
   // W2-5: Einklapp-Zustand des Ziel-Streifens merken (mobil relevant).
   useEffect(() => {
@@ -1043,53 +1214,26 @@ export default function SimulationClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, scenarios]);
 
+  // U20 (Paket 1, 12.11.2026): „Fortsetzen“ im Verlauf führt per /?simId=<id> direkt ins laufende Gespräch.
+  // Vorher landete man auf der Startseite und musste die Fortsetzen-Zeile noch einmal anklicken.
+  const resumeLinkRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (view !== 'list') return;
+    const wanted = searchParams.get('simId');
+    if (!wanted || !/^[A-Za-z0-9-]{8,64}$/.test(wanted) || resumeLinkRef.current === wanted) return;
+    resumeLinkRef.current = wanted;
+    // Query-Parameter verbrauchen — Reload soll wieder am Einstieg landen (wie bei ?szenario=).
+    router.replace('/', { scroll: false });
+    setView('loading');
+    void resumeSimulation({ id: wanted }).then((ok) => {
+      if (!ok) setView('list');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [turns, sending]);
-
-  async function handleApiFailure(res: Response) {
-    let code = '';
-    let body: { code?: string; error?: string; topUpUrl?: string; canTopUp?: boolean; preflight?: boolean; aiCode?: string; requestId?: string; ende?: { grund: string; ergebnis: string } } = {};
-    try {
-      body = await res.json();
-      code = body.code ?? '';
-    } catch {
-      /* kein JSON */
-    }
-    if (res.status === 402 || code === 'INSUFFICIENT_CREDITS') {
-      // B13 (01.10.2026): Mitglieder bekommen keinen Kauf-Link — Credits kauft der Admin.
-      const memberOnly = body.canTopUp === false;
-      setTopUpUrl(memberOnly ? null : body.topUpUrl ?? null);
-      // S4-4: vor dem Start heißt der Satz anders als nach dem Rollenspiel.
-      setError(memberOnly ? t.common.balanceEmptyMember : body.preflight ? ts.preflightPaywall : ts.paywall);
-    } else if (code === 'AI_ERROR' || body.aiCode) {
-      // W1-1/W1-2: Du-Text je KI-Fehlerart + Fehler-Nr.
-      setError(aiErrorMessage(t.aiErrors, body, res, ts.genericError) ?? ts.genericError);
-    } else if (code === 'CENTRAL_REAUTH') {
-      setError(ts.reauth);
-    } else if (code === 'KI_AUS') {
-      // A4 (31.10.2026): Das Unternehmen hat die KI ausgeschaltet — die Meldung des Servers zeigen, Mikro aus.
-      setError(body.error || ts.genericError);
-      stopMic();
-    } else if (code === 'CENTRAL_UNAVAILABLE' || res.status === 503) {
-      setError(ts.unavailable);
-    } else if (code === 'NOT_ENOUGH_TURNS') {
-      setError(ts.notEnoughTurns);
-    } else if (code === 'TURN_LIMIT') {
-      setError(ts.turnLimit);
-    } else if (code === 'TIME_UP') {
-      // Kein Fehler: die Zeit ist um — Banner statt roter Meldung.
-      setTimeUp(true);
-    } else if (code === 'ENDED') {
-      // Welle 2: die Rolle hat das Gespräch beendet — Karte statt Fehler.
-      setPersonaEnded(body.ende ?? { grund: '', ergebnis: 'verabschiedung' });
-      stopMic();
-    } else if (code === 'TIMEOUT_LIMIT') {
-      setError(ts.timeoutLimit);
-    } else {
-      setError(ts.genericError);
-    }
-  }
 
   async function deleteSim(simId: string) {
     setDeletingId(simId);
@@ -1101,7 +1245,7 @@ export default function SimulationClient() {
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
-        await handleApiFailure(res);
+        handleApiFailure(res, json);
         return;
       }
       setRecent((prev) => prev.filter((x) => x.id !== simId));
@@ -1130,9 +1274,9 @@ export default function SimulationClient() {
           ...(focusToSend ? { focus: focusToSend } : {}),
         }),
       });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        await handleApiFailure(res);
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        handleApiFailure(res, json);
         return;
       }
       setScenario(s);
@@ -1153,32 +1297,44 @@ export default function SimulationClient() {
     }
   }
 
-  async function resumeSimulation(item: RecentSim) {
+  /**
+   * Offenen Lauf fortsetzen. U20 (Paket 1, 12.11.2026): auch per Adresse /?simId=… aus dem Verlauf — dann ist nur
+   * die Kennung bekannt, Szenario und Startzeit bringt die Antwort mit. true = Gespräch oder Auswertung geöffnet.
+   */
+  async function resumeSimulation(item: Pick<RecentSim, 'id'> & Partial<RecentSim>): Promise<boolean> {
     // Fertige Auswertungen haben eine eigene Adresse (W1-7).
     if (item.status === 'finished') {
       router.push(`/simulation/${encodeURIComponent(item.id)}`);
-      return;
+      return true;
     }
-    const s = scenarioById.get(item.scenarioId);
-    if (!s) return;
     setError(null);
     try {
       const res = await authFetch(`/api/simulation/get?simId=${encodeURIComponent(item.id)}`);
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        await handleApiFailure(res);
-        return;
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        handleApiFailure(res, json);
+        return false;
       }
       if (json.simulation.status === 'finished') {
         router.push(`/simulation/${encodeURIComponent(item.id)}`);
-        return;
+        return true;
+      }
+      // Abgebrochene Läufe (z. B. über eine alte Adresse) werden nicht wieder geöffnet.
+      if (json.simulation.status !== 'active') {
+        setError(ts.genericError);
+        return false;
+      }
+      const s = scenarioById.get(json.simulation.scenarioId) ?? (json.scenario as PublicScenario | null);
+      if (!s) {
+        setError(ts.scenarioGone);
+        return false;
       }
       setScenario(s);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
-      setSimStartedAt(json.simulation.createdAt ?? item.createdAt);
+      setSimStartedAt(json.simulation.createdAt ?? item.createdAt ?? null);
       setCoachNotes(json.simulation.coachNotes ?? []);
       setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
       setSimMode(json.simulation.mode ?? 'practice');
@@ -1187,8 +1343,10 @@ export default function SimulationClient() {
       setPersonaEnded(json.simulation.ende ?? null);
       setBriefingOpen(false);
       setView('chat');
+      return true;
     } catch {
       setError(ts.genericError);
+      return false;
     }
   }
 
@@ -1206,11 +1364,11 @@ export default function SimulationClient() {
         method: 'POST',
         body: JSON.stringify({ simId, message }),
       });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
         setTurns((prev) => prev.filter((x) => x !== optimistic));
         setInput(message);
-        await handleApiFailure(res);
+        handleApiFailure(res, json);
         return;
       }
       setTurns((prev) => [
@@ -1249,9 +1407,9 @@ export default function SimulationClient() {
           ...(timeoutQuestion.trim() ? { question: timeoutQuestion.trim() } : {}),
         }),
       });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        await handleApiFailure(res);
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        handleApiFailure(res, json);
         return;
       }
       setCoachNotes((prev) => [
@@ -1283,9 +1441,9 @@ export default function SimulationClient() {
         method: 'POST',
         body: JSON.stringify({ simId, ...(trimmed ? { selfAssessment: trimmed } : {}) }),
       });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        await handleApiFailure(res);
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        handleApiFailure(res, json);
         return;
       }
       // Header-Saldo nachladen — die Auswertung hat gerade 1 Credit gekostet.
@@ -1492,7 +1650,7 @@ export default function SimulationClient() {
         }
         if (!res.ok || !json?.ok || !json.scenario) {
           setVorbOpen(false);
-          await handleApiFailure(res);
+          handleApiFailure(res, json);
           return;
         }
         window.dispatchEvent(new Event(CREDITS_REFRESH_EVENT));
@@ -2460,7 +2618,11 @@ export default function SimulationClient() {
             )}
             {simMode !== 'check' && (
             <button
-              onClick={() => setTimeoutOpen(true)}
+              onClick={() => {
+                // Paket 1, C1: Der Dialog zeigt seine eigenen Fehler — eine ältere Meldung aus dem Gespräch gehört nicht hinein.
+                setError(null);
+                setTimeoutOpen(true);
+              }}
               disabled={userTurnCount < 1 || timeoutsLeft === 0}
               className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-accent/40 text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
               title={ts.timeoutHint}
@@ -2490,7 +2652,8 @@ export default function SimulationClient() {
                 className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
                 title={userTurnCount < 3 ? ts.finishNeedsTurns : undefined}
               >
-                <Flag className="h-4 w-4" /> {ts.finishCta}
+                {/* U11 (Paket 1, 12.11.2026): Hat die Rolle beendet, gibt es nichts mehr zu beenden — nur „Auswerten“. */}
+                <Flag className="h-4 w-4" /> {personaEnded ? ts.evaluateCta : ts.finishCta}
               </button>
             )}
           </div>
@@ -2617,8 +2780,6 @@ export default function SimulationClient() {
           {/* Nachrichten */}
           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4">
             <div className="max-w-3xl mx-auto space-y-3">
-              {/* W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog. */}
-              {error && !confirmOpen && errorBanner}
               {/* EU-KI-VO Art. 50 (T1.5): Hinweis am Sessionstart, oberhalb des ersten Beitrags. */}
               <div className="flex justify-center">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
@@ -2709,7 +2870,7 @@ export default function SimulationClient() {
                   disabled={finishing}
                   className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  <Sparkles className="h-4 w-4" /> {ts.finishCta}
+                  <Sparkles className="h-4 w-4" /> {ts.evaluateCta}
                 </button>
               </div>
             )}
@@ -2726,7 +2887,7 @@ export default function SimulationClient() {
                   disabled={finishing}
                   className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  <Sparkles className="h-4 w-4" /> {ts.finishCta}
+                  <Sparkles className="h-4 w-4" /> {ts.evaluateCta}
                 </button>
               </div>
             )}
@@ -2737,6 +2898,14 @@ export default function SimulationClient() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
                 {liveState === 'on' ? ts.liveActive : ts.micLive}
+              </div>
+            )}
+            {/* Paket 1, C1 (12.11.2026): Die Meldung steht direkt über dem Eingabefeld. Vorher stand sie über dem
+                ersten Beitrag und war in einem längeren Gespräch aus dem Bild gescrollt.
+                W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog. */}
+            {error && !confirmOpen && !checkinOpen && !timeoutOpen && (
+              <div className="max-w-3xl mx-auto mb-2" role="alert">
+                {errorBanner}
               </div>
             )}
             <div className="max-w-3xl mx-auto flex items-end gap-2">
@@ -2754,11 +2923,13 @@ export default function SimulationClient() {
                 disabled={effTimeUp || liveState !== 'off'}
                 className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
+              {/* Paket 1, C11 (12.11.2026): Während das Mikrofon startet oder neu verbindet, ist der Knopf gesperrt. */}
               {speechSupported && !effTimeUp && (
                 <button
                   onClick={() => (micActive ? stopMic() : startMic())}
+                  disabled={micStarting || liveState === 'connecting' || liveNotice?.kind === 'reconnecting'}
                   className={cx(
-                    'pn-none relative rounded-xl p-3 border transition-colors',
+                    'pn-none relative rounded-xl p-3 border transition-colors disabled:opacity-50',
                     micActive
                       ? 'border-primary/60 text-primary bg-primary/10 shadow-neon'
                       : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
@@ -2916,6 +3087,8 @@ export default function SimulationClient() {
                   <Loader2 className="h-4 w-4 animate-spin" /> {ts.timeoutThinking}
                 </div>
               )}
+              {/* Paket 1, C1 (12.11.2026): Fehler der Coach-Pause stehen im Dialog (vorher verdeckt dahinter). */}
+              {error && errorBanner}
 
               {coachNotes.length < timeoutsMax && (
                 <div className="flex items-end gap-2">
@@ -3061,8 +3234,9 @@ export default function SimulationClient() {
                 {speechSupported && (
                   <button
                     onClick={() => (micActive ? stopMic() : startDictation())}
+                    disabled={micStarting}
                     className={cx(
-                      'pn-none relative rounded-xl p-3 border transition-colors',
+                      'pn-none relative rounded-xl p-3 border transition-colors disabled:opacity-50',
                       micActive
                         ? 'border-primary/60 text-primary bg-primary/10 shadow-neon'
                         : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'

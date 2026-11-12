@@ -308,7 +308,17 @@
     "ergebnisOffen": "Tavoite avoin",
     "ergebnisAbbruch": "Keskeytetty",
     "passedByGoal": "Hyväksytty · tavoite saavutettu",
-    "failedByAbort": "Hylätty · keskustelu keskeytettiin"
+    "failedByAbort": "Hylätty · keskustelu keskeytettiin",
+    "rateLimited": "Odota {n} sekuntia ja yritä sitten uudelleen.",
+    "scenarioGone": "Tämä skenaario ei ole juuri nyt käytettävissä. Yritä hetken kuluttua uudelleen tai valitse toinen.",
+    "evaluateCta": "Arvioi",
+    "micDenied": "Salli mikrofoni selaimessa ja napsauta sitten mikrofonia uudelleen.",
+    "micUnavailable": "Mikrofoniasi ei voitu käynnistää. Tarkista, että se on kytketty eikä mikään muu ohjelma käytä sitä.",
+    "micIdleOff": "En ole kuullut mitään vähään aikaan, joten suljin mikrofonin. Jatka puhumista napsauttamalla mikrofonia.",
+    "liveMaxTime": "Puheyhteys päättyy 30 minuutin jälkeen. Jatka puhumista napsauttamalla mikrofonia.",
+    "voiceLost": "Puheyhteys katkesi. Napsauta mikrofonia uudelleen tai jatka kirjoittamalla.",
+    "liveReplaced": "Tämä keskustelu jatkuu nyt toisessa ikkunassa. Täällä mikrofoni on pois päältä.",
+    "zielOhneMindestpunkte": "Saavutit tavoitteen. Kokeen läpäisyyn tarvitset lisäksi vähintään {passMark} %."
   },
   "auth": {
     "signIn": "Kirjaudu sisään",

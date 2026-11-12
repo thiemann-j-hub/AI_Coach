@@ -308,7 +308,17 @@
     "ergebnisOffen": "Cíl otevřený",
     "ergebnisAbbruch": "Přerušeno",
     "passedByGoal": "Splněno · cíl dosažen",
-    "failedByAbort": "Nesplněno · rozhovor přerušen"
+    "failedByAbort": "Nesplněno · rozhovor přerušen",
+    "rateLimited": "Počkej prosím {n} s a pak to zkus znovu.",
+    "scenarioGone": "Tento scénář teď není dostupný. Zkus to za chvíli znovu nebo si vyber jiný.",
+    "evaluateCta": "Vyhodnotit",
+    "micDenied": "Povol prosím mikrofon v prohlížeči a pak znovu klikni na mikrofon.",
+    "micUnavailable": "Mikrofon se nepodařilo spustit. Zkontroluj, že je připojený a že ho nepoužívá jiný program.",
+    "micIdleOff": "Delší dobu nebylo nic slyšet, mikrofon je proto vypnutý. Klikni na mikrofon a mluv dál.",
+    "liveMaxTime": "Hlasové spojení končí po 30 minutách. Klikni na mikrofon a mluv dál.",
+    "voiceLost": "Hlasové spojení se přerušilo. Klikni znovu na mikrofon nebo piš dál.",
+    "liveReplaced": "Tento rozhovor teď běží v jiném okně. Tady je mikrofon vypnutý.",
+    "zielOhneMindestpunkte": "Cíl se ti podařilo splnit. Ke splnění zkoušky potřebuješ navíc alespoň {passMark} %."
   },
   "auth": {
     "signIn": "Přihlásit se",

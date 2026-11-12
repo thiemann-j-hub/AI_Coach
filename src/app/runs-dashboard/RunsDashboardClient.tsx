@@ -523,8 +523,9 @@ export default function RunsDashboardClient() {
                         // W1-7: die Auswertung hat eine eigene Adresse.
                         router.push(`/simulation/${encodeURIComponent(it.sim.id)}`);
                       } else {
-                        // Offene Läufe werden am Einstieg fortgesetzt.
-                        router.push('/');
+                        // U20 (Paket 1, 12.11.2026): direkt ins laufende Gespräch — der Einstieg liest ?simId= und
+                        // setzt den Lauf fort (vorher: Startseite, dort noch ein Klick auf „Fortsetzen“).
+                        router.push(`/?simId=${encodeURIComponent(it.sim.id)}`);
                       }
                     }}
                   >

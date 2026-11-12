@@ -308,7 +308,17 @@
     "ergebnisOffen": "Mērķis atvērts",
     "ergebnisAbbruch": "Pārtraukta",
     "passedByGoal": "Nokārtots · mērķis sasniegts",
-    "failedByAbort": "Nav nokārtots · saruna pārtraukta"
+    "failedByAbort": "Nav nokārtots · saruna pārtraukta",
+    "rateLimited": "Lūdzu, uzgaidi {n} sekundes un tad mēģini vēlreiz.",
+    "scenarioGone": "Šis scenārijs pašlaik nav pieejams. Mēģini pēc brīža vēlreiz vai izvēlies citu.",
+    "evaluateCta": "Novērtēt",
+    "micDenied": "Lūdzu, atļauj mikrofonu pārlūkprogrammā un tad vēlreiz noklikšķini uz mikrofona.",
+    "micUnavailable": "Tavu mikrofonu neizdevās ieslēgt. Pārbaudi, vai tas ir pievienots un vai to neizmanto cita programma.",
+    "micIdleOff": "Kādu laiku neko nedzirdēju un izslēdzu mikrofonu. Noklikšķini uz mikrofona, lai turpinātu runāt.",
+    "liveMaxTime": "Balss savienojums beidzas pēc 30 minūtēm. Noklikšķini uz mikrofona, lai turpinātu runāt.",
+    "voiceLost": "Balss savienojums ir pārtrūcis. Vēlreiz noklikšķini uz mikrofona vai turpini rakstīt.",
+    "liveReplaced": "Šī saruna tagad turpinās citā logā. Šeit mikrofons ir izslēgts.",
+    "zielOhneMindestpunkte": "Tu sasniedzi mērķi. Lai nokārtotu pārbaudi, tev vajag arī vismaz {passMark} %."
   },
   "auth": {
     "signIn": "Pierakstīties",

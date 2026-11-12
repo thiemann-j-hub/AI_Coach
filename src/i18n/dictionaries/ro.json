@@ -308,7 +308,17 @@
     "ergebnisOffen": "Obiectiv deschis",
     "ergebnisAbbruch": "Întreruptă",
     "passedByGoal": "Promovat · obiectiv atins",
-    "failedByAbort": "Nepromovat · conversație întreruptă"
+    "failedByAbort": "Nepromovat · conversație întreruptă",
+    "rateLimited": "Așteaptă {n} secunde și încearcă din nou.",
+    "scenarioGone": "Acest scenariu nu este disponibil momentan. Încearcă din nou imediat sau alege altul.",
+    "evaluateCta": "Evaluează",
+    "micDenied": "Permite microfonul în browser, apoi dă din nou clic pe microfon.",
+    "micUnavailable": "Microfonul tău nu a putut fi pornit. Verifică dacă este conectat și dacă nu îl folosește alt program.",
+    "micIdleOff": "Nu am mai auzit nimic de ceva vreme și am oprit microfonul. Dă clic pe microfon ca să vorbești mai departe.",
+    "liveMaxTime": "Conexiunea vocală se încheie după 30 de minute. Dă clic pe microfon ca să vorbești mai departe.",
+    "voiceLost": "Conexiunea vocală s-a întrerupt. Dă din nou clic pe microfon sau scrie mai departe.",
+    "liveReplaced": "Această conversație continuă acum în altă fereastră. Aici microfonul este oprit.",
+    "zielOhneMindestpunkte": "Ai atins obiectivul. Ca să promovezi evaluarea, ai nevoie și de cel puțin {passMark} %."
   },
   "auth": {
     "signIn": "Conectare",

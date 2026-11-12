@@ -308,7 +308,17 @@
     "ergebnisOffen": "Goal open",
     "ergebnisAbbruch": "Broken off",
     "passedByGoal": "Passed · goal reached",
-    "failedByAbort": "Not passed · conversation broken off"
+    "failedByAbort": "Not passed · conversation broken off",
+    "rateLimited": "Please wait {n} seconds and then try again.",
+    "scenarioGone": "This scenario is not available right now. Try again in a moment or choose another one.",
+    "evaluateCta": "Evaluate",
+    "micDenied": "Please allow the microphone in your browser, then click the microphone again.",
+    "micUnavailable": "Your microphone could not be started. Check that it is connected and that no other program is using it.",
+    "micIdleOff": "I haven't heard anything for a while, so I switched the microphone off. Click the microphone to keep talking.",
+    "liveMaxTime": "The voice connection ends after 30 minutes. Click the microphone to keep talking.",
+    "voiceLost": "The voice connection was interrupted. Click the microphone again or keep typing.",
+    "liveReplaced": "This conversation is now running in another window. The microphone is off here.",
+    "zielOhneMindestpunkte": "You reached the goal. To pass the assessment, you also need at least {passMark} %."
   },
   "auth": {
     "signIn": "Sign In",
