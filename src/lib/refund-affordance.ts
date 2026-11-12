@@ -36,6 +36,8 @@ export function refundEligibleOnDelete(
 /**
  * Fensterrechnung ab createdAt (ISO-String). Ungültiges/fehlendes createdAt
  * ⇒ nie im Fenster (fail-closed: lieber keine Erstattung versprechen).
+ * createdAt ist der Zeitpunkt der ERSTEN Speicherung des Laufs: /api/runs/save lässt ihn seit B2 (Go-Live-Prüfung
+ * 12.11.2026) stehen. Vorher setzte jedes erneute Speichern ihn auf „jetzt“ und öffnete das Fenster neu.
  * windowEndsAtMs dient der Anzeige „Erstattung bis HH:MM“.
  */
 export function refundWindowFrom(

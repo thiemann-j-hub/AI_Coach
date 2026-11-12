@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { requireWorkspaceAdmin } from "@/lib/server/scenario-admin";
 import { deleteWorkspaceScenario } from "@/lib/server/scenario-store";
@@ -25,7 +26,8 @@ export async function POST(req: NextRequest) {
   }
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "sim-builder-del"), 10, 60_000);
+  // S4 (Go-Live-Prüfung 12.11.2026): Begrenzung je Person statt je Adresse.
+  const rl = checkRateLimit(`sim-builder-del:${auth.uid}`, 10, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   const gate = await requireWorkspaceAdmin(auth);
   if (gate instanceof NextResponse) return gate;

@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkSessionOwnership, rateRun } from "@/lib/server/runs-store";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { rateRun, sessionAccess } from "@/lib/server/runs-store";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  const rlResponse = checkRateLimit(rateLimitKey(req, "runs-rate"), 20, 60_000, apiMsg.rateLimited);
+  // S4 (Go-Live-Prüfung 12.11.2026): je Person statt je Adresse.
+  const rlResponse = checkRateLimit(`runs-rate:${uid}`, 20, 60_000, apiMsg.rateLimited);
   if (rlResponse) return rlResponse;
 
   try {
@@ -42,16 +43,17 @@ export async function POST(req: NextRequest) {
 
     const { sessionId, runId, rating } = parsed.data;
 
-    // Ownership-Check analog zu /api/runs/get
-    const ownership = await checkSessionOwnership(sessionId, uid);
-    if (!ownership.allowed) {
+    // B3 (Go-Live-Prüfung 12.11.2026): wie /api/runs/get — eigenes Sitzungsdokument, eigener Lauf. Vorher ließ sich
+    // an ein fremdes Dokument (z. B. ein Spielbuch) ein Feld `rating` schreiben.
+    const access = await sessionAccess(sessionId, uid);
+    if (access === "foreign") {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
       );
     }
 
-    const updated = await rateRun(sessionId, runId, rating);
+    const updated = access === "own" && (await rateRun(sessionId, runId, uid, rating));
     if (!updated) {
       return NextResponse.json(
         { ok: false, error: apiMsg.notFound, code: "NOT_FOUND" },

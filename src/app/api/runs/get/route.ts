@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
-import { checkSessionOwnership, getRun, findPreviousMeasuredRun } from "@/lib/server/runs-store";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { findPreviousMeasuredRun, getOwnRun, sessionAccess } from "@/lib/server/runs-store";
 import { creditsCentralEnabled } from "@/lib/server/credits/credit-service";
 import { refundEligibleOnDelete } from "@/lib/refund-affordance";
 import { computeMeasurementDelta } from "@/lib/measurement-delta";
@@ -29,9 +29,8 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  // Rate limit: 30 reads per minute
-  const rlKey = rateLimitKey(req, "runs-get");
-  const rlResponse = checkRateLimit(rlKey, 30, 60_000, apiMsg.rateLimited);
+  // 30 Lesezugriffe je Minute. S4 (Go-Live-Prüfung 12.11.2026): je Person statt je Adresse.
+  const rlResponse = checkRateLimit(`runs-get:${uid}`, 30, 60_000, apiMsg.rateLimited);
   if (rlResponse) return rlResponse;
 
   const sp = req.nextUrl.searchParams;
@@ -55,24 +54,24 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const ownership = await checkSessionOwnership(sessionId, uid);
-    if (!ownership.allowed) {
+    // B3 (Go-Live-Prüfung 12.11.2026): nur mit eigenem Sitzungsdokument, und nur der eigene Lauf.
+    const access = await sessionAccess(sessionId, uid);
+    if (access === "foreign") {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
       );
     }
 
-    const data = await getRun(sessionId, runId);
-    // Soft-geloeschte Runs sind fuer den Detail-View nicht mehr abrufbar.
-    if (!data || data.deleted === true) {
+    const data = access === "own" ? await getOwnRun(sessionId, runId, uid) : null;
+    if (!data) {
       return NextResponse.json(
         { ok: false, error: apiMsg.notFound, code: "NOT_FOUND" },
         { status: 404 }
       );
     }
 
-    // Delta-Card (P0-1): Vorgaenger = juengster eigener non-deleted Run mit
+    // Delta-Card (P0-1): Vorgaenger = juengster eigener Run mit
     // beobachtbarem Messpunkt (Skalen-SSOT radar-contract, 1–4). Fail-soft:
     // ein Query-Fehler kostet nur die Card, nie den Report.
     let previousComparison: unknown = null;

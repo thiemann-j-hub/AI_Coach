@@ -232,8 +232,9 @@ export async function centralReserve(opts: { runId: string }): Promise<CentralRe
 
 /**
  * ON-Pfad-Erstattung: resolve-workspace + zentral refund MIT spendTransactionId
- * (Pflicht). Fail-soft fuer den HTTP-Flow (gibt ok:false zurueck statt zu werfen),
- * der Aufrufer entscheidet ueber refundPending/Retry.
+ * (Pflicht). Fail-soft fuer den HTTP-Flow (gibt ok:false zurueck statt zu werfen).
+ * Bei ok:false ist der Credit NICHT zurueck; nachgeholt wird nichts von selbst. Der Aufrufer haelt die Spur
+ * (Vermerk am Lauf oder Buchungsvermerk), `scripts/credits-abgleich.mts` listet sie.
  */
 export async function centralRefund(opts: {
   amount: number;

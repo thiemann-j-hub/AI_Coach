@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
-import { checkSessionOwnership, listRuns } from "@/lib/server/runs-store";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { listRuns, sessionAccess } from "@/lib/server/runs-store";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
 
@@ -27,9 +27,8 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  // Rate limit: 30 list requests per minute
-  const rlKey = rateLimitKey(req, "runs-list");
-  const rlResponse = checkRateLimit(rlKey, 30, 60_000, apiMsg.rateLimited);
+  // 30 Listenabrufe je Minute. S4 (Go-Live-Prüfung 12.11.2026): je Person statt je Adresse.
+  const rlResponse = checkRateLimit(`runs-list:${uid}`, 30, 60_000, apiMsg.rateLimited);
   if (rlResponse) return rlResponse;
 
   const sp = req.nextUrl.searchParams;
@@ -55,16 +54,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const ownership = await checkSessionOwnership(sessionId, uid);
-    if (!ownership.allowed) {
+    // B3 (Go-Live-Prüfung 12.11.2026): Gelesen wird nur, wenn das Sitzungsdokument existiert und der Person gehört.
+    const access = await sessionAccess(sessionId, uid);
+    if (access === "foreign") {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
       );
     }
+    // Frische Sitzung ohne Analyse: Es gibt noch kein Sitzungsdokument. Leere Liste, ohne die Partition zu lesen.
+    if (access === "missing") {
+      return NextResponse.json({ ok: true, runs: [], hasMore: false, nextCursor: null }, { status: 200 });
+    }
 
     const { runs, hasMore, nextCursor, badCursor } = await listRuns(
       sessionId,
+      uid,
       limit,
       cursorRaw
     );

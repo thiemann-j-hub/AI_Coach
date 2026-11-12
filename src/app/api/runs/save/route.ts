@@ -2,13 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import {
-  checkSessionOwnership,
-  createRun,
-  getRun,
-  upsertSession,
-} from "@/lib/server/runs-store";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { getRun, saveRun, sessionAccess } from "@/lib/server/runs-store";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { creditGateEnabled } from "@/lib/server/credits/entitlement";
 import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { logger } from "@/lib/logger";
@@ -132,9 +128,8 @@ export async function POST(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  // Rate limit: 20 saves per minute
-  const rlKey = rateLimitKey(req, "runs-save");
-  const rlResponse = checkRateLimit(rlKey, 20, 60_000, apiMsg.rateLimited);
+  // 20 Speicherungen je Minute. S4 (Go-Live-Prüfung 12.11.2026): je Person statt je Adresse.
+  const rlResponse = checkRateLimit(`runs-save:${uid}`, 20, 60_000, apiMsg.rateLimited);
   if (rlResponse) return rlResponse;
 
   try {
@@ -203,10 +198,10 @@ export async function POST(req: NextRequest) {
     const scoreOverall =
       typeof (analysisJson.scores as any)?.overall === "number" ? (analysisJson.scores as any).overall : null;
 
-    // Ownership VOR dem Write prüfen — verhindert Session-Übernahme durch
-    // uid-Überschreiben (war beim Firestore-merge zuvor möglich).
-    const ownership = await checkSessionOwnership(sessionId, uid);
-    if (!ownership.allowed) {
+    // B3 (Go-Live-Prüfung 12.11.2026): Gespeichert wird nur in eine Sitzung, deren Dokument existiert und der Person
+    // gehört. Angelegt wird eine Sitzung allein von /api/analyze (erste Analyse einer neuen Sitzung); vorher legte
+    // auch dieser Weg sie an, mit jeder Kennung, die auf das Muster passte.
+    if ((await sessionAccess(sessionId, uid)) !== "own") {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "FORBIDDEN" },
         { status: 403 }
@@ -221,6 +216,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { ok: false, error: apiMsg.accessDenied, code: "RUN_ID_CONFLICT" },
         { status: 409 }
+      );
+    }
+
+    // B2 (Go-Live-Prüfung 12.11.2026): kein Wiederherstellen. Ein gelöschter Lauf kommt über diesen Weg nicht zurück:
+    //  - Altbestand mit `deleted: true` wird abgelehnt (vorher fiel die Markierung beim Speichern weg),
+    //  - mit Bezahlsystem gibt es zu jeder Analyse den Schatten-Lauf aus /api/analyze. Fehlt er, wurde die Analyse
+    //    gelöscht (und der Credit womöglich zurückgegeben) oder nie bezahlt: nichts zu speichern.
+    if (existingRun?.deleted === true || (!existingRun && creditGateEnabled())) {
+      return NextResponse.json(
+        { ok: false, error: apiMsg.notFound, code: "RUN_NOT_FOUND" },
+        { status: 404 }
       );
     }
 
@@ -239,9 +245,7 @@ export async function POST(req: NextRequest) {
     // Persistenz aus).
     const runWorkspaceId = existingRun?.workspaceId ?? (await getWorkspaceIdForUser(uid));
 
-    await upsertSession(sessionId, uid);
-
-    const runId = await createRun(
+    const runId = await saveRun(
       {
         sessionId,
         uid,
@@ -264,9 +268,18 @@ export async function POST(req: NextRequest) {
         summary: analysisJson.summary,
         scoreOverall,
       },
-      // runId aus /api/analyze uebernehmen, damit hold:{runId} / refund:{runId} matchen.
-      parsed.data.runId
+      // runId aus /api/analyze übernehmen (Buchung und Rückgabe hängen an ihr). Ein vorhandener Lauf behält sein
+      // `createdAt` (B2): Das Rückgabe-Fenster rechnet immer ab der ersten Speicherung.
+      { runId: parsed.data.runId, existing: existingRun }
     );
+    // Der Lauf wurde zwischen Lesen und Schreiben gelöscht oder geändert (zweiter Tab, Löschen zugleich): nicht
+    // gespeichert. So entsteht ein eben gelöschter, erstatteter Lauf nicht neu (B2).
+    if (!runId) {
+      return NextResponse.json(
+        { ok: false, error: apiMsg.notFound, code: "RUN_CHANGED" },
+        { status: 409 }
+      );
+    }
 
     logger.api("/api/runs/save", "saved", { uid, sessionId, runId });
     return NextResponse.json({ ok: true, runId }, { status: 200 });

@@ -12,10 +12,15 @@
  *   - die Rückbuchung nach einem Fehler scheiterte.
  * Dieses Skript listet solche Läufe über alle Personen und sagt je Lauf, was der Vermerk bedeutet.
  *
+ * Seit der Go-Live-Prüfung (S3, 12.11.2026) listet es zusätzlich die Buchungsvermerke der Wege, die an keinem Lauf
+ * hängen (`src/lib/server/credits/buchungsvermerk.ts`): Transkript-Analyse, „Vorbereiten“, Builder und die Rückgabe
+ * beim Löschen einer Analyse. Dieselben drei Ursachen, dieselbe Regel: nur lesen, von Hand zurückgeben.
+ *
  * Es ändert NICHTS — weder am Lauf noch am Guthaben (bewusst kein --fix). Zurückgegeben wird von Hand im
  * Credit-Dienst, mit der Buchungsnummer (`txId`) und dem Arbeitsbereich aus der Liste.
  *
- *   --min=15   Vermerke an aktiven Läufen, die jünger sind (Minuten), gelten als „rechnet noch“ und werden ausgelassen.
+ *   --min=15   Vermerke an aktiven Läufen und Buchungsvermerke, die jünger sind (Minuten), gelten als „rechnet noch“
+ *              und werden ausgelassen.
  *   --alle     auch diese jungen Vermerke und gedeckte Vermerke zeigen.
  *   --json=…   die Liste zusätzlich als JSON schreiben.
  *
@@ -32,6 +37,8 @@ config({ path: join(here, "..", ".env.local") });
 const { runsContainer } = await import("../src/lib/cosmos");
 const { OPEN_CHARGE_HINWEIS, OPEN_CHARGE_MIN_MINUTES, openChargeLage } = await import("../src/lib/server/simulation-finish-abgleich");
 type OpenChargeRow = import("../src/lib/server/simulation-finish-abgleich").OpenChargeRow;
+const { creditSchluessel, vermerkHinweis, vermerkLage } = await import("../src/lib/server/credits/buchungsvermerk");
+type Buchungsvermerk = import("../src/lib/server/credits/buchungsvermerk").Buchungsvermerk;
 
 const args = process.argv.slice(2);
 const minArg = Number(args.find((a) => a.startsWith("--min="))?.split("=")[1]);
@@ -74,7 +81,39 @@ for (const r of liste) {
 }
 if (liste.length) console.log(`\nZusammenfassung: ${Object.entries(zaehler).map(([k, v]) => `${k} ${v}`).join(" · ")}`);
 
+// ── Buchungsvermerke ohne Lauf (S3): Analyse, „Vorbereiten“, Builder, Rückgabe beim Löschen ──
+// Nur die Felder des Vermerks; er trägt keine Inhalte.
+const { resources: vermerkDocs } = await runsContainer()
+  .items.query<Buchungsvermerk>({
+    query:
+      "SELECT c.id, c.uid, c.art, c.kennung, c.at, c.txId, c.workspaceId, c.refundFailedAt " +
+      "FROM c WHERE c.docType = 'buchungsvermerk'",
+  })
+  .fetchAll();
+
+const vermerke = vermerkDocs
+  .filter((v) => typeof v.kennung === "string" && typeof v.at === "string")
+  .map((v) => ({ ...v, lage: vermerkLage(v, now, minMinutes) }))
+  .filter((v) => alle || v.lage !== "laeuft")
+  .sort((a, b) => a.at.localeCompare(b.at));
+
+console.log(`\n── Buchungsvermerke ohne Lauf (Vermerke gesamt: ${vermerkDocs.length}, gezeigt: ${vermerke.length}) ──`);
+if (!vermerke.length) console.log("Keine stehengebliebenen Vermerke.");
+const zaehlerVermerke: Record<string, number> = {};
+for (const v of vermerke) {
+  zaehlerVermerke[v.lage] = (zaehlerVermerke[v.lage] ?? 0) + 1;
+  const alterMin = Math.round((now.getTime() - new Date(v.at).getTime()) / 60_000);
+  console.log(
+    `\n${v.lage.toUpperCase()}  ${v.art}\n` +
+      `  Person: ${v.uid} · Arbeitsbereich: ${v.workspaceId ?? "unbekannt"}\n` +
+      `  Kennung: ${v.kennung} · Schlüssel im Credit-Dienst: ${creditSchluessel(v.art, v.kennung)} · Buchungsnummer: ${v.txId ?? "keine (Buchung unbestätigt)"}\n` +
+      `  vermerkt: ${v.at} (vor ${alterMin} min)${v.refundFailedAt ? ` · Rückbuchung gescheitert: ${v.refundFailedAt}` : ""}\n` +
+      `  → ${vermerkHinweis(v.art, v.lage)}`
+  );
+}
+if (vermerke.length) console.log(`\nZusammenfassung: ${Object.entries(zaehlerVermerke).map(([k, v]) => `${k} ${v}`).join(" · ")}`);
+
 if (jsonOut) {
-  writeFileSync(jsonOut, JSON.stringify({ stand: now.toISOString(), minMinutes, liste }, null, 2), "utf8");
+  writeFileSync(jsonOut, JSON.stringify({ stand: now.toISOString(), minMinutes, liste, vermerke }, null, 2), "utf8");
   console.log(`JSON: ${jsonOut}`);
 }

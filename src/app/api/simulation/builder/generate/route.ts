@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { draftIdFromBrief, generateScenarioDraft } from "@/ai/flows/scenario-generator";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import {
   creditGateEnabled,
@@ -12,6 +12,13 @@ import {
   compensateEntitlement,
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
+import {
+  buchenMitVermerk,
+  rueckbuchenMitVermerk,
+  vermerkAustragen,
+  type Buchungsvermerk,
+} from "@/lib/server/credits/buchungsvermerk";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { requireWorkspaceAdmin } from "@/lib/server/scenario-admin";
 import {
@@ -64,7 +71,8 @@ const requestSchema = z.object({
 /**
  * Welle C — POST: Szenario-Entwurf generieren (oder überarbeiten).
  * Admin-only, kostet 1 Credit je Lauf (Point-of-Sale VOR dem LLM-Call,
- * compensate bei Fehlern — gespiegelt von /api/simulation/finish).
+ * compensate bei Fehlern). S3 (Go-Live-Prüfung 12.11.2026): mit Buchungsvermerk. Bleibt ein Credit
+ * ohne Entwurf hängen, listet ihn `scripts/credits-abgleich.mts`.
  * Ergebnis wird IMMER als draft gespeichert; Freischaltung ist ein eigener,
  * bewusster Schritt (Review-Prinzip aus B3b).
  */
@@ -74,13 +82,18 @@ export async function POST(req: NextRequest) {
   }
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "sim-builder-gen"), 4, 60_000);
+  // S4 (Go-Live-Prüfung 12.11.2026): Begrenzung je Person statt je Adresse.
+  const rl = checkRateLimit(`sim-builder-gen:${auth.uid}`, 4, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   const gate = await requireWorkspaceAdmin(auth);
   if (gate instanceof NextResponse) return gate;
 
   const chargeId = crypto.randomUUID();
   let grant: EntitlementGrant | null = null;
+  // S3: Spur der Buchung, bis der Entwurf gespeichert oder der Credit zurück ist (siehe buchungsvermerk.ts).
+  let vermerk: Buchungsvermerk | null = null;
+  // true, sobald der Entwurf gespeichert ist: Ab dann ist der Credit verbraucht und wird nicht mehr zurückgebucht.
+  let gespeichert = false;
 
   try {
     const parsed = requestSchema.safeParse(await req.json());
@@ -118,9 +131,12 @@ export async function POST(req: NextRequest) {
     if (!budget.allowed && budget.response) return budget.response;
 
     if (creditGateEnabled()) {
-      const ent = await reserveEntitlement({ uid: auth.uid, email: auth.email, runId: chargeId });
-      if (!ent.ok) return ent.response;
-      grant = ent.grant;
+      const buchung = await buchenMitVermerk({ uid: auth.uid, art: "builder", kennung: chargeId }, (kennung) =>
+        reserveEntitlement({ uid: auth.uid, email: auth.email, runId: kennung })
+      );
+      vermerk = buchung.vermerk;
+      if (!buchung.ent.ok) return buchung.ent.response;
+      grant = buchung.ent.grant;
     }
 
     const id =
@@ -150,7 +166,9 @@ export async function POST(req: NextRequest) {
       status: "draft",
       createdByUid: auth.uid,
     });
+    gespeichert = true;
     if (grant) await settleEntitlement(grant);
+    await vermerkAustragen(vermerk);
 
     logger.api("/api/simulation/builder/generate", "ok", {
       uid: auth.uid,
@@ -163,7 +181,12 @@ export async function POST(req: NextRequest) {
       item: { id: doc.id, status: doc.status, scenario: doc.scenario },
     });
   } catch (err) {
-    if (grant) await compensateEntitlement(grant);
+    // Fehler nach der Buchung, bevor der Entwurf gespeichert ist: zurückbuchen. Scheitert das, bleibt der Vermerk
+    // stehen und der Abgleich listet ihn.
+    if (grant && !gespeichert) {
+      const gebucht = grant;
+      await rueckbuchenMitVermerk({ art: "builder", kennung: chargeId, vermerk }, () => compensateEntitlement(gebucht));
+    }
     // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).
     return aiErrorResponse(err, req, "/api/simulation/builder/generate");
   }

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateScenarioDraft } from "@/ai/flows/scenario-generator";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import {
   creditGateEnabled,
@@ -13,6 +13,13 @@ import {
   kiSchalterBlockt,
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
+import {
+  buchenMitVermerk,
+  rueckbuchenMitVermerk,
+  vermerkAustragen,
+  type Buchungsvermerk,
+} from "@/lib/server/credits/buchungsvermerk";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { coachLiveEnabledFor, coachVorbereitenOn, simulationEnabled } from "@/lib/simulation/flags";
 import {
   PRIVATE_SCENARIO_PREFIX,
@@ -42,7 +49,8 @@ const MAX_PRIVATE_SCENARIOS = 3;
  * Lernende (kein Admin nötig) beschreiben Anlass, Gegenüber und Ziel in je ein bis drei Sätzen. Der Generator
  * baut daraus ein privates Szenario in der Partition der Person: nicht veröffentlicht, für niemanden sonst
  * sichtbar, nach 30 Tagen verfallen. 1 Credit je Vorbereitung (Point-of-Sale vor dem Modell, compensate bei
- * Fehlern — gespiegelt vom Builder). Schutz: der Generator ersetzt Namen echter Personen und Firmen durch
+ * Fehlern — gespiegelt vom Builder). S3 (Go-Live-Prüfung 12.11.2026): mit Buchungsvermerk. Bleibt ein Credit ohne
+ * Szenario hängen, listet ihn `scripts/credits-abgleich.mts`. Schutz: der Generator ersetzt Namen echter Personen und Firmen durch
  * Rollenbezeichnungen; die Oberfläche bittet, Verhalten zu beschreiben, keine Personen.
  * Rückweg: COACH_VORBEREITEN=off → 503.
  */
@@ -82,13 +90,19 @@ export async function POST(req: NextRequest) {
   if (blocked) return blocked;
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "sim-vorbereiten"), 3, 60_000);
+  // S4 (Go-Live-Prüfung 12.11.2026): Begrenzung je Person statt je Adresse (ein Workshop hinter einer Firmenadresse
+  // teilte sich drei Vorbereitungen je Minute).
+  const rl = checkRateLimit(`sim-vorbereiten:${auth.uid}`, 3, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   const ki = await kiSchalterBlockt();
   if (ki) return ki;
 
   const chargeId = crypto.randomUUID();
   let grant: EntitlementGrant | null = null;
+  // S3: Spur der Buchung, bis das Szenario gespeichert oder der Credit zurück ist (siehe buchungsvermerk.ts).
+  let vermerk: Buchungsvermerk | null = null;
+  // true, sobald das Szenario gespeichert ist: Ab dann ist der Credit verbraucht und wird nicht mehr zurückgebucht.
+  let gespeichert = false;
   try {
     const parsed = requestSchema.safeParse(await req.json());
     if (!parsed.success) {
@@ -114,9 +128,12 @@ export async function POST(req: NextRequest) {
     if (!budget.allowed && budget.response) return budget.response;
 
     if (creditGateEnabled()) {
-      const ent = await reserveEntitlement({ uid: auth.uid, email: auth.email, runId: chargeId });
-      if (!ent.ok) return ent.response;
-      grant = ent.grant;
+      const buchung = await buchenMitVermerk({ uid: auth.uid, art: "vorbereiten", kennung: chargeId }, (kennung) =>
+        reserveEntitlement({ uid: auth.uid, email: auth.email, runId: kennung })
+      );
+      vermerk = buchung.vermerk;
+      if (!buchung.ent.ok) return buchung.ent.response;
+      grant = buchung.ent.grant;
     }
 
     const id = `${PRIVATE_SCENARIO_PREFIX}${crypto.randomBytes(4).toString("hex")}`;
@@ -127,7 +144,9 @@ export async function POST(req: NextRequest) {
     const doc = await upsertPrivateScenario(auth.uid, scenario, {
       eingabe: { anlass: d.anlass, gegenueber: d.gegenueber, ...(d.ziel ? { ziel: d.ziel } : {}) },
     });
+    gespeichert = true;
     if (grant) await settleEntitlement(grant);
+    await vermerkAustragen(vermerk);
 
     logger.api("/api/simulation/vorbereiten", "ok", { uid: auth.uid, scenarioId: doc.id });
     // Live-Prüfung 12.11.2026: `liveAvailable` wie im Katalog — das Briefing des frisch vorbereiteten Gesprächs
@@ -138,7 +157,12 @@ export async function POST(req: NextRequest) {
       expiresAt: doc.expiresAt,
     });
   } catch (err) {
-    if (grant) await compensateEntitlement(grant);
+    // Fehler nach der Buchung, bevor das Szenario gespeichert ist: zurückbuchen. Scheitert das, bleibt der Vermerk
+    // stehen und der Abgleich listet ihn.
+    if (grant && !gespeichert) {
+      const gebucht = grant;
+      await rueckbuchenMitVermerk({ art: "vorbereiten", kennung: chargeId, vermerk }, () => compensateEntitlement(gebucht));
+    }
     return aiErrorResponse(err, req, "/api/simulation/vorbereiten");
   }
 }

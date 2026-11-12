@@ -5,13 +5,9 @@ import { GENKIT_MODEL_ID } from "@/ai/genkit";
 import { generateDynamicFeedback } from "../../../ai/flows/generate-dynamic-feedback";
 import { scoreCompetencies } from "../../../ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
-import {
-  checkSessionOwnership,
-  persistShadowRun,
-  upsertSession,
-} from "@/lib/server/runs-store";
+import { claimSession, persistShadowRun } from "@/lib/server/runs-store";
 import {
   creditGateEnabled,
   reserveEntitlement,
@@ -19,6 +15,12 @@ import {
   compensateEntitlement,
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
+import {
+  buchenMitVermerk,
+  rueckbuchenMitVermerk,
+  vermerkAustragen,
+  type Buchungsvermerk,
+} from "@/lib/server/credits/buchungsvermerk";
 import { qualityMode, runQualityChecks } from "@/lib/server/quality-checks";
 import {
   defaultCompetencyRatings,
@@ -27,7 +29,8 @@ import {
 import { emitCoachMeasurement } from "@/lib/server/radar-emit";
 import { withTimeout, withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
-import { aiErrorResponse } from "@/lib/server/request-id";
+import { getApiMessages } from "@/lib/server/get-request-locale";
+import { REQUEST_ID_HEADER, aiErrorResponse, requestIdInUiOn, requestIdOf } from "@/lib/server/request-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,14 +52,13 @@ const requestSchema = z.object({
   jurisdiction: z.string().max(50).optional(),
   leaderLabel: z.string().max(200).optional().nullable(),
   employeeLabel: z.string().max(200).optional().nullable(),
-  // Optional: ermoeglicht die Schatten-Persistenz des Runs bei Credit-Verbrauch
-  // (Credit verbraucht => Run existiert => Delete/Refund universell ausloesbar).
+  // B1 (Go-Live-Prüfung 12.11.2026): Pflicht. Ohne Sitzung lässt sich der Lauf nicht speichern (Credit verbraucht =>
+  // Lauf existiert). Vorher war sie freiwillig: Die Route rechnete, buchte zurück und lieferte das Ergebnis aus.
   sessionId: z
     .string()
     .min(8)
     .max(128)
-    .regex(/^[A-Za-z0-9_-]+$/)
-    .optional(),
+    .regex(/^[A-Za-z0-9_-]+$/),
 });
 
 // COMP_MODEL + Normalisierung leben seit SIM-2 im geteilten Modul
@@ -66,21 +68,39 @@ function asStr(v: any): string {
   return typeof v === "string" ? v : String(v ?? "");
 }
 
+/**
+ * B1/B3 (Go-Live-Prüfung 12.11.2026): Die Sitzung gehört nicht der Person. Nichts gebucht, nichts gerechnet.
+ * Die Analyse-Seite zeigt zu einer Absage nur dann einen Satz, wenn die Antwort eine KI-Fehlerart trägt (`aiCode`),
+ * sonst bloß die Fehler-Nr. Deshalb steht neben 403 FORBIDDEN die Art `ai_general` („Das hat … nicht geklappt.
+ * Versuch es noch einmal. Bleibt der Fehler, schick uns die Fehler-Nummer.“).
+ */
+function fremdeSitzung(req: NextRequest, uid: string): NextResponse {
+  const requestId = requestIdOf(req);
+  const showId = requestIdInUiOn();
+  logger.api("/api/analyze", "foreign-session", { uid, requestId });
+  return NextResponse.json(
+    { ok: false, code: "FORBIDDEN", aiCode: "ai_general", error: getApiMessages(req).accessDenied, ...(showId ? { requestId } : {}) },
+    { status: 403, headers: showId ? { [REQUEST_ID_HEADER]: requestId } : undefined }
+  );
+}
+
 export async function POST(req: NextRequest) {
   // Auth check
   const authResult = await requireAuth(req);
   if (authResult instanceof NextResponse) return authResult;
 
-  // Rate limit: 10 analyze requests per minute per IP
-  const rlKey = rateLimitKey(req, "analyze");
-  const rlResponse = checkRateLimit(rlKey, 10, 60_000);
+  // 10 Analysen je Minute. S4 (Go-Live-Prüfung 12.11.2026): je Person statt je Adresse.
+  const rlResponse = checkRateLimit(`analyze:${authResult.uid}`, 10, 60_000, getApiMessages(req).rateLimited);
   if (rlResponse) return rlResponse;
 
-  // Run-/Hold-Identifier serverseitig erzeugen: bindet die Credit-Reservierung
-  // an den spaeteren Run (Save uebernimmt diese id), damit der Delete-Refund
-  // refund:{runId} greift.
+  // Kennung des Laufs serverseitig erzeugen: Sie bindet die Buchung (`spend:<runId>`) an den späteren Lauf
+  // (Save übernimmt sie), damit die Rückgabe beim Löschen (`refund:<runId>`) greift.
   const runId = crypto.randomUUID();
   let grant: EntitlementGrant | null = null;
+  // S3: Spur der Buchung, bis der Lauf gespeichert oder der Credit zurück ist (siehe buchungsvermerk.ts).
+  let vermerk: Buchungsvermerk | null = null;
+  // true, sobald der Schatten-Lauf steht: Ab dann ist der Credit verbraucht und wird nicht mehr zurückgebucht.
+  let gespeichert = false;
 
   try {
     const json = await req.json();
@@ -94,10 +114,15 @@ export async function POST(req: NextRequest) {
     }
 
     const d = parsed.data;
+
+    // B3: Die Sitzung muss der Person gehören. Eine neue Sitzung legt nur dieser Weg an (erste Analyse); alle
+    // anderen Wege (/api/runs/*) verlangen das Sitzungsdokument. Geprüft VOR Budget, Buchung und Rechnung.
+    if (!(await claimSession(d.sessionId, authResult.uid))) return fremdeSitzung(req, authResult.uid);
+
     logger.api("/api/analyze", "start", { uid: authResult.uid, lang: d.lang, textLen: d.transcriptText.length });
 
     // Pro-User-Token-Budget (Cosmos, instanzübergreifend) — der eigentliche
-    // Kostenschutz, anders als das IP-Rate-Limit oben. Reserviert vor dem Call.
+    // Kostenschutz, anders als die Begrenzung je Minute oben. Reserviert vor dem Call.
     const budget = await checkAndConsumeBudget({
       uid: authResult.uid,
       email: authResult.email,
@@ -109,13 +134,12 @@ export async function POST(req: NextRequest) {
     // Greift bei CREDITS_CENTRAL=on (zentral verbrauchen; KK-1: das lokale
     // PAYMENTS_ENABLED-Ledger ist abgebaut). Bei off kein Credit-Gate (nur cost-cap).
     if (creditGateEnabled()) {
-      const ent = await reserveEntitlement({
-        uid: authResult.uid,
-        email: authResult.email,
-        runId,
-      });
-      if (!ent.ok) return ent.response;
-      grant = ent.grant;
+      const buchung = await buchenMitVermerk({ uid: authResult.uid, art: "analyse", kennung: runId }, (kennung) =>
+        reserveEntitlement({ uid: authResult.uid, email: authResult.email, runId: kennung })
+      );
+      vermerk = buchung.vermerk;
+      if (!buchung.ent.ok) return buchung.ent.response;
+      grant = buchung.ent.grant;
     }
 
     const leaderLbl = asStr(d.leaderLabel ?? "").trim();
@@ -233,110 +257,85 @@ export async function POST(req: NextRequest) {
       model: GENKIT_MODEL_ID,
     };
 
-    // Schatten-Persistenz: Credit verbraucht => Run existiert. Vor dem Settle,
-    // damit der Run-Record garantiert vorliegt, bevor der Hold final wird.
-    // shadowPersisted bleibt nur true, wenn der Run wirklich geschrieben wurde —
-    // davon haengt ab, ob der Hold gesettlet (Credit verbraucht) werden DARF.
-    let shadowPersisted = false;
-    if (grant && d.sessionId) {
-      try {
-        const own = await checkSessionOwnership(d.sessionId, authResult.uid);
-        if (own.allowed) {
-          await upsertSession(d.sessionId, authResult.uid);
-          const shadow = await persistShadowRun({
-            sessionId: d.sessionId,
-            runId,
-            uid: authResult.uid,
+    // Schatten-Lauf: Credit verbraucht => Lauf existiert (ohne Transkript), damit Löschen und Rückgabe immer greifen.
+    // B1 (Go-Live-Prüfung 12.11.2026): Lässt sich der Lauf nicht speichern, gibt es KEIN Ergebnis. Der Fehler geht in
+    // den catch unten (Rückbuchung, Fehlerantwort). Vorher buchte die Route zurück und lieferte das Ergebnis aus.
+    if (grant) {
+      const shadow = await persistShadowRun({
+        sessionId: d.sessionId,
+        runId,
+        uid: authResult.uid,
+        workspaceId: grant.workspaceId,
+        // Zentraler Spend-Anker fuer den spaeteren Refund (CREDITS_CENTRAL-Pfad).
+        centralSpendTxId: grant.centralTxId ?? null,
+        conversationType: d.conversationType,
+        conversationSubType: d.conversationSubType ?? null,
+        goal: d.goal ?? null,
+        lang: d.lang ?? null,
+        jurisdiction: d.jurisdiction ?? null,
+        analysisJson: {
+          summary: (result as any).summary ?? null,
+          strengths: (result as any).strengths ?? [],
+          improvements: (result as any).improvements ?? [],
+          rewrites: (result as any).rewrites ?? [],
+          riskFlags: (result as any).riskFlags ?? [],
+          // O2b: eigener 7-Tage-Schritt aus dem Modell (vorher fiel die
+          // Anzeige auf improvements[0] zurück — eine wörtliche Kopie).
+          practice7Days: (result as any).practice7Days ?? null,
+          // Provenienz (27.09.): Schreiber-Modell dieser Analyse.
+          model: GENKIT_MODEL_ID,
+          scores: (result as any).scores ?? {},
+          competency_ratings,
+          competency_error,
+          quality_notes,
+        },
+        summary: (result as any).summary ?? null,
+        scoreOverall:
+          typeof (result as any)?.scores?.overall === "number"
+            ? (result as any).scores.overall
+            : null,
+      });
+      // persistShadowRun gibt {ok:false} (statt zu werfen) zurück, wenn die runId schon einer ANDEREN Person gehört.
+      if (!shadow.ok) throw new Error("Analyse-Lauf nicht gespeichert: " + (shadow.reason ?? "unbekannt"));
+      gespeichert = true;
+      // Der Lauf steht: Die Buchung war schon final (kein Hold), die Spur der Buchung kann weg.
+      await settleEntitlement(grant);
+      await vermerkAustragen(vermerk);
+
+      if (shadow.createdAt) {
+        // Radar-Messpunkt (Wirbelsäule V6 Kap. 6): fire-and-forget NACH der
+        // Run-Persistenz — der Fachpfad darf NIE an Radar scheitern
+        // (radar-emit ist fail-soft; try/catch + .catch als Doppelboden).
+        // subjectId = Entra-oid (app-uebergreifend stabil), workspaceId =
+        // ZENTRALER Workspace aus dem Entitlement-Grant (resolve-workspace),
+        // ts = runDoc.createdAt (gelockt — NIE Date.now). Flag-gated:
+        // RADAR_EMIT=on, sonst No-Op.
+        try {
+          void emitCoachMeasurement({
             workspaceId: grant.workspaceId,
-            // Zentraler Spend-Anker fuer den spaeteren Refund (CREDITS_CENTRAL-Pfad).
-            centralSpendTxId: grant.centralTxId ?? null,
-            conversationType: d.conversationType,
-            conversationSubType: d.conversationSubType ?? null,
-            goal: d.goal ?? null,
-            lang: d.lang ?? null,
-            jurisdiction: d.jurisdiction ?? null,
-            analysisJson: {
-              summary: (result as any).summary ?? null,
-              strengths: (result as any).strengths ?? [],
-              improvements: (result as any).improvements ?? [],
-              rewrites: (result as any).rewrites ?? [],
-              riskFlags: (result as any).riskFlags ?? [],
-              // O2b: eigener 7-Tage-Schritt aus dem Modell (vorher fiel die
-              // Anzeige auf improvements[0] zurück — eine wörtliche Kopie).
-              practice7Days: (result as any).practice7Days ?? null,
-              // Provenienz (27.09.): Schreiber-Modell dieser Analyse.
-              model: GENKIT_MODEL_ID,
-              scores: (result as any).scores ?? {},
-              competency_ratings,
-              competency_error,
-              quality_notes,
-            },
-            summary: (result as any).summary ?? null,
-            scoreOverall:
-              typeof (result as any)?.scores?.overall === "number"
-                ? (result as any).scores.overall
-                : null,
-          });
-          // Nur als persistiert werten, wenn der Run wirklich geschrieben wurde.
-          // persistShadowRun gibt {ok:false} (statt zu werfen) zurueck, wenn die
-          // runId bereits einem ANDEREN Owner gehoert (id_conflict) — dann darf
-          // der Hold NICHT gesettlet werden (kein verbrauchter Credit ohne Run).
-          shadowPersisted = shadow.ok === true;
-          if (!shadow.ok) {
-            logger.apiError("/api/analyze/shadow", new Error("persistShadowRun not ok: " + (shadow.reason ?? "unknown")));
-          } else if (shadow.createdAt) {
-            // Radar-Messpunkt (Wirbelsäule V6 Kap. 6): fire-and-forget NACH der
-            // Run-Persistenz — der Fachpfad darf NIE an Radar scheitern
-            // (radar-emit ist fail-soft; try/catch + .catch als Doppelboden).
-            // subjectId = Entra-oid (app-uebergreifend stabil), workspaceId =
-            // ZENTRALER Workspace aus dem Entitlement-Grant (resolve-workspace),
-            // ts = runDoc.createdAt (gelockt — NIE Date.now). Flag-gated:
-            // RADAR_EMIT=on, sonst No-Op.
-            try {
-              void emitCoachMeasurement({
-                workspaceId: grant.workspaceId,
-                subjectId: authResult.oid ?? "",
-                runId,
-                createdAt: shadow.createdAt,
-                competencyRatings: competency_ratings,
-              }).catch((e) => logger.apiError("/api/analyze/radar", e, { runId }));
-            } catch (e) {
-              logger.apiError("/api/analyze/radar", e, { runId });
-            }
-          }
+            subjectId: authResult.oid ?? "",
+            runId,
+            createdAt: shadow.createdAt,
+            competencyRatings: competency_ratings,
+          }).catch((e) => logger.apiError("/api/analyze/radar", e, { runId }));
+        } catch (e) {
+          logger.apiError("/api/analyze/radar", e, { runId });
         }
-      } catch (e) {
-        // Schatten-Persistenz darf den erfolgreichen Response nicht killen.
-        logger.apiError("/api/analyze/shadow", e);
       }
     }
 
-    // Hold NUR final verbuchen, wenn der Run-Record garantiert persistiert wurde
-    // (Invariante: kein verbrauchter Credit ohne zugehoerigen Run, sonst koennte
-    // der User bei totem Tab fuer nichts bezahlen und haette keinen Delete-Button).
-    // Schlug die Schatten-Persistenz fehl ODER fehlte die sessionId, wird der
-    // Credit zurueckgebucht statt verbucht; Lazy Reconciliation ist der Backstop,
-    // falls dieser synchrone Refund selbst scheitert.
-    if (grant) {
-      if (shadowPersisted) await settleEntitlement(grant);
-      else await compensateEntitlement(grant);
-    }
-
     logger.api("/api/analyze", "complete", { uid: authResult.uid });
-    // runId NUR ausliefern, wenn der Run garantiert persistiert wurde
-    // (shadowPersisted) bzw. ohne aktives Bezahlsystem (dann ist runId nur ein
-    // optionaler Hint, kein Hold-Anker). Bei Payments-on + Persist-Fehler wird
-    // die runId zurueckgehalten, damit der Client keinen abrechenbaren Save mit
-    // erstattetem/fehlendem Hold anstoesst (Defense-in-Depth zur Save-Grenze).
-    const exposeRunId = shadowPersisted || !grant;
-    return NextResponse.json(
-      { ok: true, result, ...(exposeRunId ? { runId } : {}) },
-      { status: 200 }
-    );
+    // Mit Bezahlsystem steht der Lauf hier garantiert. Ohne Bezahlsystem ist die runId nur ein Hinweis für
+    // /api/runs/save, das den Lauf dann anlegt.
+    return NextResponse.json({ ok: true, result, runId }, { status: 200 });
   } catch (err: any) {
-    // Technischer Abbruch nach Reservierung -> Credit synchron zuruckbuchen
-    // (Schnellpfad; Lazy Reconciliation ist der Backstop fuer uncatchable Tod).
-    if (grant) await compensateEntitlement(grant);
+    // Technischer Abbruch nach der Buchung: Credit zurückbuchen. Scheitert das, bleibt der Buchungsvermerk stehen
+    // und `scripts/credits-abgleich.mts` listet ihn; einen Nachlauf, der von selbst zurückbucht, gibt es nicht.
+    // Steht der Lauf schon, ist der Credit verbraucht: keine Rückbuchung.
+    if (grant && !gespeichert) {
+      const gebucht = grant;
+      await rueckbuchenMitVermerk({ art: "analyse", kennung: runId, vermerk }, () => compensateEntitlement(gebucht));
+    }
     // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).
     return aiErrorResponse(err, req, "/api/analyze");
   }
