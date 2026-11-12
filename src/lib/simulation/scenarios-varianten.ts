@@ -66,9 +66,9 @@ const faber: SimulationScenario = {
   persona: { name: "Toni Faber", role: "Key-Account-Manager, Verpackungshersteller PackNord", voice: "florian-hd", liveVoice: "Schedar", firma: "PackNord" },
   candidateBriefing: {
     yourRole:
-      "Du leitest den Einkauf der NorthBay Foods Inc. und verantwortest das Lieferantenportfolio Verpackung. PackNord liefert seit fünf Jahren die Faltschachteln für BlueCrest und Oceana; Qualität und Liefertreue stimmen. Toni Faber ist dein Ansprechpartner dort.",
+      "Du leitest den Einkauf der NorthBay Foods Inc. und verantwortest das Lieferantenportfolio Verpackung. PackNord liefert seit fünf Jahren die Faltschachteln für BlueCrest und Oceana; Qualität und Liefertreue stimmen. Toni Faber ist Dein Ansprechpartner dort.",
     relationship:
-      "Ihr arbeitet seit fünf Jahren verlässlich zusammen und siezt euch. Faber ist freundlich, zahlenfest und hat noch jede Verhandlung gut vorbereitet. Er weiß, dass ein Wechsel für dich aufwendig wäre.",
+      "Ihr arbeitet seit fünf Jahren verlässlich zusammen und siezt euch. Faber ist freundlich, zahlenfest und hat noch jede Verhandlung gut vorbereitet. Er weiß, dass ein Wechsel für Dich aufwendig wäre.",
     incidents: [
       "Per Mail kam die Ankündigung einer Preiserhöhung von zwölf Prozent zum nächsten Quartal, ohne Begründung im Detail.",
       "Dein CFO hat für dieses Jahr eine Obergrenze von vier Prozent für Einkaufskostensteigerungen vorgegeben.",
@@ -76,7 +76,7 @@ const faber: SimulationScenario = {
     factSheet: [
       "Einkaufsvolumen bei PackNord: 1,2 Millionen Euro pro Jahr",
       "Vertrag seit fünf Jahren, Kündigungsfrist sechs Monate",
-      "Angekündigte Erhöhung: zwölf Prozent zum nächsten Quartal; Obergrenze deines CFO: vier Prozent",
+      "Angekündigte Erhöhung: zwölf Prozent zum nächsten Quartal; Obergrenze Deines CFO: vier Prozent",
     ],
     goals: [
       "Die langjährige Geschäftsbeziehung erhalten und wertschätzend bleiben.",
@@ -186,7 +186,7 @@ const weberSkeptisch = variante(von("sim-discovery-weber"), {
   relationship:
     "Ihr habt zweimal kurz auf Messen gesprochen. Weber gilt als skeptisch bis misstrauisch: Ein früherer Lieferant hat ihm einen Prognose-Service versprochen, der nie funktioniert hat. Seitdem will er für jede Aussage einen Beleg und testet, ob sein Gegenüber zuhört oder nur wartet, bis es wieder reden darf.",
   expectation:
-    "Tomas Weber stellt dich auf die Probe. Er widerspricht, um zu sehen, ob du bei der Sache bleibst. Belege und ehrliche Grenzen bringen ihn weiter als jede Zusage.",
+    "Tomas Weber stellt Dich auf die Probe. Er widerspricht, um zu sehen, ob Du bei der Sache bleibst. Belege und ehrliche Grenzen bringen ihn weiter als jede Zusage.",
   dna: {
     selfImage:
       "Sieht sich als jemanden, der einmal zu gutgläubig war und das nie wieder sein wird. Er hält Skepsis für Professionalität und testet Anbieter bewusst.",
@@ -257,7 +257,7 @@ const weberOffen = variante(von("sim-discovery-weber"), {
   relationship:
     "Ihr habt zweimal auf Messen gesprochen und euch gut verstanden. Weber ist herzlich, redet gern und viel, springt zwischen Themen und sagt zu allem erst einmal Ja. Verbindlich wird er nur, wenn jemand das Gespräch ordnet und ihn zu einer konkreten Zusage führt.",
   expectation:
-    "Tomas Weber macht es dir leicht und doch schwer: Er erzählt viel, aber ohne Struktur. Wer ihn ordnet, spiegelt und am Ende festnagelt, geht mit einem Termin; wer nur mitplaudert, mit einem guten Gefühl.",
+    "Tomas Weber macht es Dir leicht und doch schwer: Er erzählt viel, aber ohne Struktur. Wer ihn ordnet, spiegelt und am Ende festnagelt, geht mit einem Termin; wer nur mitplaudert, mit einem guten Gefühl.",
   dna: {
     selfImage:
       "Sieht sich als Beziehungsmensch, der mit Lieferanten lieber zusammenarbeitet als verhandelt. Er mag gute Gespräche und merkt selbst, dass er dabei den Faden verliert.",
@@ -323,12 +323,12 @@ const albrechtFordernd = variante(von("sim-promotion-albrecht"), {
   id: "sim-promotion-albrecht-fordernd",
   name: { de: "fordernd", en: "demanding" },
   teaser:
-    "Dieselbe Lage, eine andere Sina: ehrgeizig, direkt, mit einem Angebot eines Wettbewerbers in der Tasche. Sie will heute eine Zusage, nicht einen Weg. Du willst sie halten, ohne etwas zu versprechen, das du nicht halten kannst.",
+    "Dieselbe Lage, eine andere Sina: ehrgeizig, direkt, mit einem Angebot eines Wettbewerbers in der Tasche. Sie will heute eine Zusage, nicht einen Weg. Du willst sie halten, ohne etwas zu versprechen, das Du nicht halten kannst.",
   liveVoice: "Kore",
   relationship:
     "Ihr arbeitet seit vier Jahren eng zusammen. Sina ist ehrgeizig und direkt, nimmt Feedback an, wenn es konkret ist, und lässt sich nicht vertrösten. Sie hat um das Gespräch gebeten und will ein Ergebnis.",
   expectation:
-    "Sina Albrecht setzt dich unter Druck. Wer ihr ausweicht, verliert sie; wer ehrlich bleibt, die Lücke konkret benennt und einen echten Weg mit Zeitpunkt zeigt, kann sie halten, auch ohne Beförderungszusage.",
+    "Sina Albrecht setzt Dich unter Druck. Wer ihr ausweicht, verliert sie; wer ehrlich bleibt, die Lücke konkret benennt und einen echten Weg mit Zeitpunkt zeigt, kann sie halten, auch ohne Beförderungszusage.",
   dna: {
     selfImage:
       "Sieht sich als Leistungsträgerin, die zu lange gewartet hat. Sie glaubt, dass man seine Karriere selbst in die Hand nehmen muss, und hat das jetzt vor.",
@@ -393,7 +393,7 @@ const albrechtAbgetaucht = variante(von("sim-promotion-albrecht"), {
   id: "sim-promotion-albrecht-abgetaucht",
   name: { de: "abgetaucht", en: "withdrawn" },
   teaser:
-    "Dieselbe Lage, eine andere Sina: Sie hat um das Gespräch gebeten, sagt dann aber fast nichts. Kurze Antworten, »passt schon«, Blick auf den Tisch. Sie ist nicht gleichgültig, sie ist verletzt. Du musst sie erreichen, bevor du sie entwickeln kannst.",
+    "Dieselbe Lage, eine andere Sina: Sie hat um das Gespräch gebeten, sagt dann aber fast nichts. Kurze Antworten, »passt schon«, Blick auf den Tisch. Sie ist nicht gleichgültig, sie ist verletzt. Du musst sie erreichen, bevor Du sie entwickeln kannst.",
   liveVoice: "Achernar",
   relationship:
     "Ihr arbeitet seit vier Jahren eng zusammen. Sina ist leise, loyal und hat die Entscheidung für Jan Prell persönlich genommen. Sie hat um das Gespräch gebeten und bereut es fast; sie weicht aus, wenn es ihr zu nahe kommt.",
@@ -469,7 +469,7 @@ const kesslerFreundlich = variante(von("sim-cold-kessler"), {
   relationship:
     "Ihr kennt euch nicht. Dr. Nadine Kessler gilt als freundlich und zugänglich, Lieferanten mögen sie. Weniger bekannt: Sie beendet die meisten Anrufe mit einem freundlichen »Schicken Sie mir gern etwas« und entscheidet dann nichts. Ihre Freundlichkeit ist echt, ihre Zeit trotzdem knapp.",
   expectation:
-    "Dr. Kessler macht es dir angenehm und doch schwer: Sie widerspricht nicht, sie weicht aus. Erst eine konkrete Frage zu ihrer Lage und ein klar begründeter Terminvorschlag holen sie aus dem Unverbindlichen.",
+    "Dr. Kessler macht es Dir angenehm und doch schwer: Sie widerspricht nicht, sie weicht aus. Erst eine konkrete Frage zu ihrer Lage und ein klar begründeter Terminvorschlag holen sie aus dem Unverbindlichen.",
   dna: {
     selfImage:
       "Sieht sich als faire Einkäuferin, die niemanden vor den Kopf stößt. Sie hat gelernt, dass Freundlichkeit Zeit spart: Wer nett abgewimmelt wird, ruft seltener wieder an.",
@@ -529,7 +529,7 @@ const hartmannResigniert = variante(von("sim-complaint-hartmann"), {
   relationship:
     "Du kennst Frau Hartmann als verbindlich und direkt. Heute klingt sie anders: leise, kurz, ohne Vorwurf. Sie hat den Lkw-Ausfall und den ausgebliebenen Rückruf abgehakt und ihr Team schon auf ein Wochenende ohne Aktion eingestellt. Was sie nicht sagt: Es tut ihr weh.",
   expectation:
-    "Lena Hartmann macht es dir nicht schwer, sie macht es dir leicht, das Falsche zu tun. Wer die Gutschrift gibt und auflegt, hat sie verloren. Wer merkt, dass sie die Aktion noch will, kann sie retten.",
+    "Lena Hartmann macht es Dir nicht schwer, sie macht es Dir leicht, das Falsche zu tun. Wer die Gutschrift gibt und auflegt, hat sie verloren. Wer merkt, dass sie die Aktion noch will, kann sie retten.",
   dna: {
     selfImage:
       "Sieht sich als jemand, der sich auf nichts mehr verlässt, was andere versprechen. Dann entscheidet sie lieber selbst, auch wenn es wehtut.",
@@ -584,12 +584,12 @@ const vogtSanft = variante(von("sim-media-vogt"), {
   id: "sim-media-vogt-sanft",
   name: { de: "sanft", en: "gentle" },
   teaser:
-    "Dasselbe Interview, eine andere Vogt: ruhig, verständnisvoll, lässt dich ausreden. Keine Unterstellung, nur offene Fragen und Pausen. Gefährlich ist nicht der Druck, sondern die Einladung, mehr zu sagen, als du weißt.",
+    "Dasselbe Interview, eine andere Vogt: ruhig, verständnisvoll, lässt Dich ausreden. Keine Unterstellung, nur offene Fragen und Pausen. Gefährlich ist nicht der Druck, sondern die Einladung, mehr zu sagen, als Du weißt.",
   liveVoice: "Vindemiatrix",
   relationship:
     "Mara Vogt hat vor zwei Jahren kritisch über ein Werk von NorthBay berichtet, damals scharf. Heute ist sie bekannt für ein anderes Handwerk: Sie fragt leise, hört zu, lässt Pausen stehen. Viele Sprecher füllen die Stille mit Vermutungen, die sie dann zitiert.",
   expectation:
-    "Mara Vogt greift dich nicht an. Sie lädt dich ein weiterzureden. Wer bei den Fakten bleibt, Pausen aushält und die Betroffenen zuerst nennt, kommt sauber durch; wer die Stille füllt, spekuliert.",
+    "Mara Vogt greift Dich nicht an. Sie lädt Dich ein weiterzureden. Wer bei den Fakten bleibt, Pausen aushält und die Betroffenen zuerst nennt, kommt sauber durch; wer die Stille füllt, spekuliert.",
   dna: {
     selfImage:
       "Sieht sich als Zuhörerin, die Menschen reden lässt, weil Menschen beim Reden die Wahrheit sagen. Härte hält sie für das schwächere Werkzeug.",
@@ -644,12 +644,12 @@ const kellerGereizt = variante(von("sim-disengaged-keller"), {
   id: "sim-disengaged-keller-gereizt",
   name: { de: "gereizt", en: "irritable" },
   teaser:
-    "Dieselbe Lage, ein anderer Jonas: nicht still, sondern gereizt. Er verteidigt jede Beobachtung, zählt seine sieben Jahre auf und wirft dir vor, dass du erst jetzt fragst. Unter der Gereiztheit liegt dieselbe Kränkung.",
+    "Dieselbe Lage, ein anderer Jonas: nicht still, sondern gereizt. Er verteidigt jede Beobachtung, zählt seine sieben Jahre auf und wirft Dir vor, dass Du erst jetzt fragst. Unter der Gereiztheit liegt dieselbe Kränkung.",
   liveVoice: "Algenib",
   relationship:
-    "Ihr kennt euch erst seit dem Umbau. Jonas ist zuverlässig, aber seit Wochen kurz angebunden und bei Rückfragen schnell gereizt. Zwei Kollegen haben dir gesagt, dass man ihn besser in Ruhe lässt. Du willst verstehen, was los ist, bevor er das Team ansteckt.",
+    "Ihr kennt euch erst seit dem Umbau. Jonas ist zuverlässig, aber seit Wochen kurz angebunden und bei Rückfragen schnell gereizt. Zwei Kollegen haben Dir gesagt, dass man ihn besser in Ruhe lässt. Du willst verstehen, was los ist, bevor er das Team ansteckt.",
   expectation:
-    "Jonas Keller wird dir widersprechen und sich verteidigen. Wer zurückschießt oder belehrt, verliert ihn. Wer ruhig bleibt, konkret bleibt und ehrlich fragt, bekommt hinter der Gereiztheit die Kränkung zu sehen.",
+    "Jonas Keller wird Dir widersprechen und sich verteidigen. Wer zurückschießt oder belehrt, verliert ihn. Wer ruhig bleibt, konkret bleibt und ehrlich fragt, bekommt hinter der Gereiztheit die Kränkung zu sehen.",
   dna: {
     selfImage:
       "Sieht sich als denjenigen, der den Laden sieben Jahre lang zusammengehalten hat, und als denjenigen, den jetzt alle übersehen. Er hält Gereiztheit für Ehrlichkeit.",
@@ -768,10 +768,10 @@ export function altVarianten(basis: { morgan: SimulationScenario; lang: Simulati
     id: "sim-peer-lang-polternd",
     name: { de: "polternd", en: "blustering" },
     teaser:
-      "Dieselbe Lage, ein anderer Lang: nicht kühl, sondern laut. Er spricht die Beförderung offen an, nennt dich vor Zeugen das Lieblingskind der Zentrale und lässt dich kaum ausreden. Die Kränkung ist dieselbe, nur ohne Deckel.",
+      "Dieselbe Lage, ein anderer Lang: nicht kühl, sondern laut. Er spricht die Beförderung offen an, nennt Dich vor Zeugen das Lieblingskind der Zentrale und lässt Dich kaum ausreden. Die Kränkung ist dieselbe, nur ohne Deckel.",
     liveVoice: "Algenib",
     relationship:
-      "Viktor Lang war einmal dein Vorgesetzter. Seit deiner Beförderung ist er nicht kühl geworden, sondern laut: Er spricht in Sitzungen über dich, nicht mit dir, und hat dich vor der Werksleitung das »Lieblingskind der Zentrale« genannt. Du brauchst ihn trotzdem, für Novak und für das Projekt.",
+      "Viktor Lang war einmal Dein Vorgesetzter. Seit Deiner Beförderung ist er nicht kühl geworden, sondern laut: Er spricht in Sitzungen über Dich, nicht mit Dir, und hat Dich vor der Werksleitung das »Lieblingskind der Zentrale« genannt. Du brauchst ihn trotzdem, für Novak und für das Projekt.",
     expectation:
       "Viktor Lang poltert, unterbricht und provoziert. Wer zurückpoltert oder sich rechtfertigt, verliert das Gespräch; wer ruhig bleibt, die Provokation benennt und seine Erfahrung ehrlich anerkennt, erlebt, wie er leiser wird.",
     dna: {

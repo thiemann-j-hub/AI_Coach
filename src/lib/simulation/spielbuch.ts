@@ -16,6 +16,22 @@ export const SPIELBUCH_VERSION = 1;
 /** Obergrenze für den eingebauten Text (Schutz der Rollenanweisung vor einem ausufernden Spielbuch). */
 export const SPIELBUCH_MAX_CHARS = 12_000;
 
+/** Übungsfirma der eingebauten Szenarien (ihre Faktenwelt). */
+const UEBUNGSFIRMA = "NorthBay Foods";
+
+/**
+ * PURE (getestet). Firma, die hinter der Rollenbezeichnung steht, oder null. Paket 1, S19/C27 und Paket 5 (12.11.2026):
+ * eine Regel für Rollen-Prompt und Spielbuch, vorher nannte das Spielbuch fest „bei NorthBay Foods“. Firma aus dem
+ * Szenario; ohne Angabe die Übungsfirma nur für eingebaute Szenarien; für Kunden- und Privatszenarien (`ws-`,
+ * `ws-mein-`) wird keine Firma erfunden. Nennt die Rollenbezeichnung die Firma schon („…, Handelskette Nordkauf“),
+ * steht sie nicht doppelt da.
+ */
+export function rollenFirma(s: SimulationScenario): string | null {
+  const firma = s.persona.firma?.trim();
+  if (firma) return s.personaDna.role.toLowerCase().includes(firma.toLowerCase()) ? null : firma;
+  return s.id.startsWith("ws-") ? null : UEBUNGSFIRMA;
+}
+
 export function buildSpielbuchSystem(locale: SimulationScenario["locale"]): string {
   return locale === "en"
     ? `You are a dramaturg for conversation simulations in leadership training. You prepare a confidential playbook for an AI character so that a fast conversational model can play the role with substance and consistency. You write for the character, never for the learner. Plain prose and short bullet lines, no markdown headings other than the five numbered section titles given, no tables.`
@@ -48,8 +64,9 @@ export function buildSpielbuchPrompt(s: SimulationScenario): string {
     1
   );
   const goals = s.candidateBriefing.goals?.map((g) => `- ${g}`).join("\n") ?? "";
+  const firma = rollenFirma(s);
   if (s.locale === "en") {
-    return `SCENARIO: "${s.title}" (${s.conversationType}). The learner plays the counterpart of ${d.name}, ${d.role}, at NorthBay Foods.
+    return `SCENARIO: "${s.title}" (${s.conversationType}). The learner plays the counterpart of ${d.name}, ${d.role}${firma ? ` at ${firma}` : ""}.
 
 WHAT THE LEARNER IS TRYING TO ACHIEVE (so you can anticipate their moves):
 ${goals}
@@ -60,7 +77,7 @@ ${dna}
 Write the playbook for ${d.name} in English with exactly these five sections, in this order, titled exactly like this:
 
 1. CORE SUBSTANCE
-8–12 points: what the character knows and how they use it in argument. Turn each fact into a line of argument the character can actually deliver. You may add real-world expertise typical for this role (how such a person argues, which objections and counter-questions they raise). Do NOT invent new hard numbers, names or dates about NorthBay; where the facts are silent, the character stays vague or deflects.
+8–12 points: what the character knows and how they use it in argument. Turn each fact into a line of argument the character can actually deliver. You may add real-world expertise typical for this role (how such a person argues, which objections and counter-questions they raise). Do NOT invent new hard numbers, names or dates; where the facts are silent, the character stays vague or deflects.
 
 2. EXPECTED MOVES OF THE COUNTERPART
 12–15 moves the learner is likely to make (accusations, questions, offers, pressure, empathy, silence). For each move: the character's stance in one line, then an example reply in spoken language, 1–3 sentences, in the character's voice. Vary the replies; never repeat an objection verbatim.
@@ -76,7 +93,7 @@ Stages 0–3. For each stage: what the learner must have done (see concessionCon
 
 Length: 900–1,400 words in total. Confidential: the learner never sees this text.`;
   }
-  return `SZENARIO: „${s.title}“ (${s.conversationType}). Die lernende Person spielt das Gegenüber von ${d.name}, ${d.role}, bei NorthBay Foods.
+  return `SZENARIO: „${s.title}“ (${s.conversationType}). Die lernende Person spielt das Gegenüber von ${d.name}, ${d.role}${firma ? ` bei ${firma}` : ""}.
 
 WAS DIE LERNENDE PERSON ERREICHEN WILL (damit du ihre Züge vorhersehen kannst):
 ${goals}
@@ -87,7 +104,7 @@ ${dna}
 Schreibe das Spielbuch für ${d.name} auf Deutsch mit genau diesen fünf Abschnitten, in dieser Reihenfolge, exakt so betitelt:
 
 1. SACHKERN
-8–12 Punkte: Was die Rolle weiß und wie sie es im Gespräch einsetzt. Mach aus jedem Fakt eine Argumentationslinie, die die Rolle wirklich sagen kann. Fachwissen aus der echten Welt, das für diese Rolle typisch ist (wie so jemand argumentiert, welche Einwände und Gegenfragen kommen), darfst du einbringen. Erfinde KEINE neuen harten Zahlen, Namen oder Daten über NorthBay; wo die Fakten schweigen, bleibt die Rolle vage oder weicht aus.
+8–12 Punkte: Was die Rolle weiß und wie sie es im Gespräch einsetzt. Mach aus jedem Fakt eine Argumentationslinie, die die Rolle wirklich sagen kann. Fachwissen aus der echten Welt, das für diese Rolle typisch ist (wie so jemand argumentiert, welche Einwände und Gegenfragen kommen), darfst du einbringen. Erfinde KEINE neuen harten Zahlen, Namen oder Daten; wo die Fakten schweigen, bleibt die Rolle vage oder weicht aus.
 
 2. ERWARTETE ZÜGE DES GEGENÜBERS
 12–15 Züge, die die lernende Person wahrscheinlich macht (Vorwürfe, Fragen, Angebote, Druck, Empathie, Schweigen). Je Zug: Haltung der Rolle in einer Zeile, dann eine Beispielantwort in gesprochener Sprache, 1–3 Sätze, in der Stimme der Rolle. Variiere die Antworten; kein Einwand wird wortgleich wiederholt.

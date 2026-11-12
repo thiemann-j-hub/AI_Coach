@@ -14,10 +14,12 @@ import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   ArrowLeft,
+  Check,
   CheckCircle2,
   ChevronDown,
   Eye,
   EyeOff,
+  Link2,
   Loader2,
   Play,
   RotateCcw,
@@ -30,10 +32,12 @@ import {
 import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { useTranslation } from '@/i18n/useTranslation';
-import { maxEurHint } from '@/lib/pricing-display';
+import { maxEurHint, showEurPrice } from '@/lib/pricing-display';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { withBasePath } from '@/lib/base-path';
+import { copyText } from '@/lib/report-utils';
 import { LIVE_VOICES, defaultLiveVoice, liveVoiceSamplePath } from '@/lib/simulation/live-voices';
+import { szenarioLink } from '@/lib/simulation/szenario-link';
 import type { PersonaVoice } from '@/lib/simulation/types';
 
 interface BuilderScenario {
@@ -70,8 +74,26 @@ interface BuilderItem {
   status: 'draft' | 'published';
   createdAt: string;
   updatedAt: string;
+  /** C28: Stand der Rollen-Vorbereitung, nur bei freigeschalteten Szenarien. */
+  vorbereitung?: 'bereit' | 'laeuft' | 'fehlgeschlagen' | 'offen';
+  /** Freier Testlauf (Owner-Entscheid 12.11.2026): kommt nur für die Person mit, die das Szenario gebaut hat. */
+  freeTestEval?: 'offen' | 'verbraucht';
   scenario: BuilderScenario;
 }
+
+/**
+ * S15/U27 (Paket 5, 12.11.2026): Beispiel-Aufträge zum Anklicken, je einer pro Gesprächsart. Vorher stand nur ein
+ * Platzhalter im Feld. Ein Klick füllt Beschreibung und Kategorie vor; die Texte stehen in den Wörterbüchern.
+ */
+const BEISPIELE = [
+  { n: 1, category: 'mitarbeiterfuehrung' },
+  { n: 2, category: 'vertrieb' },
+  { n: 3, category: 'zusammenarbeit' },
+  { n: 4, category: 'stakeholder' },
+] as const;
+
+/** C28: So oft lädt die Liste nach, solange eine Rolle vorbereitet wird (alle zehn Sekunden, also rund zwei Minuten). */
+const VORBEREITUNG_NACHLADEN_MAX = 12;
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
@@ -99,6 +121,7 @@ export default function BuilderClient() {
   const [reviseNote, setReviseNote] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Hörprobe der Live-Stimme: ein Abspieler für die ganze Seite, ein Klick startet, der nächste stoppt.
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
@@ -123,7 +146,7 @@ export default function BuilderClient() {
     void audio.play().catch(() => setPlayingVoice(null));
   }
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (opts?: { quiet?: boolean }) => {
     try {
       const res = await authFetch('/api/simulation/builder');
       if (res.status === 403) {
@@ -135,13 +158,30 @@ export default function BuilderClient() {
       setRole('admin');
       setItems(json.items ?? []);
     } catch {
-      setError(ts.genericError);
+      // Das stille Nachladen im Hintergrund meldet keinen Fehler; die Liste bleibt, wie sie ist.
+      if (!opts?.quiet) setError(ts.genericError);
     }
   }, [ts.genericError]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // C28: Nach dem Freischalten entsteht die Rolle im Hintergrund. Solange das läuft, lädt die Liste nach,
+  // damit aus „Rolle wird vorbereitet“ ohne Neuladen der Seite „Rolle ist bereit“ wird.
+  const nachgeladenRef = useRef(0);
+  useEffect(() => {
+    if (!items.some((i) => i.status === 'published' && i.vorbereitung === 'laeuft')) {
+      nachgeladenRef.current = 0;
+      return;
+    }
+    if (nachgeladenRef.current >= VORBEREITUNG_NACHLADEN_MAX) return;
+    const timer = window.setTimeout(() => {
+      nachgeladenRef.current += 1;
+      void load({ quiet: true });
+    }, 10_000);
+    return () => window.clearTimeout(timer);
+  }, [items, load]);
 
   async function generate(reviseScenarioId?: string) {
     if (generating) return;
@@ -159,7 +199,8 @@ export default function BuilderClient() {
                 ...(material.trim() ? { material: material.trim() } : {}),
                 category,
                 difficulty,
-                locale: 'de',
+                // S15: Die Sprache des Auftrags entscheidet; das hier gilt nur, wenn sie nicht eindeutig ist.
+                locale: locale === 'en' ? 'en' : 'de',
               }
         ),
       });
@@ -258,6 +299,21 @@ export default function BuilderClient() {
 
   const openItem = items.find((i) => i.id === openId) ?? null;
 
+  // S26 (Paket 5, 12.11.2026): Einstiegslink in die Zwischenablage. Nichts wird freigeschaltet: Der Link führt nur
+  // angemeldete Personen aus dem Team ins Briefing des freigeschalteten Szenarios.
+  async function copyLink(id: string) {
+    await copyText(szenarioLink(window.location.origin, id));
+    setCopiedId(id);
+    window.setTimeout(() => setCopiedId((cur) => (cur === id ? null : cur)), 2500);
+  }
+
+  const rolleText = {
+    laeuft: ts.builderRolePreparing,
+    bereit: ts.builderRoleReady,
+    fehlgeschlagen: ts.builderRoleFailed,
+    offen: ts.builderRoleOpen,
+  } as const;
+
   const backAction = (
     <button
       onClick={() => router.push('/')}
@@ -289,6 +345,10 @@ export default function BuilderClient() {
     );
   }
 
+  // U23 (Owner-Entscheid 12.11.2026): Den Eurobetrag sieht nur, wer kauft. Bis hierher kommt nur, wen der Server
+  // als Admin des Teams bestätigt hat.
+  const eurHint = showEurPrice(role) ? maxEurHint(t.common.maxEurHint, locale) : null;
+
   return (
     <AppShell title={ts.builderTitle} subtitle={ts.builderSubtitle} actions={backAction}>
       <div className="max-w-3xl mx-auto space-y-6">
@@ -308,6 +368,24 @@ export default function BuilderClient() {
             <label htmlFor="builder-brief" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {ts.builderBriefLabel}
             </label>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">{ts.builderExamplesLabel}:</span>
+              {BEISPIELE.map((b) => (
+                <button
+                  key={b.n}
+                  type="button"
+                  onClick={() => {
+                    setBrief(ts[`builderExample${b.n}Text`]);
+                    setCategory(b.category);
+                  }}
+                  title={ts[`builderExample${b.n}Text`]}
+                  className="pn-none rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  data-testid={`builder-example-${b.n}`}
+                >
+                  {ts[`builderExample${b.n}Label`]}
+                </button>
+              ))}
+            </div>
             <textarea
               id="builder-brief"
               value={brief}
@@ -391,7 +469,10 @@ export default function BuilderClient() {
               )}
               {ts.builderGenerateCta}
             </button>
-            <span className="text-xs text-muted-foreground">{ts.builderCostNote} ({maxEurHint(t.common.maxEurHint, locale)})</span>
+            <span className="text-xs text-muted-foreground">
+              {ts.builderCostNote}
+              {eurHint ? ` (${eurHint})` : ''}
+            </span>
           </div>
           {generating && !busyId && (
             <p className="text-xs text-muted-foreground">{ts.builderGenerating}</p>
@@ -425,6 +506,20 @@ export default function BuilderClient() {
                     <div className="text-xs text-muted-foreground truncate">
                       {s.persona.name} · {s.persona.role}
                     </div>
+                    {item.status === 'published' && item.vorbereitung && (
+                      <div
+                        className={cx(
+                          'mt-0.5 flex items-start gap-1 text-xs',
+                          item.vorbereitung === 'fehlgeschlagen' ? 'text-amber-800 dark:text-amber-400' : 'text-muted-foreground'
+                        )}
+                        data-testid="builder-role-status"
+                      >
+                        {item.vorbereitung === 'laeuft' && <Loader2 className="mt-0.5 h-3 w-3 shrink-0 animate-spin" />}
+                        {item.vorbereitung === 'bereit' && <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0" />}
+                        {item.vorbereitung === 'fehlgeschlagen' && <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />}
+                        <span>{rolleText[item.vorbereitung]}</span>
+                      </div>
+                    )}
                   </button>
                   <span
                     className={cx(
@@ -583,6 +678,17 @@ export default function BuilderClient() {
                       >
                         <Play className="h-3.5 w-3.5" /> {ts.builderTestCta}
                       </button>
+                      {item.status === 'published' && (
+                        <button
+                          type="button"
+                          onClick={() => void copyLink(item.id)}
+                          className="pn-none rounded-lg border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                          data-testid="builder-copy-link"
+                        >
+                          {copiedId === item.id ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+                          <span aria-live="polite">{copiedId === item.id ? ts.builderLinkCopied : ts.builderCopyLink}</span>
+                        </button>
+                      )}
                       {item.status === 'draft' ? (
                         <button
                           onClick={() => void setStatus(item.id, 'published')}
@@ -622,6 +728,12 @@ export default function BuilderClient() {
                         </button>
                       )}
                     </div>
+                    {(item.freeTestEval === 'offen' || item.status === 'published') && (
+                      <div className="space-y-0.5 text-xs text-muted-foreground">
+                        {item.freeTestEval === 'offen' && <p data-testid="builder-free-test">{ts.builderFreeTestNote}</p>}
+                        {item.status === 'published' && <p>{ts.builderLinkNote}</p>}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

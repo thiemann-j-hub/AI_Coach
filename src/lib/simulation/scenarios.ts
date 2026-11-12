@@ -51,13 +51,13 @@ const morgan: SimulationScenario = {
   persona: { name: "Alex Morgan", role: "Kundenverantwortliche", voice: "seraphina-hd" },
   candidateBriefing: {
     yourRole:
-      "Du bist Führungskraft bei der NorthBay Foods Inc. Alex Morgan ist seit drei Monaten Kundenverantwortliche in deinem Bereich und führt fachlich ein kleines Team mit zwei Junior-Experts. Sie ist ausgesprochen beziehungsorientiert, hat hohe Qualitätsansprüche an sich selbst — und tut sich schwer, zwischen Harmonie und Steuerung die Balance zu finden.",
+      "Du bist Führungskraft bei der NorthBay Foods Inc. Alex Morgan ist seit drei Monaten Kundenverantwortliche in Deinem Bereich und führt fachlich ein kleines Team mit zwei Junior-Experts. Sie ist ausgesprochen beziehungsorientiert, hat hohe Qualitätsansprüche an sich selbst — und tut sich schwer, zwischen Harmonie und Steuerung die Balance zu finden.",
     relationship:
       "Ihr arbeitet seit ihrer Übernahme der Kundenverantwortung gut zusammen; Alex ist engagiert und loyal. Kritik nimmt sie schnell persönlich. Du schätzt sie und willst sie halten und entwickeln.",
     incidents: [
       "Ein wichtiger Kunde hat sich unzufrieden gemeldet: Ein zugesagtes Angebot liegt seit zwei Wochen unbearbeitet, weil Alex es »noch perfekt machen« wollte.",
       "Alex wirkt zunehmend belastet und macht regelmäßig Überstunden — gibt aber keine Aufgaben an ihre beiden Junior-Experts ab.",
-      "Kim Patel aus ihrem Team arbeitet seit Kurzem der Kollegin Lea Fontaine zu — ohne Absprache mit dir; die Kapazität fehlt nun im Kundenprojekt.",
+      "Kim Patel aus ihrem Team arbeitet seit Kurzem der Kollegin Lea Fontaine zu — ohne Absprache mit Dir; die Kapazität fehlt nun im Kundenprojekt.",
     ],
     goals: [
       "Eine offene, wertschätzende Gesprächsbasis halten — Alex soll gestärkt, nicht gekränkt aus dem Gespräch gehen.",
@@ -67,7 +67,7 @@ const morgan: SimulationScenario = {
     approachHints: [
       "Wertschätzung zuerst — aber gekoppelt an konkrete Beobachtungen, nicht an Allgemeinlob.",
       "Sprich Muster an statt Einzelfälle: Was wiederholt sich bei Angebot, Delegation, Konflikten?",
-      "Lass Alex eigene Lösungen entwickeln, bevor du deine anbietest.",
+      "Lass Alex eigene Lösungen entwickeln, bevor Du Deine anbietest.",
       "Ohne konkrete Vereinbarung mit Termin verpufft das Gespräch.",
     ],
     expectation:
@@ -171,7 +171,7 @@ const lang: SimulationScenario = {
   id: "sim-peer-lang",
   title: "Der übergangene Ex-Chef — Kollegengespräch mit Viktor Lang",
   teaser:
-    "Dein früherer Vorgesetzter blockiert das gemeinsame Projekt, verweigert dir einen Experten und streut eine vertrauliche Präsentation. Du brauchst ihn trotzdem.",
+    "Dein früherer Vorgesetzter blockiert das gemeinsame Projekt, verweigert Dir einen Experten und streut eine vertrauliche Präsentation. Du brauchst ihn trotzdem.",
   conversationType: "kollegengespräch",
   difficulty: 2,
   category: "zusammenarbeit",
@@ -185,25 +185,25 @@ const lang: SimulationScenario = {
     yourRole:
       "Du bist seit wenigen Monaten Werksleiter:in des Werks Kingsport 1 der NorthBay Foods Inc. (Marke BlueCrest, Tiefkühl-Lebensmittel). Du wurdest berufen, um Auslastung und Prozesse des Werks zu verbessern. Beide Kingsport-Werke sollen im konzernweiten UMS-Projekt (Unified-Management-System für Qualität, Umwelt und Arbeitssicherheit) ihre Prozesse vereinheitlichen; die Projektsteuerung liegt bei Dr. Elias Berger von SystemWorks Consulting.",
     relationship:
-      "Viktor Lang leitet das Nachbarwerk Kingsport 2 (Marke Oceana) — und war früher dein Vorgesetzter: Unter ihm warst du erfolgreiche Betriebsassistenz in Kingsport 2. Er ist fünf Jahre länger im Unternehmen als du, wurde aber langsamer befördert. Seit deiner Ernennung ist er spürbar reserviert; anfangs zollte er dir fachlichen Respekt, zuletzt häufen sich die Differenzen.",
+      "Viktor Lang leitet das Nachbarwerk Kingsport 2 (Marke Oceana) — und war früher Dein Vorgesetzter: Unter ihm warst Du erfolgreiche Betriebsassistenz in Kingsport 2. Er ist fünf Jahre länger im Unternehmen als Du, wurde aber langsamer befördert. Seit Deiner Ernennung ist er spürbar reserviert; anfangs zollte er Dir fachlichen Respekt, zuletzt häufen sich die Differenzen.",
     incidents: [
-      "Im UMS-Projekt hält Lang sein Erfahrungswissen sichtbar zurück — und kritisiert deine Vorschläge (z. B. werkübergreifende Projektteams) grundsätzlich erst in der entscheidenden Sitzung, obwohl du ihn vorab um Stellungnahme gebeten hast.",
-      "Letzte Woche verweigerte er dir seinen Mitarbeiter Sam Novak für eine Woche. Novak sollte dein Entwicklungsteam um Dr. Mira Chen auf der neuen Störfall-Analysesoftware FaultScope schulen — jeder verlorene Tag gefährdet deine Terminplanung. Novak hatte dir die Schulung vorab zugesagt und sich bei dir entschuldigt.",
-      "Eine vertrauliche Präsentation zur neuen Prozess-Dokumentation, die du Lang zur Abstimmung gabst, landete bei einem Mitarbeiter der Technischen Entwicklung — BEVOR deine Abteilungsleiterin Dr. Mira Chen sie kannte. Diese Indiskretion torpediert deine Kommunikationsreihenfolge (erst Führungskräfte, dann Mitarbeitende).",
+      "Im UMS-Projekt hält Lang sein Erfahrungswissen sichtbar zurück — und kritisiert Deine Vorschläge (z. B. werkübergreifende Projektteams) grundsätzlich erst in der entscheidenden Sitzung, obwohl Du ihn vorab um Stellungnahme gebeten hast.",
+      "Letzte Woche verweigerte er Dir seinen Mitarbeiter Sam Novak für eine Woche. Novak sollte Dein Entwicklungsteam um Dr. Mira Chen auf der neuen Störfall-Analysesoftware FaultScope schulen — jeder verlorene Tag gefährdet Deine Terminplanung. Novak hatte Dir die Schulung vorab zugesagt und sich bei Dir entschuldigt.",
+      "Eine vertrauliche Präsentation zur neuen Prozess-Dokumentation, die Du Lang zur Abstimmung gabst, landete bei einem Mitarbeiter der Technischen Entwicklung — BEVOR Deine Abteilungsleiterin Dr. Mira Chen sie kannte. Diese Indiskretion torpediert Deine Kommunikationsreihenfolge (erst Führungskräfte, dann Mitarbeitende).",
     ],
     goals: [
       "Eine konstruktive, vertrauensvolle Basis für die weitere Zusammenarbeit schaffen — dafür die Differenzen der Vergangenheit aufarbeiten.",
-      "Die Zusammenarbeit im UMS-Projekt verbindlich verbessern — du brauchst Langs Erfahrungswissen, und das gemeinsame Audit spart dir dringend benötigte Kapazitäten.",
-      "Lang bewegen, dir Sam Novak ab Montag für eine Woche als Trainer zu überlassen.",
+      "Die Zusammenarbeit im UMS-Projekt verbindlich verbessern — Du brauchst Langs Erfahrungswissen, und das gemeinsame Audit spart Dir dringend benötigte Kapazitäten.",
+      "Lang bewegen, Dir Sam Novak ab Montag für eine Woche als Trainer zu überlassen.",
     ],
     approachHints: [
       "Benenne die Vorgeschichte offen — das nimmt ihr die Sprengkraft.",
       "Frag nach seinen Interessen: Was braucht Lang, um geben zu können?",
-      "Anerkenne seine Erfahrung ehrlich — sie ist dein größter Hebel.",
-      "Hol dir Zusagen konkret: wer, was, ab wann.",
+      "Anerkenne seine Erfahrung ehrlich — sie ist Dein größter Hebel.",
+      "Hol Dir Zusagen konkret: wer, was, ab wann.",
     ],
     expectation:
-      "Viktor Lang fühlt sich übergangen — rechne mit Spitzen und Prüffragen, bevor er dir entgegenkommt.",
+      "Viktor Lang fühlt sich übergangen — rechne mit Spitzen und Prüffragen, bevor er Dir entgegenkommt.",
     timeboxMin: 25,
   },
   personaDna: {
@@ -312,7 +312,7 @@ const vance: SimulationScenario = {
   id: "sim-critique-vance",
   title: "Der brillante Experte — Kritikgespräch mit Dr. Robin Vance",
   teaser:
-    "Dein IT-Leiter ist fachlich herausragend — aber Fluktuation, Projektüberziehungen und Befragungswerte eskalieren. Und du brauchst ihn für ein Projekt, das er ablehnt.",
+    "Dein IT-Leiter ist fachlich herausragend — aber Fluktuation, Projektüberziehungen und Befragungswerte eskalieren. Und Du brauchst ihn für ein Projekt, das er ablehnt.",
   conversationType: "mitarbeitergespräch",
   difficulty: 3,
   category: "mitarbeiterfuehrung",
@@ -324,11 +324,11 @@ const vance: SimulationScenario = {
   persona: { name: "Dr. Robin Vance", role: "Leiter IT", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
-      "Du bist seit zwei Monaten CEO der NorthBay Foods Inc. Dein Auftrag: Strukturen und Prozesse effizienter machen und die Mitarbeitenden für den Wandel gewinnen. Im IT-Bereich, den Dr. Robin Vance leitet, siehst du den größten Veränderungsbedarf.",
+      "Du bist seit zwei Monaten CEO der NorthBay Foods Inc. Dein Auftrag: Strukturen und Prozesse effizienter machen und die Mitarbeitenden für den Wandel gewinnen. Im IT-Bereich, den Dr. Robin Vance leitet, siehst Du den größten Veränderungsbedarf.",
     relationship:
-      "Dr. Vance (promovierter Informatiker, seit acht Jahren im Haus) gilt als brillanter Kopf: legendäre Software-Erfolge, schneller Aufstieg zum IT-Gesamtleiter mit 94 Mitarbeitenden. Fachlich bewundert — als Führungskraft umstritten: Die Systemadministration fühlt sich seit Jahren wie »zweite Klasse« behandelt, es gibt weder Führungsrunden noch Einzelgespräche. Dir gegenüber ist Vance seit deinem Amtsantritt spürbar ablehnend: Budget- und Stellenkürzungen wurden vor deiner Zeit ohne Rücksprache verkündet, eine Aufbau-Zusage des alten CEO wurde kassiert.",
+      "Dr. Vance (promovierter Informatiker, seit acht Jahren im Haus) gilt als brillanter Kopf: legendäre Software-Erfolge, schneller Aufstieg zum IT-Gesamtleiter mit 94 Mitarbeitenden. Fachlich bewundert — als Führungskraft umstritten: Die Systemadministration fühlt sich seit Jahren wie »zweite Klasse« behandelt, es gibt weder Führungsrunden noch Einzelgespräche. Dir gegenüber ist Vance seit Deinem Amtsantritt spürbar ablehnend: Budget- und Stellenkürzungen wurden vor Deiner Zeit ohne Rücksprache verkündet, eine Aufbau-Zusage des alten CEO wurde kassiert.",
     incidents: [
-      "In deiner wöchentlichen Führungsrunde liefert Vance lustlose, vage Berichte (»läuft alles wie geplant«) — gestern erneut unvorbereitet, und die neuen Mitarbeiter-Gesprächsrunden nannte er »Kaffeekränzchen — reine Zeitverschwendung«.",
+      "In Deiner wöchentlichen Führungsrunde liefert Vance lustlose, vage Berichte (»läuft alles wie geplant«) — gestern erneut unvorbereitet, und die neuen Mitarbeiter-Gesprächsrunden nannte er »Kaffeekränzchen — reine Zeitverschwendung«.",
       "Mitarbeitende von Vance beschweren sich, sie wüssten nicht mehr, woran sie sind; seit Wochen informiert er sein Team gar nicht mehr (»Fragt nicht mich, fragt den Vorstand«).",
       "Du planst ein Projekt, das alle Optionen für die Auslagerung von Verwaltungsdiensten prüft (externes Sourcing oder eigene Servicegesellschaft; Einsparpotenzial 3–5 Mio. pro Jahr). IT-Dienste sind zentral betroffen. Vance lehnt Outsourcing strikt ab — aber ohne ihn geht es nicht.",
     ],
@@ -401,11 +401,11 @@ const vance: SimulationScenario = {
     approachHints: [
       "Trenne Person und Verhalten: die Expertise steht nicht zur Debatte, die Führungsdefizite schon.",
       "Fakten statt Wertungen: konkrete Vorfälle und ihre Wirkung benennen.",
-      "Kläre die Vorgeschichte, bevor du Neues forderst.",
+      "Kläre die Vorgeschichte, bevor Du Neues forderst.",
       "Bleib ruhig, wenn es scharf wird — genau das wird getestet.",
     ],
     expectation:
-      "Dr. Vance argumentiert brillant und prüft, ob du sachlich bleibst — pauschale Kritik prallt ab.",
+      "Dr. Vance argumentiert brillant und prüft, ob Du sachlich bleibst — pauschale Kritik prallt ab.",
     timeboxMin: 30,
   },
   personaDna: {
@@ -528,7 +528,7 @@ const roth: SimulationScenario = {
   id: "sim-azubi-roth",
   title: "Fair bleiben unter Azubis — Kollegengespräch mit Deniz Roth",
   teaser:
-    "Dein Mit-Azubi hat dich bei einer dringenden Chef-Aufgabe hängen lassen — und kassiert dafür auch noch das Lob. Gleich müsst ihr zusätzlich klären, wer die Projektpräsentation hält.",
+    "Dein Mit-Azubi hat Dich bei einer dringenden Chef-Aufgabe hängen lassen — und kassiert dafür auch noch das Lob. Gleich müsst ihr zusätzlich klären, wer die Projektpräsentation hält.",
   conversationType: "kollegengespräch",
   difficulty: 1,
   category: "zusammenarbeit",
@@ -540,12 +540,12 @@ const roth: SimulationScenario = {
   persona: { name: "Deniz Roth", role: "Auszubildender (3. Lehrjahr), Einkauf", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
-      "Du bist im zweiten Lehrjahr bei der NorthBay Foods Inc. und seit drei Wochen im Bereich Einkauf der Zentrale eingesetzt. Zu deinen Aufgaben gehören Lagerbestände, Wareneingang — und aktuell eine Sonderaufgabe der Abteilungsleiterin Frau Valente: eine vollständige Übersicht über die rund 90 Lieferanten des Unternehmens, denn NorthBay will die Lieferantenzahl um ein Viertel reduzieren, um Bündelungsvorteile zu nutzen.",
+      "Du bist im zweiten Lehrjahr bei der NorthBay Foods Inc. und seit drei Wochen im Bereich Einkauf der Zentrale eingesetzt. Zu Deinen Aufgaben gehören Lagerbestände, Wareneingang — und aktuell eine Sonderaufgabe der Abteilungsleiterin Frau Valente: eine vollständige Übersicht über die rund 90 Lieferanten des Unternehmens, denn NorthBay will die Lieferantenzahl um ein Viertel reduzieren, um Bündelungsvorteile zu nutzen.",
     relationship:
-      "Deniz Roth ist ebenfalls Azubi, ein Lehrjahr weiter als du, und zum ersten Mal mit dir in derselben Abteilung. Du kennst ihn bisher nur aus Azubi-Projekten: selbstbewusst, gern im Mittelpunkt, vor Vorgesetzten auffällig engagiert — und überzeugt, dass ihm nach der Ausbildung ein schneller Aufstieg sicher ist. Dir fällt allerdings auf, dass DU regelmäßig die komplexeren Aufgaben übertragen bekommst, obwohl er weiter ist als du.",
+      "Deniz Roth ist ebenfalls Azubi, ein Lehrjahr weiter als Du, und zum ersten Mal mit Dir in derselben Abteilung. Du kennst ihn bisher nur aus Azubi-Projekten: selbstbewusst, gern im Mittelpunkt, vor Vorgesetzten auffällig engagiert — und überzeugt, dass ihm nach der Ausbildung ein schneller Aufstieg sicher ist. Dir fällt allerdings auf, dass DU regelmäßig die komplexeren Aufgaben übertragen bekommst, obwohl er weiter ist als Du.",
     incidents: [
-      "Die Lieferantenübersicht war bis Freitagabend für den Vorstand zugesagt. Ihr hattet die 90 Lieferanten hälftig aufgeteilt, weil du Donnerstag/Freitag auf einer Branchenmesse warst. Deinen Teil hast du mit Überstunden fertig recherchiert und ihm als saubere Tabelle geschickt. Er hinterließ dir stattdessen handschriftliche Zettel mit Lücken, fünf Lieferanten fehlten ganz — und eine Mail: du hättest dir »die leichten Fälle rausgepickt«, er habe jetzt Feierabend und morgen frei. Du hast Freitagabend allein alles nachrecherchiert, übertragen und fristgerecht abgeschickt — und dafür einen privaten Termin platzen lassen.",
-      "Montagmorgen hörst du zufällig, wie Frau Valente ihn auf dem Flur für die »sehr gelungene Übersicht« lobt — und er es mit »Kein Thema, selbstverständlich« annimmt, ohne dich zu erwähnen. Er weiß nicht, dass du das mitbekommen hast.",
+      "Die Lieferantenübersicht war bis Freitagabend für den Vorstand zugesagt. Ihr hattet die 90 Lieferanten hälftig aufgeteilt, weil Du Donnerstag/Freitag auf einer Branchenmesse warst. Deinen Teil hast Du mit Überstunden fertig recherchiert und ihm als saubere Tabelle geschickt. Er hinterließ Dir stattdessen handschriftliche Zettel mit Lücken, fünf Lieferanten fehlten ganz — und eine Mail: Du hättest Dir »die leichten Fälle rausgepickt«, er habe jetzt Feierabend und morgen frei. Du hast Freitagabend allein alles nachrecherchiert, übertragen und fristgerecht abgeschickt — und dafür einen privaten Termin platzen lassen.",
+      "Montagmorgen hörst Du zufällig, wie Frau Valente ihn auf dem Flur für die »sehr gelungene Übersicht« lobt — und er es mit »Kein Thema, selbstverständlich« annimmt, ohne Dich zu erwähnen. Er weiß nicht, dass Du das mitbekommen hast.",
       "Heute müsst ihr außerdem entscheiden, wer von euch beiden nächste Woche die Abschlusspräsentation eures Azubi-Projekts (Marktanalyse für eine neue pflanzenbasierte Snack-Range) vor der Geschäftsleitung hält. Bei den Projekttreffen am Nachmittag hat er sich regelmäßig entschuldigen lassen — jetzt beansprucht er die Präsentation für sich.",
     ],
     goals: [
@@ -560,7 +560,7 @@ const roth: SimulationScenario = {
       "Triff eine klare Absprache für künftige gemeinsame Aufgaben.",
     ],
     expectation:
-      "Deniz ist schlagfertig und charmant — er testet, ob du klare Absprachen wirklich einforderst.",
+      "Deniz ist schlagfertig und charmant — er testet, ob Du klare Absprachen wirklich einforderst.",
     timeboxMin: 20,
   },
   personaDna: {
@@ -682,10 +682,10 @@ const reed: SimulationScenario = {
     yourRole:
       "Du leitest ein Team in der Auftragsabwicklung der NorthBay Foods Inc. Gemeinsam mit den Nachbarabteilungen läuft ein Projekt zur Schnittstellen-Optimierung: Antwort- und Durchlaufzeiten sollen sinken, denn Benchmarks zeigen deutlichen Rückstand im Wettbewerb. Vereinbart ist eine Reaktionszeit von maximal 24 Stunden auf Anfragen.",
     relationship:
-      "Sam Reed ist seit 19 Jahren im Unternehmen, seit einer Umstrukturierung vor fünf Monaten in deinem Team — anerkannter Know-how-Träger, äußerst genau, gewissenhaft, nimmt Aufgaben ernst. Seit zwei Monaten ist er freiwillig Mentor der neuen Kollegin Nora Vik. Er hat dir gegenüber offen gesagt, dass er sich gestresst fühlt, wenn er Dinge nicht mehr voll im Griff hat. Seine geregelte Arbeitszeit (8:00–16:30) ist ihm wichtig.",
+      "Sam Reed ist seit 19 Jahren im Unternehmen, seit einer Umstrukturierung vor fünf Monaten in Deinem Team — anerkannter Know-how-Träger, äußerst genau, gewissenhaft, nimmt Aufgaben ernst. Seit zwei Monaten ist er freiwillig Mentor der neuen Kollegin Nora Vik. Er hat Dir gegenüber offen gesagt, dass er sich gestresst fühlt, wenn er Dinge nicht mehr voll im Griff hat. Seine geregelte Arbeitszeit (8:00–16:30) ist ihm wichtig.",
     incidents: [
       "Der Leiter der Nachbarabteilung, Jon Berger, meldet: Während das Team die 24-Stunden-Regel inzwischen in rund 90 Prozent der Fälle hält, braucht Reed weiterhin oft mehrere Tage — zweimal im letzten Monat lieferte er trotz ausgewiesener Dringlichkeit erst nach zwei bzw. drei Tagen, nachdem telefonisch nachgefasst wurde. Gleichzeitig verlässt er das Büro verlässlich um 16:30.",
-      "Für eine Management-Präsentation hast du ihn um eine Datenzusammenstellung gebeten — realistisch eine halbe Stunde Arbeit. Er brauchte drei Stunden, fand dabei allerdings einen Fehler in den Daten, der im Management unangenehm aufgefallen wäre. Du hast dich dafür bedankt.",
+      "Für eine Management-Präsentation hast Du ihn um eine Datenzusammenstellung gebeten — realistisch eine halbe Stunde Arbeit. Er brauchte drei Stunden, fand dabei allerdings einen Fehler in den Daten, der im Management unangenehm aufgefallen wäre. Du hast Dich dafür bedankt.",
       "Im letzten Teammeeting blockte er Ideen jüngerer Kolleg:innen der Reihe nach ab (»Wöchentliche Meetings? Da kommen wir zu gar nichts mehr!«, »Das klappt im Leben nicht«) und korrigierte seine Mentee Nora Vik mehrfach vor allen wegen unbedeutender Details — die Stimmung kippte spürbar.",
     ],
     goals: [
@@ -694,7 +694,7 @@ const reed: SimulationScenario = {
       "Sein Auftreten im Team und gegenüber der Mentee ansprechen und konkrete Verhaltensänderungen für Meetings und Mentoring vereinbaren.",
     ],
     approachHints: [
-      "Würdige Qualität und Erfahrung ehrlich, bevor du die Reaktionszeiten ansprichst.",
+      "Würdige Qualität und Erfahrung ehrlich, bevor Du die Reaktionszeiten ansprichst.",
       "Suche die Lösung hinter dem Dilemma: Gründlichkeit UND Erreichbarkeit zusammenbringen.",
       "Nimm seine Belastung ernst — sie ist real, nicht vorgeschoben.",
       "Vereinbare messbar: Was gilt ab morgen, und woran merkt ihr es?",
@@ -816,7 +816,7 @@ const brandt: SimulationScenario = {
   id: "sim-merge-brandt",
   title: "Zwei Welten, ein Team — Integrationsgespräch mit Marek Brandt",
   teaser:
-    "Nach der Übernahme eines Food-Tech-Start-ups sollst du zwei völlig verschiedene Teams verschmelzen. Der erfahrene Teammanager deiner Stammorganisation hält das meiste davon für überflüssig — und hat für alles ein Effizienz-Argument.",
+    "Nach der Übernahme eines Food-Tech-Start-ups sollst Du zwei völlig verschiedene Teams verschmelzen. Der erfahrene Teammanager Deiner Stammorganisation hält das meiste davon für überflüssig — und hat für alles ein Effizienz-Argument.",
   conversationType: "kollegengespräch",
   difficulty: 3,
   category: "zusammenarbeit",
@@ -828,9 +828,9 @@ const brandt: SimulationScenario = {
   persona: { name: "Marek Brandt", role: "Teammanager Projekte", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
-      "Du bist seit Kurzem Bereichsleiter:in Digital & Projekte der NorthBay Foods Inc. — zuvor warst du Führungskraft in einem anderen Bereich des Hauses. Vor sechs Monaten hat NorthBay das Food-Tech-Start-up FreshLoop übernommen; vor einem Monat wurden dessen Team (5 Personen inkl. Teammanagerin Lena Iversen) und das NorthBay-Projektteam (6 Personen inkl. Teammanager Marek Brandt) unter deiner Leitung zusammengelegt. In zwei Wochen zieht FreshLoop ins Head Office. Beide Teams leiten vergleichbare Projekte — arbeiten aber völlig unterschiedlich, ohne Synergien, mit ersten Konflikten und wechselseitigem Unverständnis.",
+      "Du bist seit Kurzem Bereichsleiter:in Digital & Projekte der NorthBay Foods Inc. — zuvor warst Du Führungskraft in einem anderen Bereich des Hauses. Vor sechs Monaten hat NorthBay das Food-Tech-Start-up FreshLoop übernommen; vor einem Monat wurden dessen Team (5 Personen inkl. Teammanagerin Lena Iversen) und das NorthBay-Projektteam (6 Personen inkl. Teammanager Marek Brandt) unter Deiner Leitung zusammengelegt. In zwei Wochen zieht FreshLoop ins Head Office. Beide Teams leiten vergleichbare Projekte — arbeiten aber völlig unterschiedlich, ohne Synergien, mit ersten Konflikten und wechselseitigem Unverständnis.",
     relationship:
-      "Marek Brandt (Team-Durchschnittsalter 42) steht für Qualität, klassisches Projektmanagement, souveränes Krisenmanagement und zwölf Jahre Konzernerfahrung: monatliche Teammeetings, wöchentliche Jour fixes, klare Trennung von Beruf und Privatem, Home-Office wird kaum genutzt. Das FreshLoop-Team (Schnitt 31) arbeitet agil, kundennah, mit wöchentlichen Feedback-Runden, Retrospektiven, intensiver Home-Office-Nutzung und gemeinsamen Team-Events. Vor dem großen Integrations-Meeting willst du Brandt in einem Vieraugengespräch gewinnen — er ist der Schlüssel, ob die Zusammenführung gelingt.",
+      "Marek Brandt (Team-Durchschnittsalter 42) steht für Qualität, klassisches Projektmanagement, souveränes Krisenmanagement und zwölf Jahre Konzernerfahrung: monatliche Teammeetings, wöchentliche Jour fixes, klare Trennung von Beruf und Privatem, Home-Office wird kaum genutzt. Das FreshLoop-Team (Schnitt 31) arbeitet agil, kundennah, mit wöchentlichen Feedback-Runden, Retrospektiven, intensiver Home-Office-Nutzung und gemeinsamen Team-Events. Vor dem großen Integrations-Meeting willst Du Brandt in einem Vieraugengespräch gewinnen — er ist der Schlüssel, ob die Zusammenführung gelingt.",
     incidents: [
       "In den ersten gemeinsamen Runden fielen wechselseitig abwertende Kommentare über Stil und Methoden des jeweils anderen Teams; Brandt blieb dabei ruhig, machte aber deutlich, dass er Retrospektiven und wöchentliche Feedback-Runden für »Beschäftigungstherapie« hält.",
       "Brandt hat die bisherigen monatlichen Status-Runden selbst als Zeitverlust erlebt (Projektdetails, die nur ein bis zwei Leute betrafen) — MEHR Meetings sind für ihn das falsche Signal; er will Jour fixes stärken und sonst reduzieren.",
@@ -842,7 +842,7 @@ const brandt: SimulationScenario = {
       "Eine faire Linie für die strittigen Punkte (Meeting-Struktur, Home-Office-Übergang, gemeinsame Team-Aktivitäten) so weit vorklären, dass das große Meeting konstruktiv starten kann.",
     ],
     approachHints: [
-      "Mach Brandt zum Mitgestalter: Frag nach seiner Erfahrung, bevor du Formate vorschlägst.",
+      "Mach Brandt zum Mitgestalter: Frag nach seiner Erfahrung, bevor Du Formate vorschlägst.",
       "Beide Methodenwelten haben Stärken — such das Sowohl-als-auch statt Entweder-oder.",
       "Entscheide Strittiges über Kriterien, nicht über Positionen.",
       "Sichere Vereinbarungen, die beide Teams tragen können.",
@@ -970,7 +970,7 @@ const falk: SimulationScenario = {
   id: "sim-peer-falk",
   title: "Neue Linie, alte Macht — Doppelspitzen-Gespräch mit Ruben Falk",
   teaser:
-    "Ihr führt als Doppelspitze je eine Produktlinie — er die etablierte, du die neue grüne. Jetzt sollt ihr gemeinsam die Fuhrpark-Frage lösen. Er hat dich schon einmal ausgebremst, im Workshop öffentlich kleingeredet — und sein Netzwerk ist legendär.",
+    "Ihr führt als Doppelspitze je eine Produktlinie — er die etablierte, Du die neue grüne. Jetzt sollt ihr gemeinsam die Fuhrpark-Frage lösen. Er hat Dich schon einmal ausgebremst, im Workshop öffentlich kleingeredet — und sein Netzwerk ist legendär.",
   conversationType: "kollegengespräch",
   difficulty: 3,
   category: "zusammenarbeit",
@@ -982,13 +982,13 @@ const falk: SimulationScenario = {
   persona: { name: "Ruben Falk", role: "Senior Product Lead Classic-Sortiment", voice: "florian-hd" },
   candidateBriefing: {
     yourRole:
-      "Du bist seit zwei Jahren bei der NorthBay Foods Inc., seit vier Monaten Senior Product Lead für die neue pflanzenbasierte Linie GreenFjord — zusätzlich verantwortest du das konzernweite Nachhaltigkeitsmanagement. Die Unternehmensleitung (Frau Solberg) hat eine Nachhaltigkeitsstrategie ausgerufen: CO2-Reduktion im ganzen Konzern, GreenFjord als Wachstumsfokus — und die Logistikkosten samt veralteter eigener Kühlflotte wurden als inakzeptabel eingestuft. Du und Ruben Falk seid GEMEINSAM beauftragt, eine nachhaltige Fuhrpark-Lösung zu erarbeiten. Deine Analyse ist klar: Die eigene Flotte ist überaltert, wird bald Technik- und Sicherheitsstandards reißen, bräuchte massive Investitionen — zertifizierte externe Kühllogistiker wären günstiger UND klimafreundlicher. Für dich steht fest: Outsourcing.",
+      "Du bist seit zwei Jahren bei der NorthBay Foods Inc., seit vier Monaten Senior Product Lead für die neue pflanzenbasierte Linie GreenFjord — zusätzlich verantwortest Du das konzernweite Nachhaltigkeitsmanagement. Die Unternehmensleitung (Frau Solberg) hat eine Nachhaltigkeitsstrategie ausgerufen: CO2-Reduktion im ganzen Konzern, GreenFjord als Wachstumsfokus — und die Logistikkosten samt veralteter eigener Kühlflotte wurden als inakzeptabel eingestuft. Du und Ruben Falk seid GEMEINSAM beauftragt, eine nachhaltige Fuhrpark-Lösung zu erarbeiten. Deine Analyse ist klar: Die eigene Flotte ist überaltert, wird bald Technik- und Sicherheitsstandards reißen, bräuchte massive Investitionen — zertifizierte externe Kühllogistiker wären günstiger UND klimafreundlicher. Für Dich steht fest: Outsourcing.",
     relationship:
-      "Ruben Falk (52, Diplom-Kaufmann, sechs Jahre im Haus) führt als zweite Hälfte der Doppelspitze das Classic-Sortiment und verantwortet das Fuhrpark-Management. Er war erfolgreicher Vertriebsleiter der Region Süd, gilt als versierter Kaufmann mit exzellentem Netzwerk — und als jemand, den man nicht unterschätzen sollte. Ihr habt Geschichte: In deinem ersten Jahr hast du an einem Routen- und Beladungskonzept mitgearbeitet, das Lieferfahrten reduzieren sollte. Falk bekämpfte es, eskalierte bis ins Steuerungsgremium — und gewann: Seine Region Süd behielt als einzige die eigene Flotte samt flexibler Lieferpraxis.",
+      "Ruben Falk (52, Diplom-Kaufmann, sechs Jahre im Haus) führt als zweite Hälfte der Doppelspitze das Classic-Sortiment und verantwortet das Fuhrpark-Management. Er war erfolgreicher Vertriebsleiter der Region Süd, gilt als versierter Kaufmann mit exzellentem Netzwerk — und als jemand, den man nicht unterschätzen sollte. Ihr habt Geschichte: In Deinem ersten Jahr hast Du an einem Routen- und Beladungskonzept mitgearbeitet, das Lieferfahrten reduzieren sollte. Falk bekämpfte es, eskalierte bis ins Steuerungsgremium — und gewann: Seine Region Süd behielt als einzige die eigene Flotte samt flexibler Lieferpraxis.",
     incidents: [
-      "Beim Kick-off des gemeinsamen Prozessoptimierungs-Projekts (Steuerung: Dr. Voss von SystemWorks Consulting) unterbrach Falk deine Vorstellung der GreenFjord-Kennzahlen vor allen Beteiligten: Das Classic-Sortiment habe NorthBay »erst zu dem gemacht, was es heute ist« — als neue Führungskraft würdest du die »vermeintlich trendige« Linie natürlich überhöhen; er wolle nicht, dass die externen Partner einen falschen Eindruck von den Prioritäten gewinnen.",
+      "Beim Kick-off des gemeinsamen Prozessoptimierungs-Projekts (Steuerung: Dr. Voss von SystemWorks Consulting) unterbrach Falk Deine Vorstellung der GreenFjord-Kennzahlen vor allen Beteiligten: Das Classic-Sortiment habe NorthBay »erst zu dem gemacht, was es heute ist« — als neue Führungskraft würdest Du die »vermeintlich trendige« Linie natürlich überhöhen; er wolle nicht, dass die externen Partner einen falschen Eindruck von den Prioritäten gewinnen.",
       "In den Projektmeetings hält er sich bei konstruktiven Vorschlägen zurück — und platziert seine Einwände regelmäßig erst kurz vor Sitzungsende, wenn vieles schon besprochen ist. Die Diskussionen beginnen dann von vorn.",
-      "Über den Flurfunk weißt du: Er hat von deiner Outsourcing-Präferenz gehört und lehnt sie kategorisch ab — Flexibilität und die eigene Flotte seien der Wettbewerbsvorteil seiner Classic-Kunden.",
+      "Über den Flurfunk weißt Du: Er hat von Deiner Outsourcing-Präferenz gehört und lehnt sie kategorisch ab — Flexibilität und die eigene Flotte seien der Wettbewerbsvorteil seiner Classic-Kunden.",
     ],
     goals: [
       "Eine tragfähige Arbeitsbasis in der Doppelspitze schaffen — die Vorgeschichte (verlorene Eskalation, Kick-off-Auftritt) muss besprechbar werden, ohne neue Fronten zu schaffen.",
@@ -997,7 +997,7 @@ const falk: SimulationScenario = {
     ],
     approachHints: [
       "Kläre die Vorgeschichte, ohne alte Kämpfe neu zu führen.",
-      "Bleib bei einer ergebnisoffenen, faktenbasierten Prüfung — lass dich weder vereinnahmen noch provozieren.",
+      "Bleib bei einer ergebnisoffenen, faktenbasierten Prüfung — lass Dich weder vereinnahmen noch provozieren.",
       "Prüfe bei Zustimmung, ob sie Substanz hat: Was genau sagt er zu?",
       "Halte Vereinbarungen fest — Charme ersetzt keine Verbindlichkeit.",
     ],

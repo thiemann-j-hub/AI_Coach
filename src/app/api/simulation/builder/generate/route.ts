@@ -44,6 +44,7 @@ const requestSchema = z.object({
     .enum(["mitarbeiterfuehrung", "zusammenarbeit", "vertrieb", "stakeholder"])
     .optional(),
   difficulty: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  /** Paket 5, S15: nur noch Rückfall. Die Sprache des Auftrags entscheidet (siehe `zielSprache` im Generator). */
   locale: z.enum(["de", "en"]).optional(),
   /** Überarbeitungs-Runde: bestehende Draft-Id + Änderungswunsch. */
   reviseScenarioId: z.string().regex(/^ws-[a-z0-9-]+$/).optional(),

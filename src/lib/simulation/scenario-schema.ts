@@ -143,6 +143,8 @@ export const scenarioSchema = z
       voice: z.enum(PERSONA_VOICES).optional(),
       // Builder-Stimmenwahl 28.10.: Gemini-Live-Stimme; optional (Alt-Docs → Zuordnung nach Szenario/Azure-Stimme).
       liveVoice: z.string().refine(isLiveVoice, "unbekannte Live-Stimme").optional(),
+      // Paket 5, S19 (12.11.2026): Firma der Rolle. Ohne das Feld hier ging sie bei Kundenszenarien beim Speichern verloren.
+      firma: z.string().trim().max(80).optional(),
     }),
     candidateBriefing: candidateBriefingSchema,
     personaDna: personaDnaSchema,

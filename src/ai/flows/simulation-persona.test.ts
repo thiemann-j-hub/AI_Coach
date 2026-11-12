@@ -46,6 +46,28 @@ describe("buildPersonaSystemPrompt", () => {
     expect(endeAktiv(scenario)).toBe(true);
   });
 
+  // Paket 5, U9/S20 (12.11.2026): Zwei von fünf Antworten begannen mit „Sorry, aber“; ein Treffer blieb unhörbar.
+  it("verlangt wechselnde Satzanfänge, keine Entschuldigungs-Floskel als Standard und hörbare Treffer", () => {
+    const regeln = prompt.split("=== VERHALTENSREGELN ===")[1];
+    const regel = (n: number) => regeln.split("\n").find((z) => z.startsWith(`${n}. `))!;
+    expect(regel(1)).toContain("Erfüllt dein Gegenüber eine Öffnungs-Bedingung");
+    expect(regel(1)).toContain("Regie-Notiz »Bedingung erfüllt«");
+    expect(regel(1)).toContain("in EINEM Satz hören");
+    expect(regel(1)).toContain("statt nur still nachzugeben");
+    expect(regel(2)).toContain("nie zwei Antworten hintereinander mit denselben Wörtern");
+    expect(regel(2)).toContain("»Sorry, aber …«");
+    expect(regel(2)).toContain("nie dein Standard-Einstieg");
+    // Zusätze zu den Regeln 1 und 2, keine neue Regel: Fairness bleibt Regel 7.
+    expect(regeln).toContain("7. FAIRNESS");
+    expect(regeln).not.toMatch(/^9\. /m);
+    // Auch die englisch verfassten Szenarien und die Kunden-Szenarien tragen beide Zusätze.
+    for (const s of [getScenario("sim-appraisal-stone")!, { ...scenario, id: "ws-kundengespraech" }]) {
+      const p = buildPersonaSystemPrompt(s);
+      expect(p).toContain("in EINEM Satz hören");
+      expect(p).toContain("nie dein Standard-Einstieg");
+    }
+  });
+
   it("englisches Szenario bekommt die englischen Blöcke", () => {
     const en = buildPersonaSystemPrompt(getScenario("sim-appraisal-stone")!);
     expect(en).toContain("RELEASE RULE");

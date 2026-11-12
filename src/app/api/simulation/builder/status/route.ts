@@ -51,7 +51,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
     // Spielbuch (Owner-GO 28.10.): beim Veröffentlichen im Hintergrund vorbereiten, damit das erste Gespräch es hat.
-    if (parsed.data.status === "published") void ensureSpielbuch(doc.scenario);
+    // Paket 5, C28: bis zum Anstoß warten (ein Lesezugriff, nicht die Erzeugung), damit der Builder beim Nachladen
+    // gleich „Rolle wird vorbereitet“ zeigt. Scheitert der Anstoß, bleibt die Freischaltung trotzdem gültig.
+    if (parsed.data.status === "published") {
+      try {
+        await ensureSpielbuch(doc.scenario);
+      } catch (e) {
+        logger.apiError("/api/simulation/builder/status spielbuch", e, { scenarioId: doc.id });
+      }
+    }
     logger.api("/api/simulation/builder/status", "ok", {
       uid: auth.uid,
       scenarioId: doc.id,

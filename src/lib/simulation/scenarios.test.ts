@@ -258,6 +258,60 @@ describe("Szenario-Kategorien + Kompetenz-Fokus (§2.1/§2.2)", () => {
   });
 });
 
+// Paket 5, U8 (12.11.2026): Karten und Briefing schrieben „dir“, „deinem“, „dich“ klein, App-Texte und Auswertung „Du“
+// groß. Owner-Regel: Du groß. Geprüft wird, was Lernende lesen; die Rollen-DNA (liest nur die KI) bleibt, wie sie ist.
+describe("Anrede in den Texten, die Lernende lesen (U8)", () => {
+  const KLEIN = /(?<![\p{L}\p{N}])(du|dir|dich|dein|deine|deiner|deinem|deinen|deines)(?![\p{L}\p{N}])/u;
+  // Wörtliche Rede einer Figur bleibt, wie sie gesprochen wird (»reiß dich zusammen«).
+  const ohneRede = (t: string) => t.replace(/»[^«]*«|„[^“”]*[“”]|“[^”]*”|"[^"]*"/g, " ");
+
+  /** Titel, Karte, Briefing (Situation, Auftrag, Ziele, „So gelingt es“) und Fakten-Kacheln. */
+  function lernendenTexte(s: (typeof SIMULATION_SCENARIOS)[number]): Array<[string, string]> {
+    const b = publicScenario(s).candidateBriefing;
+    const texte: Array<[string, string]> = [
+      ["title", s.title],
+      ["teaser", s.teaser],
+      ["yourRole", b.yourRole],
+      ["relationship", b.relationship],
+      ["expectation", b.expectation ?? ""],
+    ];
+    b.incidents.forEach((t, i) => texte.push([`incidents.${i}`, t]));
+    b.goals.forEach((t, i) => texte.push([`goals.${i}`, t]));
+    (b.approachHints ?? []).forEach((t, i) => texte.push([`approachHints.${i}`, t]));
+    (b.factSheet ?? []).forEach((t, i) => texte.push([`factSheet.${i}`, t]));
+    (b.factVisuals ?? []).forEach((v, i) => {
+      texte.push([`factVisuals.${i}.title`, v.title], [`factVisuals.${i}.note`, v.note ?? ""]);
+      for (const it of v.kind === "trend" ? v.points : v.items) {
+        texte.push([`factVisuals.${i}.label`, it.label]);
+        if ("sub" in it) texte.push([`factVisuals.${i}.sub`, it.sub ?? ""]);
+        if (typeof it.value === "string") texte.push([`factVisuals.${i}.value`, it.value]);
+      }
+    });
+    return texte;
+  }
+
+  it.each(SIMULATION_SCENARIOS.filter((s) => s.locale === "de").map((s) => [s.id, s] as const))(
+    "%s: kein kleines du/dir/dein/dich außerhalb wörtlicher Rede",
+    (_id, s) => {
+      for (const [feld, text] of lernendenTexte(s)) {
+        expect(ohneRede(text), `${s.id} ${feld}: ${text}`).not.toMatch(KLEIN);
+      }
+    }
+  );
+
+  it("der Wächter greift: kleines „dir“ fällt auf, wörtliche Rede nicht", () => {
+    expect(ohneRede("ohne Absprache mit dir; die Kapazität fehlt")).toMatch(KLEIN);
+    expect(ohneRede("Keine Motivationsrede, kein »reiß dich zusammen«.")).not.toMatch(KLEIN);
+    expect(ohneRede("Die Direktorin duldet das nicht, Deine Zusage zählt.")).not.toMatch(KLEIN);
+  });
+
+  it("die Rollen-DNA bleibt unberührt: die Rolle spricht weiter so, wie sie spricht", () => {
+    // Deniz Roth duzt: seine wörtliche Rede steht in der DNA und behält die kleine Anrede.
+    const roth = getScenario("sim-azubi-roth")!;
+    expect(JSON.stringify(roth.personaDna)).toMatch(KLEIN);
+  });
+});
+
 describe("Persona-Stimmen (Owner-GO 19.09.)", () => {
   it("jede eingebaute Persona hat eine Whitelist-Stimme, die mit der öffentlichen Projektion reist", async () => {
     const { PERSONA_VOICES } = await import("./types");

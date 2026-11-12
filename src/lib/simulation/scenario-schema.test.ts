@@ -80,6 +80,16 @@ describe('scenario-schema (B3a)', () => {
     expect(validateScenario(baseScenario()).persona.voice).toBeUndefined();
   });
 
+  it('Firma der Rolle (Paket 5, S19): optional, bleibt beim Prüfen erhalten, höchstens 80 Zeichen', () => {
+    const mit = baseScenario() as { persona: Record<string, unknown> };
+    mit.persona.firma = '  Nordkauf  ';
+    expect(validateScenario(mit).persona.firma).toBe('Nordkauf');
+    expect(validateScenario(baseScenario()).persona.firma).toBeUndefined();
+    const zuLang = baseScenario() as { persona: Record<string, unknown> };
+    zuLang.persona.firma = 'x'.repeat(81);
+    expect(() => validateScenario(zuLang)).toThrow(/firma/);
+  });
+
   it('erzwingt das ws--Präfix (keine Kollision mit sim-…)', () => {
     const bad = { ...baseScenario(), id: 'sim-coaching-morgan' };
     expect(() => validateScenario(bad)).toThrow(/ws-<kebab-case>/);

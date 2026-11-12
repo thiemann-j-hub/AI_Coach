@@ -29,9 +29,9 @@ const kessler: SimulationScenario = {
     yourRole:
       "Du bist Key-Account-Manager:in Handel bei der NorthBay Foods Inc. und verantwortest die Tiefkühl-Marke BlueCrest im Norden. Nordkauf, eine Handelskette mit rund 180 Märkten in Norddeutschland, führt BlueCrest bisher nicht. Du rufst die Einkaufsleiterin Tiefkühl kalt an.",
     relationship:
-      "Ihr kennt euch nicht. Dr. Nadine Kessler leitet seit sechs Jahren den Tiefkühl-Einkauf bei Nordkauf, gilt in der Branche als genau, schnell und schwer zu beeindrucken. Sie bekommt viele Anrufe wie deinen und beendet die meisten nach wenigen Sätzen.",
+      "Ihr kennt euch nicht. Dr. Nadine Kessler leitet seit sechs Jahren den Tiefkühl-Einkauf bei Nordkauf, gilt in der Branche als genau, schnell und schwer zu beeindrucken. Sie bekommt viele Anrufe wie Deinen und beendet die meisten nach wenigen Sätzen.",
     incidents: [
-      "Du hast keinen Termin und keine Empfehlung. Deine Vorstellung, dein Grund und deine erste Frage müssen in den ersten zwanzig Sekunden sitzen.",
+      "Du hast keinen Termin und keine Empfehlung. Deine Vorstellung, Dein Grund und Deine erste Frage müssen in den ersten zwanzig Sekunden sitzen.",
       "Dein Ziel ist kein Abschluss am Telefon, sondern ein konkreter Folgetermin mit Zweck und Zeitpunkt. »Ich schicke Ihnen Unterlagen« gilt bei ihr nicht als nächster Schritt.",
     ],
     factSheet: [
@@ -47,7 +47,7 @@ const kessler: SimulationScenario = {
     approachHints: [
       "Kurz vorstellen, einen Satz Grund, dann fragen, ob sie zwei Minuten hat.",
       "Beim ersten Abwimmeln ruhig bleiben und den konkreten Einwand beantworten, nicht dagegenreden.",
-      "Eine scharfe Frage zu ihrer Lage schlägt jeden Vorteil deines Produkts.",
+      "Eine scharfe Frage zu ihrer Lage schlägt jeden Vorteil Deines Produkts.",
       "Den Termin aktiv vorschlagen, mit Zweck. »Unterlagen schicken« ist kein nächster Schritt.",
     ],
     expectation:
@@ -144,7 +144,7 @@ const weber: SimulationScenario = {
   id: "sim-discovery-weber",
   title: "Erst verstehen — Bedarfsgespräch mit Tomas Weber",
   teaser:
-    "Der Category Manager einer Handelsgruppe hat dem Termin zugesagt, aber nicht, es dir leicht zu machen. Er prüft dich, während du ihn prüfst. Vage Fragen bekommen höfliche Oberflächenantworten.",
+    "Der Category Manager einer Handelsgruppe hat dem Termin zugesagt, aber nicht, es Dir leicht zu machen. Er prüft Dich, während Du ihn prüfst. Vage Fragen bekommen höfliche Oberflächenantworten.",
   conversationType: "bedarfsgespräch",
   difficulty: 2,
   category: "vertrieb",
@@ -175,8 +175,8 @@ const weber: SimulationScenario = {
     approachHints: [
       "Zweck und Ablauf in zwei Sätzen abstimmen, dann zuhören.",
       "Vom Symptom zur Auswirkung fragen: Was passiert, wenn das Regal leer ist, und was kostet das?",
-      "Spiegle, was du verstanden hast, bevor du etwas anbietest.",
-      "Frag, wer mitentscheidet und wann eine Entscheidung ansteht, bevor du den Termin vorschlägst.",
+      "Spiegle, was Du verstanden hast, bevor Du etwas anbietest.",
+      "Frag, wer mitentscheidet und wann eine Entscheidung ansteht, bevor Du den Termin vorschlägst.",
     ],
     expectation:
       "Tomas Weber gibt seine echten Probleme nicht her, er lässt sie sich erfragen. Gute Fragen öffnen die Tür, ein Pitch schließt sie.",
@@ -288,7 +288,7 @@ const hartmann: SimulationScenario = {
       "Du kennst Frau Hartmann aus früheren Bestellungen als verbindlich und direkt. Heute ist sie am Ende ihrer Geduld: Die Handzettel sind verteilt, die Kunden kommen am Samstag, und sie fühlt sich hingehalten.",
     incidents: [
       "Die Lieferung von vierzig Kartons kam am Donnerstag nicht; der zugesagte Rückruf blieb aus.",
-      "Das Lager Northport liegt zwanzig Kilometer entfernt. Eine Ersatzlieferung per Direktfahrt bis Samstag sieben Uhr ist machbar, wenn die Disposition sie bis vierzehn Uhr einplant. Zusagen zur Uhrzeit darfst du erst nach Rücksprache mit der Disposition geben.",
+      "Das Lager Northport liegt zwanzig Kilometer entfernt. Eine Ersatzlieferung per Direktfahrt bis Samstag sieben Uhr ist machbar, wenn die Disposition sie bis vierzehn Uhr einplant. Zusagen zur Uhrzeit darfst Du erst nach Rücksprache mit der Disposition geben.",
     ],
     factSheet: [
       "Bestellung: 40 Kartons BlueCrest Fischgratin, Aktionswochenende Samstag/Sonntag",
@@ -296,15 +296,15 @@ const hartmann: SimulationScenario = {
       "Gutschrift bei Lieferausfall ist Standard; sie ersetzt aber keine Ware",
     ],
     goals: [
-      "Zuhören und den eigentlichen Bedarf hinter der Gutschrift finden, bevor du etwas löst.",
+      "Zuhören und den eigentlichen Bedarf hinter der Gutschrift finden, bevor Du etwas löst.",
       "Verantwortung für den Fall übernehmen, ohne auf Logistik oder Regeln zu zeigen, und den zweiten Anruf ehrlich anerkennen.",
       "Einen realistischen, verbindlichen Weg vereinbaren: wer tut was bis wann, und sie bestätigt ihn.",
     ],
     approachHints: [
-      "Frag, wofür sie die Ware braucht, bevor du etwas anbietest.",
+      "Frag, wofür sie die Ware braucht, bevor Du etwas anbietest.",
       "Benenne konkret, was ihr passiert ist: zweiter Anruf, kein Rückruf, Aktion am Samstag.",
       "Sprich in der Ich-Form: »Ich kümmere mich«, nicht »die Logistik«.",
-      "Versprich nur, was du prüfen kannst, und sag, bis wann sie von dir hört.",
+      "Versprich nur, was Du prüfen kannst, und sag, bis wann sie von Dir hört.",
     ],
     expectation:
       "Lena Hartmann wird laut anfangen und leise werden, sobald sie merkt, dass jemand wirklich zuhört und sich kümmert. Regeln und Prozesse machen sie wütender.",
@@ -410,12 +410,12 @@ const vogt: SimulationScenario = {
   persona: { name: "Mara Vogt", role: "Redakteurin, Radio Nordküste", voice: "seraphina-hd", liveVoice: "Laomedeia", firma: "Radio Nordküste" },
   candidateBriefing: {
     yourRole:
-      "Du leitest die Unternehmenskommunikation der NorthBay Foods Inc. Gestern hat NorthBay die Charge 4471 des BlueCrest Lachsgratins zurückgerufen, weil drei Verbraucher Kunststoffsplitter in der Packung gemeldet haben. Niemand wurde verletzt. Radio Nordküste schaltet dich live ins Morgenmagazin.",
+      "Du leitest die Unternehmenskommunikation der NorthBay Foods Inc. Gestern hat NorthBay die Charge 4471 des BlueCrest Lachsgratins zurückgerufen, weil drei Verbraucher Kunststoffsplitter in der Packung gemeldet haben. Niemand wurde verletzt. Radio Nordküste schaltet Dich live ins Morgenmagazin.",
     relationship:
       "Mara Vogt hat vor zwei Jahren kritisch über ein Werk von NorthBay berichtet. Sie ist hartnäckig, gut vorbereitet und sucht die klare Aussage. Fair ist sie zu denen, die nicht ausweichen.",
     incidents: [
       "Zeitstrahl: Erste Meldung Montag 15 Uhr, Laboranalyse Dienstag, Rückruf Mittwoch 9 Uhr. Verbraucherschützer kritisieren die zwei Tage bis zum Rückruf.",
-      "Eine zweite Charge wird gerade geprüft; das Ergebnis liegt am Freitag vor. Bis dahin kannst du nichts ausschließen und nichts bestätigen.",
+      "Eine zweite Charge wird gerade geprüft; das Ergebnis liegt am Freitag vor. Bis dahin kannst Du nichts ausschließen und nichts bestätigen.",
       "Betroffene können die Packung in jedem Markt zurückgeben und bekommen den Kaufpreis erstattet; eine Hotline ist geschaltet.",
     ],
     factSheet: [
@@ -431,7 +431,7 @@ const vogt: SimulationScenario = {
     approachHints: [
       "Erster Satz: an wen sich der Rückruf richtet und was Betroffene tun sollen.",
       "Jede Frage kurz und ehrlich beantworten, dann zur Botschaft zurück.",
-      "Was du nicht weißt, sagst du; und wann es Klarheit gibt.",
+      "Was Du nicht weißt, sagst Du; und wann es Klarheit gibt.",
       "Ruhig bleiben, auch wenn die Frage eine Unterstellung enthält; falsche Prämissen sachlich korrigieren.",
     ],
     expectation:
@@ -538,9 +538,9 @@ const albrecht: SimulationScenario = {
   persona: { name: "Sina Albrecht", role: "Teamleiterin Qualitätssicherung Labor, Werk Kingsport 1", voice: "seraphina-hd", liveVoice: "Sulafat" },
   candidateBriefing: {
     yourRole:
-      "Du leitest die Abteilung Qualitätssicherung im Werk Kingsport 1 der NorthBay Foods Inc. Sina Albrecht führt seit vier Jahren das QS-Labor mit sechs Personen und ist fachlich und menschlich deine stärkste Teamleiterin. Die Abteilungsleitung QS im Werk Kingsport 2 wurde vor zwei Wochen mit Jan Prell aus der Zentrale besetzt; Sina war nicht im Verfahren.",
+      "Du leitest die Abteilung Qualitätssicherung im Werk Kingsport 1 der NorthBay Foods Inc. Sina Albrecht führt seit vier Jahren das QS-Labor mit sechs Personen und ist fachlich und menschlich Deine stärkste Teamleiterin. Die Abteilungsleitung QS im Werk Kingsport 2 wurde vor zwei Wochen mit Jan Prell aus der Zentrale besetzt; Sina war nicht im Verfahren.",
     relationship:
-      "Ihr arbeitet seit vier Jahren eng zusammen; sie nimmt Feedback an, wenn es konkret ist. Sie hat um das Gespräch gebeten, ohne den Anlass zu nennen; du weißt, worum es geht. Du willst sie halten und entwickeln.",
+      "Ihr arbeitet seit vier Jahren eng zusammen; sie nimmt Feedback an, wenn es konkret ist. Sie hat um das Gespräch gebeten, ohne den Anlass zu nennen; Du weißt, worum es geht. Du willst sie halten und entwickeln.",
     incidents: [
       "Sinas Labor hat in zwei Jahren Audits ohne eine einzige Abweichung bestanden; ihr Team ist stabil, niemand hat gekündigt.",
       "Deine ehrliche Einschätzung: Sie ist stark im eigenen Team, aber außerhalb kaum sichtbar. Sie hält alles selbst (keine Stellvertretung aufgebaut), präsentiert nie in der Werksleitungsrunde und hat sich aus werkübergreifenden Projekten bisher herausgehalten. Dafür wurde sie nicht berücksichtigt, nicht wegen ihrer Leistung.",
@@ -554,7 +554,7 @@ const albrecht: SimulationScenario = {
     approachHints: [
       "Erst die Anerkennung mit Beispiel, dann die Lücke, nie als Sandwich.",
       "Nenne die Lücke so konkret, dass sie weiß, was gemeint ist: Sichtbarkeit, Stellvertretung, werkübergreifend.",
-      "Frag nach ihrer Sicht, bevor du den Weg vorschlägst.",
+      "Frag nach ihrer Sicht, bevor Du den Weg vorschlägst.",
       "Mach den Weg greifbar: Aufgaben, Unterstützung, Zeitpunkt, Kriterien.",
     ],
     expectation:
@@ -651,7 +651,7 @@ const keller: SimulationScenario = {
   id: "sim-disengaged-keller",
   title: "Dienst nach Vorschrift — Gespräch mit Jonas Keller",
   teaser:
-    "Früher dein verlässlichster Planer, seit dem Umbau nur noch das Nötigste: kurze Antworten, keine Ideen, Stille im Meeting. Er wird dir nicht sagen, was los ist. Appelle machen es schlimmer.",
+    "Früher Dein verlässlichster Planer, seit dem Umbau nur noch das Nötigste: kurze Antworten, keine Ideen, Stille im Meeting. Er wird Dir nicht sagen, was los ist. Appelle machen es schlimmer.",
   conversationType: "mitarbeitergespräch",
   difficulty: 1,
   category: "mitarbeiterfuehrung",
@@ -662,13 +662,13 @@ const keller: SimulationScenario = {
   persona: { name: "Jonas Keller", role: "Sachbearbeiter Logistikplanung, Werk Kingsport 1", voice: "florian-hd", liveVoice: "Umbriel" },
   candidateBriefing: {
     yourRole:
-      "Du leitest seit vier Monaten das Team Logistikplanung im Werk Kingsport 1 der NorthBay Foods Inc. Das Team wurde beim Logistik-Umbau neu zusammengesetzt; dein Vorgänger Herr Baum ist in Rente gegangen. Jonas Keller ist seit sieben Jahren im Haus und war bis zum Umbau der verlässlichste Planer im Team.",
+      "Du leitest seit vier Monaten das Team Logistikplanung im Werk Kingsport 1 der NorthBay Foods Inc. Das Team wurde beim Logistik-Umbau neu zusammengesetzt; Dein Vorgänger Herr Baum ist in Rente gegangen. Jonas Keller ist seit sieben Jahren im Haus und war bis zum Umbau der verlässlichste Planer im Team.",
     relationship:
-      "Ihr kennt euch erst seit dem Umbau. Jonas ist höflich, pünktlich und unauffällig. Dein Eindruck: Er hat innerlich abgeschaltet. Du willst verstehen, warum, bevor du etwas forderst.",
+      "Ihr kennt euch erst seit dem Umbau. Jonas ist höflich, pünktlich und unauffällig. Dein Eindruck: Er hat innerlich abgeschaltet. Du willst verstehen, warum, bevor Du etwas forderst.",
     incidents: [
       "In den letzten drei Teammeetings hat Jonas kein Wort gesagt, obwohl es um seine Routen ging.",
       "Zweimal in den letzten drei Wochen war die Übergabe-Checkliste an die Spätschicht unvollständig; früher war sie bei ihm makellos.",
-      "Die Leitung des neuen Routenprojekts hast du vor sechs Wochen Tessa Lind gegeben, die seit zwei Jahren im Haus ist. Jonas hat sich dazu nicht geäußert.",
+      "Die Leitung des neuen Routenprojekts hast Du vor sechs Wochen Tessa Lind gegeben, die seit zwei Jahren im Haus ist. Jonas hat sich dazu nicht geäußert.",
     ],
     goals: [
       "Einen sicheren Rahmen setzen: worum es geht, mit welcher Absicht, und dass es um die Sache geht.",
@@ -676,8 +676,8 @@ const keller: SimulationScenario = {
       "Einen nächsten Schritt gemeinsam vereinbaren, den er mitgestaltet, mit Nachfolgetermin.",
     ],
     approachHints: [
-      "Sag zuerst, warum ihr sprecht und dass du verstehen willst.",
-      "Beschreibe, was du gesehen hast: drei stille Meetings, zwei Checklisten. Keine Etiketten.",
+      "Sag zuerst, warum ihr sprecht und dass Du verstehen willst.",
+      "Beschreibe, was Du gesehen hast: drei stille Meetings, zwei Checklisten. Keine Etiketten.",
       "Stell eine offene Frage und halte die Stille aus. Dann noch eine.",
       "Keine Motivationsrede, kein »reiß dich zusammen«. Erst die Ursache, dann der Schritt.",
     ],
