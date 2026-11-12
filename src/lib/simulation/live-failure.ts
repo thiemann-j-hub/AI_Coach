@@ -142,16 +142,15 @@ export function decideLiveEnd(cause: LiveEndCause, retried: boolean): LiveEndDec
 }
 
 /**
- * Diktat (Azure oder Browser-Erkennung) ist zu Ende. null = die Person hat selbst gestoppt, sonst der Satz.
- * `error`: Fehlertext des Azure-SDK („Error occurred during microphone initialization: NotAllowedError …“) oder
- * der Fehlercode der Browser-Erkennung (not-allowed, audio-capture, no-speech, network …).
+ * Diktat (Azure) ist zu Ende. null = die Person hat selbst gestoppt, sonst der Satz.
+ * `error`: Fehlertext des Azure-SDK („Error occurred during microphone initialization: NotAllowedError …“).
+ * Paket 6, C31 (12.11.2026): Die Fehlercodes der Browser-Erkennung sind mit ihr entfallen.
  */
 export function dictationEndMessage(error: string | null | undefined, stoppedByUser: boolean): VoiceMessage | null {
   if (stoppedByUser) return null;
   const e = (error ?? '').trim();
-  if (/microphone initialization|audio-capture|NotFoundError|NotReadableError|OverconstrainedError|not-allowed|NotAllowedError|Permission/i.test(e)) {
+  if (/microphone initialization|NotFoundError|NotReadableError|OverconstrainedError|NotAllowedError|Permission/i.test(e)) {
     return text(micErrorKind(e) === 'denied' ? 'micDenied' : 'micUnavailable');
   }
-  if (/no-speech/i.test(e)) return text('micIdleOff');
   return text('voiceLost');
 }

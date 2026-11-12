@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { deleteLearningHistory } from "@/lib/server/account-delete";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,7 @@ export async function DELETE(req: NextRequest) {
     const result = await deleteLearningHistory(uid, oid);
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
-    console.error("[account/history] delete failed:", e);
+    logger.apiError("/api/account/history", e);
     return NextResponse.json({ ok: false, error: "delete_failed", code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

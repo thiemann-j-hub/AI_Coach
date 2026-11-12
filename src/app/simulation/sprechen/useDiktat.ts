@@ -8,8 +8,9 @@
  *   - C11: Die Sperre gegen den Doppelklick gilt ab dem Klick.
  *   - C12: Wer während des Starts ausschaltet oder die Seite verlässt, öffnet kein Mikrofon mehr; der Abbau stoppt alles.
  *   - C10, C26: Geht das Mikrofon aus, steht der Grund da (src/lib/simulation/live-failure.ts).
- * EU-Hosting Weg B (11.10.2026): zuerst Azure Speech in Westeuropa (Token von /api/speech-token); die Erkennung
- * des Browsers (Chrome: Google) nur, wenn der Server sie ausdrücklich wählt (Rückweg SPEECH_INPUT=browser).
+ * EU-Hosting Weg B (11.10.2026): Azure Speech in Westeuropa (Token von /api/speech-token).
+ * Paket 6, C31 und C33 (12.11.2026): Die Erkennung des Browsers (Chrome: Google) und ihr Rückweg SPEECH_INPUT=browser
+ * sind entfernt.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authFetch } from '@/lib/api-client';
@@ -48,17 +49,12 @@ export function useDiktat(options: DiktatOptions): Diktat {
   const [aktiv, setAktiv] = useState(false);
   const [startet, setStartet] = useState(false);
   const startetRef = useRef(false);
-  // Gewollt-an-Merker: Browser beenden die Erkennung nach Stille von selbst. Solange die Person das Diktat nicht
-  // ausgeschaltet hat, startet die Browser-Erkennung neu.
+  // Gewollt-an-Merker: Wer während des Starts ausschaltet, öffnet kein Mikrofon mehr; bricht das Diktat ab, ohne
+  // dass die Person es ausgeschaltet hat, steht der Grund da.
   const wantRef = useRef(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<{ stop(): void } | null>(null);
 
-  const browserSupported =
-    typeof window !== 'undefined' &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-  const supported = typeof window !== 'undefined' && (browserSupported || Boolean(navigator.mediaDevices?.getUserMedia));
+  const supported = typeof window !== 'undefined' && Boolean(navigator.mediaDevices?.getUserMedia);
 
   const stop = useCallback(() => {
     wantRef.current = false;
@@ -72,40 +68,37 @@ export function useDiktat(options: DiktatOptions): Diktat {
   }, []);
 
   /**
-   * Azure-Diktat (EU): Token holen, SDK laden, erkennen. false NUR, wenn der Server die Browser-Erkennung ausdrücklich
-   * wählt (mode "browser"). 01.11.2026 (Bewertung Teil 1, Owner-Ja): Bei jedem anderen Fehler (502/503/429/Netz) kein
-   * Browser-Notnagel — Chrome schickte die Aufnahme an Google, das deckt die Einwilligung nicht; stattdessen
-   * „nicht erreichbar“, Mikro aus, Tippen geht weiter.
+   * Azure-Diktat (EU): Token holen, SDK laden, erkennen. Bei jedem Fehler (502/503/429/Netz): „nicht erreichbar“,
+   * Mikro aus, Tippen geht weiter. Einen Notnagel über die Erkennung des Browsers gibt es nicht (01.11.2026,
+   * Bewertung Teil 1, Owner-Ja: Chrome schickte die Aufnahme an Google, das deckt die Einwilligung nicht).
    */
-  const startAzure = useCallback(async (): Promise<boolean> => {
+  const startAzure = useCallback(async (): Promise<void> => {
     const o = opts.current;
     const aus = () => {
       setAktiv(false);
       wantRef.current = false;
-      return true;
     };
     const ausfall = () => {
       o.onError(o.texte.unavailable);
-      return aus();
+      aus();
     };
     try {
       const res = await authFetch('/api/speech-token');
       // Paket 1, C1 (12.11.2026): den Körper genau einmal lesen.
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; token?: string; region?: string; code?: string; url?: string; error?: string; mode?: string };
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; token?: string; region?: string; code?: string; url?: string; error?: string };
       if (res.status === 403) {
-        // Stufe C / W5-4 (20.10.2026): Einwilligung „Sprachaufnahme“ fehlt → Hinweis statt Browser-Notnagel.
+        // Stufe C / W5-4 (20.10.2026): Einwilligung „Sprachaufnahme“ fehlt → Hinweis.
         if (j.code === 'EINWILLIGUNG') {
           o.onConsent(j.url || '/einwilligung?typ=sprachaufnahme');
           return aus();
         }
-        // A4 (31.10.2026): KI für das Unternehmen aus → Meldung des Servers statt Browser-Notnagel.
+        // A4 (31.10.2026): KI für das Unternehmen aus → Meldung des Servers.
         if (j.code === 'KI_AUS') {
           o.onError(j.error || o.texte.genericError);
           return aus();
         }
       }
       if (!res.ok) {
-        if (j.mode === 'browser') return false;
         // Paket 1, C5: Limit erreicht → der Warte-Satz statt „nicht erreichbar“.
         if (res.status === 429) {
           o.onApiFailure(res, j);
@@ -116,7 +109,7 @@ export function useDiktat(options: DiktatOptions): Diktat {
       if (!j.ok || !j.token || !j.region) return ausfall();
       const { startAzureDictation } = await import('@/lib/azure-stt');
       // Paket 1, C12: inzwischen ausgeschaltet oder die Seite verlassen → kein Mikrofon mehr öffnen.
-      if (!wantRef.current) return true;
+      if (!wantRef.current) return;
       const d = startAzureDictation({
         token: j.token,
         region: j.region,
@@ -139,53 +132,9 @@ export function useDiktat(options: DiktatOptions): Diktat {
       });
       recognitionRef.current = d;
       setAktiv(true);
-      return true;
     } catch {
-      return ausfall();
+      ausfall();
     }
-  }, []);
-
-  /** Browser-Spracherkennung (Chrome: Google) — nur, wenn der Server sie ausdrücklich wählt. */
-  const startBrowser = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const rec = new Ctor();
-    rec.lang = opts.current.lang;
-    rec.continuous = true;
-    rec.interimResults = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      let text = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) text += e.results[i][0].transcript;
-      }
-      if (text.trim()) opts.current.onText(text.trim());
-    };
-    rec.onend = () => {
-      // Stille-Timeout des Browsers: neu starten, solange das Diktat gewollt an ist.
-      if (wantRef.current) {
-        try {
-          rec.start();
-          return;
-        } catch {
-          /* Neustart nicht möglich → sauber aus */
-        }
-      }
-      if (recognitionRef.current === rec) recognitionRef.current = null;
-      setAktiv(false);
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onerror = (e: any) => {
-      // Paket 1, C10 (12.11.2026): Auch hier steht der Grund da, wenn das Mikrofon ausgeht.
-      const grund = dictationEndMessage(typeof e?.error === 'string' ? e.error : undefined, !wantRef.current);
-      if (grund) opts.current.onError(opts.current.voiceText(grund));
-      wantRef.current = false;
-      if (recognitionRef.current === rec) recognitionRef.current = null;
-      setAktiv(false);
-    };
-    recognitionRef.current = rec;
-    setAktiv(true);
-    rec.start();
   }, []);
 
   const start = useCallback(() => {
@@ -194,23 +143,11 @@ export function useDiktat(options: DiktatOptions): Diktat {
     wantRef.current = true;
     startetRef.current = true;
     setStartet(true);
-    void (async () => {
-      try {
-        if (await startAzure()) return;
-        if (!wantRef.current) return;
-        if (!browserSupported) {
-          wantRef.current = false;
-          setAktiv(false);
-          opts.current.onError(opts.current.texte.unavailable);
-          return;
-        }
-        startBrowser();
-      } finally {
-        startetRef.current = false;
-        setStartet(false);
-      }
-    })();
-  }, [supported, browserSupported, startAzure, startBrowser]);
+    void startAzure().finally(() => {
+      startetRef.current = false;
+      setStartet(false);
+    });
+  }, [supported, startAzure]);
 
   // Paket 1, C12 (12.11.2026): Beim Abbau der Seite das Mikrofon freigeben.
   useEffect(() => stop, [stop]);

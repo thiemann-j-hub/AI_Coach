@@ -504,7 +504,7 @@ export async function judgeSimulation(
     label: 'GESPRÄCH',
   });
   if (injectionDetected) {
-    console.warn('[prompt-guard] Injection pattern detected in simulation transcript (content redacted).');
+    logger.warn('[prompt-guard] Injection pattern detected in simulation transcript (content redacted).');
   }
 
   // V3 (Owner-GO 25.09., N4-77): Karten für den nächsten Schritt — Suchtext aus

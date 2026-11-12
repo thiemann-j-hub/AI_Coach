@@ -13,7 +13,6 @@ import {
   normalizeCompetencyRatings,
 } from "@/lib/competency-model";
 import { logger } from "@/lib/logger";
-import { computeMeasurementDelta } from "@/lib/measurement-delta";
 import {
   compensateEntitlement,
   reserveEntitlement,
@@ -41,7 +40,7 @@ import {
 } from "@/lib/simulation/debrief";
 import { coachRichter } from "@/lib/simulation/flags";
 import { bestimmeErgebnis, tatsachenText } from "@/lib/simulation/tatsachen";
-import { buildTransferReviewText, commitmentExplicitOn } from "@/lib/simulation/transfer";
+import { buildTransferReviewText } from "@/lib/simulation/transfer";
 import type { SimulationScenario } from "@/lib/simulation/types";
 import { timeoutMs, withRetry, withTimeout } from "@/lib/with-timeout";
 
@@ -398,7 +397,7 @@ export interface FinishEvaluation {
   competencyRatings: ReturnType<typeof defaultCompetencyRatings>;
   competencyError: string | null;
   debrief: Debrief;
-  delta: (ReturnType<typeof computeDelta> & { competencies?: Record<string, number | null> }) | null;
+  delta: ReturnType<typeof computeDelta> | null;
   qualityNotes: QualityNote[];
   /** C7: Modellkennung des Richters, der wirklich geurteilt hat (Provenienz am Lauf). */
   modelId: string;
@@ -598,19 +597,8 @@ export async function evaluateSimulation(a: {
         previous: prevDebrief,
         prevAttempt: prev.attempt ?? 1,
       });
-      // W3-1: zusätzlich das C1–C10-Delta (measurement-delta, dieselbe
-      // Rechnung wie die Delta-Card der Analyse) — Datenbasis des
-      // Endscreen-CTAs »Erkenntnis → Handlung«. Additiv, best effort.
-      if (prev.competencyRatings) {
-        try {
-          delta.competencies = computeMeasurementDelta(
-            competencyRatings,
-            prev.competencyRatings
-          ).deltas;
-        } catch {
-          /* C-Delta ist Komfort — Anker-Delta bleibt. */
-        }
-      }
+      // U15, Rest (Paket 6, 12.11.2026): Das zusätzliche C1–C10-Delta ist entfallen. Sein einziger Leser war der
+      // Satz „Erkenntnis → Handlung“ im Reiter „Weiter üben“; der liest jetzt das Delta je Fähigkeit (`anchors`).
     }
   } catch (e) {
     logger.apiError("/api/simulation/finish/delta", e, { simId: doc.id });
@@ -683,19 +671,9 @@ export async function storeEvaluation(a: {
     // Provenienz (27.09.; Paket 2, C7): der Richter, der wirklich geurteilt hat — vorher stand hier immer das schnelle Modell.
     d.modelId = ev.modelId;
     d.evalStats = ev.evalStats;
-    // O2: Der Vorschlag des Debriefs war ab sofort der Vorsatz (Gemini Zu 3: ein
-    // Schritt, keine Auswahl). Seit 11.10.2026 (N17/B8, Owner-GO) zählt er erst mit
-    // „Übernehmen“ in der Auswertung (/api/simulation/commit, source "model") — sonst
-    // fragt der Coach nach drei Tagen nach etwas, das nie gewählt wurde.
-    // Rückweg: COMMITMENT_EXPLICIT=off → alter Weg (stilles Setzen).
-    if (ev.feedback.microTransfer?.step && !commitmentExplicitOn()) {
-      d.commitment = {
-        text: ev.feedback.microTransfer.step,
-        source: "model",
-        createdAt: finishedAt,
-        dueHint: ev.feedback.microTransfer.when || null,
-      };
-    }
+    // O2: Der Vorschlag des Debriefs (microTransfer) wird hier NICHT zum Vorsatz. Seit 11.10.2026 (N17/B8, Owner-GO)
+    // zählt er erst mit „Übernehmen“ in der Auswertung (/api/simulation/commit, source "model") — sonst fragt der
+    // Coach nach drei Tagen nach etwas, das nie gewählt wurde.
     if (a.grant) {
       d.workspaceId = a.grant.workspaceId;
       d.centralSpendTxId = a.grant.centralTxId ?? null;

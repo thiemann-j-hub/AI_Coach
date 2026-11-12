@@ -27,12 +27,9 @@ export const COMMITMENT_MAX_CHARS = 300;
 /**
  * Vorsatz als bewusster Klick (Runde-2-Entwurf N17 / Befund B8, Owner-GO 11.10.2026): Der Vorschlag
  * des Debriefs wird NICHT mehr still zum Vorsatz; erst „Übernehmen“ oder ein eigener Text zählt —
- * und nur dann fragt der Coach nach drei Tagen nach. Rückweg: COMMITMENT_EXPLICIT=off (alter Weg).
+ * und nur dann fragt der Coach nach drei Tagen nach (/api/simulation/commit).
+ * Paket 6, C33 (12.11.2026): Der Rückweg COMMITMENT_EXPLICIT=off (stilles Setzen) ist entfernt.
  */
-export function commitmentExplicitOn(): boolean {
-  return (process.env.COMMITMENT_EXPLICIT ?? "").trim().toLowerCase() !== "off";
-}
-
 export function isCommitmentSource(v: unknown): v is Commitment["source"] {
   return v === "model" || v === "user";
 }

@@ -11,9 +11,10 @@ export const dynamic = "force-dynamic";
 
 /**
  * Szenario-Wunsch der Geister-Karte (COACH-UX-BLUEPRINT §2.3, Owner 11.08.).
- * Kein Kummerkasten, sondern Nachfrage-Statistik: Kategorie-Kontext und die
- * schwächste Kompetenz der letzten eigenen Auswertung werden mitgespeichert,
+ * Kein Kummerkasten, sondern Nachfrage-Statistik: Der Kategorie-Kontext wird mitgespeichert,
  * damit die Bau-Priorisierung neuer Szenarien belegt statt geraten ist.
+ * Paket 6 (12.11.2026): Das Feld `weakestC` (schwächste Kompetenz C1–C10) ist entfallen; der Browser schickt es
+ * seit der Empfehlung aus den Fähigkeiten (U15) nicht mehr.
  * Kein neuer Container — PK-Trick wie bei den Simulations-Docs.
  */
 const requestSchema = scenarioWishSchema;
@@ -42,7 +43,6 @@ export async function POST(req: NextRequest) {
       ts: new Date().toISOString(),
       wishText: d.wishText,
       category: d.category ?? null,
-      weakestC: d.weakestC ?? null,
       locale: d.locale ?? null,
     });
     return NextResponse.json({ ok: true });

@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { isCostCapAdmin } from "@/lib/server/cost-cap";
 import { serviceRequestOk } from "@/lib/server/credits/cs-credential";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
       results: out.results,
     });
   } catch (e: any) {
-    console.error("[rag-smoke] unexpected error:", e);
+    logger.apiError("/api/rag-smoke", e);
     return NextResponse.json(
       { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }

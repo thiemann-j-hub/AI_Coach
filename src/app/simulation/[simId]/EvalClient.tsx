@@ -28,6 +28,7 @@ import {
   seitenPhase,
   type CheckinLike,
 } from '@/lib/simulation/auswertung-ablauf';
+import { empfehlbareSzenarien, type EndscreenScenario } from '@/lib/simulation/endscreen';
 import { useTranslation } from '@/i18n/useTranslation';
 import { SimulationEvaluation } from '@/components/simulation/simulation-evaluation';
 import { EvalFehlschlag, EvalWarten } from '@/components/simulation/eval-warten';
@@ -99,10 +100,8 @@ export default function EvalClient() {
     };
   }, []);
   // W3-1: Katalog-Projektion für den Delta-CTA (best effort — ohne Katalog
-  // erscheint der Satz ohne Szenario-Button).
-  const [scenarios, setScenarios] = useState<
-    Array<{ id: string; title: string; competencyFocus?: string[] }>
-  >([]);
+  // erscheint der Satz ohne Szenario-Button). U15: mit den Fähigkeiten je Szenario statt C1 bis C10.
+  const [scenarios, setScenarios] = useState<EndscreenScenario[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,13 +110,7 @@ export default function EvalClient() {
         const res = await authFetch('/api/simulation/scenarios');
         const json = await res.json().catch(() => null);
         if (!cancelled && res.ok && json?.ok && Array.isArray(json.scenarios)) {
-          setScenarios(
-            json.scenarios.map((s: { id: string; title: string; competencyFocus?: string[] }) => ({
-              id: s.id,
-              title: s.title,
-              competencyFocus: s.competencyFocus,
-            }))
-          );
+          setScenarios(empfehlbareSzenarien(json.scenarios));
         }
       } catch {
         /* CTA degradiert ohne Katalog */

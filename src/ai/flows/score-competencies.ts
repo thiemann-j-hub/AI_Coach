@@ -6,6 +6,7 @@ import { anredeBlock } from '@/lib/anrede';
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { logger } from '@/lib/logger';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import { COMP_MODEL, COMPETENCY_DEFINITIONS } from '@/lib/competency-model';
 
@@ -263,7 +264,7 @@ export async function scoreCompetencies(input: z.infer<typeof ScoreCompetenciesI
   );
   if (injectionDetected) {
     // R9: NUR Signal loggen, NICHT den gematchten Nutzer-Text (PII/App-Insights).
-    console.warn(`[prompt-guard] Injection pattern detected in transcriptText (content redacted).`);
+    logger.warn(`[prompt-guard] Injection pattern detected in transcriptText (content redacted).`);
   }
 
   // V2: Rollen-Rahmen + Kompetenz-Definitionen ableiten. Der Default

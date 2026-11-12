@@ -11,6 +11,7 @@
  * Übende zahlt nie mit einem Fehler für ein fehlendes Extra).
  */
 import { searchCards } from '@/lib/cosmos-cards';
+import { logger } from '@/lib/logger';
 import { withTimeout } from '@/lib/with-timeout';
 
 export interface CoachCardRef {
@@ -157,7 +158,7 @@ export async function retrieveCoachCards(args: {
     return { cards, error: null };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.warn(`[coach-cards] Retrieval fehlgeschlagen (fail-open): ${msg}`);
+    logger.warn(`[coach-cards] Retrieval fehlgeschlagen (fail-open): ${msg}`);
     return { cards: [], error: msg };
   }
 }

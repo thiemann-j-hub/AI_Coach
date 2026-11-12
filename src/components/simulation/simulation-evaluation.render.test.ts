@@ -144,6 +144,19 @@ describe('SimulationEvaluation (vier Reiter)', () => {
     const alt = render({ selfAssessment: 'Lief ganz gut.', feedback: { ...feedback, selfReview: { agreement: 'confirms', comment: 'Stimmt.' } } });
     expect(alt).toContain('»Lief ganz gut.«');
   });
+
+  it('U15: „Weiter üben“ nennt die schwächste Fähigkeit, nicht eine Lücke aus C1 bis C10', () => {
+    const katalog = [{ id: 'sim-a', title: 'Zuhören — Gespräch mit Kim', difficulty: 1 as const, competencies: [{ key: 'ursache' }] }];
+    const html = render({ scenarios: katalog, onOpenScenario: () => undefined });
+    expect(html).toContain('„Bis zur Ursache zuhören“ zeigt aktuell Deine größte Lücke.');
+    expect(html).toContain('»Zuhören« zielt genau darauf.');
+    expect(html).not.toContain('Kommunikation');
+    // Die Studio-Brücke löst wie bisher über C1 bis C10 aus (≤ 2) und verlinkt die Kompetenz, benennt aber die Fähigkeit.
+    expect(html).not.toContain('Learning Studio');
+    const schwach = render({ ratings: [{ id: 'C1', name: 'Kommunikation', score: 2, why: '', evidence: [] }] });
+    expect(schwach).toContain('zugeschnitten auf „Bis zur Ursache zuhören“.');
+    expect(schwach).toContain('intent=gap&amp;c=C1&amp;t=3&amp;i=2');
+  });
 });
 
 describe('Warteansicht und Fehlschlag', () => {

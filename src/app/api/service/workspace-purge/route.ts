@@ -17,6 +17,7 @@ import { deleteAccount } from "@/lib/server/account-delete";
 import { deleteItem, queryItems, runsContainer, usersContainer } from "@/lib/cosmos";
 import { scenarioPartitionKey } from "@/lib/server/scenario-store";
 import { deleteSpielbuch } from "@/lib/server/spielbuch/store";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,6 +65,6 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     report.errors.push(`scenarios: ${(err as Error)?.message ?? err}`);
   }
-  console.log(`[service/workspace-purge] ws=${workspaceId.slice(0, 8)}… ${JSON.stringify(report).slice(0, 400)}`);
+  logger.api("/api/service/workspace-purge", "done", { ws: `${workspaceId.slice(0, 8)}…`, report: JSON.stringify(report).slice(0, 400) });
   return NextResponse.json({ ok: report.errors.length === 0, ...report });
 }

@@ -24,6 +24,8 @@ export interface SimEvalFeedback {
   }[];
   checkpoints: { id: string; hit: boolean; comment: string }[];
   nextStep: string;
+  /** Schlüssel der Fähigkeit, zu der der „Größte Hebel“ gehört (fehlt bei Alt-Läufen, leer = keine). */
+  nextStepKey?: string | null;
   focusReview?: { addressed: boolean; comment: string } | null;
   /** A1: Abgleich Selbstbild ↔ Auswertung (nur wenn der Check-in beantwortet wurde; seit Paket 3 ein eigener Schritt). */
   selfReview?: { agreement: 'confirms' | 'partly' | 'differs'; comment: string } | null;
@@ -75,8 +77,6 @@ export interface SimEvalDelta {
   anchors: Array<{ key: string; delta: number | null }>;
   prevOverall: number | null;
   prevAttempt: number;
-  /** W3-1: C1–C10-Delta ggü. Vorversuch (measurement-delta, additiv). */
-  competencies?: Record<string, number | null> | null;
 }
 
 export interface SimEvalRating {

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { consentGateOn, einwilligungFehlt, getCentralMemberInfo } from "@/lib/server/credits/member-info";
+import { logger } from "@/lib/logger";
 
 /**
  * Einwilligung „Sprachaufnahme“ (Go-Live Schritt 9 Stufe C, W5-4): EIN Tor vor jedem Mikrofon-Weg —
@@ -16,7 +17,7 @@ export async function sprachaufnahmeEinwilligungFehlt(oid: string | null | undef
   try {
     return einwilligungFehlt(await getCentralMemberInfo(oid), "sprachaufnahme");
   } catch (e) {
-    console.error("[sprachaufnahme] einwilligung", e instanceof Error ? e.message : e);
+    logger.apiError("sprachaufnahme/einwilligung", e);
     return false;
   }
 }

@@ -105,10 +105,4 @@ describe('dictationEndMessage', () => {
     // Ende ohne Fehlertext, obwohl das Mikrofon an bleiben sollte: nicht still ausgehen.
     expect(dictationEndMessage(undefined, false)).toEqual({ type: 'text', key: 'voiceLost' });
   });
-  it('Browser-Erkennung: Fehlercodes', () => {
-    expect(dictationEndMessage('not-allowed', false)).toEqual({ type: 'text', key: 'micDenied' });
-    expect(dictationEndMessage('audio-capture', false)).toEqual({ type: 'text', key: 'micUnavailable' });
-    expect(dictationEndMessage('no-speech', false)).toEqual({ type: 'text', key: 'micIdleOff' });
-    expect(dictationEndMessage('network', false)).toEqual({ type: 'text', key: 'voiceLost' });
-  });
 });

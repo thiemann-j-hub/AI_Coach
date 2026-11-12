@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, result }, { status: 200 });
   } catch (err: any) {
-    console.error("[competencies] unexpected error:", err);
+    logger.apiError("/api/competencies", err);
     return NextResponse.json(
       { ok: false, error: "Internal server error", code: "INTERNAL_ERROR" },
       { status: 500 }

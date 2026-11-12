@@ -21,6 +21,7 @@ import {
   type AuswertungReiter,
   type CheckinLike,
 } from '@/lib/simulation/auswertung-ablauf';
+import type { EndscreenScenario } from '@/lib/simulation/endscreen';
 import { findeZitatStelle, markiereZuege, type ZitatEingabe } from '@/lib/simulation/zitat-stelle';
 import { useTranslation } from '@/i18n/useTranslation';
 import { EvalFaehigkeiten } from './eval-faehigkeiten';
@@ -81,7 +82,7 @@ export function SimulationEvaluation(props: {
   /** Szenario dieser Auswertung (für den Delta-CTA: Abwechslung schlägt Wiederholung). */
   currentScenarioId?: string | null;
   /** Katalog-Projektion für den Delta-CTA (W3-1); leer = kein CTA-Szenario. */
-  scenarios?: Array<{ id: string; title: string; competencyFocus?: string[] }>;
+  scenarios?: EndscreenScenario[];
   /** W3-1: öffnet das Briefing eines empfohlenen Szenarios. */
   onOpenScenario?: (scenarioId: string) => void;
   /** Fokus-Retry: startet dasselbe Szenario mit diesem Fokus (W3-2: selbst geschrieben). */
@@ -312,6 +313,8 @@ export function SimulationEvaluation(props: {
 
         <TabsContent value="weiter" forceMount className={REITER_FLAECHE}>
           <EvalWeiterUeben
+            rubric={feedback.rubric}
+            nextStepKey={feedback.nextStepKey ?? null}
             ratings={ratings}
             delta={delta}
             commitment={commitment}

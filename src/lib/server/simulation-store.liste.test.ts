@@ -34,6 +34,8 @@ describe("listSimulations (C22)", () => {
     expect(query).toContain("ARRAY_LENGTH(c.turns) AS turnCount");
     expect(query).toContain("c.debriefJson.overall AS overall");
     expect(query).toContain("c.debriefJson.verdict AS verdict");
+    // Live-Prüfung 12.11.2026: Pausenfelder der Uhr für die Restzeit in der Liste offener Läufe.
+    expect(query).toContain("c.pausedMs, c.pauseSince");
     expect(query).not.toMatch(/c\.turns\s*,/);
     expect(query).not.toMatch(/c\.debriefJson\s*(,|FROM)/);
     expect(query).not.toMatch(/SELECT\s+\*/);
@@ -51,15 +53,15 @@ describe("listSimulations (C22)", () => {
   it("liefert dieselbe Form wie bisher", async () => {
     h.rows = [
       { id: "a", scenarioId: "sim-coaching-morgan", status: "finished", createdAt: "c1", updatedAt: "u1", turnCount: 9, attempt: 2, overall: 73, verdict: "passed" },
-      // Aktiver Lauf ohne Debrief; Altbestand ohne Versuchsnummer.
-      { id: "b", scenarioId: "ws-1", status: "active", createdAt: "c2", updatedAt: "u2", turnCount: 1 },
-      // Lauf ohne Züge-Feld: Die Abfrage liefert dann keine Zahl.
-      { id: "c", scenarioId: "ws-1", status: "finishing", createdAt: "c3", updatedAt: "u3", verdict: "kaputt", overall: null },
+      // Aktiver Lauf ohne Debrief; Altbestand ohne Versuchsnummer. Mit abgeschlossener und laufender Pause.
+      { id: "b", scenarioId: "ws-1", status: "active", createdAt: "c2", updatedAt: "u2", turnCount: 1, pausedMs: 95_000, pauseSince: "2026-11-12T08:07:00.000Z" },
+      // Lauf ohne Züge-Feld: Die Abfrage liefert dann keine Zahl. Kaputte Pausenfelder zählen nicht.
+      { id: "c", scenarioId: "ws-1", status: "finishing", createdAt: "c3", updatedAt: "u3", verdict: "kaputt", overall: null, pausedMs: -5, pauseSince: "" },
     ];
     expect(await listSimulations("u1")).toEqual([
-      { id: "a", scenarioId: "sim-coaching-morgan", status: "finished", createdAt: "c1", updatedAt: "u1", turnCount: 9, attempt: 2, overall: 73, verdict: "passed" },
-      { id: "b", scenarioId: "ws-1", status: "active", createdAt: "c2", updatedAt: "u2", turnCount: 1, attempt: 1, overall: null, verdict: null },
-      { id: "c", scenarioId: "ws-1", status: "finishing", createdAt: "c3", updatedAt: "u3", turnCount: 0, attempt: 1, overall: null, verdict: null },
+      { id: "a", scenarioId: "sim-coaching-morgan", status: "finished", createdAt: "c1", updatedAt: "u1", turnCount: 9, attempt: 2, overall: 73, verdict: "passed", pausedMs: 0, pauseSince: null },
+      { id: "b", scenarioId: "ws-1", status: "active", createdAt: "c2", updatedAt: "u2", turnCount: 1, attempt: 1, overall: null, verdict: null, pausedMs: 95_000, pauseSince: "2026-11-12T08:07:00.000Z" },
+      { id: "c", scenarioId: "ws-1", status: "finishing", createdAt: "c3", updatedAt: "u3", turnCount: 0, attempt: 1, overall: null, verdict: null, pausedMs: 0, pauseSince: null },
     ]);
   });
 });

@@ -13,6 +13,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { logger } from '@/lib/logger';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import { coachEndeOn } from '@/lib/simulation/flags';
 import { rollenFirma, spielbuchBlock } from '@/lib/simulation/spielbuch';
@@ -255,7 +256,7 @@ export async function runPersonaTurn(args: {
   });
   if (injectionDetected) {
     // Nur Signal loggen, nie den Nutzertext (PII/App-Insights, R9-Regel).
-    console.warn('[prompt-guard] Injection pattern detected in simulation turn (content redacted).');
+    logger.warn('[prompt-guard] Injection pattern detected in simulation turn (content redacted).');
   }
 
   const history = args.turns.map((t) => ({

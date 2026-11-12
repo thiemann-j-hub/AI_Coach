@@ -23,8 +23,8 @@ export async function verifyAuthToken(_req: NextRequest | Request) {
   // stellt seit dem 02.10.2026 keine anderen mehr aus). Trägt eine ältere Sitzung dieser Art
   // eine Microsoft-Kennung, zählt sie hier nicht — sonst käme man per Mail-Link an Microsofts
   // Anmeldung vorbei an das Token dieses Kontos. Die Person meldet sich neu an (mit
-  // Microsoft). Rückweg: MAIL_LINK_PN_ONLY=off.
-  if (user?.provider === "magic-link" && !isMagicLinkOid(oid) && mailLinkPnOnly()) return null;
+  // Microsoft). Paket 6, C33 (12.11.2026): Der Rückweg MAIL_LINK_PN_ONLY=off ist entfernt.
+  if (user?.provider === "magic-link" && !isMagicLinkOid(oid)) return null;
   return {
     uid,
     email: session?.user?.email ?? null,
@@ -33,10 +33,6 @@ export async function verifyAuthToken(_req: NextRequest | Request) {
     // PulseNorth-Konto (Anmeldung ohne Microsoft): uid und oid sind die Kennung "ml:…".
     oid,
   };
-}
-
-function mailLinkPnOnly(): boolean {
-  return (process.env.MAIL_LINK_PN_ONLY ?? "on").toLowerCase() !== "off";
 }
 
 /**

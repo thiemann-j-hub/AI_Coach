@@ -4,16 +4,19 @@
  * Paket 3, U14 und S10 (12.11.2026): Reiter „Weiter üben“ der Rollenspiel-Auswertung.
  * Alles, was nach dem Lesen kommt: dasselbe Gespräch noch einmal mit Fokus, die Empfehlung, ein passender Kurs oder
  * der Kurswunsch, die Brücke ins Studio und ein neues Gespräch. Die Bausteine stammen aus simulation-evaluation.tsx
- * (Stand vor Paket 3) und sind inhaltlich unverändert.
+ * (Stand vor Paket 3).
+ * U15, Rest (Paket 6, 12.11.2026): Die Empfehlung nennt die schwächste beobachtete Fähigkeit statt einer Lücke aus
+ * C1 bis C10 (endscreen.ts) und passt damit zum „Größten Hebel“. Kurs- und Studio-Brücke lösen wie bisher aus,
+ * benennen die Lücke aber mit der Fähigkeit.
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, BookOpen, GraduationCap, Lightbulb, Loader2, MessagesSquare, RotateCcw } from 'lucide-react';
 import { useHubNav } from '@/components/app/app-switcher';
-import { computeDeltaCta, computeStudioBridge } from '@/lib/simulation/endscreen';
+import { computeDeltaCta, computeStudioBridge, type EndscreenScenario } from '@/lib/simulation/endscreen';
 import { matchCourse, type CourseMatch, type HubCourseLike, type HubRecommendationLike } from '@/lib/simulation/kurs-match';
 import { useTranslation } from '@/i18n/useTranslation';
-import { splitTitle, type SimEvalDelta, type SimEvalRating } from './eval-teile';
+import { splitTitle, type SimEvalDelta, type SimEvalFeedback, type SimEvalRating } from './eval-teile';
 
 /** Hub `/api/lernbereich/courses` (same-origin, Sitzungs-Cookie): eigene Kurse mit Kompetenz-Tags. */
 interface HubCoursesResponse {
@@ -33,6 +36,11 @@ function fetchHubCourses(): Promise<HubCoursesResponse> {
 }
 
 export function EvalWeiterUeben(props: {
+  /** Fähigkeiten der Auswertung: Grundlage der Empfehlung. */
+  rubric: SimEvalFeedback['rubric'];
+  /** Fähigkeit des „Größten Hebels“ (entscheidet bei Gleichstand). */
+  nextStepKey?: string | null;
+  /** C1 bis C10: nur noch Auslöser der Kurs- und der Studio-Brücke. */
   ratings: SimEvalRating[] | null;
   delta: SimEvalDelta | null;
   /** Der gespeicherte Vorsatz, sonst der Vorschlag des Coachs: der Fokus für „Nochmal üben“. */
@@ -42,7 +50,7 @@ export function EvalWeiterUeben(props: {
   /** Szenario dieser Auswertung (für die Empfehlung: Abwechslung schlägt Wiederholung). */
   currentScenarioId?: string | null;
   /** Katalog-Projektion für die Empfehlung (W3-1); leer = ohne Szenario-Knopf. */
-  scenarios?: Array<{ id: string; title: string; competencyFocus?: string[] }>;
+  scenarios?: EndscreenScenario[];
   /** W3-1: öffnet das Briefing eines empfohlenen Szenarios. */
   onOpenScenario?: (scenarioId: string) => void;
   /** Startet dasselbe Szenario mit diesem Fokus. */
@@ -53,21 +61,24 @@ export function EvalWeiterUeben(props: {
 }) {
   const { t } = useTranslation();
   const ts = t.simulation;
-  const { ratings, delta, commitment } = props;
+  const { rubric, nextStepKey, ratings, delta, commitment } = props;
 
-  // W3-1: Erkenntnis → Handlung (pure, getestet).
+  // W3-1: Erkenntnis → Handlung (pure, getestet). U15: aus den Fähigkeiten.
   const deltaCta = useMemo(
     () =>
       computeDeltaCta({
-        ratings,
-        deltaCompetencies: delta?.competencies ?? null,
+        rubric,
+        nextStepKey,
+        deltaAnchors: delta?.anchors ?? null,
         scenarios: props.scenarios ?? [],
         currentScenarioId: props.currentScenarioId ?? null,
       }),
-    [ratings, delta, props.scenarios, props.currentScenarioId]
+    [rubric, nextStepKey, delta, props.scenarios, props.currentScenarioId]
   );
   // W3-3: Studio-Brücke nur bei echter Schwäche (≤ 2).
-  const studioBridge = useMemo(() => computeStudioBridge(ratings), [ratings]);
+  const studioBridge = useMemo(() => computeStudioBridge(ratings, rubric, nextStepKey), [ratings, rubric, nextStepKey]);
+  // U15: Wo die Brücken die Lücke der Person benennen, steht die Fähigkeit.
+  const luecke = studioBridge ? (studioBridge.gapName ?? studioBridge.cKey) : '';
   // N17 / C8 (11.10.2026): erst einen vorhandenen passenden Kurs zeigen, dann „Kurs wünschen“;
   // „Kurs im Studio erstellen“ nur, wenn die Person das Studio hat (Häkchen aus dem Hub).
   const hubNav = useHubNav();
@@ -115,7 +126,7 @@ export function EvalWeiterUeben(props: {
               {(deltaCta.mode === 'dropped'
                 ? t.evaluation.deltaDroppedSentence
                 : t.evaluation.deltaWeakestSentence
-              ).replace('{c}', deltaCta.cName ?? deltaCta.cKey)}
+              ).replace('{c}', deltaCta.skillName ?? deltaCta.skillKey)}
             </span>
             {deltaCta.scenarioTitle && (
               <> {t.evaluation.deltaScenarioAims.replace('{s}', splitTitle(deltaCta.scenarioTitle).motto)}</>
@@ -148,6 +159,7 @@ export function EvalWeiterUeben(props: {
                 <>
                   <h3 className="text-sm font-semibold">{t.evaluation.courseMatchTitle}</h3>
                   <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
+                    {/* Hier steht die Kompetenz: Der Satz sagt, was der gefundene Kurs übt (Kurse tragen C1 bis C10). */}
                     {t.evaluation.courseMatchBody.replace('{c}', studioBridge.cName ?? studioBridge.cKey).replace('{title}', courseMatch.title)}
                   </p>
                   <a
@@ -164,7 +176,7 @@ export function EvalWeiterUeben(props: {
                   <h3 className="text-sm font-semibold">{t.evaluation.courseWishTitle}</h3>
                   <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">{t.evaluation.courseWishBody}</p>
                   <a
-                    href={`/radar?wunsch${courseMatch?.kind === 'recommendation' ? `=${encodeURIComponent(courseMatch.title)}` : `Text=${encodeURIComponent(t.evaluation.courseWishText.replace('{c}', studioBridge.cName ?? studioBridge.cKey))}`}#lernwuensche`}
+                    href={`/radar?wunsch${courseMatch?.kind === 'recommendation' ? `=${encodeURIComponent(courseMatch.title)}` : `Text=${encodeURIComponent(t.evaluation.courseWishText.replace('{c}', luecke))}`}#lernwuensche`}
                     className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
                     data-testid="course-wish"
                   >
@@ -188,10 +200,7 @@ export function EvalWeiterUeben(props: {
             <div className="min-w-0">
               <h3 className="text-sm font-semibold">{t.evaluation.studioBridgeTitle}</h3>
               <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
-                {t.evaluation.studioBridgeBody.replace(
-                  '{c}',
-                  studioBridge.cName ?? studioBridge.cKey
-                )}
+                {t.evaluation.studioBridgeBody.replace('{c}', luecke)}
               </p>
               <a
                 href={studioBridge.href}

@@ -346,6 +346,9 @@ interface RecentSim {
   attempt: number;
   overall: number | null;
   verdict: 'passed' | 'failed' | 'unrated' | null;
+  /** Pausenfelder der Uhr (zeit.ts) für die Restzeit in der Liste offener Läufe. */
+  pausedMs?: number;
+  pauseSince?: string | null;
 }
 
 /**
@@ -544,10 +547,10 @@ export default function SimulationClient() {
   const [aborting, setAborting] = useState(false);
   // ── W2-5: Ziel-Streifen (mobil einklappbar, Zustand gemerkt) ──
   const [goalsOpen, setGoalsOpen] = useState(true);
-  // Owner-GO 19.09.: Persona-Antworten spricht der Server (Azure-HD, /api/tts);
-  // die Browserstimme („Microsoft Hedda") ist nur noch der Notnagel bei 503/Netzfehler.
-  const browserTtsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
-  const ttsSupported = typeof window !== 'undefined' && (browserTtsSupported || 'Audio' in window);
+  // Owner-GO 19.09.: Persona-Antworten spricht der Server (Azure-HD, /api/tts).
+  // Paket 6, C31 (12.11.2026): Die Browserstimme als Notnagel ist entfernt (manche Browser schicken den Text dafür
+  // an ihren Hersteller). Kann der Server nicht vorlesen, bleibt die Antwort als Text stehen.
+  const ttsSupported = typeof window !== 'undefined' && 'Audio' in window;
 
   // Diktat/Vorlesen folgen der GEWÄHLTEN Gesprächssprache (nicht der Autorensprache).
   const speechLang = SPEECH_LANG[convoLocale];
@@ -794,7 +797,7 @@ export default function SimulationClient() {
     void live.start({ eroeffnung: !turns.some((x) => x.role === 'user') });
   }
 
-  /** Laufende Sprachausgabe (Azure-Audio UND Browserstimme) stoppen. */
+  /** Laufende Sprachausgabe stoppen. */
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stopSpeaking = useCallback(() => {
     const a = audioRef.current;
@@ -804,29 +807,11 @@ export default function SimulationClient() {
       a.removeAttribute('src');
       audioRef.current = null;
     }
-    if (browserTtsSupported) window.speechSynthesis.cancel();
-  }, [browserTtsSupported]);
-
-  /** Notnagel: Browserstimme (erste Stimme der Gesprächssprache). */
-  const speakBrowser = useCallback(
-    (text: string) => {
-      if (!browserTtsSupported) return;
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = speechLang;
-      const voices = window.speechSynthesis.getVoices();
-      const match =
-        voices.find((v) => v.lang === speechLang) ??
-        voices.find((v) => v.lang.startsWith(speechLang.slice(0, 2)));
-      if (match) u.voice = match;
-      u.rate = 1.04;
-      window.speechSynthesis.speak(u);
-    },
-    [browserTtsSupported, speechLang]
-  );
+  }, []);
 
   /**
-   * Persona-Antwort vorlesen — Azure-HD-Stimme der Persona (Server), Browserstimme
-   * nur wenn der Server nicht kann (503 nicht konfiguriert, Netz, Autoplay-Sperre).
+   * Persona-Antwort vorlesen — Azure-HD-Stimme der Persona (Server). Kann der Server nicht (503 nicht konfiguriert,
+   * Netz, Autoplay-Sperre), bleibt es still; die Antwort steht als Text da.
    */
   const speak = useCallback(
     async (text: string) => {
@@ -855,10 +840,10 @@ export default function SimulationClient() {
         };
         await a.play();
       } catch {
-        speakBrowser(text);
+        /* Vorlesen ist Komfort: ohne Ton geht das Gespräch als Text weiter. */
       }
     },
-    [ttsSupported, stopSpeaking, speakBrowser, scenario, convoLocale, ts.genericError]
+    [ttsSupported, stopSpeaking, scenario, convoLocale, ts.genericError]
   );
 
   // Aufraeumen: beim Verlassen des Chats Mikro und Vorlesen stoppen.
@@ -1172,11 +1157,15 @@ export default function SimulationClient() {
         setError(json.simulation.status === 'aborted' ? ts.runAborted : ts.genericError);
         return false;
       }
-      const s = scenarioById.get(json.simulation.scenarioId) ?? (json.scenario as PublicScenario | null);
-      if (!s) {
+      const basis = scenarioById.get(json.simulation.scenarioId) ?? (json.scenario as PublicScenario | null);
+      if (!basis) {
         setError(ts.scenarioGone);
         return false;
       }
+      // Live-Prüfung 12.11.2026: Ob „Sprechen“ geht, sagt die Antwort zum Lauf (wie beim Start). Vorher fehlte die
+      // Angabe, wenn das Szenario nicht im geladenen Katalog stand.
+      const s: PublicScenario =
+        typeof json.simulation.liveAvailable === 'boolean' ? { ...basis, liveAvailable: json.simulation.liveAvailable } : basis;
       setScenario(s);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
@@ -1740,9 +1729,11 @@ export default function SimulationClient() {
                   const confirming = pendingDeleteId === r.id;
                   // W2-1: Restzeit im Fortsetzen-Streifen — die Zeitbox läuft
                   // ab Start in Echtzeit, auch außerhalb der Seite.
-                  const remainMs =
-                    new Date(r.createdAt).getTime() + s.durationMin * 60_000 - Date.now();
-                  const remainMin = Math.max(0, Math.ceil(remainMs / 60_000));
+                  // Live-Prüfung 12.11.2026: gerechnet mit der gemeinsamen Uhr (zeit.ts) — Coach-Pausen und der
+                  // Mikrofon-Check zählen nicht zur Gesprächszeit. Vorher zeigte die Liste weniger Zeit als das Gespräch.
+                  const stand = uhrStand(r, s.durationMin * 60_000, Date.now());
+                  const remainMs = stand?.restMs ?? 0;
+                  const remainMin = stand?.restMin ?? 0;
                   return (
                     // Kein <button> im <button>: Zeile ist ein div, der
                     // Weiter-Bereich und der Mülleimer sind Geschwister.

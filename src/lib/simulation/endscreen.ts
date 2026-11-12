@@ -2,74 +2,112 @@
  * Endscreen-Mechaniken der Wiederkehr (COACH-UX-BLUEPRINT §5, Welle 3) — pure.
  *
  * W3-1 Delta als Auslöser: aus Erkenntnis wird Handlung. Gab es gegenüber dem
- * Vorversuch einen Rückschritt bei einer Kompetenz, wird SIE benannt und das
- * passende Szenario (competencyFocus) angeboten. Ohne Vorlauf (erster Versuch)
- * übernimmt die schwächste beobachtete Kompetenz.
+ * Vorversuch einen Rückschritt bei einer Fähigkeit, wird SIE benannt und ein
+ * Szenario angeboten, das sie bewertet. Ohne Vorlauf (erster Versuch)
+ * übernimmt die schwächste beobachtete Fähigkeit.
+ *
+ * U15, Rest (Paket 6, 12.11.2026): Grundlage sind die Fähigkeiten der Auswertung (`feedback.rubric`, Vergleich
+ * `delta.anchors`), nicht mehr das Modell C1 bis C10. Vorher nannte der Reiter „Weiter üben“ eine Lücke aus
+ * C1 bis C10, die dem „Größten Hebel“ widersprach. Dieselbe Regel wie am Einstieg (empfehlung.ts).
  *
  * W3-3 Studio-Brücke: echte Schwäche (score ≤ 2) → Deeplink ins Learning
  * Studio im Hub-Format (radar-ui-logic; Studio validiert hart). BEWUSST keine
  * Radar-Historien-Lesung (Sparring-Kürzung: 80 % Wirkung, 10 % Kosten).
+ * Auslöser, Kurs-Abgleich und Deeplink bleiben beim Modell C1 bis C10, weil Kurse und Studio nur dieses kennen.
+ * Wo die Brücken die Lücke der Person benennen, steht die schwächste Fähigkeit (`gapName`).
  */
 
-import { weakestObservedC, type RatingLike } from "./empfehlung";
+import {
+  recommendScenarios,
+  weakestObservedC,
+  weakestObservedSkill,
+  type RatingLike,
+  type ScenarioLike,
+  type SkillRatingLike,
+} from "./empfehlung";
 
-const C_ORDER = ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"];
+/** Katalog-Projektion für die Empfehlung im Reiter „Weiter üben“. */
+export interface EndscreenScenario extends ScenarioLike {
+  title: string;
+}
+
+/**
+ * Aus der Antwort von /api/simulation/scenarios die Szenarien, die zur Empfehlung stehen: wie am Einstieg ohne
+ * Varianten (sie hängen an ihrer Grundkarte) und ohne selbst vorbereitete Gespräche (`ws-mein-`).
+ */
+export function empfehlbareSzenarien(scenarios: unknown): EndscreenScenario[] {
+  if (!Array.isArray(scenarios)) return [];
+  const out: EndscreenScenario[] = [];
+  for (const raw of scenarios) {
+    const s = raw as { id?: unknown; title?: unknown; difficulty?: unknown; variante?: unknown; competencies?: unknown } | null;
+    if (!s || typeof s.id !== "string" || typeof s.title !== "string") continue;
+    if (s.variante || s.id.startsWith("ws-mein-")) continue;
+    const keys = Array.isArray(s.competencies)
+      ? s.competencies.flatMap((c) => (c && typeof (c as { key?: unknown }).key === "string" ? [{ key: (c as { key: string }).key }] : []))
+      : [];
+    out.push({ id: s.id, title: s.title, difficulty: s.difficulty === 2 || s.difficulty === 3 ? s.difficulty : 1, competencies: keys });
+  }
+  return out;
+}
 
 export interface DeltaCta {
-  cKey: string;
-  cName: string | null;
+  /** Schlüssel der Fähigkeit (`feedback.rubric`). */
+  skillKey: string;
+  /** Name der Fähigkeit, wie er im Reiter „Fähigkeiten“ steht. */
+  skillName: string | null;
   /** dropped = Rückschritt ggü. Vorversuch; weakest = größte aktuelle Lücke. */
   mode: "dropped" | "weakest";
   scenarioId: string | null;
   scenarioTitle: string | null;
 }
 
-export function computeDeltaCta(args: {
-  ratings: RatingLike[] | null | undefined;
-  /** C-Deltas ggü. Vorversuch (measurement-delta.deltas); null = kein Vorlauf. */
-  deltaCompetencies?: Record<string, number | null> | null;
-  scenarios: Array<{ id: string; title: string; competencyFocus?: readonly string[] }>;
+export function computeDeltaCta<T extends EndscreenScenario>(args: {
+  /** Fähigkeiten dieser Auswertung (`feedback.rubric`). */
+  rubric: SkillRatingLike[] | null | undefined;
+  /** Fähigkeit des „Größten Hebels“ (`feedback.nextStepKey`): entscheidet bei Gleichstand. */
+  nextStepKey?: string | null;
+  /** Veränderung je Fähigkeit ggü. Vorversuch (`delta.anchors`, Prozentpunkte); null = kein Vorlauf. */
+  deltaAnchors?: ReadonlyArray<{ key: string; delta: number | null }> | null;
+  /** Katalog wie am Einstieg: ohne Varianten und ohne selbst vorbereitete Gespräche. */
+  scenarios: T[];
   currentScenarioId?: string | null;
 }): DeltaCta | null {
+  const rubric = Array.isArray(args.rubric) ? args.rubric : [];
   const nameOf = (key: string): string | null => {
-    const r = (args.ratings ?? []).find((x) => x && x.id === key);
-    return r && typeof r.name === "string" ? r.name : null;
+    const r = rubric.find((x) => x && x.key === key);
+    return r && typeof r.label === "string" && r.label ? r.label : null;
   };
 
   // 1) Rückschritt ggü. Vorversuch — stärkster Drop gewinnt, Gleichstand →
-  //    niedrigere C-Nummer (deterministisch, wie weakestObservedC).
-  let cKey: string | null = null;
+  //    die frühere Fähigkeit in der Rubrik (deterministisch).
+  let skillKey: string | null = null;
   let mode: DeltaCta["mode"] = "weakest";
-  const dc = args.deltaCompetencies;
-  if (dc) {
-    let worst: { key: string; delta: number } | null = null;
-    for (const key of C_ORDER) {
-      const d = dc[key];
-      if (typeof d === "number" && d < 0 && (worst === null || d < worst.delta)) {
-        worst = { key, delta: d };
-      }
-    }
-    if (worst) {
-      cKey = worst.key;
-      mode = "dropped";
+  let worst: number | null = null;
+  for (const a of Array.isArray(args.deltaAnchors) ? args.deltaAnchors : []) {
+    if (!a || typeof a.key !== "string" || typeof a.delta !== "number" || !(a.delta < 0)) continue;
+    if (!rubric.some((r) => r && r.key === a.key)) continue;
+    if (worst === null || a.delta < worst) {
+      worst = a.delta;
+      skillKey = a.key;
     }
   }
-  // 2) Fallback: schwächste beobachtete Kompetenz DIESER Auswertung.
-  if (!cKey) {
-    const w = weakestObservedC(args.ratings);
+  if (skillKey) mode = "dropped";
+  // 2) Fallback: schwächste beobachtete Fähigkeit DIESER Auswertung.
+  if (!skillKey) {
+    const w = weakestObservedSkill(rubric, args.nextStepKey);
     if (!w) return null;
-    cKey = w.id;
+    skillKey = w.key;
   }
 
-  // Passendes Szenario: erstes im Katalog mit Fokus-Treffer, bevorzugt ein
+  // Passendes Szenario: das erste, das diese Fähigkeit bewertet, bevorzugt ein
   // ANDERES als das gerade gespielte (Abwechslung schlägt Wiederholung).
-  const hits = args.scenarios.filter((s) => (s.competencyFocus ?? []).includes(cKey));
-  const other = hits.find((s) => s.id !== args.currentScenarioId);
-  const target = other ?? hits[0] ?? null;
+  const key = skillKey;
+  const first = recommendScenarios(args.scenarios, key, 1, args.currentScenarioId ?? null)[0];
+  const target = first && (first.competencies ?? []).some((c) => c.key === key) ? first : null;
 
   return {
-    cKey,
-    cName: nameOf(cKey),
+    skillKey,
+    skillName: nameOf(skillKey),
     mode,
     scenarioId: target?.id ?? null,
     scenarioTitle: target?.title ?? null,
@@ -78,22 +116,32 @@ export function computeDeltaCta(args: {
 
 export interface StudioBridge {
   cKey: string;
+  /** Name der Kompetenz: das, was ein passender Kurs übt (Kurse tragen C1 bis C10). */
   cName: string | null;
   score: number;
   /** Deeplink im Hub-Format — Studio-Parser validiert hart (radar-ui-logic). */
   href: string;
+  /** Name der Lücke für die Texte: die schwächste beobachtete Fähigkeit, sonst die Kompetenz. */
+  gapName: string | null;
 }
 
-/** W3-3: nur bei ECHTER Schwäche (schwächste beobachtete Kompetenz ≤ 2). */
+/**
+ * W3-3: nur bei ECHTER Schwäche (schwächste beobachtete Kompetenz ≤ 2). `rubric` und `nextStepKey` liefern nur
+ * den Namen der Lücke (U15); am Auslöser ändern sie nichts.
+ */
 export function computeStudioBridge(
-  ratings: RatingLike[] | null | undefined
+  ratings: RatingLike[] | null | undefined,
+  rubric?: SkillRatingLike[] | null,
+  nextStepKey?: string | null
 ): StudioBridge | null {
   const w = weakestObservedC(ratings);
   if (!w || w.score > 2) return null;
+  const skill = weakestObservedSkill(rubric, nextStepKey);
   return {
     cKey: w.id,
     cName: w.name,
     score: w.score,
     href: `https://app.pulsenorth.ai/studio/projects/new?intent=gap&c=${w.id}&t=3&i=${w.score}`,
+    gapName: skill?.label ?? w.name,
   };
 }

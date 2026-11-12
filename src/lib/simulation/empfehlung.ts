@@ -7,8 +7,8 @@
  *
  * U15 (Owner-Entscheid 12.11.2026): Grundlage ist die schwächste beobachtete FÄHIGKEIT (Schlüssel aus
  * `feedback.rubric`), nicht mehr das Modell C1 bis C10. Vorher nannte der Einstieg eine „größte Lücke“ aus
- * C1 bis C10, die dem „Größten Hebel“ der Auswertung widersprach. `weakestObservedC` bleibt für die
- * Auswertungsseite (endscreen.ts).
+ * C1 bis C10, die dem „Größten Hebel“ der Auswertung widersprach. `weakestObservedC` bleibt nur als Auslöser der
+ * Kurs- und der Studio-Brücke der Auswertungsseite (endscreen.ts): Kurse und Studio kennen nur C1 bis C10.
  */
 
 import type { CompetencyKey } from "./types";

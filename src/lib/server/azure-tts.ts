@@ -18,6 +18,7 @@ import {
   PERSONA_VOICES,
   type PersonaVoice,
 } from "@/lib/simulation/types";
+import { logger } from "@/lib/logger";
 
 /** Stimm-Whitelist (Owner-Hörtest 08/2026: nur diese drei bestehen die Umlaute). */
 export const TTS_VOICES: ReadonlyArray<{ id: PersonaVoice; azureName: string }> = [
@@ -90,7 +91,7 @@ export class AzureTtsError extends Error {
   }
 }
 
-/** Ist Azure Speech konfiguriert? (Route: ehrliches 503 → Client nimmt die Browserstimme.) */
+/** Ist Azure Speech konfiguriert? (Route: ehrliches 503 → im Browser bleibt die Antwort Text.) */
 export function azureTtsConfigured(): boolean {
   return !!process.env.AZURE_SPEECH_KEY && !!process.env.AZURE_SPEECH_REGION;
 }
@@ -118,7 +119,7 @@ export async function synthesizeTtsMp3(params: {
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    console.error(`[azure-tts] upstream ${res.status}: ${detail.slice(0, 300)}`);
+    logger.error("[azure-tts] upstream", { status: res.status, detail: detail.slice(0, 300) });
     throw new AzureTtsError(
       res.status === 400 ? "Der Text konnte nicht vertont werden." : "Die Sprachausgabe ist gerade nicht verfügbar.",
       res.status === 400 ? 422 : 502

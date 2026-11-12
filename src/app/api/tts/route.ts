@@ -10,16 +10,17 @@ import {
   synthesizeTtsMp3,
 } from "@/lib/server/azure-tts";
 import { DEFAULT_PERSONA_VOICE } from "@/lib/simulation/types";
+import { logger } from "@/lib/logger";
 
 /**
  * POST /api/tts — Persona-Antwort als Azure-HD-Sprache (Owner-GO 19.09.2026).
  * Body: { text, voice?, locale? } → audio/mpeg. Ehrliche Reihenfolge:
- * Auth → Konfig-Check (503, Client fällt auf die Browserstimme zurück) →
+ * Auth → Konfig-Check (503) →
  * Rate-Limit je Konto → Eingabe-Grenzen → Azure. Kein Credit-Charge: die
  * Stimme ist im Preis des Laufs enthalten (Owner-Entscheid), die Zeichen-
  * Obergrenze je Call und das Limit je Konto deckeln die Kosten.
- * A4 (31.10.2026): Der KI-Schalter des Unternehmens kommt direkt nach der Anmeldung — vor dem 503, auf den
- * der Browser mit seiner eigenen Stimme antwortet.
+ * A4 (31.10.2026): Der KI-Schalter des Unternehmens kommt direkt nach der Anmeldung — vor dem 503.
+ * Paket 6, C31 (12.11.2026): Der Browser hat keine Ersatzstimme mehr; bei 503 oder 502 bleibt die Antwort Text.
  */
 export const runtime = "nodejs";
 
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
     if (e instanceof AzureTtsError) {
       return NextResponse.json({ ok: false, error: e.message }, { status: e.status });
     }
-    console.error("[api/tts] unexpected:", e instanceof Error ? e.message : e);
+    logger.apiError("/api/tts", e);
     return NextResponse.json({ ok: false, error: "tts_failed" }, { status: 502 });
   }
 }

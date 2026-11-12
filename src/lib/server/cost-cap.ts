@@ -2,6 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { usageContainer } from "@/lib/cosmos";
+import { logger } from "@/lib/logger";
 
 /**
  * Pro-User-Token-Budget pro Tag (Cosmos `usage`-Container, TTL 35 Tage).
@@ -105,12 +106,12 @@ export async function checkAndConsumeBudget(opts: {
           used = (resource as UsageDoc)?.tokensUsed ?? inc;
         } else {
           // Budget-Infra darf den eigentlichen Request nicht killen → durchlassen
-          console.warn("[cost-cap] usage write failed, allowing request:", err2?.message);
+          logger.warn("[cost-cap] usage write failed, allowing request", { err: err2?.message });
           return { allowed: true, used: inc, limit };
         }
       }
     } else {
-      console.warn("[cost-cap] usage patch failed, allowing request:", err?.message);
+      logger.warn("[cost-cap] usage patch failed, allowing request", { err: err?.message });
       return { allowed: true, used: inc, limit };
     }
   }

@@ -6,7 +6,6 @@ describe("scenarioWishSchema (§2.3)", () => {
     const r = scenarioWishSchema.safeParse({
       wishText: "Gehaltsgespräch mit einem Top-Performer, der kündigen könnte",
       category: "mitarbeiterfuehrung",
-      weakestC: "C5",
       locale: "de",
     });
     expect(r.success).toBe(true);
@@ -14,9 +13,7 @@ describe("scenarioWishSchema (§2.3)", () => {
 
   it("akzeptiert Minimalform (nur Text) und nullbare Kontexte", () => {
     expect(scenarioWishSchema.safeParse({ wishText: "abc" }).success).toBe(true);
-    expect(
-      scenarioWishSchema.safeParse({ wishText: "abc", category: null, weakestC: null }).success
-    ).toBe(true);
+    expect(scenarioWishSchema.safeParse({ wishText: "abc", category: null }).success).toBe(true);
   });
 
   it("weist zu kurzen/zu langen Text ab (3–500)", () => {
@@ -24,13 +21,15 @@ describe("scenarioWishSchema (§2.3)", () => {
     expect(scenarioWishSchema.safeParse({ wishText: "x".repeat(501) }).success).toBe(false);
   });
 
-  it("weist unbekannte Kategorie und kaputte C-Keys ab", () => {
+  it("weist unbekannte Kategorie ab", () => {
     expect(
       scenarioWishSchema.safeParse({ wishText: "abc", category: "sonstiges" }).success
     ).toBe(false);
-    for (const bad of ["C0", "C11", "c5", "C", "5"]) {
-      expect(scenarioWishSchema.safeParse({ wishText: "abc", weakestC: bad }).success).toBe(false);
-    }
-    expect(scenarioWishSchema.safeParse({ wishText: "abc", weakestC: "C10" }).success).toBe(true);
+  });
+
+  it("überliest das frühere Feld weakestC (Paket 6, 12.11.2026: der Browser schickt es nicht mehr)", () => {
+    const r = scenarioWishSchema.safeParse({ wishText: "abc", weakestC: "C5" });
+    expect(r.success).toBe(true);
+    expect(r.success && "weakestC" in r.data).toBe(false);
   });
 });

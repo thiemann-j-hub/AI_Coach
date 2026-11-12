@@ -52,3 +52,32 @@ describe("GET /api/simulation/get — Pausenfelder der Uhr", () => {
     expect((await hole()).status).toBe(404);
   });
 });
+
+describe("GET /api/simulation/get — liveAvailable (Live-Prüfung 12.11.2026)", () => {
+  afterEach(() => {
+    delete process.env.COACH_LIVE;
+  });
+
+  it("Live aus: false am Lauf und am Szenario", async () => {
+    db.seed();
+    const { json } = await hole();
+    expect(json.simulation.liveAvailable).toBe(false);
+    expect(json.scenario.liveAvailable).toBe(false);
+  });
+
+  it("Live für alle: true — wie in `start` und im Katalog", async () => {
+    process.env.COACH_LIVE = "all";
+    db.seed();
+    const { json } = await hole();
+    expect(json.simulation.liveAvailable).toBe(true);
+    expect(json.scenario.liveAvailable).toBe(true);
+  });
+
+  it("Live nur für einzelne Szenarien: es zählt das Szenario des Laufs", async () => {
+    process.env.COACH_LIVE = "sim-anderes";
+    db.seed();
+    expect((await hole()).json.simulation.liveAvailable).toBe(false);
+    process.env.COACH_LIVE = "sim-anderes, sim-coaching-morgan";
+    expect((await hole()).json.simulation.liveAvailable).toBe(true);
+  });
+});

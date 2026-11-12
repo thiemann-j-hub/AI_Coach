@@ -10,11 +10,6 @@ export const scenarioWishSchema = z.object({
     .enum(["mitarbeiterfuehrung", "zusammenarbeit", "vertrieb", "stakeholder"])
     .nullable()
     .optional(),
-  weakestC: z
-    .string()
-    .regex(/^C(10|[1-9])$/)
-    .nullable()
-    .optional(),
   locale: z.string().trim().max(8).optional(),
 });
 

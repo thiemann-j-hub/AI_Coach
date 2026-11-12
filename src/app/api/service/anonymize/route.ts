@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { serviceRequestOk } from "@/lib/server/credits/cs-credential";
 import { deleteAccount } from "@/lib/server/account-delete";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,10 +25,10 @@ export async function POST(req: NextRequest) {
   if (!oid || oid.length > 200) return NextResponse.json({ error: "oid_required" }, { status: 400 });
   try {
     const result = await deleteAccount(oid, oid);
-    console.log(`[service/anonymize] oid=${oid.slice(0, 8)}… result=${JSON.stringify(result).slice(0, 300)}`);
+    logger.api("/api/service/anonymize", "done", { oid: `${oid.slice(0, 8)}…`, result: JSON.stringify(result).slice(0, 300) });
     return NextResponse.json({ ok: true, result });
   } catch (err) {
-    console.error("[service/anonymize]", err);
+    logger.apiError("/api/service/anonymize", err);
     return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

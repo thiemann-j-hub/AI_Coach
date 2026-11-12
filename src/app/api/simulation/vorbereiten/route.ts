@@ -13,7 +13,7 @@ import {
   kiSchalterBlockt,
   type EntitlementGrant,
 } from "@/lib/server/credits/entitlement";
-import { coachVorbereitenOn, simulationEnabled } from "@/lib/simulation/flags";
+import { coachLiveEnabledFor, coachVorbereitenOn, simulationEnabled } from "@/lib/simulation/flags";
 import {
   PRIVATE_SCENARIO_PREFIX,
   deletePrivateScenario,
@@ -127,7 +127,13 @@ export async function POST(req: NextRequest) {
     if (grant) await settleEntitlement(grant);
 
     logger.api("/api/simulation/vorbereiten", "ok", { uid: auth.uid, scenarioId: doc.id });
-    return NextResponse.json({ ok: true, scenario: publicScenario(doc.scenario), expiresAt: doc.expiresAt });
+    // Live-Prüfung 12.11.2026: `liveAvailable` wie im Katalog — das Briefing des frisch vorbereiteten Gesprächs
+    // bietet sonst „Sprechen“ nicht an.
+    return NextResponse.json({
+      ok: true,
+      scenario: { ...publicScenario(doc.scenario), liveAvailable: coachLiveEnabledFor(doc.id) },
+      expiresAt: doc.expiresAt,
+    });
   } catch (err) {
     if (grant) await compensateEntitlement(grant);
     return aiErrorResponse(err, req, "/api/simulation/vorbereiten");

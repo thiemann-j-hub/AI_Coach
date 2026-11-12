@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { simulationEnabled } from "@/lib/simulation/flags";
+import { coachLiveEnabledFor, simulationEnabled } from "@/lib/simulation/flags";
 import { getSimulation } from "@/lib/server/simulation-store";
 import { publicScenario } from "@/lib/simulation/scenarios";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
@@ -49,9 +49,12 @@ export async function GET(req: NextRequest) {
 
     // W1-7: Szenario-Projektion mitliefern — die eigenständige Auswertungs-
     // Seite (/simulation/[simId]) braucht Titel/Persona ohne Katalog-Fetch.
+    // Live-Prüfung 12.11.2026: `liveAvailable` wie in `start` und im Katalog, am Szenario und am Lauf. Sonst fehlte
+    // beim Fortsetzen eines Laufs, dessen Szenario nicht im geladenen Katalog steht, die Wahl „Sprechen“.
+    const liveAvailable = coachLiveEnabledFor(doc.scenarioId);
     return NextResponse.json({
       ok: true,
-      scenario: scenarioFull ? publicScenario(scenarioFull) : null,
+      scenario: scenarioFull ? { ...publicScenario(scenarioFull), liveAvailable } : null,
       simulation: {
         id: doc.id,
         scenarioId: doc.scenarioId,
@@ -64,6 +67,7 @@ export async function GET(req: NextRequest) {
         // Paket 4, C13 (12.11.2026): Pausenfelder der Uhr. Browser und Server rechnen beide mit `gespraechsZeitMs`.
         pausedMs: doc.pausedMs ?? 0,
         pauseSince: doc.pauseSince ?? null,
+        liveAvailable,
         turns: doc.turns,
         feedback: doc.feedbackJson ?? null,
         competencyRatings: doc.competencyRatings ?? null,

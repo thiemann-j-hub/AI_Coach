@@ -384,6 +384,9 @@ export interface SimulationListItem {
   /** Gesamtscore 0–100 aus dem gespeicherten Debrief; null = keiner. */
   overall: number | null;
   verdict: "passed" | "failed" | "unrated" | null;
+  /** Pausenfelder der Uhr (zeit.ts): Die Restzeit in der Liste offener Läufe rechnet mit `gespraechsZeitMs`. */
+  pausedMs: number;
+  pauseSince: string | null;
 }
 
 export async function listSimulations(
@@ -400,13 +403,16 @@ export async function listSimulations(
     attempt?: number;
     overall?: number | null;
     verdict?: string;
+    pausedMs?: number | null;
+    pauseSince?: string | null;
   }>(
     runsContainer(),
     // Partitions-lokale Query (sessionId = PK) — kein Cross-Partition-Fanout.
     // `aborted` wird ausgefiltert (§2.4): abgebrochene Läufe sind keine Historie.
     // Paket 6, C22 (12.11.2026): Die Abfrage zählt die Züge selbst und holt vom Debrief nur Gesamtwert und Urteil.
     // Vorher kamen je Lauf das ganze Gespräch und der ganze Debrief mit, nur um im Code zu zählen (bis 100 Läufe).
-    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, ARRAY_LENGTH(c.turns) AS turnCount, c.attempt, c.debriefJson.overall AS overall, c.debriefJson.verdict AS verdict FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status != 'aborted' ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
+    // Live-Prüfung 12.11.2026: dazu die zwei Pausenfelder — die Restzeit in der Liste rechnete ohne Pausen.
+    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, ARRAY_LENGTH(c.turns) AS turnCount, c.attempt, c.debriefJson.overall AS overall, c.debriefJson.verdict AS verdict, c.pausedMs, c.pauseSince FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status != 'aborted' ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
     [
       { name: "@pk", value: simPartitionKey(uid) },
       { name: "@dt", value: SIM_DOC_TYPE },
@@ -426,6 +432,8 @@ export async function listSimulations(
       r.verdict === "passed" || r.verdict === "failed" || r.verdict === "unrated"
         ? r.verdict
         : null,
+    pausedMs: typeof r.pausedMs === "number" && Number.isFinite(r.pausedMs) && r.pausedMs > 0 ? r.pausedMs : 0,
+    pauseSince: typeof r.pauseSince === "string" && r.pauseSince ? r.pauseSince : null,
   }));
 }
 
@@ -484,34 +492,6 @@ export async function countFinishedForScenario(
   );
   const n = rows[0] as unknown;
   return typeof n === "number" ? n : 0;
-}
-
-/**
- * Jüngste ABGESCHLOSSENE Simulation (szenario-unabhängig) — Datenquelle der
- * Einstiegs-Empfehlung (COACH-UX-BLUEPRINT §3/W1-4). Partitions-lokal, billig.
- */
-export async function latestFinishedAny(
-  uid: string
-): Promise<{ finishedAt: string; competencyRatings: unknown } | null> {
-  const rows = await queryItems<{
-    finishedAt?: string;
-    createdAt: string;
-    competencyRatings?: unknown;
-  }>(
-    runsContainer(),
-    "SELECT TOP 1 c.finishedAt, c.createdAt, c.competencyRatings FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status = @st ORDER BY c.createdAt DESC",
-    [
-      { name: "@pk", value: simPartitionKey(uid) },
-      { name: "@dt", value: SIM_DOC_TYPE },
-      { name: "@st", value: "finished" },
-    ]
-  );
-  const r = rows[0];
-  if (!r) return null;
-  return {
-    finishedAt: r.finishedAt ?? r.createdAt,
-    competencyRatings: r.competencyRatings ?? null,
-  };
 }
 
 // ── O2 Micro-Transfer (Blueprint COACH-OPTIMIERUNG 27.09.2026) ──────────────

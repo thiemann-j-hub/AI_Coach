@@ -5,6 +5,7 @@ import { anredeBlock } from '@/lib/anrede';
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { logger } from '@/lib/logger';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import { OBSERVER_CANON_EN } from '@/lib/coach-canon';
 
@@ -128,7 +129,7 @@ const generateTailoredFeedbackFlow = ai.defineFlow(
     );
     if (injectionDetected) {
       // R9: NUR Signal loggen, NICHT den gematchten Nutzer-Text (PII/App-Insights).
-      console.warn(`[prompt-guard] Injection pattern detected in inputText (content redacted).`);
+      logger.warn(`[prompt-guard] Injection pattern detected in inputText (content redacted).`);
     }
 
     // V2 (Owner-GO 25.09.): Beobachter-Kanon immer mitgeben (Prompt ist englisch verfasst).

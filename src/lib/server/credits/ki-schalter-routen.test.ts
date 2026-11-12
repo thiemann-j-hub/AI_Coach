@@ -105,7 +105,6 @@ beforeEach(() => {
   process.env.SIMULATION_ENABLED = "on";
   process.env.AZURE_SPEECH_KEY = "key";
   process.env.AZURE_SPEECH_REGION = "westeurope";
-  delete process.env.SPEECH_INPUT;
   process.env.COACH_INTERVIEW = "all";
   ttsConfigured = true;
   for (const m of [kiBlock, getSimulation, runPersonaTurn, beobachteRegie, ensureSpielbuch, runCoachTimeout, issue, synthesize, readInterview, naechsterSchritt, fetchMock, setWorkspaceScenarioStatus, listFinishedInterviews, readBericht, saveBericht, erstelleBericht]) {
@@ -121,7 +120,6 @@ afterEach(() => {
   delete process.env.SIMULATION_ENABLED;
   delete process.env.AZURE_SPEECH_KEY;
   delete process.env.AZURE_SPEECH_REGION;
-  delete process.env.SPEECH_INPUT;
   delete process.env.COACH_INTERVIEW;
   vi.unstubAllGlobals();
 });
@@ -202,12 +200,12 @@ describe("Vorlesen /api/tts", () => {
 });
 
 describe("Sprach-Token /api/speech-token", () => {
-  it("Schalter aus: 403 KI_AUS, kein Token — auch vor dem 503, auf den der Browser mit eigener Erkennung ausweicht", async () => {
+  it("Schalter aus: 403 KI_AUS, kein Token — auch vor dem 503 (Spracherkennung nicht eingerichtet)", async () => {
     aus();
     const { GET } = await import("@/app/api/speech-token/route");
     await erwarteKiAus(await GET(new NextRequest("http://localhost/api/speech-token")), "/api/speech-token");
     expect(fetchMock).not.toHaveBeenCalled();
-    process.env.SPEECH_INPUT = "browser";
+    delete process.env.AZURE_SPEECH_KEY;
     expect((await GET(new NextRequest("http://localhost/api/speech-token"))).status).toBe(403);
   });
 

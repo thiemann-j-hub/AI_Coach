@@ -10,11 +10,10 @@ import { sprachaufnahmeEinwilligungFehlt } from "./sprachaufnahme-gate";
  * zugestimmt hat, willigt einmal neu ein. Geprüft wird die echte Kette: Antwort des Registers (fetch gemockt)
  * → member-info → sprachaufnahme-gate → Route. Gemockt sind nur Anmeldung, KI-Schalter, Rate-Limit,
  * Token-Speicher und die Live-Bausteine.
- *  - Sprach-Token: Die Einwilligung kommt VOR dem 503 stt_disabled und vor dem Rate-Limit. Auf beide Antworten
- *    nahm der Browser seine eigene Erkennung (Chrome schickt die Aufnahme an Google), ohne Einwilligung.
+ *  - Sprach-Token: Die Einwilligung kommt VOR dem 503 stt_disabled und vor dem Rate-Limit.
  *  - Live-Karte: dasselbe Tor, dieselbe Antwort.
- *  - Browser-Erkennung nur auf ausdrücklichen Rückweg: Nur SPEECH_INPUT=browser trägt mode "browser"; 503 ohne
- *    Schlüssel, 502 und 429 tragen keins — der Coach zeigt dann den Fehler statt der Browser-Erkennung.
+ *  - Nie Browser-Erkennung (Paket 6, C31, 12.11.2026: sie und ihr Rückweg SPEECH_INPUT=browser sind entfernt):
+ *    503 ohne Schlüssel, 502 und 429 tragen kein mode — der Coach zeigt den Fehler.
  */
 const FASSUNG = "2026-11-01";
 const EINWILLIGUNG = { ok: false, error: "consent_required", code: "EINWILLIGUNG", url: "/einwilligung?typ=sprachaufnahme&zurueck=/coach/simulation" };
@@ -85,7 +84,7 @@ const karteHolen = async () =>
     })
   );
 
-const ENV = ["CREDITS_CENTRAL", "SIMULATION_ENABLED", "COACH_LIVE", "AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION", "SPEECH_INPUT", "CONSENT_GATE"];
+const ENV = ["CREDITS_CENTRAL", "SIMULATION_ENABLED", "COACH_LIVE", "AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION", "CONSENT_GATE"];
 
 beforeEach(() => {
   // Frische Kennung je Test: member-info merkt sich die Auskunft 60 s je Kennung.
@@ -99,7 +98,6 @@ beforeEach(() => {
   process.env.COACH_LIVE = "all";
   process.env.AZURE_SPEECH_KEY = "key";
   process.env.AZURE_SPEECH_REGION = "westeurope";
-  delete process.env.SPEECH_INPUT;
   delete process.env.CONSENT_GATE;
   issue.mockClear();
   fetchMock.mockClear();
@@ -140,24 +138,11 @@ describe("Tor sprachaufnahmeEinwilligungFehlt — Register ab Fassung 2026-11-01
 });
 
 describe("Sprach-Token /api/speech-token — Einwilligung vor dem 503", () => {
-  it("Einwilligung fehlt + Spracherkennung aus → 403 EINWILLIGUNG statt 503 (sonst nähme der Browser seine eigene Erkennung)", async () => {
-    process.env.SPEECH_INPUT = "browser";
+  it("Einwilligung fehlt + Spracherkennung nicht eingerichtet → 403 EINWILLIGUNG statt 503", async () => {
+    delete process.env.AZURE_SPEECH_KEY;
     const res = await tokenHolen();
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual(EINWILLIGUNG);
-
-    delete process.env.SPEECH_INPUT;
-    delete process.env.AZURE_SPEECH_KEY; // nicht konfiguriert: ebenfalls 403, nicht 503
-    expect((await tokenHolen()).status).toBe(403);
-    expect(azureAbrufe()).toBe(0);
-  });
-
-  it("Einwilligung erteilt + Rückweg SPEECH_INPUT=browser → 503 mit mode „browser“ (nur dann Browser-Erkennung)", async () => {
-    eingewilligt();
-    process.env.SPEECH_INPUT = "browser";
-    const res = await tokenHolen();
-    expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ ok: false, error: "stt_disabled", mode: "browser" });
     expect(azureAbrufe()).toBe(0);
   });
 
@@ -183,7 +168,7 @@ describe("Sprach-Token /api/speech-token — Einwilligung vor dem 503", () => {
   });
 });
 
-describe("Sprach-Token — Browser-Erkennung nur auf ausdrücklichen Rückweg", () => {
+describe("Sprach-Token — nie Browser-Erkennung", () => {
   const ohneMode = async (res: Response, status: number) => {
     expect(res.status).toBe(status);
     expect(await res.json()).not.toHaveProperty("mode");
@@ -192,7 +177,9 @@ describe("Sprach-Token — Browser-Erkennung nur auf ausdrücklichen Rückweg", 
   it("Schlüssel oder Region fehlt → 503 OHNE mode: Fehler im Coach, keine Browser-Erkennung", async () => {
     eingewilligt();
     delete process.env.AZURE_SPEECH_KEY;
-    await ohneMode(await tokenHolen(), 503);
+    const res = await tokenHolen();
+    expect(await res.clone().json()).toEqual({ ok: false, error: "stt_disabled" });
+    await ohneMode(res, 503);
     process.env.AZURE_SPEECH_KEY = "key";
     delete process.env.AZURE_SPEECH_REGION;
     await ohneMode(await tokenHolen(), 503);
@@ -230,9 +217,9 @@ describe("Live-Karte /api/simulation/live/ticket — dieselbe Regel", () => {
     expect(issue).toHaveBeenCalledTimes(1);
   });
 
-  it("Live aus (404 LIVE_OFF): die Kaskade fragt das Sprach-Token — ohne Einwilligung 403, auch bei Spracherkennung aus", async () => {
+  it("Live aus (404 LIVE_OFF): die Kaskade fragt das Sprach-Token — ohne Einwilligung 403, auch ohne eingerichtete Spracherkennung", async () => {
     process.env.COACH_LIVE = "off";
-    process.env.SPEECH_INPUT = "browser";
+    delete process.env.AZURE_SPEECH_KEY;
     const karte = await karteHolen();
     expect(karte.status).toBe(404);
     expect(await karte.json()).toEqual({ ok: false, code: "LIVE_OFF" });
