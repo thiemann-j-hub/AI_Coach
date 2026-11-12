@@ -47,6 +47,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // ueberschreibt (sonst UnknownAction). Der CLIENT (SessionProvider) nutzt dagegen
   // den vollen Browser-Pfad "/coach/api/auth".
   basePath: "/api/auth",
+  // Go-Live-Prüfung 12.11.2026: Die Warnung „env-url-basepath-mismatch“ ist hier gewollt (AUTH_URL endet auf /coach,
+  // der basePath oben nicht) und kam bei jedem Auth-Aufruf: rund 5.000 Zeilen am Tag, 95 % des Betriebsprotokolls.
+  // Sie wird verschluckt; jede andere Warnung und alle Fehler laufen wie bisher (nicht gesetzte Stufen = Standard).
+  logger: {
+    warn(code) {
+      if (code === "env-url-basepath-mismatch") return;
+      console.warn(`[auth][warn][${code}] Read more: https://warnings.authjs.dev`);
+    },
+  },
   session: { strategy: "jwt" },
   cookies: {
     sessionToken: {

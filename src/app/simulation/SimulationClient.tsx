@@ -1837,13 +1837,38 @@ export default function SimulationClient() {
                 {meine.map((s) => (
                   <div key={s.id} className="flex flex-col gap-1.5 min-w-0">
                     {scenarioCard(s, true)}
-                    <button
-                      type="button"
-                      onClick={() => void removeVorbereitet(s.id)}
-                      className="self-end text-xs text-muted-foreground underline hover:text-foreground"
-                    >
-                      {t.entry.prepRemove}
-                    </button>
+                    {/* Go-Live-Prüfung 12.11.2026: Entfernen in zwei Schritten. Vorher löschte ein Klick das Gespräch,
+                        das 1 Credit gekostet hat, ohne Nachfrage. */}
+                    {pendingDeleteId === s.id ? (
+                      <span className="self-end flex items-center gap-3 text-xs" data-testid="prep-remove-confirm">
+                        <span className="font-medium text-rose-800 dark:text-rose-400">{ts.deleteConfirm}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPendingDeleteId(null);
+                            void removeVorbereitet(s.id);
+                          }}
+                          className="font-medium text-rose-800 underline hover:opacity-80 dark:text-rose-400"
+                        >
+                          {t.entry.prepRemove}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingDeleteId(null)}
+                          className="text-muted-foreground underline hover:text-foreground"
+                        >
+                          {t.common.cancel}
+                        </button>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPendingDeleteId(s.id)}
+                        className="self-end text-xs text-muted-foreground underline hover:text-foreground"
+                      >
+                        {t.entry.prepRemove}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

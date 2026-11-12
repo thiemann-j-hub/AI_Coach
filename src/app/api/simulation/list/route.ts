@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenario } from "@/lib/simulation/scenarios";
-import { listScenariosForUser } from "@/lib/server/scenario-store";
+import { getScenarioForUser, listScenariosForUser } from "@/lib/server/scenario-store";
 import { listSimulations } from "@/lib/server/simulation-store";
 import { aufraeumenAnstossen } from "@/lib/server/aufraeumen";
 import { logger } from "@/lib/logger";
@@ -31,7 +31,16 @@ export async function GET(req: NextRequest) {
   try {
     // B3a: Titel auch für Workspace-Szenarien auflösen (fail-soft).
     const wsById = new Map((await listScenariosForUser(auth.uid, auth.oid)).map((w) => [w.id, w]));
-    const items = (await listSimulations(auth.uid, limit)).map((r) => {
+    const sims = await listSimulations(auth.uid, limit);
+    // Go-Live-Prüfung 12.11.2026: Entwürfe aus dem Builder stehen nicht im Katalog. Ihr Titel wird einzeln
+    // nachgeschlagen (höchstens zehn, fail-soft); vorher stand im Verlauf die Kennung `ws-…` statt des Titels.
+    const offen = [...new Set(sims.map((r) => r.scenarioId))].filter((id) => id.startsWith("ws-") && !wsById.has(id)).slice(0, 10);
+    const nach = await Promise.all(offen.map((id) => getScenarioForUser(auth.uid, id, auth.oid).catch(() => null)));
+    offen.forEach((id, i) => {
+      const s = nach[i];
+      if (s) wsById.set(id, s);
+    });
+    const items = sims.map((r) => {
       const s = getScenario(r.scenarioId) ?? wsById.get(r.scenarioId);
       return {
         ...r,
