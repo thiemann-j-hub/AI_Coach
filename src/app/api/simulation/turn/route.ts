@@ -10,6 +10,8 @@ import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { coachRegieOn, simulationEnabled } from "@/lib/simulation/flags";
+import { gespraechsZeitMs, pauseSetzen } from "@/lib/simulation/zeit";
+import { zaehlpunkt } from "@/lib/server/trichter";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   SIM_MAX_TURN_CHARS,
@@ -104,7 +106,9 @@ export async function POST(req: NextRequest) {
     // Zeitbox (Synthesia-Muster): ab ~80 % streut die Persona EINMAL beiläufig
     // ein, dass sie gleich los muss; ist die Zeit um, beantwortet sie den
     // letzten Beitrag kurz, verabschiedet sich (Folgetermin) — Zwangsende.
-    const elapsedMs = Date.now() - new Date(doc.createdAt).getTime();
+    // Paket 4, C13 (12.11.2026): gerechnet wird mit der gemeinsamen Uhr; Coach-Pausen zählen nicht zur Gesprächszeit.
+    const eingangMs = Date.now();
+    const elapsedMs = gespraechsZeitMs(doc, eingangMs);
     // B2: im Prüfungsmodus gilt die (meist kürzere) Check-Zeitbox.
     const durationMin =
       doc.mode === "check"
@@ -188,10 +192,14 @@ export async function POST(req: NextRequest) {
     const fehlt = abgelehnt;
     const antwortTs = new Date().toISOString();
     let sperre = null as NextResponse | null;
+    let erstesWort = false;
     const saved = await updateSimulation(auth.uid, d.simId, (lauf) => {
       sperre = zugSperre(lauf);
       if (sperre) return false;
+      erstesWort = countUserTurns(lauf.turns) === 0;
       lauf.turns.push({ role: "user", text: d.message, ts: now }, { role: "persona", text: antwort, ts: antwortTs });
+      // C13: Wer schreibt, pausiert nicht. Eine offen gebliebene Coach-Pause endet mit dem Eingang dieses Zugs.
+      pauseSetzen(lauf, false, eingangMs);
       if (timeSignal === "closing") lauf.timeWarned = true;
       if (timeSignal === "farewell") lauf.closedByTime = true;
       if (offeneNotiz) {
@@ -216,6 +224,8 @@ export async function POST(req: NextRequest) {
       logger.api("/api/simulation/turn", "nicht-gespeichert", { uid: auth.uid, simId: d.simId, status: saved.status });
       return sperre;
     }
+    // Paket 4, S24: Zählpunkt „erstes Wort“ (Textweg), ohne Nutzertext.
+    if (erstesWort) zaehlpunkt("erstes_wort", scenario.id, "schreiben");
 
     // Paket 1, C2 (12.11.2026): Antwort und Protokoll nennen das GEPRÜFTE Ende. Bis heute stand hier das ungeprüfte
     // Ende der Rolle (Fehler vom 01.11.2026): Ein vom Torwächter abgelehntes Ende erschien im Browser als beendet.

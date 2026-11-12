@@ -25,6 +25,8 @@ export interface QualityStats {
     cScoredShare: number | null;
     /** Paket 2, C7 (12.11.2026): Rückfälle vom starken Richter auf das schnelle Modell. */
     judge: JudgeStats;
+    /** Paket 4, S22 (12.11.2026): Messwerte des Sprachwegs (Antwortzeit, Unterbrechungen). */
+    speech: SpeechStats;
   };
   analyses: { count: number; withGateErrors: number };
 }
@@ -57,6 +59,56 @@ export function summarizeJudge(
   return { measured, fallbacks, fallbackShare: measured ? +(fallbacks / measured).toFixed(2) : null, reasons };
 }
 
+/**
+ * Paket 4, S22 (12.11.2026): Messwerte des Sprachwegs. Das Relais legt sie je Lauf in `liveStats` ab; gelesen hat
+ * sie bisher niemand. Messlatte aus dem Vergleich: Antwort der Rolle nach 1,3 s, Ton aus 0,8 s nach einem Einwurf.
+ */
+export interface SpeechStats {
+  /** Ausgewertete Läufe, in denen gesprochen wurde (`liveStats` am Lauf). */
+  runs: number;
+  /** Gemessene Antworten der Rolle über diese Läufe. */
+  answers: number;
+  /** Antwortzeit (Ende der Eingabe-Mitschrift → erster Ton) in Millisekunden: Median und 95 %. */
+  p50Ms: number | null;
+  p95Ms: number | null;
+  /** So oft fiel die Person der Rolle ins Wort; `cutChars` = dabei gekürzte Zeichen der Rolle (S31). */
+  interruptions: number;
+  cutChars: number;
+}
+
+type LiveStatsRow = {
+  antworten?: number;
+  p50Ms?: number;
+  zeiten?: number[];
+  unterbrechungen?: number;
+  gekuerztZeichen?: number;
+};
+
+/**
+ * Rein (getestet): fasst die Antwortzeiten aller Läufe mit Sprachweg zusammen. Gerechnet wird über die einzelnen
+ * Antwortzeiten; Läufe von vor dem 12.11.2026 tragen nur ihren Median, er zählt dann als ein Messwert.
+ */
+export function summarizeSpeech(rows: ReadonlyArray<{ liveStats?: LiveStatsRow | null }>): SpeechStats {
+  let runs = 0;
+  let answers = 0;
+  let interruptions = 0;
+  let cutChars = 0;
+  const zeiten: number[] = [];
+  for (const r of rows) {
+    const s = r.liveStats;
+    if (!s) continue;
+    runs++;
+    answers += s.antworten ?? 0;
+    interruptions += s.unterbrechungen ?? 0;
+    cutChars += s.gekuerztZeichen ?? 0;
+    if (s.zeiten?.length) zeiten.push(...s.zeiten);
+    else if (s.antworten && typeof s.p50Ms === "number") zeiten.push(s.p50Ms);
+  }
+  zeiten.sort((a, b) => a - b);
+  const q = (p: number) => (zeiten.length ? Math.round(zeiten[Math.min(zeiten.length - 1, Math.max(0, Math.ceil(p * zeiten.length) - 1))]) : null);
+  return { runs, answers, p50Ms: q(0.5), p95Ms: q(0.95), interruptions, cutChars };
+}
+
 export async function computeQualityStats(days: number): Promise<QualityStats> {
   const d = Math.max(1, Math.min(365, Math.floor(days)));
   const since = new Date(Date.now() - d * 86_400_000).toISOString();
@@ -70,9 +122,10 @@ export async function computeQualityStats(days: number): Promise<QualityStats> {
       notes?: Array<{ code: string; field?: string }>;
       ratings?: Array<{ id: string; score: number | null }>;
       evalStats?: { fallback?: string | null } | null;
+      liveStats?: LiveStatsRow | null;
     }>({
       query:
-        "SELECT c.id, c.debriefJson.verdict AS verdict, c.debriefJson.coverage AS coverage, c.qualityNotes AS notes, c.competencyRatings AS ratings, c.evalStats AS evalStats " +
+        "SELECT c.id, c.debriefJson.verdict AS verdict, c.debriefJson.coverage AS coverage, c.qualityNotes AS notes, c.competencyRatings AS ratings, c.evalStats AS evalStats, c.liveStats AS liveStats " +
         "FROM c WHERE c.docType = 'simulation' AND c.status = 'finished' AND c.finishedAt >= @since",
       parameters: [{ name: "@since", value: since }],
     })
@@ -120,6 +173,7 @@ export async function computeQualityStats(days: number): Promise<QualityStats> {
       avgCoverage: share(coverageSum, sims.length),
       cScoredShare: share(cScored, cTotal),
       judge: summarizeJudge(sims),
+      speech: summarizeSpeech(sims),
     },
     analyses: { count: runs.length, withGateErrors },
   };
@@ -135,9 +189,16 @@ export function formatQualityStatsLine(s: QualityStats): string {
   // Paket 2, C7: Rückfall-Anteil nur nennen, wenn es Läufe mit Kennzahlen gibt (sonst stünde dort dauerhaft „–“).
   const j = sim.judge;
   const rueckfall = j?.measured ? `, Rückfall auf den schnellen Richter ${pct(j.fallbackShare)} (${j.fallbacks} von ${j.measured})` : "";
+  // Paket 4, S22: Sprachweg nur nennen, wenn in einem der Läufe gesprochen wurde.
+  const sp = sim.speech;
+  const sek = (ms: number | null) => (ms == null ? "–" : `${(ms / 1000).toFixed(1).replace(".", ",")} s`);
+  const sprachweg = sp?.runs
+    ? `, gesprochen in ${sp.runs} Läufen: Antwort der Rolle nach ${sek(sp.p50Ms)} (Median, 95 % bis ${sek(sp.p95Ms)}), ` +
+      `${sp.interruptions} Unterbrechungen (${sp.cutChars} Zeichen gekürzt)`
+    : "";
   return (
     `Coach (${s.days} Tage): ${sim.finished} Rollenspiele ausgewertet — ohne Urteil ${pct(sim.unratedShare)}, ` +
-    `mit zurückgehaltenen Scores ${pct(sim.withheldRunShare)} (${sim.withheldScores} Scores), Belegquote Ø ${pct(sim.avgCoverage)}${rueckfall}; ` +
+    `mit zurückgehaltenen Scores ${pct(sim.withheldRunShare)} (${sim.withheldScores} Scores), Belegquote Ø ${pct(sim.avgCoverage)}${rueckfall}${sprachweg}; ` +
     `${s.analyses.count} Transkript-Analysen, davon ${s.analyses.withGateErrors} mit Gate-Fehlern.`
   );
 }

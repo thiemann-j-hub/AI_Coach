@@ -36,8 +36,11 @@ function fakeSocket() {
       for (const h of handlers.close) (h as () => void)();
     },
     on: (ev: string, fn: (...a: never[]) => void) => void handlers[ev].push(fn),
+    removeListener: (ev: string, fn: (...a: never[]) => void) => {
+      handlers[ev] = handlers[ev].filter((h) => h !== fn);
+    },
     emit: (ev, ...a) => {
-      for (const h of handlers[ev]) (h as (...x: unknown[]) => void)(...a);
+      for (const h of [...handlers[ev]]) (h as (...x: unknown[]) => void)(...a);
     },
   };
   return ws;
@@ -69,7 +72,7 @@ function deps(): LiveDeps {
   };
 }
 
-const hello = (ticket: string) => Buffer.from(JSON.stringify({ t: "hello", ticket }));
+const hello = (ticket: string, mehr: Record<string, unknown> = {}) => Buffer.from(JSON.stringify({ t: "hello", ticket, ...mehr }));
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 describe("Annahme der Live-Verbindung", () => {
@@ -107,6 +110,49 @@ describe("Annahme der Live-Verbindung", () => {
     zweiter.emit("message", hello(karte), false);
     await nochmal;
     expect(zweiter.closedWith[0]).toEqual([4401, "UNAUTHORIZED"]);
+  });
+
+  it("Paket 4, C36: der Hallo-Hörer hängt nach der Karte nicht mehr am Socket", async () => {
+    const karte = liveTicketStore().issue({ uid: "u1", email: null, oid: null, simId: "sim-abcdefgh" });
+    const ws = fakeSocket();
+    const lauf = acceptLiveSocket(ws, deps());
+    expect(ws.handlers.message).toHaveLength(1); // nur der Hallo-Hörer
+    ws.emit("message", hello(karte), false);
+    await tick();
+    // Jetzt hört nur noch die Sitzung zu (vorher lief der Hallo-Hörer bei jedem Audio-Frame mit).
+    expect(ws.handlers.message).toHaveLength(1);
+    expect(ws.handlers.close).toHaveLength(1);
+    ws.close(1000);
+    await lauf;
+
+    // Auch ohne gültige Karte bleibt kein Hörer zurück.
+    const fremd = fakeSocket();
+    const abgelehnt = acceptLiveSocket(fremd, deps());
+    fremd.emit("message", Buffer.alloc(8), true);
+    await abgelehnt;
+    expect(fremd.handlers.message).toHaveLength(0);
+    expect(fremd.closedWith[0]).toEqual([4401, "UNAUTHORIZED"]);
+  });
+
+  it("Paket 4, S1: der Wunsch nach der hörbaren Eröffnung kommt aus dem hello in der Sitzung an", async () => {
+    const karte = liveTicketStore().issue({ uid: "u1", email: null, oid: null, simId: "sim-abcdefgh" });
+    const ws = fakeSocket();
+    const lauf = acceptLiveSocket(ws, deps());
+    ws.emit("message", hello(karte, { eroeffnung: true }), false);
+    await tick();
+    expect(JSON.parse(ws.sent[0])).toMatchObject({ t: "ready", eroeffnung: true });
+    ws.close(1000);
+    await lauf;
+
+    // Nur ein echtes `true` zählt.
+    const karte2 = liveTicketStore().issue({ uid: "u1", email: null, oid: null, simId: "sim-abcdefgh" });
+    const ws2 = fakeSocket();
+    const lauf2 = acceptLiveSocket(ws2, deps());
+    ws2.emit("message", hello(karte2, { eroeffnung: "ja" }), false);
+    await tick();
+    expect(JSON.parse(ws2.sent[0])).toMatchObject({ t: "ready", eroeffnung: false });
+    ws2.close(1000);
+    await lauf2;
   });
 });
 

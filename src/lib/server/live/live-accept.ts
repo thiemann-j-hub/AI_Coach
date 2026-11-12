@@ -10,6 +10,7 @@ import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { pruefeEnde } from "@/ai/flows/simulation-ende-pruefung";
 import { getSimulation, updateSimulation } from "@/lib/server/simulation-store";
+import { zaehlpunkt } from "@/lib/server/trichter";
 import { coachEndeOn, coachLiveLocation, coachLiveModel, coachLiveSprechpause, coachRegieOn } from "@/lib/simulation/flags";
 import {
   ENDE_WERKZEUG,
@@ -180,6 +181,8 @@ function realDeps(): LiveDeps {
     budget: async (a) => ({ allowed: (await checkAndConsumeBudget(a)).allowed }),
     // A4 (31.10.2026): derselbe Schalter wie in den API-Routen, hier mit der Kennung aus der Karte.
     kiAusMeldung: async (oid) => ((await kiSchalterAus(oid, "/api/simulation/live/ws")) ? KI_AUS_TEXT : null),
+    // Paket 4, S24: derselbe Zählpunkt wie in den Routen (eine Protokollzeile, ohne Nutzertext).
+    zaehlpunkt: (schritt, meta) => zaehlpunkt(schritt, meta.scenarioId, meta.weg),
     now: () => Date.now(),
     log: (level, msg, meta) => logger[level](`[live] ${msg}`, meta),
     model: coachLiveModel(),
@@ -195,31 +198,38 @@ export async function acceptLiveSocket(ws: LiveSocket, deps: LiveDeps = realDeps
   ws.on("error", (e) => {
     if (!sitzungLaeuft) logger.warn("[live] ws-error vor der Karte", { err: e instanceof Error ? e.message : String(e) });
   });
-  const ticketId = await new Promise<string | null>((resolve) => {
-    const timer = setTimeout(() => resolve(null), HELLO_TIMEOUT_MS);
-    ws.on("message", function erste(data, isBinary) {
+  // Paket 4 (12.11.2026): Das `hello` trägt neben der Karte den Wunsch, dass die Rolle hörbar eröffnet (S1).
+  const hallo = await new Promise<{ ticket: string; eroeffnung: boolean } | null>((resolve) => {
+    // C36 (Rest): Nach der ersten Nachricht (oder dem Ablauf der Frist) hängen beide Hörer wieder ab. Vorher blieb der
+    // Hallo-Hörer für die ganze Sitzung am Socket und lief bei jedem Audio-Frame mit.
+    const fertig = (wert: { ticket: string; eroeffnung: boolean } | null) => {
       clearTimeout(timer);
-      if (isBinary) return resolve(null);
+      ws.removeListener?.("message", erste);
+      ws.removeListener?.("close", zu);
+      resolve(wert);
+    };
+    const erste = (data: Buffer | ArrayBuffer | Buffer[] | string, isBinary: boolean) => {
+      if (isBinary) return fertig(null);
       try {
         const raw = Buffer.isBuffer(data) ? data.toString("utf8") : Array.isArray(data) ? Buffer.concat(data).toString("utf8") : typeof data === "string" ? data : Buffer.from(data).toString("utf8");
-        const msg = JSON.parse(raw) as { t?: string; ticket?: string };
-        resolve(msg.t === "hello" && typeof msg.ticket === "string" ? msg.ticket : null);
+        const msg = JSON.parse(raw) as { t?: string; ticket?: string; eroeffnung?: unknown };
+        fertig(msg.t === "hello" && typeof msg.ticket === "string" ? { ticket: msg.ticket, eroeffnung: msg.eroeffnung === true } : null);
       } catch {
-        resolve(null);
+        fertig(null);
       }
-    });
-    ws.on("close", () => {
-      clearTimeout(timer);
-      resolve(null);
-    });
+    };
+    const zu = () => fertig(null);
+    const timer = setTimeout(() => fertig(null), HELLO_TIMEOUT_MS);
+    ws.on("message", erste);
+    ws.on("close", zu);
   });
-  const ticket = ticketId ? liveTicketStore().redeem(ticketId) : null;
+  const ticket = hallo ? liveTicketStore().redeem(hallo.ticket) : null;
   if (!ticket) {
     if (ws.readyState === WS_OPEN) ws.close(4401, "UNAUTHORIZED");
     return;
   }
   sitzungLaeuft = true;
-  await runLiveSession(ws, ticket, deps);
+  await runLiveSession(ws, ticket, deps, { eroeffnung: hallo?.eroeffnung === true });
 }
 
 /** Vom Server-Mantel erwartete Form. */

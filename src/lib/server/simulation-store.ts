@@ -101,8 +101,26 @@ export interface SimulationDoc {
   regie?: Array<{ stufe: number; erfuellt: string[]; eskaliert: boolean; notiz: string; turn: number; ts: string; delivered?: boolean; vorschnell?: boolean; fehlt?: string }>;
   /** Version des Dokuments in Cosmos (kommt beim Lesen mit). Grundlage der Versionsprüfung beim Speichern (C3). */
   _etag?: string;
-  /** Live-Modus: Antwortzeiten (Ende der Eingabe-Mitschrift → erstes Audio), ungefähr. */
-  liveStats?: { antworten: number; p50Ms: number; p95Ms: number; maxMs: number } | null;
+  /**
+   * Live-Modus: Antwortzeiten (Ende der Eingabe-Mitschrift → erstes Audio), ungefähr.
+   * Paket 4, S22 (12.11.2026): dazu die einzelnen Antwortzeiten (`zeiten`, damit mehrere Sitzungen eines Laufs
+   * zusammenzählen und die Qualitäts-Statistik über alle Läufe rechnen kann), die Zahl der Unterbrechungen und wie
+   * viele Zeichen der Rolle dabei gekürzt wurden (S31). Läufe vor dem 12.11.2026 tragen nur die vier alten Werte.
+   */
+  liveStats?: {
+    antworten: number;
+    p50Ms: number;
+    p95Ms: number;
+    maxMs: number;
+    zeiten?: number[];
+    unterbrechungen?: number;
+    gekuerztZeichen?: number;
+  } | null;
+  // ── Paket 4 (12.11.2026): Coach-Pause hält die Uhr an (C13) ────────────────
+  /** Summe der abgeschlossenen Coach-Pausen in Millisekunden. Gerechnet wird nur über `src/lib/simulation/zeit.ts`. */
+  pausedMs?: number;
+  /** Beginn der laufenden Coach-Pause (ISO-Zeit); `null` oder fehlend = keine. Deckel: 5 Minuten je Pause, 15 je Lauf. */
+  pauseSince?: string | null;
   // ── Paket 2 (12.11.2026): Geldweg und Kennzahlen der Auswertung ────────────
   /**
    * C8: Offene Buchung der Auswertung. Wird VOR der Buchung vermerkt (Kennung, Zeitpunkt), nach der Antwort des
@@ -195,6 +213,8 @@ export async function createSimulation(args: {
   convoLocale?: "de" | "en" | "es" | "fr";
   mode?: "practice" | "check";
   hardness?: "mild" | "standard" | "hart";
+  /** Mikrofon-Check (Paket 4): Der Lauf beginnt mit angehaltener Uhr; sie läuft ab dem ersten Ton oder Wort. */
+  pauseSince?: string;
 }): Promise<SimulationDoc> {
   const now = new Date().toISOString();
   const doc: SimulationDoc = {
@@ -212,6 +232,7 @@ export async function createSimulation(args: {
     ...(args.convoLocale ? { convoLocale: args.convoLocale } : {}),
     ...(args.mode && args.mode !== "practice" ? { mode: args.mode } : {}),
     ...(args.hardness && args.hardness !== "standard" ? { hardness: args.hardness } : {}),
+    ...(args.pauseSince ? { pauseSince: args.pauseSince } : {}),
   };
   await upsertItem(runsContainer(), doc);
   return doc;
@@ -375,14 +396,17 @@ export async function listSimulations(
     status: SimulationListItem["status"];
     createdAt: string;
     updatedAt: string;
-    turns?: unknown[];
+    turnCount?: number;
     attempt?: number;
-    debriefJson?: { overall?: number | null; verdict?: string } | null;
+    overall?: number | null;
+    verdict?: string;
   }>(
     runsContainer(),
     // Partitions-lokale Query (sessionId = PK) — kein Cross-Partition-Fanout.
     // `aborted` wird ausgefiltert (§2.4): abgebrochene Läufe sind keine Historie.
-    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, c.turns, c.attempt, c.debriefJson FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status != 'aborted' ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
+    // Paket 6, C22 (12.11.2026): Die Abfrage zählt die Züge selbst und holt vom Debrief nur Gesamtwert und Urteil.
+    // Vorher kamen je Lauf das ganze Gespräch und der ganze Debrief mit, nur um im Code zu zählen (bis 100 Läufe).
+    "SELECT c.id, c.scenarioId, c.status, c.createdAt, c.updatedAt, ARRAY_LENGTH(c.turns) AS turnCount, c.attempt, c.debriefJson.overall AS overall, c.debriefJson.verdict AS verdict FROM c WHERE c.sessionId = @pk AND c.docType = @dt AND c.status != 'aborted' ORDER BY c.createdAt DESC OFFSET 0 LIMIT @limit",
     [
       { name: "@pk", value: simPartitionKey(uid) },
       { name: "@dt", value: SIM_DOC_TYPE },
@@ -395,15 +419,12 @@ export async function listSimulations(
     status: r.status,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
-    turnCount: Array.isArray(r.turns) ? r.turns.length : 0,
+    turnCount: typeof r.turnCount === "number" ? r.turnCount : 0,
     attempt: typeof r.attempt === "number" && r.attempt >= 1 ? r.attempt : 1,
-    overall:
-      typeof r.debriefJson?.overall === "number" ? r.debriefJson.overall : null,
+    overall: typeof r.overall === "number" ? r.overall : null,
     verdict:
-      r.debriefJson?.verdict === "passed" ||
-      r.debriefJson?.verdict === "failed" ||
-      r.debriefJson?.verdict === "unrated"
-        ? r.debriefJson.verdict
+      r.verdict === "passed" || r.verdict === "failed" || r.verdict === "unrated"
+        ? r.verdict
         : null,
   }));
 }

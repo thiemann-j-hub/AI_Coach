@@ -12,6 +12,7 @@ const h = vi.hoisted(() => ({
   createSimulation: vi.fn(),
   runPersonaOpening: vi.fn(),
   budget: vi.fn(),
+  logApi: vi.fn(),
 }));
 
 vi.mock("@/lib/api-auth", () => ({ requireAuth: async () => ({ uid: "u1", email: "a@example.com", oid: "oid-1" }) }));
@@ -21,7 +22,7 @@ vi.mock("@/lib/rate-limit", () => ({
     return null;
   },
 }));
-vi.mock("@/lib/logger", () => ({ logger: { api: vi.fn(), apiError: vi.fn(), warn: vi.fn(), info: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/logger", () => ({ logger: { api: h.logApi, apiError: vi.fn(), warn: vi.fn(), info: vi.fn(), error: vi.fn() } }));
 // Die Tagesgrenze selbst (Zahl, Vergleich, Antwort) bleibt echt; nur das Token-Budget ist ersetzt.
 vi.mock("@/lib/server/cost-cap", async (original) => ({
   ...(await original<typeof import("@/lib/server/cost-cap")>()),
@@ -48,8 +49,9 @@ beforeEach(() => {
   process.env.SIMULATION_ENABLED = "on";
   delete process.env.COACH_SIM_STARTS_PER_DAY;
   delete process.env.ADMIN_EMAILS;
+  delete process.env.COACH_LIVE;
   h.rateKeys.length = 0;
-  for (const m of [h.startedToday, h.createSimulation, h.runPersonaOpening, h.budget]) m.mockReset();
+  for (const m of [h.startedToday, h.createSimulation, h.runPersonaOpening, h.budget, h.logApi]) m.mockReset();
   h.startedToday.mockResolvedValue(0);
   h.budget.mockResolvedValue({ allowed: true });
   h.runPersonaOpening.mockResolvedValue("Hi, you wanted to see me?");
@@ -64,6 +66,7 @@ beforeEach(() => {
 
 afterEach(() => {
   delete process.env.SIMULATION_ENABLED;
+  delete process.env.COACH_LIVE;
 });
 
 describe("Start /api/simulation/start", () => {
@@ -101,5 +104,48 @@ describe("Start /api/simulation/start", () => {
   it("begrenzt je angemeldeter Person, nicht je Adresse (C5)", async () => {
     await start();
     expect(h.rateKeys).toEqual(["sim-start:u1"]);
+  });
+});
+
+describe("Start: Sprechen nach vorn (Paket 4)", () => {
+  const trichter = () => h.logApi.mock.calls.filter((c) => c[0] === "/api/simulation/trichter");
+
+  it("S24: schreibt den Zählpunkt start mit dem gewählten Weg; der Weg steht nicht am Lauf", async () => {
+    const res = await start({ weg: "sprechen" });
+    expect(res.status).toBe(200);
+    expect(trichter()).toEqual([["/api/simulation/trichter", "start", { scenarioId: "sim-coaching-morgan", weg: "sprechen" }]]);
+    expect(h.createSimulation.mock.calls[0][0]).not.toHaveProperty("weg");
+  });
+
+  it("Mikrofon-Check: Start mit „Sprechen“ beginnt mit angehaltener Uhr, Start mit „Schreiben“ nicht", async () => {
+    await start({ weg: "sprechen" });
+    expect(typeof h.createSimulation.mock.calls[0][0].pauseSince).toBe("string");
+    await start({ weg: "schreiben" });
+    expect(h.createSimulation.mock.calls[1][0]).not.toHaveProperty("pauseSince");
+  });
+
+  it("ohne Weg (alter Client) fehlt das Feld; ein unbekannter Weg wird abgelehnt", async () => {
+    await start();
+    expect(trichter()).toEqual([["/api/simulation/trichter", "start", { scenarioId: "sim-coaching-morgan" }]]);
+    expect((await start({ weg: "singen" })).status).toBe(400);
+  });
+
+  it("ein abgewiesener Start zählt nicht", async () => {
+    h.startedToday.mockResolvedValue(6);
+    expect((await start({ weg: "sprechen" })).status).toBe(429);
+    expect(trichter()).toEqual([]);
+  });
+
+  it("C13 und liveAvailable: die Antwort trägt die Pausenfelder der Uhr und sagt, ob Sprechen geht", async () => {
+    let json = await (await start()).json();
+    expect(json.simulation).toMatchObject({ createdAt: "2026-11-12T08:00:00.000Z", pausedMs: 0, pauseSince: null, liveAvailable: false });
+
+    process.env.COACH_LIVE = "sim-coaching-morgan,ws-anderes";
+    json = await (await start()).json();
+    expect(json.simulation.liveAvailable).toBe(true);
+
+    process.env.COACH_LIVE = "ws-anderes";
+    json = await (await start()).json();
+    expect(json.simulation.liveAvailable).toBe(false);
   });
 });

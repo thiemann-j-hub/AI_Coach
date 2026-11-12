@@ -24,6 +24,8 @@ async function main() {
   console.log(`  ohne Urteil: ${sim.unratedShare ?? "–"} · Läufe mit zurückgehaltenen Scores: ${sim.withheldRuns} (${sim.withheldRunShare ?? "–"}) · Scores zurückgehalten gesamt: ${sim.withheldScores}`);
   console.log(`  Ø Belegquote Rubrik: ${sim.avgCoverage ?? "–"} · Anteil bewerteter C-Werte: ${sim.cScoredShare ?? "–"}`);
   console.log(`  Richter: ${sim.judge.measured} Läufe mit Kennzahlen · Rückfälle auf das schnelle Modell: ${sim.judge.fallbacks} (${sim.judge.fallbackShare ?? "–"}) · Gründe: ${JSON.stringify(sim.judge.reasons)}`);
+  // Paket 4, S22 (12.11.2026): Messwerte des Sprachwegs. Messlatte: Antwort nach 1,3 s, Ton aus 0,8 s nach einem Einwurf.
+  console.log(`  Sprachweg: ${sim.speech.runs} Läufe · ${sim.speech.answers} Antworten · Antwortzeit Median ${sim.speech.p50Ms ?? "–"} ms, 95 % ${sim.speech.p95Ms ?? "–"} ms · Unterbrechungen: ${sim.speech.interruptions} · dabei gekürzt: ${sim.speech.cutChars} Zeichen`);
   console.log(`Transkript-Analysen: ${out.analyses.count} · davon mit Gate-Fehlern: ${out.analyses.withGateErrors}`);
   console.log(`Briefing-Zeile: ${formatQualityStatsLine(out)}`);
   if (jsonOut) {

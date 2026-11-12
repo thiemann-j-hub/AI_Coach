@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { simulationEnabled } from "@/lib/simulation/flags";
+import { coachLiveEnabledFor, simulationEnabled } from "@/lib/simulation/flags";
 import { publicScenario, publicScenarios } from "@/lib/simulation/scenarios";
 import { listScenariosForUser } from "@/lib/server/scenario-store";
 import { weakestObservedSkill, type SkillRatingLike } from "@/lib/simulation/empfehlung";
@@ -48,6 +48,7 @@ async function finishedResults(uid: string): Promise<Array<{ scenarioId?: string
  * + Einstiegs-Insight (COACH-UX-BLUEPRINT §3/W1-4, seit U15 aus den Fähigkeiten): schwächste beobachtete
  *   Fähigkeit der jüngsten eigenen Rollenspiel-Auswertung, dazu deren Szenario (steht in der Empfehlung nicht zuerst)
  * + `played` (U21): bestes Ergebnis je Szenario aus den eigenen abgeschlossenen Läufen.
+ * + `liveAvailable` je Szenario (Paket 4, 12.11.2026): Das Briefing bietet „Sprechen“ nur an, wo das Live-Gespräch geht.
  * Fail-soft: ohne Insight bleibt der Einstieg Cold Start, ohne `played` fehlt nur das Zeichen an der Karte.
  */
 export async function GET(req: NextRequest) {
@@ -96,7 +97,7 @@ export async function GET(req: NextRequest) {
     aufraeumenAnstossen();
     return NextResponse.json({
       ok: true,
-      scenarios: [...publicScenarios(), ...workspaceScenarios],
+      scenarios: [...publicScenarios(), ...workspaceScenarios].map((s) => ({ ...s, liveAvailable: coachLiveEnabledFor(s.id) })),
       recent,
       insight,
       played,

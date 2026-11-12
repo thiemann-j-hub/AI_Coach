@@ -61,6 +61,9 @@ export async function GET(req: NextRequest) {
         finishError: doc.finishError ?? null,
         // W2-1: Client-Uhr rechnet ab createdAt (Server bleibt die Wahrheit).
         createdAt: doc.createdAt,
+        // Paket 4, C13 (12.11.2026): Pausenfelder der Uhr. Browser und Server rechnen beide mit `gespraechsZeitMs`.
+        pausedMs: doc.pausedMs ?? 0,
+        pauseSince: doc.pauseSince ?? null,
         turns: doc.turns,
         feedback: doc.feedbackJson ?? null,
         competencyRatings: doc.competencyRatings ?? null,

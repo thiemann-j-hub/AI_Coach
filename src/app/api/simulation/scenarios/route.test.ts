@@ -51,6 +51,7 @@ beforeEach(() => {
 
 afterEach(() => {
   delete process.env.SIMULATION_ENABLED;
+  delete process.env.COACH_LIVE;
 });
 
 describe("GET /api/simulation/scenarios — Einblick und Empfehlung", () => {
@@ -108,6 +109,25 @@ describe("GET /api/simulation/scenarios — Einblick und Empfehlung", () => {
     expect(r.status).toBe(200);
     expect(r.json.insight).toEqual({ skill: "konkret", label: "Konkret bleiben", scenarioId: "sim-coaching-morgan" });
     expect(r.json.played).toEqual({});
+  });
+
+  it("Paket 4: liveAvailable je Szenario sagt dem Briefing, wo „Sprechen“ geht", async () => {
+    // Schalter aus (Standard): nirgends.
+    let { json } = await katalog();
+    expect(json.scenarios.length).toBeGreaterThan(0);
+    expect(json.scenarios.every((s: { liveAvailable: unknown }) => s.liveAvailable === false)).toBe(true);
+
+    // Einzelne Szenarien freigegeben.
+    process.env.COACH_LIVE = "sim-coaching-morgan";
+    ({ json } = await katalog());
+    const frei = json.scenarios.filter((s: { liveAvailable: boolean }) => s.liveAvailable).map((s: { id: string }) => s.id);
+    expect(frei).toEqual(["sim-coaching-morgan"]);
+
+    // Alle freigegeben. Die Rollen-DNA bleibt trotzdem auf dem Server.
+    process.env.COACH_LIVE = "all";
+    ({ json } = await katalog());
+    expect(json.scenarios.every((s: { liveAvailable: unknown }) => s.liveAvailable === true)).toBe(true);
+    expect(json.scenarios.some((s: Record<string, unknown>) => "personaDna" in s)).toBe(false);
   });
 
   it("beide Abfragen bleiben in der eigenen Partition und laden keine Gespräche", async () => {

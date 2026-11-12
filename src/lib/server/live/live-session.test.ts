@@ -113,7 +113,8 @@ describe("Sprachmodus Live — Kern des Relais", () => {
     expect(up.cfg().languageCode).toBe("de-DE");
     expect(up.cfg().systemInstruction).toContain("GESPROCHENES GESPRÄCH");
     expect(up.calls.find((c) => c.k === "history")?.v).toBe(1);
-    expect(json(ws)[0]).toEqual({ t: "ready", persona: "Alex Morgan", voice: "Aoede" });
+    // Paket 4: `ready` trägt die Pausenfelder der Uhr und sagt, ob die Rolle gleich hörbar eröffnet.
+    expect(json(ws)[0]).toEqual({ t: "ready", persona: "Alex Morgan", voice: "Aoede", pausedMs: 0, pauseSince: null, eroeffnung: false });
     ws.close(1000);
     await run;
   });

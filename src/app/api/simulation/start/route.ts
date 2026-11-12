@@ -6,8 +6,9 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens, isCostCapAdmin, simStartsExceeded, simStartsLimitResponse, simStartsPerDay } from "@/lib/server/cost-cap";
 import { getApiMessages } from "@/lib/server/get-request-locale";
-import { simulationEnabled } from "@/lib/simulation/flags";
+import { coachLiveEnabledFor, simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser, hasOpenFreeTestEval } from "@/lib/server/scenario-store";
+import { zaehlpunkt } from "@/lib/server/trichter";
 import { preflightEntitlement } from "@/lib/server/credits/entitlement";
 import { withRetry, timeoutMs } from "@/lib/with-timeout";
 
@@ -39,6 +40,8 @@ const requestSchema = z.object({
   mode: z.enum(["practice", "check"]).optional(),
   /** B2: Härtegrad der Persona (Default standard). */
   hardness: z.enum(["mild", "standard", "hart"]).optional(),
+  /** Paket 4, S24 (12.11.2026): gewählter Weg im Briefing. Nur für den Zählpunkt `start`, am Lauf steht er nicht. */
+  weg: z.enum(["sprechen", "schreiben"]).optional(),
 });
 
 /** Harte Kappe fuer den gespeicherten Fokus (Prompt-Injektion + Doc-Groesse). */
@@ -135,6 +138,9 @@ export async function POST(req: NextRequest) {
       convoLocale,
       mode,
       hardness,
+      // Paket 4 (12.11.2026): Wer mit „Sprechen“ startet, prüft zuerst das Mikrofon. Solange steht die Uhr; sie läuft
+      // ab dem ersten Ton der Rolle oder dem ersten eigenen Wort (Relais, Zug-Route), spätestens nach fünf Minuten.
+      ...(parsed.data.weg === "sprechen" ? { pauseSince: new Date().toISOString() } : {}),
       openingTurn: {
         role: "persona",
         text: openingText,
@@ -148,6 +154,8 @@ export async function POST(req: NextRequest) {
       scenarioId: scenario.id,
       attempt,
     });
+    // Paket 4, S24: Zählpunkt „Gespräch gestartet“ (ohne Nutzertext).
+    zaehlpunkt("start", scenario.id, parsed.data.weg);
     return NextResponse.json({
       ok: true,
       simulation: {
@@ -161,6 +169,11 @@ export async function POST(req: NextRequest) {
         hardness,
         // W2-1: Client-Uhr rechnet ab createdAt (Server bleibt die Wahrheit).
         createdAt: doc.createdAt,
+        // Paket 4, C13: Pausenfelder der Uhr (`gespraechsZeitMs`); ein frischer Lauf hat noch keine Pause.
+        pausedMs: doc.pausedMs ?? 0,
+        pauseSince: doc.pauseSince ?? null,
+        // Paket 4: Erlaubt dieses Szenario das Live-Gespräch? Dann bietet der Browser „Sprechen“ an.
+        liveAvailable: coachLiveEnabledFor(scenario.id),
       },
     });
   } catch (err) {

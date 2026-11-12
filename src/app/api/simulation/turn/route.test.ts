@@ -155,6 +155,58 @@ describe("Gesprächszug: Zeitbox", () => {
   });
 });
 
+describe("Gesprächszug: Coach-Pause hält die Uhr an (Paket 4, C13)", () => {
+  it("abgeschlossene Pausen zählen nicht zur Zeitbox", async () => {
+    // Morgan: 15 Minuten. Der Lauf begann vor 16 Minuten, davon waren 5 Minuten Pause: 11 Minuten Gespräch (73 %).
+    db.seed({ createdAt: new Date(Date.now() - 16 * 60_000).toISOString(), pausedMs: 5 * 60_000 });
+
+    const res = await zug("Wo waren wir?");
+    expect((await res.json()).timeUp).toBe(false);
+    expect(h.runPersonaTurn.mock.calls[0][0].timeSignal).toBeUndefined();
+    expect(lauf().closedByTime).toBeUndefined();
+    expect(lauf().timeWarned).toBeUndefined();
+  });
+
+  it("eine offen gebliebene Pause hält die Uhr an und endet mit dem eigenen Zug", async () => {
+    // Vor 14 Minuten begonnen, seit 3 Minuten Pause: 11 Minuten Gespräch. Ohne Pause wäre der Hinweis fällig (93 %).
+    db.seed({ createdAt: new Date(Date.now() - 14 * 60_000).toISOString(), pauseSince: new Date(Date.now() - 3 * 60_000).toISOString() });
+
+    await zug("Ich bin wieder da.");
+    expect(h.runPersonaTurn.mock.calls[0][0].timeSignal).toBeUndefined();
+    const doc = lauf();
+    expect(doc.pauseSince).toBeNull();
+    expect(doc.pausedMs).toBeGreaterThanOrEqual(3 * 60_000 - 50);
+    expect(doc.pausedMs).toBeLessThan(3 * 60_000 + 5_000);
+  });
+
+  it("der Deckel gilt auch hier: eine vergessene Pause hält höchstens 5 Minuten an", async () => {
+    // Vor 40 Minuten begonnen, die Pause steht seit 39 Minuten offen: Die Zeit ist längst um.
+    db.seed({ createdAt: new Date(Date.now() - 40 * 60_000).toISOString(), pauseSince: new Date(Date.now() - 39 * 60_000).toISOString() });
+    h.runPersonaTurn.mockResolvedValue({ reply: "Ich muss leider los.", ende: null });
+
+    const res = await zug("Hallo?");
+    expect((await res.json()).timeUp).toBe(true);
+    expect(h.runPersonaTurn.mock.calls[0][0].timeSignal).toBe("farewell");
+    expect(lauf()).toMatchObject({ pausedMs: 5 * 60_000, pauseSince: null });
+  });
+});
+
+describe("Gesprächszug: Zählpunkt „erstes Wort“ (Paket 4, S24)", () => {
+  it("zählt den ersten eigenen Zug im Textweg genau einmal, ohne Nutzertext", async () => {
+    db.seed();
+    await zug("Guten Morgen, hast Du kurz Zeit?");
+    await zug("Es geht um den Kunden.");
+    const zeilen = h.logApi.mock.calls.filter((c) => c[0] === "/api/simulation/trichter");
+    expect(zeilen).toEqual([["/api/simulation/trichter", "erstes_wort", { scenarioId: "sim-coaching-morgan", weg: "schreiben" }]]);
+  });
+
+  it("ein abgelehnter Zug zählt nicht", async () => {
+    db.seed({ status: "finishing" });
+    expect((await zug("Hallo?")).status).toBe(409);
+    expect(h.logApi.mock.calls.some((c) => c[0] === "/api/simulation/trichter")).toBe(false);
+  });
+});
+
 describe("Gesprächszug: sicher speichern (C3)", () => {
   it("hängt den Zug an den frischen Lauf an: eine Coach-Notiz, die während der Antwort entstand, bleibt erhalten", async () => {
     db.seed();

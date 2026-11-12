@@ -190,7 +190,8 @@ describe("Sprachmodus Live — Welle 2", () => {
     expect(msgs.find((m) => m.t === "idle_warn")).toBeTruthy();
     expect(msgs.find((m) => m.t === "bye")?.reason).toBe("idle");
     await run;
-    expect(saved.at(-1)?.liveStats).toEqual({ antworten: 1, p50Ms: 1200, p95Ms: 1200, maxMs: 1200 });
+    // Paket 4, S22: dazu die einzelnen Zeiten und die Zähler der Unterbrechungen.
+    expect(saved.at(-1)?.liveStats).toEqual({ antworten: 1, p50Ms: 1200, p95Ms: 1200, maxMs: 1200, zeiten: [1200], unterbrechungen: 0, gekuerztZeichen: 0 });
   });
 });
 
