@@ -8,6 +8,11 @@
  * mit deterministischem Gesamtscore, Erwartungslabels, Zitat-Belegen, Delta zum
  * Vorversuch und Fokus-Retry. Grundsatz: »Kein Score ohne Zitat« — und
  * »nicht beobachtbar« ist ehrlicher als 0 %.
+ *
+ * Paket 4 (12.11.2026, C25): Die Sprachwege leben in eigenen Dateien unter ./sprechen —
+ * `useLiveGespraech` (Sprachgespräch mit der Rolle), `useDiktat` (Diktat ins Eingabefeld), dazu die Ansichten
+ * `WegWahl` (Briefing), `MikrofonCheck` und `Sprechansicht`. Diese Datei verbindet sie mit Briefing, Chat und
+ * dem Ablauf am Gesprächsende.
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -20,15 +25,18 @@ import {
   ChevronDown,
   Clock,
   Compass,
+  FileText,
+  HelpCircle,
+  Keyboard,
   ListChecks,
   Flag,
   MessagesSquare,
   Lightbulb,
   Loader2,
   Mic,
+  MoreHorizontal,
   Pause,
   Play,
-  Radio,
   Send,
   Sparkles,
   Target,
@@ -45,12 +53,12 @@ import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { aiErrorMessage } from '@/lib/api-error-text';
 import { withBasePath } from '@/lib/base-path';
-import { createLiveAudio, liveAudioSupported, type LiveAudio } from '@/lib/live-audio';
-import { openLiveConnection, type LiveConnection } from '@/lib/live-client';
+import { liveAudioSupported } from '@/lib/live-audio';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
 import { faehigkeit, faehigkeitText } from '@/lib/simulation/faehigkeiten';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { costNote, maxEurHint, showEurPrice } from '@/lib/pricing-display';
 import { useWorkspaceRole } from '@/lib/use-workspace-role';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
@@ -66,7 +74,18 @@ import {
   type CheckinStand,
 } from '@/lib/simulation/checkin-ablauf';
 import { decideApiFailure, type ApiFailureBody } from '@/lib/simulation/api-failure';
-import { decideLiveEnd, dictationEndMessage, type LiveEndCause, type VoiceMessage } from '@/lib/simulation/live-failure';
+import type { VoiceMessage } from '@/lib/simulation/live-failure';
+import { uhrStand } from '@/lib/simulation/gespraechs-uhr';
+import { rolleZustand } from '@/lib/simulation/sprech-zustand';
+import { WEG_MERKER, gemerkterWeg, mikrofonVorhanden, wegBeimFortsetzen, wegVorwahl, type Weg } from '@/lib/simulation/weg-wahl';
+import { pauseSetzen } from '@/lib/simulation/zeit';
+import { MikrofonCheck } from './sprechen/MikrofonCheck';
+import { Sprechansicht } from './sprechen/Sprechansicht';
+import { WegWahl } from './sprechen/WegWahl';
+import { mikroHinweisBestaetigen, mikroHinweisBestaetigt } from './sprechen/mikro-hinweis';
+import { GespraechsBlasen, PersonaAvatar, cx } from './sprechen/teile';
+import { useDiktat } from './sprechen/useDiktat';
+import { useLiveGespraech } from './sprechen/useLiveGespraech';
 
 /** Wirkungsrichtungen in fester Anzeige-Reihenfolge (Blueprint §2.1). */
 const CATEGORY_ORDER = [
@@ -101,6 +120,8 @@ interface PublicScenario {
     factVisuals?: FactVisual[];
   };
   competencies: { key: string; label: string; weight?: number }[];
+  /** Paket 4: Das Szenario erlaubt das Sprachgespräch (Katalog). Nur dann gibt es die Wahl „Sprechen“. */
+  liveAvailable?: boolean;
 }
 
 /** Gesprächssprache (Synthesia-Muster): Auswahl per Flaggen-Pills im Briefing. */
@@ -361,8 +382,28 @@ interface TransferItem {
 
 type View = 'loading' | 'disabled' | 'list' | 'briefing' | 'chat';
 
-function cx(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ');
+/** Paket 4: Die letzte eigene Wahl „Sprechen | Schreiben“ merkt sich das Gerät (localStorage, try/catch). */
+function liesGemerktenWeg(): Weg | null {
+  try {
+    return gemerkterWeg(localStorage.getItem(WEG_MERKER));
+  } catch {
+    return null;
+  }
+}
+function merkeWeg(weg: Weg) {
+  try {
+    localStorage.setItem(WEG_MERKER, weg);
+  } catch {
+    /* localStorage optional */
+  }
+}
+
+/** Paket 4, S24: Zählpunkt des Trichters (ohne Nutzertext, ohne Ablage). Best effort: Er hält niemanden auf. */
+function zaehlpunkt(schritt: 'briefing' | 'mikro_ok' | 'mikro_verweigert', scenarioId: string, weg?: Weg) {
+  void authFetch('/api/simulation/zaehlpunkt', {
+    method: 'POST',
+    body: JSON.stringify({ schritt, scenarioId, ...(weg ? { weg } : {}) }),
+  }).catch(() => {});
 }
 
 /** Welle 4: private, selbst vorbereitete Gespräche tragen die Id-Klasse ws-mein-. */
@@ -382,59 +423,6 @@ const LEVEL_STYLES: Record<number, string> = {
   3: 'bg-primary/10 text-primary border-primary/20',
 };
 const LEVEL_DOTS: Record<number, string> = { 1: '●○○', 2: '●●○', 3: '●●●' };
-
-/**
- * Persona-Avatar — D4: fotorealistisches Porträt (fal, erfundene Person) aus
- * public/personas/<scenarioId>.jpg mit Initialen-Fallback, falls das Bild
- * fehlt oder (noch) nicht geladen ist.
- */
-function PersonaAvatar({
-  name,
-  scenarioId,
-  size = 'md',
-}: {
-  name: string;
-  scenarioId?: string;
-  size?: 'sm' | 'md' | 'lg';
-}) {
-  const [imgFailed, setImgFailed] = useState(false);
-  const initials = name
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-  const cls =
-    size === 'lg'
-      ? 'h-16 w-16 text-xl'
-      : size === 'sm'
-        ? 'h-7 w-7 text-[10px]'
-        : 'h-10 w-10 text-sm';
-  const showImage = scenarioId && !imgFailed;
-  return (
-    <span
-      className={cx(
-        cls,
-        'shrink-0 rounded-full grid place-items-center font-bold text-white overflow-hidden',
-        'bg-gradient-to-br from-primary to-accent shadow-neon ring-1 ring-white/20'
-      )}
-      aria-hidden
-    >
-      {showImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={withBasePath(`/personas/${scenarioId}.jpg`)}
-          alt=""
-          className="h-full w-full object-cover"
-          onError={() => setImgFailed(true)}
-        />
-      ) : (
-        initials
-      )}
-    </span>
-  );
-}
 
 export default function SimulationClient() {
   const { t, locale } = useTranslation();
@@ -517,9 +505,7 @@ export default function SimulationClient() {
   const [timeoutQuestion, setTimeoutQuestion] = useState('');
   const [timeoutBusy, setTimeoutBusy] = useState(false);
   const [timeoutsMax, setTimeoutsMax] = useState(3);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
-  // ── D4: Sprach-Schleife (Web Speech API — lokal im Browser, keine Server-Kosten) ──
-  const [micActive, setMicActive] = useState(false);
+  // Antworten der Rolle im Chat vorlesen (Stimme der Rolle über /api/tts).
   const [speakReplies, setSpeakReplies] = useState(false);
   // ── Synthesia-Angleich (Owner-Vorgabe 04.08.) ──
   /** Gewählte Gesprächssprache (Flaggen-Pills im Briefing). */
@@ -534,34 +520,30 @@ export default function SimulationClient() {
   const [timeUp, setTimeUp] = useState(false);
   // Welle 2: die Rolle hat das Gespräch selbst beendet (Grund in der Autorensprache, Art).
   const [personaEnded, setPersonaEnded] = useState<{ grund: string; ergebnis: string; at?: string } | null>(null);
-  // Welle 2: Statuszeile im Live-Modus (Stille-Vorwarnung, Wiederverbindung).
-  const [liveNotice, setLiveNotice] = useState<{ kind: 'idle' | 'reconnecting' | 'reconnected'; seconds?: number } | null>(null);
-  const liveRetryRef = useRef(0);
-  // Paket 1, C12 (12.11.2026): Der Neuverbinden-Timer wird gemerkt, damit „Mikro aus“ und der Abbau ihn löschen.
-  const liveRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Paket 1, C11 (12.11.2026): „Das Mikrofon startet“ gilt ab dem Klick — Refs für die Logik, State für den Knopf.
-  const micStartingRef = useRef(false);
-  const liveStartingRef = useRef(false);
-  const [micStarting, setMicStarting] = useState(false);
-  // ── W2-1 sichtbare Uhr: Client-Anzeige ab createdAt; Server bleibt Wahrheit. ──
+  // ── Paket 4 (Owner-Entscheid 12.11.2026): Sprechen oder Schreiben ──
+  /** Der Weg des laufenden Gesprächs. */
+  const [weg, setWeg] = useState<Weg>('schreiben');
+  /** Eigene Wahl im offenen Briefing; null = die Vorwahl gilt (src/lib/simulation/weg-wahl.ts). */
+  const [wegWunsch, setWegWunsch] = useState<Weg | null>(null);
+  /** Mikrofon vorhanden? null = unbekannt (gilt als vorhanden). */
+  const [mikrofonDa, setMikrofonDa] = useState<boolean | null>(null);
+  /** Der Mikrofon-Check lief auf dieser Seite schon: Danach geht Sprechen ohne erneuten Check. */
+  const [mikroGeprueft, setMikroGeprueft] = useState(false);
+  /** Der Mikrofon-Check folgt direkt auf einen Klick (Start, Wechsel zu Sprechen): Dann fragt er das Mikrofon gleich an. */
+  const [mikroAusKlick, setMikroAusKlick] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  // ── W2-1 sichtbare Uhr; der Server bleibt Wahrheit. Paket 4, C13: Sie rechnet mit Start UND Pausen des Laufs
+  //    (src/lib/simulation/gespraechs-uhr.ts) und steht in der Coach-Pause. ──
   const [simStartedAt, setSimStartedAt] = useState<string | null>(null);
+  const [pausen, setPausen] = useState<{ pausedMs: number; pauseSince: string | null }>({ pausedMs: 0, pauseSince: null });
+  /** Nur die Antwort auf die jüngste Pausen-Anfrage zählt (Öffnen und Schließen kurz nacheinander). */
+  const pauseAnfrageRef = useRef(0);
   const [nowTs, setNowTs] = useState(() => Date.now());
   // ── W2-3: Verlassen-Dialog (Lauf bleibt offen) ──
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [aborting, setAborting] = useState(false);
   // ── W2-5: Ziel-Streifen (mobil einklappbar, Zustand gemerkt) ──
   const [goalsOpen, setGoalsOpen] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
-  // EU-Hosting Weg B (11.10.2026): Spracheingabe zuerst über Azure Speech (West-Europa, Token von
-  // /api/speech-token), die Browser-Erkennung (Chrome: Google) nur noch als Notnagel.
-  const browserSpeechSupported =
-    typeof window !== 'undefined' &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-  const speechSupported =
-    typeof window !== 'undefined' &&
-    (browserSpeechSupported || Boolean(navigator.mediaDevices?.getUserMedia));
   // Owner-GO 19.09.: Persona-Antworten spricht der Server (Azure-HD, /api/tts);
   // die Browserstimme („Microsoft Hedda") ist nur noch der Notnagel bei 503/Netzfehler.
   const browserTtsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -570,52 +552,88 @@ export default function SimulationClient() {
   // Diktat/Vorlesen folgen der GEWÄHLTEN Gesprächssprache (nicht der Autorensprache).
   const speechLang = SPEECH_LANG[convoLocale];
 
-  // Gewollt-an-Merker: Browser beenden die Erkennung nach Stille von selbst —
-  // solange der Nutzer das Mikro nicht ausgeschaltet hat, starten wir neu
-  // (Synthesia-Verhalten: das Mikro bleibt im Gespräch einfach an).
-  const wantMicRef = useRef(false);
+  // W5-4: Link zur Einwilligungs-Seite im Hub, wenn das Unternehmen die Zustimmung „Sprachaufnahme“ verlangt.
+  const [consentUrl, setConsentUrl] = useState<string | null>(null);
+  // CP-3.4 (M21 Option 1, Compliance-Blueprint 31.08.): Aufklärung vor der ERSTEN Mikrofon-Nutzung je Gerät.
+  // Vor dem Diktat (Chat, Check-in) als Dialog; vor dem Sprechen steht sie im Mikrofon-Check. Die Bestätigung
+  // selbst liegt in ./sprechen/mikro-hinweis.ts.
+  const [micNoticeOpen, setMicNoticeOpen] = useState(false);
 
-  // Sprachmodus Live (Owner-GO 28.10.2026, N4-231): Die Persona hört und spricht selbst (Gemini Live,
-  // EU), die Mitschrift beider Seiten läuft mit. Zweiter Weg NEBEN der Kaskade: gibt es für das
-  // Szenario keine Karte (Schalter COACH_LIVE aus), läuft alles wie bisher (Diktat + Azure-Stimme).
-  const liveRef = useRef<{ conn: LiveConnection; audio: LiveAudio } | null>(null);
-  const [liveState, setLiveState] = useState<'off' | 'connecting' | 'on'>('off');
-  const [liveYou, setLiveYou] = useState('');
-  const [livePersona, setLivePersona] = useState('');
+  /** Paket 1, C10 (12.11.2026): der Satz, warum das Mikrofon aus ist. */
+  const voiceText = useCallback(
+    (m: VoiceMessage): string =>
+      m.type === 'server'
+        ? m.text
+        : m.type === 'ai'
+          ? aiErrorMessage(t.aiErrors, { aiCode: m.aiCode }, null, ts.genericError) ?? ts.genericError
+          : ts[m.key],
+    [t, ts]
+  );
 
-  const stopLive = useCallback(() => {
-    // Paket 1, C12 (12.11.2026): Ein geplanter Neuversuch startet nach „Mikro aus“ oder dem Verlassen nicht mehr.
-    if (liveRetryTimerRef.current) {
-      clearTimeout(liveRetryTimerRef.current);
-      liveRetryTimerRef.current = null;
-      setLiveNotice((n) => (n?.kind === 'reconnecting' ? null : n));
-    }
-    const l = liveRef.current;
-    liveRef.current = null;
-    if (l) {
-      try {
-        l.conn.end();
-      } catch {
-        /* schon zu */
-      }
-      l.audio.close();
-    }
-    setLiveState('off');
-    setLiveYou('');
-    setLivePersona('');
-  }, []);
+  // Paket 4, C25 (12.11.2026): Die Sprachwege leben in eigenen Hooks. Fehlerantworten ihrer Routen laufen über
+  // `handleApiFailure` (weiter unten), darum der Umweg über den Ref.
+  const apiFailureRef = useRef<(res: Response, body: ApiFailureBody | null) => void>(() => {});
 
+  // Sprachgespräch (Owner-GO 28.10.2026, N4-231): Die Rolle hört und spricht selbst, die Mitschrift beider Seiten
+  // läuft mit. Seit Paket 4 der erste Weg: Start im Briefing mit „Sprechen“, davor der Mikrofon-Check.
+  const live = useLiveGespraech({
+    simId,
+    onTurn: (turn) => {
+      const at = new Date().toISOString();
+      setTurns((prev) => [
+        ...prev,
+        ...(turn.user ? [{ role: 'user' as const, text: turn.user, ts: at }] : []),
+        ...(turn.persona ? [{ role: 'persona' as const, text: turn.persona, ts: at }] : []),
+      ]);
+      if (turn.timeUp) setTimeUp(true);
+      if (turn.ended) setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
+    },
+    onEnded: (p) => setPersonaEnded({ grund: p.grund, ergebnis: p.ergebnis }),
+    onBanner: (art) => {
+      if (art === 'timeUp') setTimeUp(true);
+      else setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
+    },
+    // C13: Das Relais nennt die Pausen des Laufs, die Uhr gleicht sich daran ab. Läuft dort noch eine Pause, obwohl
+    // die Coach-Pause hier zu ist (das Schließen kam nicht an), endet sie jetzt.
+    onReady: (p) => {
+      if (typeof p.pausedMs !== 'number') return;
+      setPausen({ pausedMs: p.pausedMs, pauseSince: p.pauseSince ?? null });
+      if (p.pauseSince && !timeoutOpen) void setzePause(false);
+    },
+    onError: setError,
+    // Ohne Einwilligung „Sprachaufnahme“ geht es schreibend weiter; der Hinweis nennt den Weg zur Einwilligung.
+    onConsent: (url) => {
+      setConsentUrl(url);
+      setWeg('schreiben');
+    },
+    onApiFailure: (res, body) => apiFailureRef.current(res, body),
+    // Sprechen geht für diesen Lauf gerade nicht (Schalter aus, Netz): schreibend weiter, mit einem Satz.
+    onUnavailable: () => {
+      setWeg('schreiben');
+      setError(ts.speakUnavailable);
+    },
+    voiceText,
+    texte: { genericError: ts.genericError, voiceLost: ts.voiceLost },
+  });
+
+  // Diktat: Gesprochenes wird ans Eingabefeld ANGEHÄNGT (nichts überschreiben). Es startet nie das Sprachgespräch.
+  const diktat = useDiktat({
+    lang: speechLang,
+    onText: (text) => setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text),
+    onError: setError,
+    onConsent: setConsentUrl,
+    onApiFailure: (res, body) => apiFailureRef.current(res, body),
+    voiceText,
+    texte: { unavailable: ts.unavailable, genericError: ts.genericError },
+  });
+
+  const { stop: stopLive } = live;
+  const { stop: stopDiktat, start: startDiktat } = diktat;
+  /** Alles rund ums Mikrofon beenden: Sprachgespräch und Diktat. */
   const stopMic = useCallback(() => {
-    wantMicRef.current = false;
+    stopDiktat();
     stopLive();
-    try {
-      recognitionRef.current?.stop();
-    } catch {
-      /* schon gestoppt */
-    }
-    recognitionRef.current = null;
-    setMicActive(false);
-  }, [stopLive]);
+  }, [stopDiktat, stopLive]);
 
   /**
    * Paket 1, C1 (12.11.2026): Fehlerantwort einer Route → Satz und Verhalten. Der Aufrufer übergibt den schon
@@ -671,372 +689,109 @@ export default function SimulationClient() {
     },
     [t, ts, stopMic, simId, router]
   );
-
-  /** Paket 1, C10 (12.11.2026): der Satz, warum das Mikrofon aus ist. */
-  const voiceText = useCallback(
-    (m: VoiceMessage): string =>
-      m.type === 'server'
-        ? m.text
-        : m.type === 'ai'
-          ? aiErrorMessage(t.aiErrors, { aiCode: m.aiCode }, null, ts.genericError) ?? ts.genericError
-          : ts[m.key],
-    [t, ts]
-  );
+  apiFailureRef.current = handleApiFailure;
 
   /**
-   * Azure-Diktat (EU): Token holen, SDK laden, erkennen. false NUR, wenn der Server die Browser-Erkennung ausdrücklich
-   * wählt (Rückweg SPEECH_INPUT=browser → mode "browser"). 01.11.2026 (Bewertung Teil 1, Owner-Ja): Bei jedem anderen
-   * Fehler (502/503/429/Netz) kein Browser-Notnagel mehr — Chrome schickte die Aufnahme an Google, das deckt die
-   * Einwilligung nicht; stattdessen „nicht erreichbar“, Mikro aus, Tippen geht weiter.
-   */
-  const startAzureMic = useCallback(async (): Promise<boolean> => {
-    const micAus = () => { setMicActive(false); wantMicRef.current = false; return true; };
-    const ausfall = () => { setError(ts.unavailable); return micAus(); };
-    try {
-      const res = await authFetch('/api/speech-token');
-      // Paket 1, C1 (12.11.2026): den Körper genau einmal lesen.
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; token?: string; region?: string; code?: string; url?: string; error?: string; mode?: string };
-      if (res.status === 403) {
-        // Stufe C / W5-4 (20.10.2026): Einwilligung „Sprachaufnahme“ fehlt → Hinweis statt Browser-Notnagel.
-        if (j.code === 'EINWILLIGUNG') { setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme'); return micAus(); }
-        // A4 (31.10.2026): KI für das Unternehmen aus → Meldung des Servers statt Browser-Notnagel.
-        if (j.code === 'KI_AUS') { setError(j.error || ts.genericError); return micAus(); }
-      }
-      if (!res.ok) {
-        if (j.mode === 'browser') return false;
-        // Paket 1, C5: Limit erreicht → der Warte-Satz statt „nicht erreichbar“.
-        if (res.status === 429) { handleApiFailure(res, j); return micAus(); }
-        return ausfall();
-      }
-      if (!j.ok || !j.token || !j.region) return ausfall();
-      const { startAzureDictation } = await import('@/lib/azure-stt');
-      // Paket 1, C12: inzwischen ausgeschaltet oder die Seite verlassen → kein Mikrofon mehr öffnen.
-      if (!wantMicRef.current) return true;
-      const d = startAzureDictation({
-        token: j.token,
-        region: j.region,
-        lang: speechLang,
-        onText: (text) => setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text),
-        // Paket 1, C26: Das Token gilt rund zehn Minuten — die laufende Erkennung holt rechtzeitig ein frisches.
-        refreshToken: async () => {
-          const r = await authFetch('/api/speech-token');
-          const x = (await r.json().catch(() => null)) as { ok?: boolean; token?: string } | null;
-          return r.ok && x?.ok && x.token ? x.token : null;
-        },
-        onEnd: (error) => {
-          if (recognitionRef.current === d) recognitionRef.current = null;
-          // Paket 1, C26: Bricht das Diktat ab, steht der Grund da (nicht, wenn die Person selbst ausschaltet).
-          const grund = dictationEndMessage(error, !wantMicRef.current);
-          if (grund) setError(voiceText(grund));
-          setMicActive(false);
-          wantMicRef.current = false;
-        },
-      });
-      recognitionRef.current = d;
-      setMicActive(true);
-      return true;
-    } catch {
-      return ausfall();
-    }
-  }, [speechLang, ts.genericError, ts.unavailable, handleApiFailure, voiceText]);
-
-  /**
-   * Sprachmodus Live: Karte holen, Verbindung öffnen, Mikrofon streamen. false = für dieses Szenario
-   * aus (404 LIVE_OFF) oder nicht konfiguriert (503) → der Aufrufer nimmt die Kaskade wie bisher.
-   * true = Live läuft oder baut sich auf — oder der Grund steht schon da (Einwilligung fehlt, KI aus, Lauf zu, Limit).
-   */
-  const startLiveMic = useCallback(async (): Promise<boolean> => {
-    if (!simId || !liveAudioSupported()) return false;
-    // Paket 1, C11 (12.11.2026): Die Sperre gilt ab dem Klick, nicht erst nach dem Ticket-Abruf. Läuft schon ein
-    // Aufbau oder eine Verbindung, gibt es keine zweite und kein Diktat daneben.
-    if (liveRef.current || liveStartingRef.current) return true;
-    liveStartingRef.current = true;
-    const micAus = () => {
-      setMicActive(false);
-      wantMicRef.current = false;
-      return true;
-    };
-    let karte: { ticket: string; path: string } | null = null;
-    try {
-      const res = await authFetch('/api/simulation/live/ticket', {
-        method: 'POST',
-        body: JSON.stringify({ simId }),
-      });
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; ticket?: string; path?: string; code?: string; url?: string; error?: string };
-      if (res.status === 403 && j.code === 'EINWILLIGUNG') {
-        setConsentUrl(j.url || '/einwilligung?typ=sprachaufnahme');
-        return micAus();
-      }
-      // A4 (31.10.2026): KI für das Unternehmen aus → Meldung, keine Kaskade (Diktat und Stimme sind ebenfalls KI).
-      if (res.status === 403 && j.code === 'KI_AUS') {
-        setError(j.error || ts.genericError);
-        return micAus();
-      }
-      // Paket 1, C10: Der Lauf ist zu (Zeit um, Zuggrenze, Szenario fehlt) oder ein Limit greift → der passende
-      // Satz oder das Banner, kein stilles Diktat stattdessen.
-      if (res.status === 409 || res.status === 410 || res.status === 429) {
-        handleApiFailure(res, j);
-        return micAus();
-      }
-      if (!res.ok || !j.ok || !j.ticket || !j.path) return false;
-      karte = { ticket: j.ticket, path: j.path };
-    } catch {
-      return false;
-    } finally {
-      // Ab hier läuft alles ohne Warten bis `liveRef.current` gesetzt ist — die Sperre geht nahtlos über.
-      liveStartingRef.current = false;
-    }
-    // Paket 1, C12: inzwischen ausgeschaltet oder die Seite verlassen → keine Verbindung mehr öffnen.
-    if (!wantMicRef.current) return true;
-    setLiveState('connecting');
-    setLiveYou('');
-    setLivePersona('');
-    setError(null);
-    // Paket 1, C10: der erste Grund, den diese Verbindung für ihr Ende nennt (Mikrofon, Fehler, Abschied).
-    let cause: LiveEndCause | null = null;
-    const audio = createLiveAudio();
-    const conn = openLiveConnection(karte.path, karte.ticket, {
-      onReady: () => {
-        void audio
-          .startMic((pcm) => conn.sendAudio(pcm))
-          .then(() => {
-            if (liveRef.current?.conn !== conn) {
-              // Paket 1, C11: verwaiste Verbindung → ihr Mikrofon freigeben und sie schließen.
-              audio.close();
-              conn.close();
-              return;
-            }
-            setLiveState('on');
-            setMicActive(true);
-            if (liveRetryRef.current > 0) {
-              // Wieder da nach einem Abriss: kurz melden, dann Zähler zurück.
-              setLiveNotice({ kind: 'reconnected' });
-              setTimeout(() => setLiveNotice((n) => (n?.kind === 'reconnected' ? null : n)), 3000);
-              liveRetryRef.current = 0;
-            }
-          })
-          .catch((e: unknown) => {
-            // Paket 1, C10: Ein verweigertes oder nicht startbares Mikrofon ist kein Abriss. Verbindung zu,
-            // der Satz folgt in onClose, es wird nicht neu verbunden.
-            if (!cause) cause = { art: 'mic', error: e };
-            conn.end();
-          });
-      },
-      onYou: (text) => {
-        setLiveYou(text);
-        setLiveNotice((n) => (n?.kind === 'idle' ? null : n));
-      },
-      onEnded: (p) => setPersonaEnded({ grund: p.grund, ergebnis: p.ergebnis }),
-      onIdleWarn: (seconds) => setLiveNotice({ kind: 'idle', seconds }),
-      onPersona: (text) => setLivePersona(text),
-      onInterrupted: () => audio.interrupt(),
-      onAudio: (pcm) => audio.play(pcm),
-      onTurn: (turn) => {
-        const at = new Date().toISOString();
-        setTurns((prev) => [
-          ...prev,
-          ...(turn.user ? [{ role: 'user' as const, text: turn.user, ts: at }] : []),
-          ...(turn.persona ? [{ role: 'persona' as const, text: turn.persona, ts: at }] : []),
-        ]);
-        setLiveYou('');
-        setLivePersona('');
-        if (turn.timeUp) setTimeUp(true);
-        if (turn.ended) setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
-      },
-      // Paket 1, C10: Fehler und Abschied merken; was daraus folgt, entscheidet onClose für alle Gründe an einer Stelle.
-      onError: (code, message) => {
-        if (!cause) cause = { art: 'error', code, message };
-      },
-      onBye: (reason) => {
-        if (!cause) cause = { art: 'bye', reason };
-      },
-      onClose: (wsCode) => {
-        if (liveRef.current?.conn !== conn) {
-          // Schon über stopMic abgeräumt oder verwaist (Paket 1, C11): das Mikrofon dieser Verbindung freigeben.
-          audio.close();
-          return;
-        }
-        liveRef.current = null;
-        audio.finish(); // die letzte Antwort (z. B. die Verabschiedung) noch zu Ende spielen
-        setLiveState('off');
-        setLiveYou('');
-        setLivePersona('');
-        setMicActive(false);
-        // Paket 1, C10: je Grund ein Satz oder ein Banner (src/lib/simulation/live-failure.ts). Neu verbunden wird
-        // nur beim Abriss ohne Grund (Netz, Schlaf), einmal und nur, solange das Mikro gewollt ist.
-        const d = decideLiveEnd(cause ?? { art: 'close', wsCode }, liveRetryRef.current >= 1);
-        if (d.banner === 'timeUp') setTimeUp(true);
-        if (d.banner === 'ended') setPersonaEnded((cur) => cur ?? { grund: '', ergebnis: 'verabschiedung' });
-        if (d.reconnect && wantMicRef.current) {
-          liveRetryRef.current += 1;
-          setLiveNotice({ kind: 'reconnecting' });
-          // Paket 1, C12: Timer merken (stopLive löscht ihn) und vor dem Neustart prüfen, ob das Mikro noch gewollt ist.
-          liveRetryTimerRef.current = setTimeout(() => {
-            liveRetryTimerRef.current = null;
-            if (!wantMicRef.current) {
-              setLiveNotice(null);
-              return;
-            }
-            void startLiveMic().then((ok) => {
-              if (liveRef.current) return; // die neue Verbindung baut sich auf
-              setLiveNotice(null);
-              if (!ok) {
-                wantMicRef.current = false;
-                setError(ts.voiceLost);
-              }
-            });
-          }, 1000);
-          return;
-        }
-        wantMicRef.current = false;
-        setLiveNotice(null);
-        if (d.message) setError(voiceText(d.message));
-      },
-    });
-    liveRef.current = { conn, audio };
-    return true;
-  }, [simId, ts.genericError, ts.voiceLost, handleApiFailure, voiceText]);
-
-  // CP-3.4 (M21 Option 1, Compliance-Blueprint 31.08.): Aufklärung vor der
-  // ERSTEN Mikrofon-Nutzung je Gerät. Die Browser-Spracherkennung überträgt
-  // die Aufnahme an den Browser-Hersteller (Chrome: Google) — vom Arbeitsplatz
-  // aus, außerhalb unserer Auftragsverarbeitung. Das Modal macht den Datenfluss
-  // transparent; die Bestätigung landet in localStorage (try/catch, Vorgabe
-  // Browser-Storage). Funktionsumfang des Mikros unverändert.
-  const MIC_ACK_KEY = "pn-mic-notice-ack";
-  const [micNoticeOpen, setMicNoticeOpen] = useState(false);
-  // W5-4: Link zur Einwilligungs-Seite im Hub, wenn das Unternehmen die Zustimmung „Sprachaufnahme“ verlangt.
-  const [consentUrl, setConsentUrl] = useState<string | null>(null);
-  // Sitzungs-Fallback, falls localStorage blockiert ist (Privatmodus): die
-  // Bestätigung gilt dann für die laufende Sitzung, ohne Endlos-Modal.
-  const micAckRef = useRef(false);
-
-  /** Diktat: erkannter Text wird ans Eingabefeld ANGEHÄNGT (nichts überschreiben). */
-  const startMic = useCallback(() => {
-    // Paket 1, C11 (12.11.2026): Läuft schon ein Start, eine Live-Verbindung oder ein Neuversuch, tut ein zweiter Klick nichts.
-    if (!speechSupported || micActive || micStartingRef.current || liveStartingRef.current || liveRef.current || liveRetryTimerRef.current) return;
-    if (!micAckRef.current) {
-      let acked = false;
-      try {
-        acked = localStorage.getItem(MIC_ACK_KEY) === "1";
-      } catch {
-        acked = false;
-      }
-      if (!acked) {
-        setMicNoticeOpen(true);
-        return;
-      }
-      micAckRef.current = true;
-    }
-    wantMicRef.current = true;
-    liveRetryRef.current = 0;
-    micStartingRef.current = true;
-    setMicStarting(true);
-    // Sprich-Modus: wer ins Mikro spricht, bekommt die Antwort auch zu hören.
-    if (ttsSupported) setSpeakReplies(true);
-    void (async () => {
-      try {
-        // Reihenfolge: Live (wenn für das Szenario an) → Azure-Diktat → Browser-Notnagel.
-        if (await startLiveMic()) return;
-        if (!wantMicRef.current) return;
-        if (await startAzureMic()) return;
-        if (!wantMicRef.current) return;
-        if (!browserSpeechSupported) {
-          wantMicRef.current = false;
-          setMicActive(false);
-          setError(ts.unavailable);
-          return;
-        }
-        startBrowserMic();
-      } finally {
-        micStartingRef.current = false;
-        setMicStarting(false);
-      }
-    })();
-  }, [speechSupported, micActive, ttsSupported, startLiveMic, startAzureMic, browserSpeechSupported, startBrowserMic, ts.unavailable]);
-
-  /**
-   * Check-in nach dem Gespräch (Owner-Befund 01.11.2026): hier wird nur diktiert, nie das Live-Gespräch gestartet —
-   * sonst verband sich die Rolle erneut und sprach weiter („Auf Wiederhören“), während die Person ihre Einschätzung
-   * einsprechen wollte. Reihenfolge: Azure-Diktat → Browser-Notnagel.
+   * Diktat starten (Chat und Check-in). Paket 4: Der Mikrofon-Knopf im Chat diktiert nur noch; das Sprachgespräch
+   * beginnt im Briefing mit „Sprechen“ oder über das Menü. Vor der ersten Mikrofon-Nutzung je Gerät steht die
+   * Aufklärung (CP-3.4); nach „Verstanden“ startet das Diktat.
    */
   const startDictation = useCallback(() => {
-    if (!speechSupported || micActive || micStartingRef.current) return;
-    if (!micAckRef.current) {
-      let acked = false;
-      try {
-        acked = localStorage.getItem(MIC_ACK_KEY) === "1";
-      } catch {
-        acked = false;
-      }
-      if (!acked) {
-        setMicNoticeOpen(true);
+    if (!mikroHinweisBestaetigt()) {
+      setMicNoticeOpen(true);
+      return;
+    }
+    startDiktat();
+  }, [startDiktat]);
+
+  /**
+   * Paket 4, C13 und U5 (12.11.2026): Die Coach-Pause hält die Uhr an. Der Server merkt die Pause am Lauf
+   * (`POST /api/simulation/pause`); im Sprachgespräch halten zusätzlich Relais und Mikrofon an. Die Anzeige
+   * folgt sofort und gleicht sich dann an die Antwort des Servers an.
+   */
+  async function setzePause(on: boolean, lauf: string | null = simId) {
+    if (!lauf) return;
+    const anfrage = ++pauseAnfrageRef.current;
+    setPausen((cur) => {
+      const neu = { ...cur };
+      pauseSetzen(neu, on, Date.now());
+      return neu;
+    });
+    live.pause(on);
+    // Nimmt der Server die Pause nicht an (Deckel erreicht, Netz), läuft die Uhr dort weiter — also auch hier.
+    const ohnePause = () => {
+      if (on && pauseAnfrageRef.current === anfrage) setPausen((cur) => ({ ...cur, pauseSince: null }));
+    };
+    try {
+      const res = await authFetch('/api/simulation/pause', {
+        method: 'POST',
+        body: JSON.stringify({ simId: lauf, on }),
+      });
+      const json = (await res.json().catch(() => null)) as { ok?: boolean; pausedMs?: unknown; pauseSince?: unknown } | null;
+      if (!res.ok || !json?.ok) {
+        ohnePause();
         return;
       }
-      micAckRef.current = true;
+      if (pauseAnfrageRef.current !== anfrage) return;
+      setPausen({
+        pausedMs: typeof json.pausedMs === 'number' ? json.pausedMs : 0,
+        pauseSince: typeof json.pauseSince === 'string' ? json.pauseSince : null,
+      });
+    } catch {
+      ohnePause();
     }
-    wantMicRef.current = true;
-    micStartingRef.current = true;
-    setMicStarting(true);
-    void (async () => {
-      try {
-        if (await startAzureMic()) return;
-        if (!wantMicRef.current) return;
-        if (!browserSpeechSupported) {
-          wantMicRef.current = false;
-          setMicActive(false);
-          setError(ts.unavailable);
-          return;
-        }
-        startBrowserMic();
-      } finally {
-        micStartingRef.current = false;
-        setMicStarting(false);
-      }
-    })();
-  }, [speechSupported, micActive, startAzureMic, browserSpeechSupported, ts.unavailable]);
+  }
+  function oeffnePause() {
+    // Paket 1, C1: Der Dialog zeigt seine eigenen Fehler — eine ältere Meldung aus dem Gespräch gehört nicht hinein.
+    setError(null);
+    setTimeoutOpen(true);
+    void setzePause(true);
+  }
+  function schliessePause() {
+    setTimeoutOpen(false);
+    void setzePause(false);
+  }
 
-  /** Browser-Spracherkennung (Chrome: Google) — nur, wenn der Server sie ausdrücklich wählt (Rückweg SPEECH_INPUT=browser). */
-  function startBrowserMic() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const rec = new Ctor();
-    rec.lang = speechLang;
-    rec.continuous = true;
-    rec.interimResults = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onresult = (e: any) => {
-      let text = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) text += e.results[i][0].transcript;
-      }
-      if (text.trim()) {
-        setInput((prev) => (prev ? prev.replace(/\s+$/, '') + ' ' : '') + text.trim());
-      }
-    };
-    rec.onend = () => {
-      // Stille-Timeout des Browsers: neu starten, solange das Mikro gewollt an ist.
-      if (wantMicRef.current) {
-        try {
-          rec.start();
-          return;
-        } catch {
-          /* Neustart nicht möglich → sauber aus */
-        }
-      }
-      setMicActive(false);
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onerror = (e: any) => {
-      // Paket 1, C10 (12.11.2026): Auch hier steht der Grund da, wenn das Mikrofon ausgeht.
-      const grund = dictationEndMessage(typeof e?.error === 'string' ? e.error : undefined, !wantMicRef.current);
-      if (grund) setError(voiceText(grund));
-      wantMicRef.current = false;
-      setMicActive(false);
-    };
-    recognitionRef.current = rec;
-    setMicActive(true);
-    rec.start();
+  /** Paket 4: „Schreiben“ ist jederzeit erreichbar (Menü, Mikrofon-Check); das Sprachgespräch wird sauber getrennt. */
+  function wechsleZuSchreiben() {
+    stopLive();
+    setWeg('schreiben');
+    merkeWeg('schreiben');
+    // Die Uhr stand während des Mikrofon-Checks; schreibend läuft sie ab jetzt.
+    if (pausen.pauseSince && !timeoutOpen) void setzePause(false);
+  }
+  /**
+   * Paket 4: „Sprechen“ aus dem Chat. Lief der Mikrofon-Check auf dieser Seite schon, verbindet es gleich; sonst
+   * kommt er zuerst. C30: Der Tonweg entsteht im Klick selbst.
+   */
+  function wechsleZuSprechen() {
+    stopDiktat();
+    stopSpeaking();
+    setError(null);
+    live.vorbereiten();
+    setMikroAusKlick(true);
+    setWeg('sprechen');
+    merkeWeg('sprechen');
+    if (mikroGeprueft) void live.start({ eroeffnung: !turns.some((x) => x.role === 'user') });
+  }
+  /** „Los geht's“ im Mikrofon-Check. S1: Die Rolle eröffnet hörbar, solange die Person noch nichts gesagt hat. */
+  function sprechenLos() {
+    live.vorbereiten();
+    setMikroGeprueft(true);
+    void live.start({ eroeffnung: !turns.some((x) => x.role === 'user') });
+  }
+  /**
+   * Der große Mikrofon-Knopf der Sprechansicht. S6: Steht die Verbindung, schaltet er stumm, ohne aufzulegen.
+   * Ist sie zu (Stille, Abriss), verbindet er neu.
+   */
+  function mikroKnopf() {
+    if (live.state === 'on') {
+      live.setStumm(!live.stumm);
+      return;
+    }
+    setError(null);
+    live.vorbereiten();
+    void live.start({ eroeffnung: !turns.some((x) => x.role === 'user') });
   }
 
   /** Laufende Sprachausgabe (Azure-Audio UND Browserstimme) stoppen. */
@@ -1145,6 +900,24 @@ export default function SimulationClient() {
       /* localStorage optional */
     }
   }, []);
+  // Paket 4: Gibt es ein Mikrofon? Davon hängt die Vorwahl „Sprechen“ im Briefing ab (unbekannt gilt als vorhanden).
+  useEffect(() => {
+    if (view !== 'briefing') return;
+    let aktuell = true;
+    void (async () => {
+      let geraete: Array<{ kind: string }> | null = null;
+      try {
+        geraete = (await navigator.mediaDevices?.enumerateDevices?.()) ?? null;
+      } catch {
+        geraete = null;
+      }
+      if (aktuell) setMikrofonDa(mikrofonVorhanden(geraete));
+    })();
+    return () => {
+      aktuell = false;
+    };
+  }, [view]);
+
   function toggleGoals() {
     setGoalsOpen((v) => {
       try {
@@ -1161,13 +934,13 @@ export default function SimulationClient() {
   useEffect(() => {
     if (checkin) setCheckinInputAt(Date.now());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [micActive, micStarting, micNoticeOpen, consentUrl]);
+  }, [diktat.aktiv, diktat.startet, micNoticeOpen, consentUrl]);
   // Bleibt das Feld leer und ohne Eingabe, geht es nach 20 Sekunden von selbst weiter (Regel in checkin-ablauf.ts).
   useEffect(() => {
     if (!checkin || checkinBusy || micNoticeOpen || consentUrl) return;
     const rest = checkinAutoWeiterIn({
       text: input,
-      diktatLaeuft: micActive || micStarting,
+      diktatLaeuft: diktat.aktiv || diktat.startet,
       letzteEingabeMs: checkinInputAt,
       jetztMs: Date.now(),
     });
@@ -1175,7 +948,7 @@ export default function SimulationClient() {
     const id = window.setTimeout(() => checkinGo({ art: 'weiter', text: '' }), rest);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkin, checkinBusy, micNoticeOpen, consentUrl, input, micActive, micStarting, checkinInputAt]);
+  }, [checkin, checkinBusy, micNoticeOpen, consentUrl, input, diktat.aktiv, diktat.startet, checkinInputAt]);
   // Jede Frage beginnt mit dem Cursor im Feld.
   const checkinFrage = checkin?.frage ?? null;
   useEffect(() => {
@@ -1269,7 +1042,9 @@ export default function SimulationClient() {
     setError(null);
     setBriefStep(0);
     setConvoLocale(s.locale ?? 'de');
+    setWegWunsch(null);
     setView('briefing');
+    zaehlpunkt('briefing', s.id);
     // Query-Parameter verbrauchen — Reload soll wieder am Einstieg landen.
     router.replace('/', { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1292,9 +1067,6 @@ export default function SimulationClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view]);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [turns, sending]);
 
   async function deleteSim(simId: string) {
     setDeletingId(simId);
@@ -1318,7 +1090,9 @@ export default function SimulationClient() {
     }
   }
 
-  async function startSimulation(s: PublicScenario, withFocus?: string | null) {
+  async function startSimulation(s: PublicScenario, withFocus?: string | null, wegStart: Weg = weg) {
+    // Paket 4, C30: Der Tonweg entsteht im Klick selbst, noch vor dem ersten Warten (iOS gibt den Ton sonst nicht frei).
+    if (wegStart === 'sprechen') live.vorbereiten();
     setStarting(true);
     setError(null);
     // Fokus aus dem Briefing (U19: dort sichtbar und entfernbar) oder vom Neustart desselben Szenarios.
@@ -1331,15 +1105,20 @@ export default function SimulationClient() {
           locale: convoLocale,
           mode: simMode,
           hardness: simHardness,
+          // Paket 4, S24: nur für den Zählpunkt „Gespräch gestartet“.
+          weg: wegStart,
           ...(focusToSend ? { focus: focusToSend } : {}),
         }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
+        stopLive();
         handleApiFailure(res, json);
         return;
       }
-      setScenario(s);
+      // Die Antwort sagt selbst, ob das Sprachgespräch für diesen Lauf geht (z. B. bei einem gerade vorbereiteten
+      // Gespräch, das der Katalog noch nicht kennt): Dann bietet das Menü im Gespräch „Sprechen“ an.
+      setScenario(typeof json.simulation.liveAvailable === 'boolean' ? { ...s, liveAvailable: json.simulation.liveAvailable } : s);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
@@ -1347,12 +1126,18 @@ export default function SimulationClient() {
       setBriefFocus(null);
       setCheckinDone(false);
       setSimStartedAt(json.simulation.createdAt ?? new Date().toISOString());
+      setPausen({ pausedMs: json.simulation.pausedMs ?? 0, pauseSince: json.simulation.pauseSince ?? null });
       setCoachNotes([]);
       setBriefingOpen(false);
       setTimeoutOpen(false);
-      setTimeUp(false); setPersonaEnded(null); setLiveNotice(null);
+      setTimeUp(false); setPersonaEnded(null);
+      setWeg(wegStart);
+      setMikroAusKlick(true);
       setView('chat');
+      // Sprechen: zuerst der Mikrofon-Check. Lief er auf dieser Seite schon, eröffnet die Rolle gleich hörbar.
+      if (wegStart === 'sprechen' && mikroGeprueft) void live.start({ eroeffnung: true, simId: json.simulation.id });
     } catch {
+      stopLive();
       setError(ts.genericError);
     } finally {
       setStarting(false);
@@ -1399,6 +1184,9 @@ export default function SimulationClient() {
       setFocus(json.simulation.focus ?? null);
       setCheckinDone(json.simulation.checkin != null);
       setSimStartedAt(json.simulation.createdAt ?? item.createdAt ?? null);
+      setPausen({ pausedMs: json.simulation.pausedMs ?? 0, pauseSince: json.simulation.pauseSince ?? null });
+      // Eine Pause, die beim Verlassen der Seite offen blieb, endet jetzt (sonst erst an ihrem Deckel).
+      if (json.simulation.pauseSince) void setzePause(false, json.simulation.id);
       setCoachNotes(json.simulation.coachNotes ?? []);
       setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
       setSimMode(json.simulation.mode ?? 'practice');
@@ -1406,6 +1194,20 @@ export default function SimulationClient() {
       setTimeUp(json.simulation.timeUp === true);
       setPersonaEnded(json.simulation.ende ?? null);
       setBriefingOpen(false);
+      // Paket 4: Sprechen nur, wenn die Person es auf diesem Gerät zuletzt selbst gewählt hat und das Gespräch noch
+      // offen ist. Dann steht zuerst der Mikrofon-Check (ohne Klick davor: mit dem Knopf „Mikrofon einschalten“).
+      const offen = json.simulation.timeUp !== true && !json.simulation.ende;
+      setWeg(
+        offen
+          ? wegBeimFortsetzen({
+              liveAvailable: s.liveAvailable === true,
+              liveTon: liveAudioSupported(),
+              mikrofon: mikrofonDa,
+              gemerkt: liesGemerktenWeg(),
+            })
+          : 'schreiben'
+      );
+      setMikroAusKlick(false);
       setView('chat');
       return true;
     } catch {
@@ -1416,9 +1218,9 @@ export default function SimulationClient() {
 
   async function sendTurn() {
     const message = input.trim();
-    // Im Live-Gespräch geht nichts über den Textweg — das Live-Modell hört nur, was gesprochen wird.
+    // Im Sprachgespräch geht nichts über den Textweg — die Rolle hört dort nur, was gesprochen wird.
     // Nach dem Ende durch die Rolle oder nach „Zeit um“ bleibt nur die Auswertung.
-    if (!message || !simId || sending || liveState !== 'off' || timeUp || personaEnded) return;
+    if (!message || !simId || sending || weg === 'sprechen' || timeUp || personaEnded) return;
     setSending(true);
     setError(null);
     const optimistic: Turn = { role: 'user', text: message, ts: new Date().toISOString() };
@@ -1566,6 +1368,9 @@ export default function SimulationClient() {
   }
 
   function backToList() {
+    // Eine offene Coach-Pause endet mit dem Verlassen (die Uhr läuft dann weiter, wie der Dialog es sagt).
+    if (timeoutOpen) void setzePause(false);
+    setWegWunsch(null);
     setScenario(null);
     setSimId(null);
     setTurns([]);
@@ -1691,7 +1496,9 @@ export default function SimulationClient() {
       setError(null);
       setBriefStep(0);
       setConvoLocale(s.locale ?? 'de');
+      setWegWunsch(null);
       setView('briefing');
+      zaehlpunkt('briefing', s.id);
     };
 
     const scenarioCard = (s: PublicScenario, highlighted = false) => (
@@ -2297,6 +2104,46 @@ export default function SimulationClient() {
     const isLast = briefStep === steps.length - 1;
     const { motto, heroTitle } = splitTitle(scenario.title);
     const selectedLang = CONVO_LANGS.find((l) => l.code === convoLocale) ?? CONVO_LANGS[3];
+    // Paket 4, U1 und S1 (Owner-Entscheid 12.11.2026): Wahl „Sprechen | Schreiben“ direkt über dem Startknopf.
+    // Die Vorwahl ist eine reine Entscheidung (src/lib/simulation/weg-wahl.ts); eine eigene Wahl im Briefing geht vor.
+    const vorwahl = wegVorwahl({
+      liveAvailable: scenario.liveAvailable === true,
+      liveTon: liveAudioSupported(),
+      mikrofon: mikrofonDa,
+      gemerkt: liesGemerktenWeg(),
+    });
+    const briefWeg: Weg = vorwahl.wahl ? (wegWunsch ?? vorwahl.weg) : 'schreiben';
+    // U25: Wahl und Start stehen am Rechner am Porträt (immer im Bild) und am Handy als feste Leiste am unteren Rand —
+    // dort nicht mehr über Situation und Zielen.
+    const startBlock = (aufBild: boolean) => (
+      <div className="space-y-3">
+        {vorwahl.wahl && (
+          <WegWahl
+            weg={briefWeg}
+            onChange={(w) => {
+              setWegWunsch(w);
+              merkeWeg(w);
+            }}
+            aufBild={aufBild}
+            disabled={starting}
+            texte={{
+              titel: ts.wegTitle,
+              sprechen: ts.wegSprechen,
+              schreiben: ts.wegSchreiben,
+              hinweis: briefWeg === 'sprechen' ? ts.wegSprechenNote.replace('{name}', scenario.persona.name) : ts.wegSchreibenNote,
+            }}
+          />
+        )}
+        <button
+          onClick={() => void startSimulation(scenario, undefined, briefWeg)}
+          disabled={starting}
+          className="w-full btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center justify-center gap-2 shadow-neon disabled:opacity-60"
+        >
+          {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
+          {ts.startCta}
+        </button>
+      </div>
+    );
     return (
       // Synthesia-Angleich (Owner-Vorgabe 04.08.): Szenariotitel NICHT in der
       // Fenster-Kopfzeile — links Text + Kontext-Treppe, rechts das große
@@ -2485,14 +2332,7 @@ export default function SimulationClient() {
                     </div>
                     <div className="mt-1 text-sm text-white/85">{scenario.persona.role}</div>
                   </div>
-                  <button
-                    onClick={() => void startSimulation(scenario)}
-                    disabled={starting}
-                    className="w-full btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center justify-center gap-2 shadow-neon disabled:opacity-60"
-                  >
-                    {starting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-                    {ts.startCta}
-                  </button>
+                  <div className="hidden lg:block">{startBlock(true)}</div>
                   {/* W2-1: ehrliche Zeitbox — die Uhr läuft ab Start in Echtzeit. */}
                   <div className="text-xs text-white/80 leading-snug">
                     <span className="inline-flex items-center gap-1">
@@ -2500,10 +2340,11 @@ export default function SimulationClient() {
                       {ts.timeboxHonest.replace('{min}', String(simMode === 'check' ? (scenario.checkDurationMin ?? scenario.durationMin) : scenario.durationMin))}
                     </span>
                   </div>
-                  {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog. */}
-                  <div className="text-[11px] text-white/65">{startCost}</div>
+                  {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog (am Handy in der Leiste beim Startknopf). */}
+                  <div className="hidden lg:block text-[11px] text-white/65">{startCost}</div>
                   {/* EU-KI-VO Art. 50 (T1.5, Owner-GO 25.09.): Interaktions-Hinweis VOR dem Start —
-                      sichtbar, nicht wegklickbar; der Fusszeilen-Hinweis im Chat bleibt zusaetzlich. */}
+                      sichtbar, nicht wegklickbar. U4 (Paket 4): Hier steht er einmal; im Gespräch trägt der Name
+                      der Rolle das Kennzeichen „KI-Rolle“. */}
                   <div className="text-[11px] text-white/85 inline-flex items-center justify-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden />
                     <span>{ts.aiStartNotice}</span>
@@ -2511,6 +2352,16 @@ export default function SimulationClient() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Paket 4, U25: Am Handy stehen Wahl und Start als feste Leiste am unteren Rand (am Ende des Briefings,
+              beim Rollen immer im Bild) — nicht mehr über Situation und Zielen. */}
+          <div
+            className="lg:hidden sticky bottom-0 z-20 -mx-4 -mb-4 border-t border-border bg-card/95 backdrop-blur px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] space-y-2"
+            data-testid="brief-start-bar"
+          >
+            {startBlock(false)}
+            {startCost && <div className="text-center text-[11px] text-muted-foreground">{startCost}</div>}
           </div>
         </div>
       </AppShell>
@@ -2520,14 +2371,22 @@ export default function SimulationClient() {
     function renderBriefSteps() {
       return (
         <>
-          {/* Treppen-Navigation */}
-          <div className="flex items-center gap-2">
+          {/* Treppen-Navigation. U25 (Paket 4): Am Handy stehen die Namen der Reiter da (vorher nur Symbole mit
+              Ziffern); die Zeile rollt waagerecht, kein Wort wird abgeschnitten. Der gewählte Reiter rollt ins Bild. */}
+          <div className="relative flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
             {steps.map((st, i) => (
               <button
                 key={i}
                 onClick={() => setBriefStep(i)}
+                ref={(el) => {
+                  const zeile = el?.parentElement;
+                  if (!el || !zeile || i !== briefStep) return;
+                  if (el.offsetLeft < zeile.scrollLeft) zeile.scrollLeft = el.offsetLeft;
+                  else if (el.offsetLeft + el.offsetWidth > zeile.scrollLeft + zeile.clientWidth)
+                    zeile.scrollLeft = el.offsetLeft + el.offsetWidth - zeile.clientWidth;
+                }}
                 className={cx(
-                  'pn-none flex-1 flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
+                  'pn-none shrink-0 sm:flex-1 flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
                   i === briefStep
                     ? 'border-primary/50 bg-primary/10 text-primary'
                     : i < briefStep
@@ -2535,9 +2394,8 @@ export default function SimulationClient() {
                       : 'border-border text-muted-foreground hover:text-foreground'
                 )}
               >
-                <st.icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{st.label}</span>
-                <span className="sm:hidden">{i + 1}</span>
+                <st.icon className="h-3.5 w-3.5 shrink-0" />
+                {st.label}
               </button>
             ))}
           </div>
@@ -2676,21 +2534,14 @@ export default function SimulationClient() {
 
   if (view === 'chat' && scenario) {
     const timeoutsLeft = Math.max(0, timeoutsMax - coachNotes.length);
-    // ── W2-1: sichtbare Uhr (Client-Anzeige; Server-Zeitregie bleibt Wahrheit) ──
+    // ── W2-1: sichtbare Uhr (Client-Anzeige; Server-Zeitregie bleibt Wahrheit). Paket 4, C13 und U5: Sie rechnet
+    //    mit den Pausen des Laufs und steht in der Coach-Pause (src/lib/simulation/gespraechs-uhr.ts). ──
     const limitMs =
       (simMode === 'check'
         ? (scenario.checkDurationMin ?? scenario.durationMin)
         : scenario.durationMin) * 60_000;
-    const startedMs = simStartedAt ? new Date(simStartedAt).getTime() : null;
-    const elapsedMs = startedMs != null ? Math.max(0, nowTs - startedMs) : 0;
-    const remainingMs = startedMs != null ? Math.max(0, limitMs - elapsedMs) : null;
-    // Amber ab 80 % — deckungsgleich mit SIM_TIME_WARN_FRACTION der Turn-Route.
-    const clockWarn = startedMs != null && elapsedMs >= limitMs * 0.8;
-    const clockText =
-      remainingMs != null
-        ? `${Math.floor(remainingMs / 60_000)}:${String(Math.floor((remainingMs % 60_000) / 1000)).padStart(2, '0')}`
-        : null;
-    const remainingMin = remainingMs != null ? Math.ceil(remainingMs / 60_000) : null;
+    const uhr = uhrStand(simStartedAt ? { createdAt: simStartedAt, ...pausen } : null, limitMs, nowTs);
+    const remainingMin = uhr ? uhr.restMin : null;
     /**
      * Zeit ist um — ODER die sichtbare Uhr steht auf 0:00 (Test-Fund 11.08.):
      * Das Server-Flag entsteht erst beim NÄCHSTEN Beitrag. Ohne diese Zeile
@@ -2699,138 +2550,342 @@ export default function SimulationClient() {
      * Verabschiedung. Der Server bleibt die Wahrheit, der Client läuft ihm
      * nur nicht mehr hinterher.
      */
-    const effTimeUp = timeUp || (startedMs != null && remainingMs === 0);
+    const effTimeUp = timeUp || (uhr?.um ?? false);
     // ── W2-2: Totsackgasse — Zeit um, aber kein auswertbares Gespräch ──
     const deadEnd = effTimeUp && userTurnCount < 3;
     // Paket 3 (12.11.2026): Nach „Zeit um“ UND nach dem Ende durch die Rolle ist die Eingabe zu — es bleibt nur
     // die Auswertung. Vorher blieb das Feld nach dem Ende durch die Rolle offen.
     const inputClosed = effTimeUp || !!personaEnded;
     const b = scenario.candidateBriefing;
+    const personaName = scenario.persona.name;
+    // ── Paket 4: Sprechen oder Schreiben. Sprechen geht nur, wo das Szenario es erlaubt und der Browser Live-Ton kann. ──
+    const sprechenMoeglich = scenario.liveAvailable === true && liveAudioSupported();
+    const imSprechen = weg === 'sprechen';
+    /** Vor dem ersten Wort steht der Mikrofon-Check (einmal je Seite). */
+    const imCheck = imSprechen && !mikroGeprueft;
+    /** Weg in den Ablauf am Gesprächsende (Bestätigung → Auswertung startet → Check-in → Auswertungsseite). */
+    const auswerten = () => {
+      stopMic();
+      setConfirmOpen(true);
+    };
+
+    // W2-1: Countdown — passiv, keine Bewertung. In der Coach-Pause steht er („angehalten“).
+    const uhrAnzeige = uhr && (
+      <span
+        className={cx(
+          'text-sm font-semibold rounded-lg px-2.5 py-2 border tabular-nums flex items-center gap-1.5 whitespace-nowrap',
+          effTimeUp
+            ? 'border-rose-500/40 text-rose-800 dark:text-rose-400 bg-rose-500/10'
+            : uhr.warn
+              ? 'border-amber-500/40 text-amber-800 dark:text-amber-500 bg-amber-500/10'
+              : 'border-border text-muted-foreground'
+        )}
+        title={ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
+        data-testid="gespraechs-uhr"
+      >
+        <Clock className="hidden sm:block h-4 w-4" /> {effTimeUp ? '0:00' : uhr.text}
+        {uhr.angehalten && !effTimeUp && <span className="text-xs font-medium">· {ts.clockPaused}</span>}
+      </span>
+    );
+
+    // Zeit-Regie (Owner-Vorgabe 04.08.) und Welle 2: Nach „Zeit um“ oder dem Ende durch die Rolle bleibt nur die
+    // Auswertung. Im Chat steht die Karte über dem Eingabefeld, in der Sprechansicht über den Knöpfen.
+    const auswertenKnopf = (
+      <button
+        onClick={auswerten}
+        disabled={finishing}
+        className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
+      >
+        <Sparkles className="h-4 w-4" /> {ts.evaluateCta}
+      </button>
+    );
+    const endeKarte =
+      personaEnded && !deadEnd ? (
+        <div className="pn-none rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm text-left">
+          <span className="flex flex-col gap-0.5">
+            <span className="font-semibold text-emerald-800 dark:text-emerald-300">{ts.endedByPersona.replace('{name}', personaName)}</span>
+            <span className="text-muted-foreground">
+              {personaEnded.ergebnis === 'ziel' ? ts.endedZiel : personaEnded.ergebnis === 'abbruch' ? ts.endedAbbruch : ts.endedVerabschiedung} {ts.endedHint}
+            </span>
+          </span>
+          {auswertenKnopf}
+        </div>
+      ) : effTimeUp && !deadEnd ? (
+        <div className="pn-none rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm text-left">
+          <span className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
+            <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
+          </span>
+          {auswertenKnopf}
+        </div>
+      ) : null;
+    // Welle 2: Statuszeile im Sprachgespräch — Stille-Vorwarnung, Verbindung kurz weg, wieder da. Erscheint nur im Fall.
+    const liveZeile =
+      live.hinweis && !inputClosed ? (
+        <div
+          className={cx(
+            'pn-none text-sm rounded-lg px-3 py-2 border flex items-center gap-2 text-left',
+            live.hinweis.kind === 'reconnected'
+              ? 'border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-500/10'
+              : live.hinweis.kind === 'reconnecting'
+                ? 'border-rose-500/40 text-rose-700 dark:text-rose-300 bg-rose-500/10'
+                : 'border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-500/10'
+          )}
+          role="status"
+        >
+          <span
+            className={cx(
+              'h-2 w-2 shrink-0 rounded-full',
+              live.hinweis.kind === 'reconnected' ? 'bg-emerald-500' : live.hinweis.kind === 'reconnecting' ? 'bg-rose-500' : 'bg-amber-500'
+            )}
+          />
+          {live.hinweis.kind === 'idle'
+            ? ts.liveIdleWarn.replace('{s}', String(live.hinweis.seconds ?? 60))
+            : live.hinweis.kind === 'reconnecting'
+              ? ts.liveReconnecting
+              : ts.liveReconnected}
+        </div>
+      ) : null;
+    // Paket 1, C1 (12.11.2026): Die Meldung steht dort, wo die Person gerade hinsieht (über dem Eingabefeld bzw.
+    // über den Knöpfen). W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog.
+    const fehlerZeile =
+      error && !confirmOpen && !checkin && !timeoutOpen ? <div role="alert">{errorBanner}</div> : null;
+
+    // Ziele und das vollständige Briefing inkl. Faktenblatt: im Chat im Streifen oben, in der Sprechansicht über das Menü.
+    const zielePunkte = b.goals.map((g, idx) => (
+      <li key={idx} className="flex gap-1.5">
+        <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+        <span>{g}</span>
+      </li>
+    ));
+    const briefingInhalt = (
+      <div className="space-y-3 text-sm">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.yourRole}</div>
+          <p className="leading-relaxed">{b.yourRole}</p>
+        </div>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.relationship}</div>
+          <p className="leading-relaxed">{b.relationship}</p>
+        </div>
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.incidents}</div>
+          <ul className="space-y-1">
+            {b.incidents.map((i, idx) => (
+              <li key={idx} className="flex gap-2">
+                <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
+                <span>{i}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {b.factVisuals && b.factVisuals.length > 0 ? (
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{ts.factSheet}</div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {b.factVisuals.map((v, idx) => (
+                <FactChart key={idx} v={v} />
+              ))}
+            </div>
+          </div>
+        ) : b.factSheet && b.factSheet.length > 0 ? (
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.factSheet}</div>
+            <ul className="pn-tile space-y-1 rounded-lg border border-border bg-muted/40 p-3">
+              {b.factSheet.map((f, idx) => (
+                <li key={idx} className="text-xs font-mono leading-relaxed">
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {b.approachHints && b.approachHints.length > 0 && (
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.stepApproach}</div>
+            <ul className="space-y-1">
+              {b.approachHints.map((h, idx) => (
+                <li key={idx} className="flex gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                  <span>{h}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {b.expectation && (
+          <div className="pn-none rounded-xl border border-accent/30 bg-accent/5 p-3">
+            <div className="text-xs font-semibold uppercase tracking-wide text-accent mb-1">{ts.expectationTitle}</div>
+            <p className="leading-relaxed">{b.expectation}</p>
+          </div>
+        )}
+      </div>
+    );
+
+    // Paket 4: Menü „⋯“. Der Wechsel „Schreiben“ ↔ „Sprechen“ ist jederzeit erreichbar; dazu der Ton
+    // (Sprechansicht: Ton der Rolle, Chat: Antworten vorlesen), das Briefing und die Hilfe zum Sprechen.
+    const menuePunkt = 'gap-2 cursor-pointer';
+    const menue =
+      imCheck || (!imSprechen && !sprechenMoeglich && !ttsSupported) ? null : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={ts.menuMore}
+              title={ts.menuMore}
+              className="pn-none rounded-lg border border-border p-2 text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="gespraech-menue"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            {imSprechen ? (
+              <>
+                <DropdownMenuItem onSelect={wechsleZuSchreiben} className={menuePunkt}>
+                  <Keyboard /> {ts.menuToWrite}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => live.setTonAus(!live.tonAus)} className={menuePunkt}>
+                  {live.tonAus ? <Volume2 /> : <VolumeX />} {live.tonAus ? ts.menuSoundOn : ts.menuSoundOff}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setBriefingOpen(true)} className={menuePunkt}>
+                  <FileText /> {ts.briefingShow}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setHelpOpen(true)} className={menuePunkt}>
+                  <HelpCircle /> {ts.menuHelp}
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                {sprechenMoeglich && (
+                  <DropdownMenuItem onSelect={wechsleZuSprechen} disabled={inputClosed || sending} className={menuePunkt}>
+                    <Mic /> {ts.menuToSpeak}
+                  </DropdownMenuItem>
+                )}
+                {ttsSupported && (
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      if (speakReplies) stopSpeaking();
+                      setSpeakReplies((v) => !v);
+                    }}
+                    className={menuePunkt}
+                  >
+                    {speakReplies ? <VolumeX /> : <Volume2 />} {speakReplies ? ts.ttsOff : ts.ttsOn}
+                  </DropdownMenuItem>
+                )}
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+
     return (
+      // Paket 4, U3: Im Gespräch zeigt die Kopfzeile nur Zurück, den Namen der Rolle mit dem Kennzeichen „KI-Rolle“
+      // (U4), die Uhr und die Knöpfe des Gesprächs. „Credits aufladen“, Sprachwahl und Avatar entfallen hier.
       <AppShell
-        title={splitTitle(scenario.title).heroTitle}
-        subtitle={`${ts.withLabel} ${scenario.persona.name} — ${scenario.persona.role}`}
+        title={imCheck ? ts.micCheckTitle : personaName}
+        subtitle={imCheck ? undefined : scenario.persona.role}
         noPadding
+        gespraech={{
+          // W2-3: Ausgang aus dem Gespräch — der Lauf bleibt offen.
+          zurueck: () => setLeaveOpen(true),
+          zurueckLabel: ts.backToList,
+          kennzeichen: imCheck ? undefined : ts.aiRoleBadge,
+          ohneTitel: imSprechen && !imCheck,
+        }}
         actions={
-          <div className="flex items-center gap-2">
-            {/* W2-3: Ausgang aus dem Chat — der Lauf bleibt offen. */}
-            <button
-              onClick={() => setLeaveOpen(true)}
-              className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-border text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-              title={ts.backToList}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">{ts.backToList}</span>
-            </button>
-            {/* Sprachmodus Live: Kennzeichen neben der Uhr, solange die Live-Verbindung steht. */}
-            {liveState !== 'off' && (
-              <span
-                className={cx(
-                  'pn-none text-sm font-semibold rounded-lg px-3 py-2 border flex items-center gap-1.5',
-                  liveState === 'on' ? 'border-primary/40 text-primary bg-primary/10' : 'border-border text-muted-foreground'
-                )}
-                title={liveState === 'on' ? ts.liveActive : ts.liveConnecting}
-              >
-                <Radio className={liveState === 'on' ? 'h-4 w-4 animate-pulse' : 'h-4 w-4'} /> {ts.liveBadge}
-              </span>
-            )}
-            {/* Welle 2: Statuszeile — Stille-Vorwarnung, Verbindung kurz weg, wieder da. Erscheint nur im Fall. */}
-            {liveNotice && (
-              <span
-                className={cx(
-                  'pn-none text-sm rounded-lg px-3 py-2 border flex items-center gap-2',
-                  liveNotice.kind === 'reconnected'
-                    ? 'border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-500/10'
-                    : liveNotice.kind === 'reconnecting'
-                      ? 'border-rose-500/40 text-rose-700 dark:text-rose-300 bg-rose-500/10'
-                      : 'border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-500/10'
-                )}
-                role="status"
-              >
-                <span className={cx('h-2 w-2 rounded-full', liveNotice.kind === 'reconnected' ? 'bg-emerald-500' : liveNotice.kind === 'reconnecting' ? 'bg-rose-500' : 'bg-amber-500')} />
-                {liveNotice.kind === 'idle'
-                  ? ts.liveIdleWarn.replace('{s}', String(liveNotice.seconds ?? 60))
-                  : liveNotice.kind === 'reconnecting'
-                    ? ts.liveReconnecting
-                    : ts.liveReconnected}
-              </span>
-            )}
-            {/* W2-1: Countdown — passiv, keine Bewertung. */}
-            {clockText && (
-              <span
-                className={cx(
-                  'text-sm font-semibold rounded-lg px-3 py-2 border tabular-nums flex items-center gap-1.5',
-                  timeUp || remainingMs === 0
-                    ? 'border-rose-500/40 text-rose-800 dark:text-rose-400 bg-rose-500/10'
-                    : clockWarn
-                      ? 'border-amber-500/40 text-amber-800 dark:text-amber-500 bg-amber-500/10'
-                      : 'border-border text-muted-foreground'
-                )}
-                title={ts.timeboxHonest.replace('{min}', String(scenario.durationMin))}
-              >
-                <Clock className="h-4 w-4" /> {effTimeUp ? '0:00' : clockText}
-              </span>
-            )}
-            {ttsSupported && (
-              <button
-                onClick={() => {
-                  if (speakReplies) stopSpeaking();
-                  setSpeakReplies((v) => !v);
-                }}
-                className={cx(
-                  'pn-none text-sm font-semibold rounded-lg px-3 py-2 border transition-colors flex items-center gap-1.5',
-                  speakReplies
-                    ? 'border-primary/40 text-primary bg-primary/10'
-                    : 'border-border text-muted-foreground hover:text-foreground'
-                )}
-                title={speakReplies ? ts.ttsOff : ts.ttsOn}
-              >
-                {speakReplies ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              </button>
-            )}
-            {simMode !== 'check' && (
-            <button
-              onClick={() => {
-                // Paket 1, C1: Der Dialog zeigt seine eigenen Fehler — eine ältere Meldung aus dem Gespräch gehört nicht hinein.
-                setError(null);
-                setTimeoutOpen(true);
-              }}
-              disabled={userTurnCount < 1 || timeoutsLeft === 0}
-              className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-accent/40 text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
-              title={ts.timeoutHint}
-            >
-              <Pause className="h-4 w-4" /> {ts.timeoutCta}
-              {/* W2-4: Zähler mit Legende statt nacktem 0/3 */}
-              <span className="text-[10px] tabular-nums" title={ts.timeoutCounterLegend}>
-                {coachNotes.length}/{timeoutsMax}
-              </span>
-            </button>
-            )}
-            {simMode === 'check' && (
-              <span className="text-xs font-semibold rounded-lg px-3 py-2 border border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+            {/* Im Mikrofon-Check steht nur der Weg zurück: Die Person prüft dort ihr Mikrofon, sonst nichts. */}
+            {!imCheck && uhrAnzeige}
+            {simMode === 'check' && !imCheck && (
+              <span className="text-xs font-semibold rounded-lg px-2.5 py-2 border border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-500/10 inline-flex items-center gap-1.5">
                 <Flag className="h-3.5 w-3.5" /> {ts.modeCheckBadge}
               </span>
             )}
-            {/* W2-3: erst ab 3 eigenen Beiträgen aktiv (Dialog verlangte es
-                schon immer — jetzt sagt es auch der Button). Nach Zeitablauf
-                übernimmt das Banner/Modal — kein doppelter Auswerten-Knopf. */}
-            {!effTimeUp && (
+            {/* Im Chat stehen Coach-Pause und Beenden im Kopf (am Handy als Symbol); in der Sprechansicht stehen sie
+                unten in Daumenhöhe. */}
+            {!imSprechen && simMode !== 'check' && (
               <button
-                onClick={() => {
-                  stopMic();
-                  setConfirmOpen(true);
-                }}
-                disabled={finishing || userTurnCount < 3}
-                className="pn-none text-sm font-semibold rounded-lg px-3 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
-                title={userTurnCount < 3 ? ts.finishNeedsTurns : undefined}
+                onClick={oeffnePause}
+                disabled={userTurnCount < 1 || timeoutsLeft === 0}
+                className="pn-none text-sm font-semibold rounded-lg px-2.5 py-2 border border-accent/40 text-accent hover:bg-accent/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                aria-label={ts.timeoutCta}
               >
-                {/* U11 (Paket 1, 12.11.2026): Hat die Rolle beendet, gibt es nichts mehr zu beenden — nur „Auswerten“. */}
-                <Flag className="h-4 w-4" /> {personaEnded ? ts.evaluateCta : ts.finishCta}
+                <Pause className="h-4 w-4" /> <span className="hidden sm:inline">{ts.timeoutCta}</span>
+                {/* W2-4: Zähler mit Legende statt nacktem 0/3 */}
+                <span className="text-[10px] tabular-nums" title={ts.timeoutCounterLegend}>
+                  {coachNotes.length}/{timeoutsMax}
+                </span>
               </button>
             )}
+            {/* W2-3: erst ab 3 eigenen Beiträgen aktiv. Nach Zeitablauf übernimmt das Banner — kein doppelter
+                Auswerten-Knopf. U11: Hat die Rolle beendet, gibt es nichts mehr zu beenden — nur „Auswerten“. */}
+            {!imSprechen && !effTimeUp && (
+              <button
+                onClick={auswerten}
+                disabled={finishing || userTurnCount < 3}
+                className="pn-none text-sm font-semibold rounded-lg px-2.5 py-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                title={userTurnCount < 3 ? ts.finishNeedsTurns : undefined}
+                aria-label={personaEnded ? ts.evaluateCta : ts.finishCta}
+              >
+                <Flag className="h-4 w-4" /> <span className="hidden sm:inline">{personaEnded ? ts.evaluateCta : ts.finishCta}</span>
+              </button>
+            )}
+            {menue}
           </div>
         }
       >
+        {imCheck ? (
+          <MikrofonCheck
+            key={simId ?? 'check'}
+            personaName={personaName}
+            vorbereiten={live.vorbereiten}
+            ausKlick={mikroAusKlick}
+            onLos={sprechenLos}
+            onSchreiben={wechsleZuSchreiben}
+            onZaehlpunkt={(schritt) => zaehlpunkt(schritt, scenario.id, 'sprechen')}
+          />
+        ) : imSprechen ? (
+          <Sprechansicht
+            name={personaName}
+            rolle={scenario.persona.role}
+            portrait={portraitOf(scenario)}
+            zustand={rolleZustand({
+              verbunden: live.state === 'on',
+              verbindet: live.state === 'connecting' || live.busy,
+              ton: live.spricht,
+              denkt: live.denkt,
+              mikroAn: !live.stumm && !timeoutOpen,
+            })}
+            turns={turns}
+            laufendDu={live.you}
+            laufendRolle={live.persona}
+            banner={
+              endeKarte || liveZeile || fehlerZeile ? (
+                <>
+                  {endeKarte}
+                  {liveZeile}
+                  {fehlerZeile}
+                </>
+              ) : undefined
+            }
+            pause={
+              simMode === 'check'
+                ? null
+                : { onClick: oeffnePause, disabled: userTurnCount < 1 || timeoutsLeft === 0, zaehler: `${coachNotes.length}/${timeoutsMax}` }
+            }
+            mikro={{
+              an: live.state === 'on' && !live.stumm,
+              disabled: inputClosed || live.busy || live.state === 'connecting',
+              onClick: mikroKnopf,
+            }}
+            beenden={{
+              label: inputClosed ? ts.evaluateCta : ts.endShort,
+              onClick: auswerten,
+              disabled: finishing || userTurnCount < 3,
+              title: userTurnCount < 3 ? ts.finishNeedsTurns : undefined,
+            }}
+          />
+        ) : (
         <div className="flex flex-col h-full">
           {/* Fokus-Banner (D2) */}
           {focus && (
@@ -2873,213 +2928,43 @@ export default function SimulationClient() {
                   {briefingOpen ? ts.briefingHide : ts.briefingShow}
                 </button>
               </div>
-              <ol className={cx('mt-1 space-y-0.5 text-xs leading-snug', !goalsOpen && 'hidden sm:block')}>
-                {b.goals.map((g, idx) => (
-                  <li key={idx} className="flex gap-1.5">
-                    <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
-                    <span>{g}</span>
-                  </li>
-                ))}
-              </ol>
+              <ol className={cx('mt-1 space-y-0.5 text-xs leading-snug', !goalsOpen && 'hidden sm:block')}>{zielePunkte}</ol>
             </div>
             {briefingOpen && (
               <div className="border-t border-border/60 px-4 py-3 max-h-80 overflow-y-auto custom-scrollbar">
-                <div className="max-w-3xl mx-auto space-y-3 text-sm">
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.yourRole}</div>
-                    <p className="leading-relaxed">{b.yourRole}</p>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.relationship}</div>
-                    <p className="leading-relaxed">{b.relationship}</p>
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.incidents}</div>
-                    <ul className="space-y-1">
-                      {b.incidents.map((i, idx) => (
-                        <li key={idx} className="flex gap-2">
-                          <span className="text-primary font-bold shrink-0">{idx + 1}.</span>
-                          <span>{i}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  {b.factVisuals && b.factVisuals.length > 0 ? (
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">{ts.factSheet}</div>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {b.factVisuals.map((v, idx) => (
-                          <FactChart key={idx} v={v} />
-                        ))}
-                      </div>
-                    </div>
-                  ) : b.factSheet && b.factSheet.length > 0 ? (
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.factSheet}</div>
-                      <ul className="pn-tile space-y-1 rounded-lg border border-border bg-muted/40 p-3">
-                        {b.factSheet.map((f, idx) => (
-                          <li key={idx} className="text-xs font-mono leading-relaxed">
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                  {b.approachHints && b.approachHints.length > 0 && (
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">{ts.stepApproach}</div>
-                      <ul className="space-y-1">
-                        {b.approachHints.map((h, idx) => (
-                          <li key={idx} className="flex gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                            <span>{h}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {b.expectation && (
-                    <div className="pn-none rounded-xl border border-accent/30 bg-accent/5 p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-accent mb-1">{ts.expectationTitle}</div>
-                      <p className="leading-relaxed">{b.expectation}</p>
-                    </div>
-                  )}
-                </div>
+                <div className="max-w-3xl mx-auto">{briefingInhalt}</div>
               </div>
             )}
           </div>
 
-          {/* Nachrichten */}
+          {/* Nachrichten. U4 (Paket 4): Der KI-Hinweis steht nicht mehr über dem Verlauf; der Name der Rolle im Kopf
+              trägt das Kennzeichen „KI-Rolle“. */}
           <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4">
             <div className="max-w-3xl mx-auto space-y-3">
-              {/* EU-KI-VO Art. 50 (T1.5): Hinweis am Sessionstart, oberhalb des ersten Beitrags. */}
-              <div className="flex justify-center">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
-                  <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
-                  {ts.aiStartNotice}
-                </span>
-              </div>
-              {turns.map((turn, idx) => (
-                <div
-                  key={idx}
-                  className={cx('flex items-end gap-2', turn.role === 'user' ? 'justify-end' : 'justify-start')}
-                >
-                  {turn.role === 'persona' && <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />}
-                  <div
-                    className={cx(
-                      'pn-none rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap',
-                      turn.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-br-sm'
-                        : 'glass-panel border border-border rounded-bl-sm'
-                    )}
-                  >
-                    {turn.text}
-                  </div>
-                </div>
-              ))}
-              {sending && (
-                <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />
-                  <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    {scenario.persona.name} {ts.personaTyping}
-                  </div>
-                </div>
-              )}
-              {/* Sprachmodus Live: Verbindungsaufbau und die mitlaufende Mitschrift des laufenden Zugs. */}
-              {liveState === 'connecting' && (
-                <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />
-                  <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-muted-foreground flex items-center gap-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    {ts.liveConnecting}
-                  </div>
-                </div>
-              )}
-              {liveYou && (
-                <div className="flex items-end gap-2 justify-end">
-                  <div className="pn-none rounded-2xl px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap bg-primary/70 text-primary-foreground rounded-br-sm">
-                    {liveYou}
-                  </div>
-                </div>
-              )}
-              {livePersona && (
-                <div className="flex items-end gap-2 justify-start">
-                  <PersonaAvatar name={scenario.persona.name} scenarioId={portraitOf(scenario)} size="sm" />
-                  <div className="pn-none glass-panel border border-border rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm leading-relaxed max-w-[85%] whitespace-pre-wrap">
-                    {livePersona}
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
+              <GespraechsBlasen
+                turns={turns}
+                personaName={personaName}
+                portrait={portraitOf(scenario)}
+                wartet={sending ? `${personaName} ${ts.personaTyping}` : null}
+              />
             </div>
           </div>
 
           {/* Eingabe */}
           <div className="border-t border-border p-3">
-            {/* CP-3.3 (M17, EU-KI-VO Art. 50): dauerhafter KI-Hinweis — bewusst
-                persistent statt einmal wegklickbar (beweissicher, Abs. 5:
-                spätestens bei der ersten Interaktion). */}
-            <p className="max-w-3xl mx-auto mb-1 text-[10px] leading-tight text-muted-foreground">
-              {ts.aiNotice}
-            </p>
-            {/* Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der
-                Persona ist die Eingabe zu — es bleibt nur die Auswertung. */}
-            {/* Welle 2: die Rolle hat das Gespräch selbst beendet — Karte mit Grund-Art und Weg zur Auswertung. */}
-            {personaEnded && !deadEnd && (
-              <div className="pn-none max-w-3xl mx-auto mb-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
-                <span className="flex flex-col gap-0.5">
-                  <span className="font-semibold text-emerald-800 dark:text-emerald-300">{ts.endedByPersona.replace('{name}', scenario.persona.name)}</span>
-                  <span className="text-muted-foreground">
-                    {personaEnded.ergebnis === 'ziel' ? ts.endedZiel : personaEnded.ergebnis === 'abbruch' ? ts.endedAbbruch : ts.endedVerabschiedung} {ts.endedHint}
-                  </span>
-                </span>
-                <button
-                  onClick={() => {
-                  stopMic();
-                  setConfirmOpen(true);
-                }}
-                  disabled={finishing}
-                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  <Sparkles className="h-4 w-4" /> {ts.evaluateCta}
-                </button>
-              </div>
-            )}
-            {effTimeUp && !deadEnd && !personaEnded && (
-              <div className="pn-none max-w-3xl mx-auto mb-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
-                <span className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
-                  <Clock className="h-4 w-4 shrink-0" /> {ts.timeUpBanner}
-                </span>
-                <button
-                  onClick={() => {
-                  stopMic();
-                  setConfirmOpen(true);
-                }}
-                  disabled={finishing}
-                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  <Sparkles className="h-4 w-4" /> {ts.evaluateCta}
-                </button>
-              </div>
-            )}
-            {micActive && !inputClosed && (
+            {/* U4 (Paket 4): Die KI-Zeile über dem Eingabefeld entfällt (CP-3.3 bleibt erfüllt: Der Hinweis steht vor
+                dem Start im Briefing, und das Kennzeichen „KI-Rolle“ am Namen ist im ganzen Gespräch sichtbar). */}
+            {endeKarte && <div className="max-w-3xl mx-auto mb-2">{endeKarte}</div>}
+            {diktat.aktiv && !inputClosed && (
               <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2 text-xs text-primary">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
-                {liveState === 'on' ? ts.liveActive : ts.micLive}
+                {ts.micLive}
               </div>
             )}
-            {/* Paket 1, C1 (12.11.2026): Die Meldung steht direkt über dem Eingabefeld. Vorher stand sie über dem
-                ersten Beitrag und war in einem längeren Gespräch aus dem Bild gescrollt.
-                W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog. */}
-            {error && !confirmOpen && !checkin && !timeoutOpen && (
-              <div className="max-w-3xl mx-auto mb-2" role="alert">
-                {errorBanner}
-              </div>
-            )}
+            {fehlerZeile && <div className="max-w-3xl mx-auto mb-2">{fehlerZeile}</div>}
             <div className="max-w-3xl mx-auto flex items-end gap-2">
               {/* Im Check-in gehört der geteilte Text ins Feld des Dialogs, nicht ins Gespräch dahinter. */}
               <textarea
@@ -3092,28 +2977,29 @@ export default function SimulationClient() {
                   }
                 }}
                 rows={2}
-                placeholder={inputClosed ? ts.inputClosed : liveState !== 'off' ? ts.liveActive : ts.inputPlaceholder}
-                disabled={inputClosed || liveState !== 'off'}
+                placeholder={inputClosed ? ts.inputClosed : ts.inputPlaceholder}
+                disabled={inputClosed}
                 className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
-              {/* Paket 1, C11 (12.11.2026): Während das Mikrofon startet oder neu verbindet, ist der Knopf gesperrt. */}
-              {speechSupported && !inputClosed && (
+              {/* Paket 4: Der Mikrofon-Knopf diktiert ins Eingabefeld und heißt auch so; das Sprachgespräch startet
+                  er nie mehr. Paket 1, C11: Während das Diktat startet, ist der Knopf gesperrt. */}
+              {diktat.supported && !inputClosed && (
                 <button
-                  onClick={() => (micActive ? stopMic() : startMic())}
-                  disabled={micStarting || liveState === 'connecting' || liveNotice?.kind === 'reconnecting'}
+                  onClick={() => (diktat.aktiv ? diktat.stop() : startDictation())}
+                  disabled={diktat.startet}
                   className={cx(
                     'pn-none relative rounded-xl p-3 border transition-colors disabled:opacity-50',
-                    micActive
+                    diktat.aktiv
                       ? 'border-primary/60 text-primary bg-primary/10 shadow-neon'
                       : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
                   )}
-                  aria-label={micActive ? ts.micStop : ts.micStart}
-                  title={micActive ? ts.micStop : ts.micStart}
+                  aria-label={diktat.aktiv ? ts.micStop : ts.micStart}
+                  title={diktat.aktiv ? ts.micStop : ts.micStart}
                 >
                   {/* Owner-Befund 19.09.: animate-ping skalierte den Ring auf 2x und ragte 9 px in den
                       scrollbaren Gesprächsbereich → Scrollbar flackerte im Sekundentakt → die Seite
                       wackelte rechts-links. Pulsieren ohne Wachsen hält das Layout still. */}
-                  {micActive && (
+                  {diktat.aktiv && (
                     <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-pulse pointer-events-none" aria-hidden />
                   )}
                   <Mic className="h-5 w-5" />
@@ -3121,7 +3007,7 @@ export default function SimulationClient() {
               )}
               <button
                 onClick={() => void sendTurn()}
-                disabled={sending || !input.trim() || inputClosed || liveState !== 'off'}
+                disabled={sending || !input.trim() || inputClosed}
                 className="btn-gradient text-white rounded-xl p-3 shadow-neon disabled:opacity-50"
                 aria-label={ts.send}
               >
@@ -3130,6 +3016,7 @@ export default function SimulationClient() {
             </div>
           </div>
         </div>
+        )}
 
         {/* W2-2: Totsackgasse auflösen — Zeit um, unter 3 Beiträgen: weder
             weiterreden noch auswerten. Neustart-Angebot ist Pflicht (Owner),
@@ -3153,7 +3040,9 @@ export default function SimulationClient() {
                 </button>
                 <button
                   onClick={() => {
-                    // Direkter Neustart: gleiches Szenario, gleicher Fokus.
+                    // Direkter Neustart: gleiches Szenario, gleicher Fokus, gleicher Weg.
+                    // C30: Der Tonweg für „Sprechen“ entsteht im Klick, vor dem ersten Warten.
+                    if (weg === 'sprechen') live.vorbereiten();
                     const held = focus;
                     void (async () => {
                       if (simId) {
@@ -3211,10 +3100,10 @@ export default function SimulationClient() {
           </div>
         )}
 
-        {/* Time-out-Coach (D3) — Szene angehalten */}
+        {/* Time-out-Coach (D3) — Szene angehalten. Paket 4, C13 und U5: Uhr und Mikrofon stehen wirklich still. */}
         {timeoutOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="pn-none glass-panel rounded-2xl border border-accent/40 p-6 max-w-lg w-full space-y-4 bg-card max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div className="pn-none glass-panel rounded-2xl border border-accent/40 p-6 max-w-lg w-full space-y-4 bg-card max-h-[85dvh] overflow-y-auto custom-scrollbar">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
                   <Pause className="h-5 w-5 text-accent" /> {ts.timeoutTitle}
@@ -3223,7 +3112,10 @@ export default function SimulationClient() {
                   {coachNotes.length}/{timeoutsMax}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{ts.timeoutHint}</p>
+              {/* Der Satz gilt, solange die Pause die Uhr hält (höchstens fünf Minuten je Pause, 15 je Gespräch). */}
+              <p className="text-xs text-muted-foreground leading-relaxed" data-testid="pause-hinweis">
+                {uhr?.angehalten ? ts.timeoutHint.replace('{name}', personaName) : ts.timeoutHintOver}
+              </p>
 
               {coachNotes.map((n, idx) => (
                 <div key={idx} className="space-y-2">
@@ -3284,7 +3176,7 @@ export default function SimulationClient() {
 
               <div className="flex justify-end">
                 <button
-                  onClick={() => setTimeoutOpen(false)}
+                  onClick={schliessePause}
                   className="btn-gradient text-white font-semibold rounded-xl px-5 py-2.5 text-sm flex items-center gap-2"
                 >
                   <Play className="h-4 w-4" /> {ts.timeoutResume}
@@ -3327,16 +3219,10 @@ export default function SimulationClient() {
               </button>
               <button
                 onClick={() => {
-                  micAckRef.current = true;
-                  try {
-                    localStorage.setItem(MIC_ACK_KEY, "1");
-                  } catch {
-                    /* Privatmodus — Sitzungs-Fallback micAckRef greift */
-                  }
+                  mikroHinweisBestaetigen();
                   setMicNoticeOpen(false);
-                  // Im Check-in wird nur diktiert, nie das Live-Gespräch gestartet (Owner-Befund 01.11.2026).
-                  if (checkin) startDictation();
-                  else startMic();
+                  // Hier wird nur diktiert (Chat und Check-in), nie das Sprachgespräch gestartet (Owner-Befund 01.11.2026).
+                  startDiktat();
                 }}
                 className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
               >
@@ -3441,19 +3327,19 @@ export default function SimulationClient() {
                 disabled={checkinBusy}
                 className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
-              {speechSupported && (
+              {diktat.supported && (
                 <button
                   type="button"
-                  onClick={() => (micActive ? stopMic() : startDictation())}
-                  disabled={micStarting || checkinBusy}
+                  onClick={() => (diktat.aktiv ? diktat.stop() : startDictation())}
+                  disabled={diktat.startet || checkinBusy}
                   className={cx(
                     'pn-none relative rounded-xl p-3 border transition-colors disabled:opacity-50',
-                    micActive
+                    diktat.aktiv
                       ? 'border-primary/60 text-primary bg-primary/10 shadow-neon'
                       : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
                   )}
-                  aria-label={micActive ? ts.micStop : ts.micStart}
-                  title={micActive ? ts.micStop : ts.micStart}
+                  aria-label={diktat.aktiv ? ts.micStop : ts.micStart}
+                  title={diktat.aktiv ? ts.micStop : ts.micStart}
                 >
                   <Mic className="h-5 w-5" />
                 </button>
@@ -3473,6 +3359,54 @@ export default function SimulationClient() {
               >
                 {ts.stepNext}
                 {checkinBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Paket 4: In der Sprechansicht stehen Ziele und Briefing nicht im Bild; das Menü „⋯“ öffnet sie hier. */}
+        <Dialog
+          open={imSprechen && !imCheck && briefingOpen}
+          onOpenChange={(open) => {
+            if (!open) setBriefingOpen(false);
+          }}
+        >
+          <DialogContent className={`${DIALOG_BOX} max-w-lg`} aria-describedby={undefined} data-testid="briefing-dialog">
+            <DialogTitle className={DIALOG_TITLE}>{ts.goalsStripTitle}</DialogTitle>
+            <ol className="space-y-1 text-sm leading-snug">{zielePunkte}</ol>
+            {focus && (
+              <p className="text-sm leading-relaxed">
+                <span className="font-semibold text-accent">{ts.focusBanner}: </span>
+                {focus}
+              </p>
+            )}
+            {briefingInhalt}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setBriefingOpen(false)}
+                className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
+              >
+                {t.common.close}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Paket 4: Hilfe zum Sprechen (Menü „⋯“ der Sprechansicht), drei kurze Sätze. */}
+        <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+          <DialogContent className={DIALOG_BOX} aria-describedby={undefined} data-testid="sprech-hilfe">
+            <DialogTitle className={DIALOG_TITLE}>{ts.menuHelp}</DialogTitle>
+            <ul className="space-y-2 text-sm leading-relaxed text-muted-foreground">
+              <li>{ts.speakHelp1}</li>
+              <li>{ts.speakHelp2}</li>
+              <li>{ts.speakHelp3.replace('{name}', personaName)}</li>
+            </ul>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setHelpOpen(false)}
+                className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
+              >
+                {t.common.close}
               </button>
             </div>
           </DialogContent>

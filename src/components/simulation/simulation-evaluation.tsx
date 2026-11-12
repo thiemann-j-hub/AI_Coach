@@ -248,14 +248,14 @@ export function SimulationEvaluation(props: {
         <TabsList
           ref={leiste}
           aria-label={ts.feedbackTitle}
-          className="sticky top-0 z-20 flex h-auto w-full justify-start overflow-x-auto rounded-none border-b border-border bg-background p-0 sm:gap-1"
+          className="sticky top-0 z-20 flex h-auto w-full justify-start overflow-x-auto rounded-none border-b border-border bg-background p-0 [scrollbar-width:thin] sm:gap-1"
         >
           {reiter.map((r) => (
             <TabsTrigger
               key={r.id}
               value={r.id}
               data-testid={`eval-tab-${r.id}`}
-              className="shrink-0 rounded-none border-b-2 border-transparent px-2 py-2.5 text-sm font-semibold text-muted-foreground focus-visible:ring-inset focus-visible:ring-offset-0 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:px-3"
+              className="shrink-0 flex-1 rounded-none border-b-2 border-transparent px-1 py-2.5 text-sm font-semibold sm:flex-none text-muted-foreground focus-visible:ring-inset focus-visible:ring-offset-0 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:px-3"
             >
               {r.label}
             </TabsTrigger>

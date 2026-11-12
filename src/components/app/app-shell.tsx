@@ -69,7 +69,22 @@ export default function AppShell(props: {
   children: React.ReactNode;
   /** If true, children fill the entire main area without default padding */
   noPadding?: boolean;
+  /**
+   * Paket 4, U3 und C30 (12.11.2026): schlanke Kopfzeile im laufenden Gespräch — nur Zurück, Titel (der Name der
+   * Rolle, nicht abgeschnitten, mit dem Kennzeichen „KI-Rolle“) und die Knöpfe der Seite. „Credits aufladen“,
+   * Sprachwahl und Avatar lenkten mitten im Gespräch ab und entfallen dort; die Höhe folgt 100dvh statt 100vh
+   * (Adressleiste am Handy). Ohne dieses Prop bleibt jede Seite, wie sie ist.
+   */
+  gespraech?: {
+    zurueck: () => void;
+    zurueckLabel: string;
+    /** Kleines Kennzeichen am Titel. */
+    kennzeichen?: string;
+    /** Der Titel steht schon groß auf der Seite (Sprechansicht): in der Kopfzeile nur für Vorleseprogramme. */
+    ohneTitel?: boolean;
+  };
 }) {
+  const g = props.gespraech;
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -168,8 +183,8 @@ export default function AppShell(props: {
         deleteOk: t.confirmDialog.deleteOk,
       }}
     >
-    <div className="min-h-screen bg-background text-foreground font-sans">
-      <div className="flex h-screen overflow-hidden">
+    <div className={cx('bg-background text-foreground font-sans', g ? 'min-h-[100dvh]' : 'min-h-screen')}>
+      <div className={cx('flex overflow-hidden', g ? 'h-[100dvh]' : 'h-screen')}>
         {/* Mobile backdrop */}
         {mobileOpen && (
           <button
@@ -365,32 +380,66 @@ export default function AppShell(props: {
           </div>
 
           {/* Header */}
-          <header className="glass-header sticky top-0 z-30 flex h-16 items-center justify-between px-4 lg:px-6">
-            <div className="flex items-center gap-3 min-w-0">
-              <button
-                className="md:hidden inline-flex items-center justify-center rounded-lg p-2 hover:bg-foreground/5 transition-colors text-muted-foreground"
-                onClick={() => setMobileOpen(true)}
-                aria-label={t.common.openMenu}
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div className="min-w-0">
-                <div className="text-lg font-bold tracking-tight truncate text-foreground">{props.title}</div>
-                {props.subtitle && (
-                  <div className="text-xs text-muted-foreground truncate font-mono">{props.subtitle}</div>
-                )}
-              </div>
+          <header
+            className={cx(
+              'glass-header sticky top-0 z-30 flex items-center justify-between',
+              g ? 'min-h-16 gap-2 px-3 py-2 lg:px-6' : 'h-16 px-4 lg:px-6'
+            )}
+          >
+            <div className={cx('flex items-center min-w-0', g ? 'gap-2' : 'gap-3')}>
+              {g ? (
+                <button
+                  type="button"
+                  onClick={g.zurueck}
+                  aria-label={g.zurueckLabel}
+                  title={g.zurueckLabel}
+                  className="pn-none inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="hidden lg:inline">{g.zurueckLabel}</span>
+                </button>
+              ) : (
+                <button
+                  className="md:hidden inline-flex items-center justify-center rounded-lg p-2 hover:bg-foreground/5 transition-colors text-muted-foreground"
+                  onClick={() => setMobileOpen(true)}
+                  aria-label={t.common.openMenu}
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              )}
+              {g ? (
+                <div className={cx('min-w-0', g.ohneTitel && 'sr-only')}>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <span className="text-base sm:text-lg font-bold tracking-tight leading-tight break-words text-foreground">{props.title}</span>
+                    {g.kennzeichen && (
+                      <span className="pn-none inline-flex shrink-0 items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-semibold leading-none text-muted-foreground" data-testid="ki-rolle">
+                        {g.kennzeichen}
+                      </span>
+                    )}
+                  </div>
+                  {props.subtitle && (
+                    <div className="hidden sm:block text-xs text-muted-foreground truncate">{props.subtitle}</div>
+                  )}
+                </div>
+              ) : (
+                <div className="min-w-0">
+                  <div className="text-lg font-bold tracking-tight truncate text-foreground">{props.title}</div>
+                  {props.subtitle && (
+                    <div className="text-xs text-muted-foreground truncate font-mono">{props.subtitle}</div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* L3 Look-and-Feel (Owner-Auftrag 15.08., Standard = Studio):
                 Reihenfolge IMMER Credits → Sprache (Flagge + Wort) → rundes
                 Avatar mit Menü. Verbindlich: pulsenorth-ops/
                 SHELL-STANDARD-LOOK-AND-FEEL.md */}
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className={cx('flex items-center', g ? 'shrink-0 gap-1.5 sm:gap-2' : 'gap-2 md:gap-3')}>
               {props.actions}
-              <CreditBalance />
-              <LanguageSwitcher />
-              {user ? (
+              {!g && <CreditBalance />}
+              {!g && <LanguageSwitcher />}
+              {g ? null : user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
