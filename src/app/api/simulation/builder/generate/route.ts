@@ -28,9 +28,12 @@ import { aiErrorResponse } from "@/lib/server/request-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 200;
 
-const LLM_TIMEOUT_MS = timeoutMs("BUILDER_LLM_TIMEOUT_MS", 90_000);
+// 12.11.2026: 170 statt 90 Sekunden. Ein Versuch dauert live rund 55 Sekunden; scheitert der erste an Schema oder
+// Regeln, braucht der zweite noch einmal so lange. Mit 90 Sekunden endete das immer in Fehler und Rückbuchung.
+// Die Strecke davor trägt das: Front Door wartet 240 Sekunden, der App Service 230.
+const LLM_TIMEOUT_MS = timeoutMs("BUILDER_LLM_TIMEOUT_MS", 170_000);
 
 /** Kappe je Workspace — schützt Katalog-UX und Kosten (Owner-Stellschraube). */
 const MAX_SCENARIOS_PER_WORKSPACE = 30;

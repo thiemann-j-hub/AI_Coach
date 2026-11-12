@@ -23,7 +23,7 @@ import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import { getScenario } from '@/lib/simulation/scenarios';
 import { validateScenario } from '@/lib/simulation/scenario-schema';
 import { ergaenzeAnker, faehigkeitenKatalog } from '@/lib/simulation/faehigkeiten';
-import type { SimulationScenario } from '@/lib/simulation/types';
+import { PERSONA_VOICES, type SimulationScenario } from '@/lib/simulation/types';
 
 /** Stil-Vorlagen: je eine starke Mitarbeiter- und eine Verhandlungs-DNA. */
 const TEMPLATE_IDS = ['sim-coaching-morgan', 'sim-peer-falk'] as const;
@@ -147,9 +147,12 @@ export function buildScenarioGeneratorPrompt(args: ScenarioDraftArgs & {
   /** Fehlerliste des vorigen Versuchs (Retry) — leer beim ersten Lauf. */
   previousIssues?: string;
 }): string {
-  const templates = TEMPLATE_IDS.map((id) => getScenario(id)).filter(
-    (s): s is SimulationScenario => Boolean(s)
-  );
+  // 12.11.2026: Die Vorlagen gehen ohne `competencyFocus` in den Prompt. Das Feld hat keinen Leser mehr, und das
+  // Modell füllte es mit Ids aus der Fähigkeiten-Bibliothek: Der Entwurf scheiterte am Schema, der zweite Versuch
+  // sprengte die Frist (live gemessen: zweimal rund 55 Sekunden).
+  const templates = TEMPLATE_IDS.map((id) => getScenario(id))
+    .filter((s): s is SimulationScenario => Boolean(s))
+    .map((s) => ({ ...s, competencyFocus: undefined }));
   const locale = zielSprache(args);
   const sprache = locale === 'en' ? 'Englisch' : 'Deutsch';
   const zeit = wunschDauer(args);
@@ -175,7 +178,7 @@ AUTORENREGELN (hart, werden maschinell geprüft):
 7. assessment.checkpoints: 3–6 prüfbare Schlüsselmomente mit ids im Muster "${args.id.replace(/^ws-/, '')}-…" (eindeutig).
 8. personaDna vollständig: hiddenDrivers (nie aussprechen), positions (sagt sie offen) GETRENNT von interests (gibt sie erst bei ehrlichem Erkunden preis), concessionConditions (wann wird sie kooperativer — JEDE Bedingung verlangt BEOBACHTBARES VERHALTEN des Übenden: nachfragen, spiegeln, konkret vereinbaren, belegen; nie nur „überzeugend argumentiert“ oder „Nutzen erklärt“), escalationTriggers, knowledgeBounds (was sie NICHT weiß), facts (exakte Zahlen/Namen — NUR aus BRIEF/MATERIAL, nie erfunden), openingLine.
 9. SPRACHE: Schreibe ALLE Inhalte auf ${sprache}, auch wenn VORLAGEN oder MATERIAL in einer anderen Sprache vorliegen: Titel, Teaser, Rollenbezeichnung, Briefing, Ziele, Einwände, Eröffnungssatz. locale "${locale}"; category "${category}"; difficulty ${difficulty}; durationMin ${zeit.dauer}${zeit.max === null ? ' (oder die Dauer aus dem ÄNDERUNGSWUNSCH)' : ' (nie länger)'}, checkDurationMin ${zeit.pruefung} (nie länger als durationMin); timeboxMin ${zeit.dauer}.
-10. persona.name === personaDna.name. Erfinde realistische, aber fiktive Namen — übernimm KEINE echten Personennamen aus dem MATERIAL.
+10. persona.name === personaDna.name. Erfinde realistische, aber fiktive Namen — übernimm KEINE echten Personennamen aus dem MATERIAL. persona.voice: genau einer von ${PERSONA_VOICES.map((v) => `"${v}"`).join(', ')}, sonst das Feld weglassen.
 11. Titel-Konvention: "Motto — Gesprächstyp mit <Name>".
 13. persona.firma: ${args.privat ? 'weglassen (privates Szenario, keine Firmennamen).' : 'die Firma, bei der die ROLLE arbeitet (höchstens 80 Zeichen), NUR wenn BRIEF oder MATERIAL sie nennen; sonst das Feld weglassen. Erfinde keine Firma und übernimm keine aus den VORLAGEN.'}${args.privat ? `
 14. PRIVATES SZENARIO (die Person bereitet ihr echtes Gespräch vor): Übernimm KEINE Namen echter Personen oder Firmen aus dem BRIEF — ersetze sie durch Rollenbezeichnungen (»mein Projektleiter«, »die Kundin«, »das Unternehmen«) und gib der Spielfigur einen erfundenen, zur Rolle passenden Namen. Die vom Menschen beschriebenen Verhaltensweisen, Zahlen und Anlässe bleiben erhalten; erfinde nur, was für eine spielbare Rolle fehlt (Hintergrund, verdeckte Motive, Einwände, Freigabe-Regel, Endbedingungen). candidateBriefing in der Du-Form aus Sicht der Person.` : ''}
@@ -223,13 +226,38 @@ export function parseDraftJson(text: string): unknown {
 }
 
 /**
+ * PURE (getestet): Kleinigkeiten der Modellantwort richten, bevor das Schema prüft (12.11.2026). Live gemessen
+ * scheiterte etwa jeder zweite erste Versuch an solchen Stellen, und ein zweiter Versuch kostet weitere 50 Sekunden.
+ *  - `competencyFocus` liest niemand mehr: weg damit.
+ *  - `persona.voice` mit erfundenem Namen: weg damit (die Stimme wählt der Admin im Builder).
+ *  - Einwände ohne `trigger` oder `objection` fallen weg, solange drei vollständige bleiben.
+ * Alles andere bleibt, wie es ist, und geht ungeschönt in die Schema-Prüfung.
+ */
+export function richteKleinigkeiten(raw: unknown): unknown {
+  const istObjekt = (x: unknown): x is Record<string, unknown> => Boolean(x) && typeof x === 'object' && !Array.isArray(x);
+  if (!istObjekt(raw)) return raw;
+  const out: Record<string, unknown> = { ...raw, competencyFocus: undefined };
+  if (istObjekt(out.persona) && !(PERSONA_VOICES as readonly unknown[]).includes(out.persona.voice)) {
+    out.persona = { ...out.persona, voice: undefined };
+  }
+  if (istObjekt(out.personaDna) && Array.isArray(out.personaDna.objectionPlaybook)) {
+    const text = (x: unknown) => typeof x === 'string' && x.trim().length > 0;
+    const ganz = out.personaDna.objectionPlaybook.filter((o) => istObjekt(o) && text(o.trigger) && text(o.objection));
+    if (ganz.length >= 3) out.personaDna = { ...out.personaDna, objectionPlaybook: ganz };
+  }
+  return out;
+}
+
+/**
  * PURE (getestet): macht aus der Modellantwort den fertigen Entwurf oder wirft mit lesbarer Fehlerliste.
  * Paket 5, C39: Id und Sprache kommen vom Auftrag, nie aus der Modellantwort (vorher konnte das Modell die Id ändern,
  * und der Entwurf landete unter einer fremden Id). Danach Schema, dann die einfachen Regeln (`regelVerstoesse`).
  */
 export function fertigerEntwurf(raw: unknown, args: ScenarioDraftArgs): SimulationScenario {
   const locale = zielSprache(args);
-  const fest = raw && typeof raw === 'object' && !Array.isArray(raw) ? { ...raw, id: args.id, locale } : raw;
+  const gerichtet = richteKleinigkeiten(raw);
+  const fest =
+    gerichtet && typeof gerichtet === 'object' && !Array.isArray(gerichtet) ? { ...gerichtet, id: args.id, locale } : gerichtet;
   const draft = validateScenario(fest);
   const verstoesse = regelVerstoesse(draft, { locale, maxDauerMin: wunschDauer(args).max });
   if (verstoesse.length) {

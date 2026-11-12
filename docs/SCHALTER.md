@@ -48,7 +48,7 @@ nicht gesetzt ist, der Standard im Code der neue Weg ist und der Umbau älter al
 | `DAILY_TOKEN_LIMIT` | Höhe des Tagesbudgets je Person. | `500000` | nicht gesetzt | Ohne Variable gilt der Standard. | 13.06.2026 (Git) |
 | `COACH_SIM_STARTS_PER_DAY` | Rollenspiel-Starts je Person und Tag (Admins frei). | `6` | nicht gesetzt | `0`: keine Tagesgrenze. | 15.10.2026 |
 | `LLM_TIMEOUT_MS` | Frist für Rolle, Coach-Impuls, Eröffnung, Analyse und C1 bis C10. | `45000` | nicht gesetzt | Ohne Variable gilt der Standard. | 17.06.2026 (Git) |
-| `BUILDER_LLM_TIMEOUT_MS` | Frist für den Szenario-Generator (Builder, Vorbereiten). | `90000` | nicht gesetzt | Ohne Variable gilt der Standard. | 19.08.2026 (Git) |
+| `BUILDER_LLM_TIMEOUT_MS` | Frist für den Szenario-Generator (Builder, Vorbereiten), für beide Versuche zusammen. | `170000` | nicht gesetzt | Ohne Variable gilt der Standard. | 19.08.2026 (Git) |
 | `INTERVIEW_LLM_TIMEOUT_MS` | Frist für einen Interview-Zug. | `25000` | nicht gesetzt | Ohne Variable gilt der Standard. | 30.10.2026 (Git) |
 | `COACH_RICHTER_TIMEOUT_MS` | Frist des starken Richters (mindestens 30000); gilt auch für den Interview-Bericht. | `110000` | nicht gesetzt | Ohne Variable gilt der Standard. | 30.10.2026 (Git) |
 | `RAG_TIMEOUT_MS` | Frist für die Kartensuche der Gesprächsanalyse. | `6000` | nicht gesetzt | Ohne Variable gilt der Standard. | 12.07.2026 (Git) |

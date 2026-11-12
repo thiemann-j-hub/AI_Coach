@@ -9,6 +9,7 @@ import type { SimulationScenario } from '@/lib/simulation/types';
 import {
   buildScenarioGeneratorPrompt,
   fertigerEntwurf,
+  richteKleinigkeiten,
   generateScenarioDraft,
   parseDraftJson,
   regelVerstoesse,
@@ -138,6 +139,35 @@ describe('scenario-generator: Sprache, Einwände, Dauer, Id (S15, C39)', () => {
     // Auch eine unbrauchbare Id der Modellantwort kostet keinen zweiten Versuch mehr.
     expect(fertigerEntwurf({ ...vomModell, id: 'Kein Muster' }, auftrag).id).toBe('ws-befoerderung-abc123');
     expect(() => fertigerEntwurf('kein Objekt', auftrag)).toThrow(/Szenario ungültig/);
+  });
+
+  it('competencyFocus hat keinen Leser mehr: nicht im Prompt, und die Modellantwort scheitert nicht an ihm (12.11.2026)', () => {
+    // Live gemessen: Das Modell füllte das Feld mit Ids der Fähigkeiten-Bibliothek, der Entwurf scheiterte am
+    // Schema, und der zweite Versuch sprengte die Frist (zweimal rund 55 Sekunden bei 90 Sekunden Frist).
+    expect(buildScenarioGeneratorPrompt(auftrag)).not.toContain('competencyFocus');
+    const vomModell = { ...alsEntwurf('ws-egal'), competencyFocus: ['rahmen', 'ursache', 'ruhe', 'vereinbarung'] };
+    const s = fertigerEntwurf(vomModell, auftrag);
+    expect(s.id).toBe('ws-befoerderung-abc123');
+    expect(s.competencyFocus).toBeUndefined();
+  });
+
+  it('Kleinigkeiten der Modellantwort kosten keinen zweiten Versuch: erfundene Stimme, halber Einwand (12.11.2026)', () => {
+    const gut = alsEntwurf('ws-egal');
+    const einwaende = gut.personaDna.objectionPlaybook;
+    expect(einwaende.length).toBeGreaterThanOrEqual(3);
+    const vomModell = {
+      ...gut,
+      persona: { ...gut.persona, voice: 'constantin-hd' },
+      personaDna: { ...gut.personaDna, objectionPlaybook: [...einwaende, { trigger: 'Wenn es um Geld geht' }] },
+    };
+    const s = fertigerEntwurf(vomModell, auftrag);
+    expect(s.persona.voice).toBeUndefined();
+    expect(s.personaDna.objectionPlaybook).toEqual(einwaende);
+    // Eine bekannte Stimme bleibt; zu wenige vollständige Einwände werden nicht geschönt, sondern scheitern weiter.
+    expect(fertigerEntwurf({ ...gut, persona: { ...gut.persona, voice: 'emma-hd' } }, auftrag).persona.voice).toBe('emma-hd');
+    const zuWenig = { ...gut, personaDna: { ...gut.personaDna, objectionPlaybook: [einwaende[0], einwaende[1], { trigger: 'x' }] } };
+    expect(() => fertigerEntwurf(zuWenig, auftrag)).toThrow(/objectionPlaybook/);
+    expect(richteKleinigkeiten('kein Objekt')).toBe('kein Objekt');
   });
 
   it('die Firma bleibt nur, wenn Auftrag, Material oder der bisherige Entwurf sie nennen', () => {
