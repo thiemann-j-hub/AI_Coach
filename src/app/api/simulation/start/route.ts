@@ -7,7 +7,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens, isCostCapAdmin, simStartsExceeded, simStartsLimitResponse, simStartsPerDay } from "@/lib/server/cost-cap";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
-import { getScenarioForUser } from "@/lib/server/scenario-store";
+import { getScenarioForUser, hasOpenFreeTestEval } from "@/lib/server/scenario-store";
 import { preflightEntitlement } from "@/lib/server/credits/entitlement";
 import { withRetry, timeoutMs } from "@/lib/with-timeout";
 
@@ -77,7 +77,10 @@ export async function POST(req: NextRequest) {
 
     // S4-4: Guthaben VOR dem Start prüfen (nur lesen) — leer → 402 mit Hinweis,
     // bevor die Übung beginnt. Rückweg COACH_PREFLIGHT=off.
-    const preflight = await preflightEntitlement();
+    // Entscheid 5 (12.11.2026): Steht der freie Testlauf dieses Szenarios noch offen, kostet die Auswertung keinen
+    // Credit; dann darf das Gespräch auch mit leerem Guthaben beginnen.
+    const freilauf = await hasOpenFreeTestEval(auth.uid, auth.oid, scenario.id).catch(() => false);
+    const preflight = freilauf ? null : await preflightEntitlement();
     if (preflight) {
       logger.api("/api/simulation/start", "preflight-blocked", { uid: auth.uid, scenarioId: scenario.id });
       return preflight;

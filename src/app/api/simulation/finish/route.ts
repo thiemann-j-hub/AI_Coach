@@ -4,12 +4,8 @@ import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getApiMessages } from "@/lib/server/get-request-locale";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
-import { creditGateEnabled, settleEntitlement } from "@/lib/server/credits/entitlement";
-import { emitCoachMeasurement } from "@/lib/server/radar-emit";
-import {
-  simulationEnabled,
-  simulationRadarEmitEnabled,
-} from "@/lib/simulation/flags";
+import { creditGateEnabled, type EntitlementGrant } from "@/lib/server/credits/entitlement";
+import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   assembleTranscript,
@@ -17,76 +13,59 @@ import {
   getSimulation,
   type SimulationDoc,
 } from "@/lib/server/simulation-store";
-import {
-  chargeFinish,
-  evaluateSimulation,
-  refundFinishCharge,
-  storeEvaluation,
-  type FinishCharge,
-} from "@/lib/server/simulation-finish";
-import { logger } from "@/lib/logger";
-import { aiErrorResponse } from "@/lib/server/request-id";
+import { chargeFinish, claimFinish, claimFreeFinish, revertFinish } from "@/lib/server/simulation-finish";
+import { startFinishJob } from "@/lib/server/simulation-finish-job";
+import { aiErrorResponse, requestIdOf } from "@/lib/server/request-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 180;
+// Paket 3 (12.11.2026): Die Route antwortet sofort (vorher 180 s). Die Rechnung läuft danach als Auftrag im
+// dauerhaften Node-Prozess weiter und zählt nicht zu dieser Frist.
+export const maxDuration = 30;
 
 /** Mindestens so viele eigene Beiträge, bevor eine Auswertung sinnvoll (und bezahlbar) ist. */
 const MIN_USER_TURNS = 3;
 
+// Paket 3, S8: Der Körper nimmt kein `selfAssessment` mehr — der Check-in hat seine eigene Route
+// (/api/simulation/checkin) und läuft, während hier schon gerechnet wird.
 const requestSchema = z.object({
   simId: z
     .string()
     .min(8)
     .max(64)
     .regex(/^[A-Za-z0-9-]+$/),
-  /**
-   * Welle A1: Selbsteinschätzung aus dem Coaching-Check-in — optional
-   * (Überspringen ist gleichwertig). Serverseitiger Deckel spiegelt den
-   * Client (500) mit Luft für Diktat-Ausreißer.
-   */
-  selfAssessment: z.string().trim().max(600).optional(),
 });
 
 /**
- * Antwort für einen Lauf, der nicht (mehr) aktiv ist. Ausgewertet → das vorhandene Ergebnis, idempotent lesbar,
- * nichts gebucht. Abgebrochen → saubere Ablehnung (Paket 2, C3): ein abgebrochener Lauf hat keine Auswertung;
- * vorher kam hier „schon ausgewertet“ mit leerem Ergebnis.
+ * Antwort für einen Lauf, der nicht (mehr) aktiv ist — nur der Status, nie eine Buchung. Das Ergebnis selbst
+ * holt die Auswertungsseite über GET /api/simulation/get.
+ *   `finishing` → 202 (die Auswertung rechnet schon: zweiter Klick, zweiter Tab)
+ *   `finished`  → 200
+ *   `aborted`   → 409 ABORTED (Paket 2, C3: ein abgebrochener Lauf hat keine Auswertung)
  */
-function endedResponse(doc: SimulationDoc): NextResponse {
-  if (doc.status === "aborted") {
-    return NextResponse.json({ ok: false, code: "ABORTED" }, { status: 409 });
-  }
-  return NextResponse.json({
-    ok: true,
-    alreadyFinished: true,
-    feedback: doc.feedbackJson ?? null,
-    competencyRatings: doc.competencyRatings ?? null,
-    competencyError: doc.competencyError ?? null,
-    debrief: doc.debriefJson ?? null,
-    delta: doc.deltaJson ?? null,
-    attempt: doc.attempt ?? 1,
-    focus: doc.focus ?? null,
-    selfAssessment: doc.selfAssessment ?? null,
-    mode: doc.mode ?? "practice",
-    hardness: doc.hardness ?? "standard",
-  });
+function statusResponse(doc: SimulationDoc): NextResponse {
+  if (doc.status === "finishing") return NextResponse.json({ ok: true, status: "finishing" }, { status: 202 });
+  if (doc.status === "finished") return NextResponse.json({ ok: true, status: "finished" });
+  if (doc.status === "aborted") return NextResponse.json({ ok: false, code: "ABORTED" }, { status: 409 });
+  // Der Anspruch ging zwischen zwei Schritten verloren und der Lauf ist wieder aktiv: neu versuchen.
+  return NextResponse.json({ ok: false, code: "FINISH_CONFLICT" }, { status: 409 });
 }
 
 /**
- * POST: Simulation beenden und auswerten. Kostet 1 Credit (spiegelt /api/analyze).
+ * POST: Auswertung der Simulation STARTEN. Kostet 1 Credit (spiegelt /api/analyze), antwortet sofort.
  *
- * Reihenfolge seit Paket 2 (12.11.2026); die Schritte liegen in `@/lib/server/simulation-finish`:
- *   1. Lauf lesen und prüfen (aktiv, genug Züge, Szenario, Tagesbudget).
- *   2. Buchen: offene Buchung am Lauf vermerken, dann 1 Credit mit der Kennung `sim-finish:<simId>:<n>`
- *      (n = bisherige Rückbuchungen am Lauf). Ein zweiter Klick oder ein zweiter Tab trifft dieselbe Buchung
- *      statt einer zweiten (vorher: frische Kennung je Anfrage, doppelter Credit möglich).
- *   3. Auswerten (Richter, Kompetenzen, Zitatprüfung, Rechnung) — schreibt nichts.
- *   4. Speichern auf den FRISCHEN Lauf, nur wenn er noch aktiv ist; der Vermerk wird im selben Schreibvorgang
- *      ausgetragen. Persistenz VOR settle: Credit verbraucht ⇒ Auswertung existiert.
- *   5. Zurückbuchen bei jedem Fehler und wenn der Lauf inzwischen von anderer Stelle beendet wurde — außer die
- *      gespeicherte Auswertung trägt genau diese Buchung. Scheitert die Rückbuchung, bleibt der Vermerk stehen.
- * Das Antwortformat ist unverändert. Der Status „wird ausgewertet“ mit Abfrage kommt mit Paket 3 (C4, zweiter Teil).
+ * Paket 3 (12.11.2026, C4 „Auswertung als Auftrag mit Status“, U12/S7): Die Rechnung läuft als Auftrag neben der
+ * Antwort, während die Person den Check-in beantwortet; die Auswertungsseite fragt GET /api/simulation/status ab.
+ * Die Schritte liegen in `@/lib/server/simulation-finish` und `simulation-finish-job`:
+ *   1. Lauf lesen und prüfen (Status, genug Züge, Szenario, Tagesbudget).
+ *   2. Anspruch sichern: `active` → `finishing`, mit Versionsprüfung. Von zwei Klicks oder zwei Tabs gewinnt genau
+ *      einer; der andere bekommt 202 und bucht nichts.
+ *   3. Freier Testlauf des Szenarios (Entscheid 5)? Dann keine Buchung. Sonst buchen: offene Buchung am Lauf
+ *      vermerken, dann 1 Credit mit der Kennung `sim-finish:<simId>:<n>` (n = bisherige Rückbuchungen am Lauf).
+ *      Lehnt das Tor ab (402, 401, 403, 503), geht der Lauf zurück auf `active`, und die Antwort ist die des Tors.
+ *   4. Auftrag starten (nicht abwarten) → 202 `{ ok: true, status: "finishing" }`.
+ * Der Auftrag rechnet (Richter ohne Selbstbild), speichert (`finished`) und schließt die Buchung ab. Scheitert er:
+ * Rückbuchung, zurück auf `active`, `finishError` am Lauf — die Auswertungsseite bietet „Noch einmal auswerten“ an.
  */
 export async function POST(req: NextRequest) {
   if (!simulationEnabled()) {
@@ -102,9 +81,8 @@ export async function POST(req: NextRequest) {
   const rl = checkRateLimit(`sim-finish:${auth.uid}`, 3, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
-  let simId = "";
-  // Die Buchung dieser Anfrage; null = nichts (mehr) zurückzugeben.
-  let charge: Extract<FinishCharge, { ok: true }> | null = null;
+  // Der gesicherte Anspruch dieser Anfrage und was an ihm hängt; null = nichts zurückzustellen.
+  let offen: { simId: string; since: string; scenarioId: string; grant: EntitlementGrant | null; refunds: number; free: boolean } | null = null;
 
   try {
     const parsed = requestSchema.safeParse(await req.json());
@@ -114,13 +92,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    simId = parsed.data.simId;
-    const selfAssessment = parsed.data.selfAssessment || undefined;
+    const simId = parsed.data.simId;
     const doc = await getSimulation(auth.uid, simId);
     if (!doc) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
-    if (doc.status !== "active") return endedResponse(doc);
+    if (doc.status !== "active") return statusResponse(doc);
     if (countUserTurns(doc.turns) < MIN_USER_TURNS) {
       return NextResponse.json(
         { ok: false, code: "NOT_ENOUGH_TURNS", minUserTurns: MIN_USER_TURNS },
@@ -139,100 +116,46 @@ export async function POST(req: NextRequest) {
     });
     if (!budget.allowed && budget.response) return budget.response;
 
-    // Point-of-Sale VOR den teuren LLM-Calls (wie /api/analyze).
+    // Anspruch sichern (C4): Nur wer ihn gewinnt, bucht und rechnet. Der Verlierer eines Rennens sieht `finishing`.
+    const claim = await claimFinish(auth.uid, simId);
+    if (claim.state === "missing") {
+      return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
+    }
+    if (claim.state === "taken") return statusResponse(claim.doc);
+    const { since } = claim;
+    offen = { simId, since, scenarioId: claim.doc.scenarioId, grant: null, refunds: 0, free: false };
+
+    // Point-of-Sale VOR den teuren LLM-Calls (wie /api/analyze) — außer beim freien Testlauf (Entscheid 5).
     if (creditGateEnabled()) {
-      const c = await chargeFinish({ uid: auth.uid, email: auth.email, simId });
-      if (!c.ok) return "ended" in c ? endedResponse(c.ended) : c.response;
-      charge = c;
-    }
-
-    const evaluation = await evaluateSimulation({ uid: auth.uid, doc, scenario, selfAssessment });
-
-    // Speichern auf den frischen Lauf (C3). Höchstens ein zweiter Durchgang: wenn ein paralleler Versuch die
-    // gemeinsame Buchung inzwischen zurückgegeben hat, wird einmal neu gebucht.
-    let stored: SimulationDoc | null = null;
-    for (let runde = 0; !stored; runde++) {
-      const s = await storeEvaluation({
-        uid: auth.uid,
-        simId,
-        evaluation,
-        selfAssessment,
-        grant: charge?.grant ?? null,
-        refunds: charge?.refunds ?? 0,
-      });
-      if (s.state === "stored") {
-        stored = s.doc;
-      } else if (s.state === "refunded") {
-        charge = null;
-        if (runde >= 1) throw new Error("simulation finish: Buchung wurde zweimal von anderer Stelle zurückgegeben");
-        const again = await chargeFinish({ uid: auth.uid, email: auth.email, simId });
-        if (!again.ok) return "ended" in again ? endedResponse(again.ended) : again.response;
-        charge = again;
+      const frei = await claimFreeFinish({ uid: auth.uid, oid: auth.oid, simId, since, doc: claim.doc });
+      if (frei.free) {
+        offen.free = true;
+      } else if (frei.ended) {
+        offen = null;
+        return statusResponse(frei.ended);
       } else {
-        // Der Lauf wurde während der Rechnung von anderer Stelle beendet, abgebrochen oder gelöscht: nichts
-        // überschreiben, die eigene Buchung zurückgeben, das Vorhandene ausliefern.
-        const open = charge;
-        charge = null;
-        if (open) await refundFinishCharge({ uid: auth.uid, simId, grant: open.grant, refunds: open.refunds });
-        logger.api("/api/simulation/finish", "ended-elsewhere", { simId, state: s.state === "ended" ? s.doc.status : "missing" });
-        return s.state === "ended"
-          ? endedResponse(s.doc)
-          : NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
+        const c = await chargeFinish({ uid: auth.uid, email: auth.email, simId, since });
+        if (!c.ok) {
+          const zurueck = offen;
+          offen = null;
+          if ("ended" in c) return statusResponse(c.ended);
+          // Buchung abgelehnt: zurück auf `active`, ohne `finishError` — den Grund trägt die Antwort (402 usw.).
+          await revertFinish({ uid: auth.uid, oid: auth.oid, ...zurueck, error: null });
+          return c.response;
+        }
+        offen.grant = c.grant;
+        offen.refunds = c.refunds;
       }
     }
 
-    const grant = charge?.grant ?? null;
-    charge = null; // ab hier ist der Credit durch die gespeicherte Auswertung gedeckt
-    if (grant) await settleEntitlement(grant);
-
-    const { feedback, competencyRatings, competencyError, debrief, delta } = evaluation;
-
-    // Radar-Messpunkt nur mit doppeltem Opt-in (RADAR_EMIT im Emitter +
-    // SIMULATION_RADAR_EMIT hier) — Owner-Entscheid offen (Blueprint §6 SIM-2).
-    if (grant && simulationRadarEmitEnabled()) {
-      try {
-        const weightByKey = new Map(scenario.assessment.competencies.map((c) => [c.key, c.weight]));
-        void emitCoachMeasurement({
-          workspaceId: grant.workspaceId,
-          subjectId: auth.oid ?? "",
-          runId: stored.id,
-          createdAt: stored.finishedAt ?? new Date().toISOString(),
-          competencyRatings,
-          // Welle 5: Anker je Fähigkeit (Stufe, Gewicht), Szenario und Urteil — Datenbasis des Team-Bilds im Hub.
-          rubric: feedback.rubric.map((r) => ({ ...r, weight: weightByKey.get(r.key) })),
-          szenarioId: scenario.id,
-          bestanden: debrief.verdict === "passed" ? true : debrief.verdict === "failed" ? false : null,
-        }).catch((e) =>
-          logger.apiError("/api/simulation/finish/radar", e, { simId })
-        );
-      } catch (e) {
-        logger.apiError("/api/simulation/finish/radar", e, { simId });
-      }
-    }
-
-    // CP-3.2 (M9, Compliance-Blueprint 31.08.): KEINE Bewertungsdaten in den
-    // Anwendungsprotokollen — uid+simId reichen zur Fehlersuche. overall/
-    // verdict standen vorher als Klartext in Azure Monitor (BV § 6.4 wäre
-    // sonst durch die Log-Leserechte ausgehebelt).
-    logger.api("/api/simulation/finish", "complete", {
-      uid: auth.uid,
-      simId,
-    });
-    return NextResponse.json({
-      ok: true,
-      feedback,
-      competencyRatings,
-      competencyError,
-      debrief,
-      delta,
-      attempt: stored.attempt ?? 1,
-      focus: stored.focus ?? null,
-      selfAssessment: stored.selfAssessment ?? null,
-      mode: stored.mode ?? "practice",
-      hardness: stored.hardness ?? "standard",
-    });
+    // Auftrag neben der Antwort starten: rechnen, speichern, abschließen (simulation-finish-job.ts).
+    const job = offen;
+    offen = null; // ab hier gehört der Anspruch dem Auftrag
+    startFinishJob({ uid: auth.uid, oid: auth.oid, doc: claim.doc, scenario, requestId: requestIdOf(req), ...job });
+    return NextResponse.json({ ok: true, status: "finishing" }, { status: 202 });
   } catch (err) {
-    if (charge) await refundFinishCharge({ uid: auth.uid, simId, grant: charge.grant, refunds: charge.refunds });
+    // Fehler zwischen Anspruch und Auftrag: Buchung zurück (oder Freilauf), Lauf zurück auf `active`.
+    if (offen) await revertFinish({ uid: auth.uid, oid: auth.oid, ...offen, error: null });
     // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).
     return aiErrorResponse(err, req, "/api/simulation/finish");
   }

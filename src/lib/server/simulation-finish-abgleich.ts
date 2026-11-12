@@ -6,13 +6,13 @@
 
 export interface OpenChargeRow {
   id: string;
-  status: "active" | "finished" | "aborted";
+  status: "active" | "finishing" | "finished" | "aborted";
   centralSpendTxId?: string | null;
   openCharge: { key: string; at: string; txId?: string | null; workspaceId?: string | null; refundFailedAt?: string | null };
 }
 
 export type OpenChargeLage =
-  /** Jung und der Lauf ist aktiv: Die Auswertung rechnet vermutlich noch. Kein Befund. */
+  /** Jung und der Lauf ist aktiv oder wird gerade ausgewertet: Die Auswertung rechnet vermutlich noch. Kein Befund. */
   | "laeuft"
   /** Kein Beleg für eine Buchung: Der Credit-Dienst antwortete nicht klar, oder der Prozess endete vor der Antwort. */
   | "unbestaetigt"
@@ -39,6 +39,9 @@ export function openChargeLage(row: OpenChargeRow, now: Date = new Date(), minMi
   if (row.status === "finished" && m.txId && row.centralSpendTxId === m.txId) return "gedeckt";
   if (m.refundFailedAt) return "rueckbuchung-gescheitert";
   const alterMin = (now.getTime() - new Date(m.at).getTime()) / 60_000;
-  if (row.status === "active" && Number.isFinite(alterMin) && alterMin < minMinutes) return "laeuft";
+  // Paket 3 (12.11.2026): Während der Rechnung steht der Lauf auf `finishing`. Bleibt er dort hängen, räumt
+  // GET /api/simulation/status nach 6 Minuten auf (Rückbuchung); bis dahin gilt auch er als „rechnet noch“.
+  const offen = row.status === "active" || row.status === "finishing";
+  if (offen && Number.isFinite(alterMin) && alterMin < minMinutes) return "laeuft";
   return m.txId ? "gebucht-ohne-auswertung" : "unbestaetigt";
 }

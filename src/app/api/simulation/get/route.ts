@@ -55,7 +55,10 @@ export async function GET(req: NextRequest) {
       simulation: {
         id: doc.id,
         scenarioId: doc.scenarioId,
+        // Paket 3 (12.11.2026): auch `finishing` (Auswertung rechnet). Den laufenden Stand fragt die Seite über
+        // GET /api/simulation/status ab; `finishError` ist der letzte Fehlschlag (Lauf wieder `active`).
         status: doc.status,
+        finishError: doc.finishError ?? null,
         // W2-1: Client-Uhr rechnet ab createdAt (Server bleibt die Wahrheit).
         createdAt: doc.createdAt,
         turns: doc.turns,
@@ -66,6 +69,8 @@ export async function GET(req: NextRequest) {
         delta: doc.deltaJson ?? null,
         attempt: doc.attempt ?? 1,
         focus: doc.focus ?? null,
+        // Check-in in zwei Antworten (S8); `selfAssessment` ist daraus zusammengesetzt, bei Alt-Läufen der Freitext.
+        checkin: doc.checkin ?? null,
         selfAssessment: doc.selfAssessment ?? null,
         mode: doc.mode ?? "practice",
         hardness: doc.hardness ?? "standard",

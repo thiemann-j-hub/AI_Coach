@@ -129,6 +129,79 @@ describe("judgeSimulation — wer geurteilt hat (C7, C17)", () => {
   });
 });
 
+describe("judgeSimulation — Paket 3: Streuung, Selbstbild, Faktenprüfung (C16, S8, S13)", () => {
+  const aufruf = () => generate.mock.calls[0][0] as { prompt: string; config?: { temperature?: number } };
+  const mitFakten = {
+    ...(scenario as Record<string, unknown>),
+    personaDna: { facts: ["Vereinbarte Reaktionszeit: 24 Stunden."] },
+    candidateBriefing: { goals: ["Termin vereinbaren"], factSheet: ["Abgabe war am Freitag."] },
+  } as never;
+  const gespraech = [
+    { role: "persona" as const, text: "Die Reaktionszeit beträgt bei uns 24 Stunden.", ts: "t" },
+    { role: "user" as const, text: "Wir hatten doch eine Reaktionszeit von 48 Stunden vereinbart.", ts: "t" },
+  ];
+
+  it("C16: der schnelle Richter läuft mit Temperatur 0; der starke Richter bleibt, wie er ist", async () => {
+    await judgeSimulation({ scenario, turns, richter: "gemini" });
+    expect(aufruf().config).toEqual({ temperature: 0 });
+
+    generate.mockClear();
+    await judgeSimulation({ scenario, turns, richter: "opus" });
+    expect(generate).not.toHaveBeenCalled();
+    expect("temperature" in (claude.mock.calls[0][0] as Record<string, unknown>)).toBe(false);
+  });
+
+  it("S8: kein Selbstbild im Prompt, kein Abgleich im Urteil — auch wenn ein Modell einen mitliefert", async () => {
+    generate.mockImplementation(async () => ({ output: urteil({ selfReview: { agreement: "confirms", comment: "x" } }), usage: {} }));
+    const { feedback } = await judgeSimulation({ scenario, turns, richter: "gemini" });
+    expect(aufruf().prompt).not.toContain("SELBSTEINSCHÄTZUNG");
+    expect("selfReview" in feedback).toBe(false);
+  });
+
+  it("S13: Fakten des Szenarios stehen im Prompt; belegte Widersprüche bleiben, erfundene Zitate fallen weg", async () => {
+    generate.mockImplementation(async () => ({
+      output: urteil({
+        sachlichNichtGedeckt: [
+          { zitat: "Wir hatten doch eine Reaktionszeit von 48 Stunden vereinbart.", warum: "Vereinbart waren 24 Stunden." },
+          { zitat: "Die Abgabe war erst am Dienstag fällig, ganz sicher.", warum: "Die Abgabe war am Freitag." },
+          { zitat: "Die Reaktionszeit beträgt bei uns 24 Stunden.", warum: "Aussage der Rolle." },
+        ],
+      }),
+      usage: {},
+    }));
+    const { feedback } = await judgeSimulation({ scenario: mitFakten, turns: gespraech, richter: "gemini" });
+    const p = aufruf().prompt;
+    expect(p).toContain("FAKTEN DES SZENARIOS");
+    expect(p).toContain("- Vereinbarte Reaktionszeit: 24 Stunden.");
+    expect(p).toContain("- Abgabe war am Freitag.");
+    expect(feedback.sachlichNichtGedeckt).toEqual([
+      { zitat: "Wir hatten doch eine Reaktionszeit von 48 Stunden vereinbart.", warum: "Vereinbart waren 24 Stunden." },
+    ]);
+    // Die Faktenprüfung ändert nichts an Stufen und Schlüsselmomenten.
+    expect(feedback.rubric[0].score).toBe(3);
+    expect(feedback.checkpoints[0].hit).toBe(true);
+  });
+
+  it("S13: ohne Fakten im Szenario leere Liste — auch wenn das Modell Einträge liefert; der starke Richter wird genauso geprüft", async () => {
+    const eintrag = { zitat: "Wir hatten doch eine Reaktionszeit von 48 Stunden vereinbart.", warum: "Vereinbart waren 24 Stunden." };
+    generate.mockImplementation(async () => ({ output: urteil({ sachlichNichtGedeckt: [eintrag] }), usage: {} }));
+    const ohne = await judgeSimulation({ scenario, turns: gespraech, richter: "gemini" });
+    expect(aufruf().prompt).toContain("Keine Fakten des Szenarios vorgegeben");
+    expect(ohne.feedback.sachlichNichtGedeckt).toEqual([]);
+
+    claude.mockImplementation(async () => ({
+      data: urteil({ sachlichNichtGedeckt: [eintrag, "kaputt", eintrag, eintrag, eintrag] }),
+      tokens: {},
+      model: "claude-opus-5-5",
+      region: "eu",
+      ms: 5,
+    }));
+    const stark = await judgeSimulation({ scenario: mitFakten, turns: gespraech, richter: "opus" });
+    expect(stark.richter).toMatchObject({ judge: "opus", fallback: null });
+    expect(stark.feedback.sachlichNichtGedeckt).toEqual([eintrag, eintrag, eintrag]);
+  });
+});
+
 describe("judgeSimulation — Text der lernenden Person steht gezäunt im Prompt (C6)", () => {
   const prompt = () => String((generate.mock.calls[0][0] as { prompt: string }).prompt);
 

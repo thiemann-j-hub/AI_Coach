@@ -33,8 +33,11 @@ export interface SimulationDoc {
    * `aborted` (COACH-UX-BLUEPRINT §2.4): nur via POST /api/simulation/abort,
    * nur aus `active`, kein Credit/LLM/Radar. Wird aus allen Listen gefiltert —
    * die Historie bleibt sauber (kein Karteileichen-Eintrag).
+   * `finishing` (Paket 3, C4, 12.11.2026): Die Auswertung ist gestartet und rechnet im Hintergrund. Übergänge:
+   * `active` → `finishing` → `finished`; bei einem Fehler zurück nach `active` (mit `finishError`).
+   * Ein Lauf in `finishing` nimmt keine Züge mehr an und zählt in keiner Abfrage als abgeschlossen.
    */
-  status: "active" | "finished" | "aborted";
+  status: "active" | "finishing" | "finished" | "aborted";
   turns: SimulationTurn[];
   feedbackJson?: unknown | null;
   competencyRatings?: unknown | null;
@@ -49,8 +52,9 @@ export interface SimulationDoc {
   focus?: string | null;
   /**
    * Coaching-Check-in (Welle A1, Synthesia-Vergleich §7): Selbsteinschätzung
-   * des Übenden NACH dem Gespräch, VOR der Auswertung. Optional (Überspringen
-   * ist erste Bürgerin) — fließt als Pflichtsektion belegt ins Debrief ein.
+   * des Übenden NACH dem Gespräch. Optional (Überspringen ist erste Bürgerin).
+   * Seit Paket 3 (12.11.2026) aus den zwei Antworten des Check-ins zusammengesetzt (`checkin`); der Abgleich mit
+   * der Auswertung steht in `feedbackJson.selfReview`. Alt-Läufe tragen hier ihren Freitext.
    */
   selfAssessment?: string | null;
   /** Deterministische Gesamtwertung (computeDebrief) — beim Finish persistiert. */
@@ -104,7 +108,8 @@ export interface SimulationDoc {
    * C8: Offene Buchung der Auswertung. Wird VOR der Buchung vermerkt (Kennung, Zeitpunkt), nach der Antwort des
    * Credit-Dienstes um Buchungsnummer und Arbeitsbereich ergänzt und mit dem Speichern der Auswertung oder nach
    * gelungener Rückbuchung ausgetragen. Bleibt er stehen (Prozess-Ende, Frist des Credit-Dienstes, gescheiterte
-   * Rückbuchung), listet `scripts/credits-abgleich.mts` den Lauf.
+   * Rückbuchung), listet `scripts/credits-abgleich.mts` den Lauf. Seit Paket 3 gibt der Aufräumer hängender Läufe
+   * (GET /api/simulation/status) die Buchung anhand dieses Vermerks zurück.
    */
   openCharge?: { key: string; at: string; txId?: string | null; workspaceId?: string | null; refundFailedAt?: string | null } | null;
   /** C4: Zahl der gelungenen Rückbuchungen an diesem Lauf — Teil der Buchungs-Kennung (`sim-finish:<simId>:<n>`). */
@@ -123,6 +128,18 @@ export interface SimulationDoc {
     /** Dauer der ganzen Auswertung (Richter, Kompetenzen, Zitatprüfung, Rechnung). */
     ms: number;
   } | null;
+  // ── Paket 3 (12.11.2026): Auswertung als Auftrag mit Status (C4) ───────────
+  /** Gesetzt, solange gerechnet wird. `since` ist zugleich die Kennung dieses Versuchs (nur er darf speichern). */
+  finishing?: { since: string } | null;
+  /**
+   * Letzter Fehlschlag der Auswertung; wird beim nächsten Start gelöscht. `code` = Fehlerart der KI
+   * (`AiErrorCode` aus ai-errors.ts) oder `STALE` (Rechnung blieb hängen, z. B. Neustart des Servers).
+   */
+  finishError?: { code: string; requestId?: string | null; at: string } | null;
+  /** Check-in in zwei Fragen (S8): höchstens einmal gespeichert. `skipped` = keine der beiden beantwortet. */
+  checkin?: { gut: string | null; anders: string | null; skipped: boolean; at: string } | null;
+  /** Entscheid 5 (Owner 12.11.2026): Diese Auswertung lief als freier Testlauf des Szenarios, ohne Buchung. */
+  freeTestEval?: boolean;
 }
 
 /** Ab diesem Anteil der Szenario-Zeitbox streut die Persona den Zeit-Hinweis ein. */
@@ -138,7 +155,7 @@ export function simPartitionKey(uid: string): string {
 /**
  * Abort-Entscheidung (§2.4, pure + getestet): idempotent aus `aborted`,
  * Konflikt aus `finished` (die Auswertung ist bezahlt — sie bleibt),
- * Übergang nur aus `active`.
+ * Übergang aus `active` und aus `finishing` (Paket 3: der Auftrag speichert dann nichts und bucht zurück).
  */
 export function abortDecision(
   status: SimulationDoc["status"]
@@ -335,7 +352,8 @@ export async function deleteAbortedSimulationsBefore(cutoffIso: string): Promise
 export interface SimulationListItem {
   id: string;
   scenarioId: string;
-  status: "active" | "finished";
+  /** `finishing` (Paket 3) = „Auswertung läuft“: weder fortsetzbar noch abgeschlossen. */
+  status: "active" | "finishing" | "finished";
   // `aborted` taucht hier nie auf — die List-Query filtert es (§2.4).
   createdAt: string;
   updatedAt: string;
@@ -354,7 +372,7 @@ export async function listSimulations(
   const rows = await queryItems<{
     id: string;
     scenarioId: string;
-    status: "active" | "finished";
+    status: SimulationListItem["status"];
     createdAt: string;
     updatedAt: string;
     turns?: unknown[];

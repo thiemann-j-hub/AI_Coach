@@ -30,7 +30,7 @@ vi.mock("@/lib/server/cost-cap", async (original) => ({
 vi.mock("@/lib/server/credits/entitlement", () => ({ preflightEntitlement: async () => null }));
 vi.mock("@/lib/server/scenario-store", async () => {
   const { getScenario } = await import("@/lib/simulation/scenarios");
-  return { getScenarioForUser: async () => getScenario("sim-coaching-morgan") };
+  return { getScenarioForUser: async () => getScenario("sim-coaching-morgan"), hasOpenFreeTestEval: async () => false };
 });
 vi.mock("@/lib/server/simulation-store", () => ({
   countFinishedForScenario: async () => 0,

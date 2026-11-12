@@ -1,4 +1,5 @@
 import type { DebriefErgebnis } from "./debrief";
+import type { FactVisual } from "./types";
 
 /**
  * Bewertung 2.0 (Owner-GO 01.11.2026): Was im Gespräch FESTSTEHT, bevor der Richter urteilt — das Ergebnis der Rolle
@@ -62,4 +63,46 @@ export function bestimmeErgebnis(a: { closedByPersona?: TatsachenEnde | null; zi
   if (a.closedByPersona?.ergebnis === "abbruch") return "abbruch";
   if (a.zielErreicht === true) return "ziel";
   return "offen";
+}
+
+/** Eine beschriftete Grafik des Faktenblatts als Textzeile (Titel, Werte mit Einheit, Hinweis). */
+function grafikZeile(v: FactVisual): string {
+  const note = v.note?.trim() ? ` (${v.note.trim()})` : "";
+  if (v.kind === "trend") {
+    return `${v.title}: ${v.points.map((p) => `${p.label} ${p.approx ? "ca. " : ""}${p.value}${v.unit ?? ""}`).join(" → ")}${note}`;
+  }
+  if (v.kind === "bars") {
+    return `${v.title}: ${v.items.map((i) => `${i.label} ${i.value}${v.unit ?? ""}`).join(" · ")}${note}`;
+  }
+  return `${v.title}: ${v.items.map((i) => `${i.label} ${i.value}${i.sub ? ` (${i.sub})` : ""}`).join(" · ")}${note}`;
+}
+
+export interface SzenarioFaktenQuelle {
+  personaDna?: { facts?: string[] | null } | null;
+  candidateBriefing?: { factSheet?: string[] | null; factVisuals?: FactVisual[] | null } | null;
+}
+
+/**
+ * Paket 3, S13 (12.11.2026): Fakten des Szenarios für die Faktenprüfung des Richters — die harten Faktenanker der
+ * Rolle und das Faktenblatt des Briefings (Zeilen; ohne Zeilen die beschrifteten Grafiken als Text). Je Fakt eine
+ * Zeile mit Spiegelstrich, gleiche Zeilen nur einmal. Leer, wenn das Szenario keine Fakten nennt — dann prüft der
+ * Richter nichts. Reine Funktion.
+ */
+export function szenarioFaktenText(s: SzenarioFaktenQuelle, maxChars = 2400): string {
+  const blatt = s.candidateBriefing?.factSheet?.length
+    ? s.candidateBriefing.factSheet
+    : (s.candidateBriefing?.factVisuals ?? []).map(grafikZeile);
+  const gesehen = new Set<string>();
+  const zeilen: string[] = [];
+  let laenge = 0;
+  for (const roh of [...(s.personaDna?.facts ?? []), ...blatt]) {
+    const zeile = String(roh ?? "").replace(/\s+/g, " ").trim();
+    const kern = zeile.toLowerCase();
+    if (!zeile || gesehen.has(kern)) continue;
+    if (laenge + zeile.length > maxChars) break;
+    gesehen.add(kern);
+    zeilen.push(`- ${zeile}`);
+    laenge += zeile.length + 3;
+  }
+  return zeilen.join("\n");
 }

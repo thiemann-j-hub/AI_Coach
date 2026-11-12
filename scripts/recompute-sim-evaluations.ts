@@ -105,7 +105,6 @@ async function main() {
         turns: doc.turns,
         focus: doc.focus ?? undefined,
         convoLocale: doc.convoLocale ?? undefined,
-        selfAssessment: doc.selfAssessment ?? undefined,
         gespraechsende: doc.closedByPersona
           ? `${scenario.persona.name} beendete das Gespräch (${doc.closedByPersona.ergebnis}): ${doc.closedByPersona.grund}`
           : doc.closedByTime
@@ -143,7 +142,8 @@ async function main() {
     const recomputedAt = new Date().toISOString();
     const updated: SimulationDoc & { recomputedAt?: string; recomputeNote?: string } = {
       ...doc,
-      feedbackJson: feedback,
+      // Paket 3 (12.11.2026): Der Richter schreibt keinen Selbstbild-Abgleich mehr; der vorhandene bleibt erhalten.
+      feedbackJson: { ...feedback, selfReview: (doc.feedbackJson as { selfReview?: unknown } | null | undefined)?.selfReview ?? null },
       competencyRatings: ratings,
       competencyError: null,
       debriefJson: debrief,

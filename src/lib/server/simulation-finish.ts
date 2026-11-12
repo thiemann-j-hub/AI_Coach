@@ -24,6 +24,7 @@ import {
   runQualityChecks,
   type QualityNote,
 } from "@/lib/server/quality-checks";
+import { claimFreeTestEval, releaseFreeTestEval } from "@/lib/server/scenario-store";
 import {
   assembleTranscript,
   getSimulation,
@@ -45,23 +46,33 @@ import type { SimulationScenario } from "@/lib/simulation/types";
 import { timeoutMs, withRetry, withTimeout } from "@/lib/with-timeout";
 
 /**
- * Auswertung eines Rollenspiels: Geldweg und Rechnung (Paket 2, 12.11.2026 — C3, C4, C7, C8, C17).
+ * Auswertung eines Rollenspiels: Geldweg und Rechnung.
  *
- * Die Route `/api/simulation/finish` ruft die vier Schritte nacheinander auf; der Umbau „Auswertung als Auftrag
- * mit Status“ (nächste Welle) kann dieselben Schritte aus einem Auftrag heraus rufen:
+ * Paket 2 (12.11.2026 — C3, C4, C7, C8, C17) hat die Schritte gelegt. Paket 3 (C4, zweiter Teil) macht daraus einen
+ * Auftrag mit Status: Der Lauf steht während der Rechnung auf `finishing`, und genau EIN Versuch je Lauf rechnet.
+ * Die Route `/api/simulation/finish` sichert den Anspruch und bucht; der Auftrag (`simulation-finish-job.ts`)
+ * rechnet, speichert und schließt ab:
  *
- *   1. `chargeFinish`       Vermerk „offene Buchung“ an den Lauf, dann buchen (oder die schon bestätigte Buchung
+ *   1. `claimFinish`        Anspruch sichern: `active` → `finishing`. Nur einer gewinnt; `finishing.since` ist die
+ *                           Kennung des Versuchs. Wer verliert, bucht nicht und rechnet nicht.
+ *   2. `claimFreeFinish`    Entscheid 5: freier Testlauf des Szenarios? Dann wird nicht gebucht.
+ *      `chargeFinish`       sonst: offene Buchung am Lauf vermerken, DANN buchen (oder die schon bestätigte Buchung
  *                           derselben Kennung wiederverwenden).
- *   2. `evaluateSimulation` die eigentliche Auswertung — liest nur, schreibt nichts, bucht nichts.
- *   3. `storeEvaluation`    Ergebnis auf den FRISCHEN Lauf anwenden (Versionsprüfung). Ist der Lauf inzwischen
- *                           nicht mehr aktiv, wird nichts überschrieben.
- *   4. `refundFinishCharge` Rückbuchung bei Fehler oder wenn der Lauf inzwischen von anderer Stelle beendet wurde.
+ *   3. `evaluateSimulation` die eigentliche Auswertung — liest nur, schreibt nichts, bucht nichts.
+ *   4. `storeEvaluation`    Ergebnis auf den FRISCHEN Lauf anwenden — nur, wenn der Anspruch noch diesem Versuch
+ *                           gehört und seine Buchung noch gilt. Sonst wird nichts überschrieben.
+ *   5. `revertFinish`       Fehler (auch: hängengebliebener Lauf): Rückbuchung über `refundFinishCharge` oder
+ *                           Freilauf zurück, DANN zurück auf `active` mit `finishError`.
  *
  * Kennung der Buchung: `sim-finish:<simId>:<n>`, n = Zahl der gelungenen Rückbuchungen am Lauf. Der Credit-Dienst
  * behandelt denselben Schlüssel als dieselbe Buchung (zweiter Aufruf zieht nichts ab und nennt dieselbe
- * Buchungsnummer). Zwei gleichzeitige Anfragen oder ein zweiter Klick nach einem Gateway-Abbruch treffen so
- * dieselbe Buchung. Nach einer Rückbuchung braucht der nächste Versuch eine NEUE Kennung — sonst gälte die
- * zurückgegebene Buchung als bezahlt —, deshalb der Zähler.
+ * Buchungsnummer). Ein neuer Versuch nach einer gescheiterten Rückbuchung oder nach einer Antwort ohne klares
+ * Ergebnis trifft so dieselbe Buchung. Nach einer gelungenen Rückbuchung braucht der nächste Versuch eine NEUE
+ * Kennung — sonst gälte die zurückgegebene Buchung als bezahlt —, deshalb der Zähler.
+ *
+ * Was `finishing` überflüssig gemacht hat: zwei Anfragen, die nebeneinander rechnen und sich eine Buchung teilen
+ * (zweites Buchen nach fremder Rückbuchung, Ausliefern des fremden Ergebnisses). Geblieben sind die Eigenschaften:
+ * dieselbe Buchung für denselben Versuch, Rückbuchung nur einmal, nie eine fertige Auswertung überschreiben.
  */
 
 const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
@@ -72,19 +83,106 @@ export function finishChargeKey(simId: string, refunds: number | null | undefine
   return `sim-finish:${simId}:${n}`;
 }
 
-// ── 1. Buchen ────────────────────────────────────────────────────────────────
+// ── 1. Anspruch ──────────────────────────────────────────────────────────────
+
+/** Gehört der Anspruch auf die Auswertung (noch) dem Versuch mit dieser Kennung? */
+function ownsClaim(d: SimulationDoc, since: string): boolean {
+  return d.status === "finishing" && d.finishing?.since === since;
+}
+
+export type FinishClaim =
+  /** Dieser Aufruf rechnet: Der Lauf steht auf `finishing`, `since` ist die Kennung des Versuchs. */
+  | { state: "claimed"; doc: SimulationDoc; since: string }
+  /** Der Lauf ist nicht (mehr) aktiv — er rechnet schon, ist ausgewertet oder abgebrochen. Nichts geändert. */
+  | { state: "taken"; doc: SimulationDoc }
+  | { state: "missing" };
+
+/**
+ * Schritt 1 (C4): Anspruch auf die Auswertung sichern — nur aus `active`, mit Versionsprüfung. Von zwei Klicks oder
+ * zwei Tabs gewinnt genau einer; der andere sieht `finishing`. Ein alter Fehlschlag (`finishError`) wird gelöscht.
+ */
+export async function claimFinish(uid: string, simId: string): Promise<FinishClaim> {
+  const since = new Date().toISOString();
+  let won = false;
+  const doc = await updateSimulation(uid, simId, (d) => {
+    won = d.status === "active";
+    if (!won) return false;
+    d.status = "finishing";
+    d.finishing = { since };
+    d.finishError = null;
+  });
+  if (!doc) return { state: "missing" };
+  return won ? { state: "claimed", doc, since } : { state: "taken", doc };
+}
+
+// ── 2. Freier Testlauf oder buchen ───────────────────────────────────────────
+
+async function releaseFree(a: { uid: string; oid?: string | null; simId: string; scenarioId: string }): Promise<void> {
+  try {
+    await releaseFreeTestEval(a.uid, a.oid, a.scenarioId);
+  } catch (e) {
+    logger.error("[freilauf] Freier Testlauf nicht zurückgegeben – das Szenario hat ihn verloren, obwohl keine Auswertung entstand", {
+      simId: a.simId,
+      scenarioId: a.scenarioId,
+      err: e instanceof Error ? e.message : String(e),
+    });
+  }
+}
+
+export type FreeFinish =
+  | { free: true }
+  /** Kein Freilauf. `ended` = der Anspruch gehört nicht mehr diesem Versuch (z. B. inzwischen abgebrochen). */
+  | { free: false; ended?: SimulationDoc };
+
+/**
+ * Schritt 2a (Entscheid 5, Owner 12.11.2026): Die erste Auswertung je neu im Builder erzeugtem Szenario ist für
+ * die Person frei, die es gebaut hat. Vor der Buchung den Freilauf beanspruchen (genau einer gewinnt, siehe
+ * `claimFreeTestEval`); gelingt das, wird NICHT gebucht und `freeTestEval: true` am Lauf vermerkt — der Aufräumer
+ * hängengebliebener Läufe gibt den Freilauf anhand dieses Vermerks zurück.
+ * Steht am Lauf schon eine Buchung (gescheiterte Rückbuchung, Antwort ohne klares Ergebnis), gilt sie: kein Freilauf.
+ */
+export async function claimFreeFinish(a: { uid: string; oid?: string | null; simId: string; since: string; doc: SimulationDoc }): Promise<FreeFinish> {
+  if (a.doc.openCharge) return { free: false };
+  const scenarioId = a.doc.scenarioId;
+  let claimed = false;
+  try {
+    claimed = await claimFreeTestEval(a.uid, a.oid, scenarioId);
+  } catch (e) {
+    logger.apiError("/api/simulation/finish/freilauf", e, { simId: a.simId });
+  }
+  if (!claimed) return { free: false };
+
+  let ours = false;
+  let doc: SimulationDoc | null = null;
+  try {
+    doc = await updateSimulation(a.uid, a.simId, (d) => {
+      ours = ownsClaim(d, a.since);
+      if (!ours) return false;
+      d.freeTestEval = true;
+    });
+  } catch (e) {
+    ours = false;
+    logger.apiError("/api/simulation/finish/freilauf", e, { simId: a.simId });
+  }
+  if (ours) {
+    logger.api("/api/simulation/finish", "free-test-eval", { simId: a.simId, scenarioId });
+    return { free: true };
+  }
+  // Der Vermerk steht nicht am Lauf: Freilauf zurückgeben, damit er nicht ohne Auswertung verbraucht ist.
+  await releaseFree({ uid: a.uid, oid: a.oid, simId: a.simId, scenarioId });
+  return doc ? { free: false, ended: doc } : { free: false };
+}
 
 export type FinishCharge =
   | { ok: true; grant: EntitlementGrant; /** Zählerstand, zu dem die Kennung der Buchung gehört. */ refunds: number }
   /** Das Tor hat abgelehnt (kein Guthaben, KI aus, neu anmelden, Dienst nicht erreichbar). */
   | { ok: false; response: NextResponse }
-  /** Der Lauf ist (frisch gelesen) nicht mehr aktiv — nichts gebucht. */
+  /** Der Anspruch gehört (frisch gelesen) nicht mehr diesem Versuch — nichts gebucht. */
   | { ok: false; ended: SimulationDoc };
 
 /**
- * Vermerk für genau diese Kennung sicherstellen und ergänzen. Tut nichts, wenn die Kennung zu einem früheren,
- * schon zurückgebuchten Versuch gehört (Zähler weitergelaufen) oder wenn der Lauf inzwischen ausgewertet ist und
- * die Buchung damit gedeckt (bei unverändertem Zähler ist es dieselbe Kennung, also dieselbe Buchung).
+ * Vermerk für genau diese Kennung ergänzen. Tut nichts, wenn die Kennung zu einem früheren, schon zurückgebuchten
+ * Versuch gehört (Zähler weitergelaufen) oder wenn der Lauf ausgewertet ist und genau diese Buchung trägt.
  * Wirft nie: Der Vermerk ist Buchführung, er darf den Geldweg nicht abbrechen — ein Fehlschlag steht im Protokoll.
  */
 async function writeMark(
@@ -99,7 +197,6 @@ async function writeMark(
       if ((d.chargeRefunds ?? 0) !== refunds) return false;
       if (d.status === "finished" && (!patch.txId || d.centralSpendTxId === patch.txId)) return false;
       const vorhanden = d.openCharge?.key === key ? d.openCharge : null;
-      if (vorhanden && !Object.keys(patch).length) return false;
       d.openCharge = { ...(vorhanden ?? { key, at: new Date().toISOString() }), ...patch };
     });
   } catch (e) {
@@ -108,17 +205,20 @@ async function writeMark(
 }
 
 /**
- * Schritt 1: offene Buchung am Lauf vermerken, DANN buchen (C8a). Reihenfolge und Fälle:
- *  - Lauf nicht mehr aktiv → nichts vermerkt, nichts gebucht (`ended`).
- *  - Am Lauf steht schon eine BESTÄTIGTE Buchung derselben Kennung (zweiter Klick, zweiter Tab, Neustart nach
- *    Prozess-Ende, gescheiterte Rückbuchung) → sie wird wiederverwendet, der Credit-Dienst wird nicht gerufen.
+ * Schritt 2b: offene Buchung am Lauf vermerken, DANN buchen (C8a). Nur der Versuch, dem der Anspruch gehört
+ * (`since`), bucht. Reihenfolge und Fälle:
+ *  - Anspruch gehört nicht mehr diesem Versuch (inzwischen abgebrochen) → nichts vermerkt, nichts gebucht (`ended`).
+ *  - Am Lauf steht schon eine BESTÄTIGTE Buchung derselben Kennung (gescheiterte Rückbuchung, Prozess-Ende nach
+ *    der Buchung) → sie wird wiederverwendet, der Credit-Dienst wird nicht gerufen.
  *  - Sonst buchen mit der Kennung aus Lauf und Zähler. Klare Ablehnung → eigener Vermerk wieder weg.
  *    Antwort ohne klares Ergebnis (Frist, Netz, 5xx) → Vermerk BLEIBT (C8c): zentral kann gebucht sein, der
  *    nächste Versuch trifft dieselbe Kennung und damit dieselbe Buchung.
  *  - Gebucht → Buchungsnummer und Arbeitsbereich am Vermerk nachtragen.
+ * Bei jeder Ablehnung stellt der Aufrufer den Lauf mit `revertFinish` auf `active` zurück.
  */
-export async function chargeFinish(a: { uid: string; email?: string | null; simId: string }): Promise<FinishCharge> {
-  const st: { key: string; refunds: number; own: boolean; confirmed: { txId: string; workspaceId: string } | null } = {
+export async function chargeFinish(a: { uid: string; email?: string | null; simId: string; since: string }): Promise<FinishCharge> {
+  const st: { ours: boolean; key: string; refunds: number; own: boolean; confirmed: { txId: string; workspaceId: string } | null } = {
+    ours: false,
     key: "",
     refunds: 0,
     own: false,
@@ -127,7 +227,8 @@ export async function chargeFinish(a: { uid: string; email?: string | null; simI
   const doc = await updateSimulation(a.uid, a.simId, (d) => {
     st.own = false;
     st.confirmed = null;
-    if (d.status !== "active") return false;
+    st.ours = ownsClaim(d, a.since);
+    if (!st.ours) return false;
     st.refunds = d.chargeRefunds ?? 0;
     st.key = finishChargeKey(d.id, st.refunds);
     if (d.openCharge?.key === st.key) {
@@ -139,7 +240,7 @@ export async function chargeFinish(a: { uid: string; email?: string | null; simI
     st.own = true;
   });
   if (!doc) return { ok: false, response: NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 }) };
-  if (doc.status !== "active") return { ok: false, ended: doc };
+  if (!st.ours) return { ok: false, ended: doc };
 
   if (st.confirmed) {
     logger.api("/api/simulation/finish", "charge-reused", { simId: a.simId, key: st.key, von: "vermerk" });
@@ -164,8 +265,6 @@ export async function chargeFinish(a: { uid: string; email?: string | null; simI
         "[credits] Buchung der Auswertung ohne klare Antwort – der Vermerk bleibt am Lauf, der nächste Versuch trifft dieselbe Kennung",
         { simId: a.simId, key: st.key }
       );
-      // Ein paralleler Versuch mit klarer Ablehnung kann den Vermerk ausgetragen haben — er muss stehen.
-      await writeMark(a.uid, a.simId, st.key, st.refunds, {});
     } else if (st.own) {
       try {
         await updateSimulation(a.uid, a.simId, (d) => {
@@ -190,12 +289,12 @@ export async function chargeFinish(a: { uid: string; email?: string | null; simI
   return { ok: true, grant: ent.grant, refunds: st.refunds };
 }
 
-// ── 4. Zurückbuchen ──────────────────────────────────────────────────────────
+// ── 5. Zurückbuchen und zurück auf Anfang ────────────────────────────────────
 
 /**
- * Schritt 4: Credit der Auswertung zurückgeben und das Ergebnis AUSWERTEN (C8b).
- *  - `kept`     nichts zurückgegeben: Die Buchung trägt eine gespeicherte Auswertung (ein zweiter Tab mit
- *               derselben Kennung war schneller — der Credit ist verbraucht) oder sie ist schon zurück.
+ * Credit der Auswertung zurückgeben und das Ergebnis AUSWERTEN (C8b).
+ *  - `kept`     nichts zurückgegeben: Die Buchung trägt eine gespeicherte Auswertung (der Credit ist verbraucht)
+ *               oder sie ist schon zurück (Auftrag und Aufräumer buchen nie beide zurück).
  *  - `refunded` zurückgegeben; Zähler am Lauf erhöht (der nächste Versuch bucht mit neuer Kennung), Vermerk weg.
  *  - `failed`   Rückbuchung gescheitert: Der Credit ist NICHT zurück. Der Vermerk bleibt am Lauf (mit Zeitpunkt
  *               des Fehlschlags), eine klare Protokollzeile steht. Der nächste Versuch verwendet die Buchung wieder.
@@ -254,7 +353,45 @@ export async function refundFinishCharge(a: {
   return "refunded";
 }
 
-// ── 2. Auswerten ─────────────────────────────────────────────────────────────
+/**
+ * Schritt 5: Versuch zurücknehmen — erst das Geld, dann der Status. Reihenfolge:
+ *   1. Rückbuchung (`refundFinishCharge`) bzw. Freilauf zurückgeben. Solange läuft, bleibt der Lauf auf
+ *      `finishing`: Ein neuer Versuch kann die Buchung nicht wiederverwenden, während sie zurückgegeben wird.
+ *   2. Zurück auf `active` — nur, wenn der Anspruch noch diesem Versuch gehört. `error` wird als `finishError`
+ *      vermerkt (null = kein Fehlschlag der Auswertung, z. B. abgelehnte Buchung: die Antwort trägt den Grund).
+ * Aufrufer: die Route (Buchung abgelehnt), der Auftrag (Fehler in der Rechnung) und der Aufräumer in
+ * GET /api/simulation/status (hängengebliebener Lauf, `STALE`). Wirft nie.
+ */
+export async function revertFinish(a: {
+  uid: string;
+  oid?: string | null;
+  simId: string;
+  since: string;
+  scenarioId: string;
+  grant: EntitlementGrant | null;
+  refunds: number;
+  free: boolean;
+  error: { code: string; requestId?: string | null } | null;
+}): Promise<void> {
+  if (a.grant) await refundFinishCharge({ uid: a.uid, simId: a.simId, grant: a.grant, refunds: a.refunds });
+  if (a.free) await releaseFree(a);
+  try {
+    await updateSimulation(a.uid, a.simId, (d) => {
+      if (!ownsClaim(d, a.since)) return false;
+      d.status = "active";
+      d.finishing = null;
+      d.finishError = a.error ? { code: a.error.code, requestId: a.error.requestId ?? null, at: new Date().toISOString() } : null;
+      if (d.freeTestEval) d.freeTestEval = false;
+    });
+  } catch (e) {
+    logger.error("[finish] Lauf nicht auf „active“ zurückgestellt – er bleibt in „finishing“, bis der Aufräumer greift", {
+      simId: a.simId,
+      err: e instanceof Error ? e.message : String(e),
+    });
+  }
+}
+
+// ── 3. Auswerten ─────────────────────────────────────────────────────────────
 
 export interface FinishEvaluation {
   feedback: SimulationFeedbackOutput;
@@ -270,15 +407,15 @@ export interface FinishEvaluation {
 }
 
 /**
- * Schritt 2: die eigentliche Auswertung — alles zwischen Buchung und Speichern. Liest (Rückblick aus dem Alltag,
+ * Schritt 3: die eigentliche Auswertung — alles zwischen Buchung und Speichern. Liest (Rückblick aus dem Alltag,
  * Vorversuch), ruft Richter und Kompetenz-Bewertung, prüft Zitate, rechnet Gesamtwertung und Vergleich.
  * Schreibt nichts und bucht nichts. Wirft, wenn der Richter kein Urteil liefert (Aufrufer bucht zurück).
+ * Paket 3, S8: ohne Selbstbild — der Abgleich mit dem Check-in ist ein eigener Schritt nach dem Speichern.
  */
 export async function evaluateSimulation(a: {
   uid: string;
   doc: SimulationDoc;
   scenario: SimulationScenario;
-  selfAssessment?: string;
 }): Promise<FinishEvaluation> {
   const { uid, doc, scenario } = a;
   const t0 = Date.now();
@@ -310,7 +447,6 @@ export async function evaluateSimulation(a: {
           turns: doc.turns,
           focus: doc.focus ?? undefined,
           convoLocale: doc.convoLocale ?? undefined,
-          selfAssessment: a.selfAssessment || undefined,
           transferReview: transferReview || undefined,
           // Welle 2: Gesprächsende durch die Rolle und Öffnungsverlauf als Kontext (nie als Beleg).
           gespraechsende: doc.closedByPersona
@@ -494,35 +630,38 @@ export async function evaluateSimulation(a: {
   return { feedback, competencyRatings, competencyError, debrief, delta, qualityNotes, modelId: richter.modelId, evalStats };
 }
 
-// ── 3. Speichern ─────────────────────────────────────────────────────────────
+// ── 4. Speichern ─────────────────────────────────────────────────────────────
 
 export type FinishStore =
   /** Auswertung steht am Lauf, Status `finished`, Vermerk ausgetragen. */
   | { state: "stored"; doc: SimulationDoc }
-  /** Der Lauf ist inzwischen nicht mehr aktiv (zweiter Tab hat ausgewertet, oder abgebrochen) — nichts überschrieben. */
+  /** Der Anspruch gehört nicht mehr diesem Versuch (abgebrochen oder vom Aufräumer zurückgestellt) — nichts überschrieben. */
   | { state: "ended"; doc: SimulationDoc }
-  /** Die Buchung dieser Anfrage wurde inzwischen zurückgegeben (paralleler Versuch scheiterte) — nichts gespeichert. */
+  /** Die Buchung dieses Versuchs wurde inzwischen zurückgegeben (Aufräumer) — nichts gespeichert. */
   | { state: "refunded" }
   | { state: "missing" };
 
 /**
- * Schritt 3 (C3): das Ergebnis auf den frischen Lauf anwenden statt die alte Kopie ganz zu überschreiben.
- * Geschrieben wird nur, wenn der Lauf noch aktiv ist UND die Buchung dieser Anfrage noch gilt (Zähler der
- * Rückbuchungen unverändert) — sonst stünde eine Auswertung ohne bezahlten Credit am Lauf.
+ * Schritt 4 (C3): das Ergebnis auf den frischen Lauf anwenden statt die alte Kopie ganz zu überschreiben.
+ * Geschrieben wird nur, wenn der Anspruch noch diesem Versuch gehört (`finishing` mit derselben Kennung) UND seine
+ * Buchung noch gilt (Zähler der Rückbuchungen unverändert) — sonst stünde eine Auswertung ohne bezahlten Credit
+ * am Lauf, oder eine fertige Auswertung würde überschrieben. Der Check-in (`checkin`, `selfAssessment`) bleibt
+ * unberührt: Er wird von seiner eigenen Route geschrieben, vor oder nach diesem Schritt.
  */
 export async function storeEvaluation(a: {
   uid: string;
   simId: string;
+  since: string;
   evaluation: FinishEvaluation;
-  selfAssessment?: string;
   grant: EntitlementGrant | null;
   refunds: number;
+  free: boolean;
 }): Promise<FinishStore> {
   const ev = a.evaluation;
   const finishedAt = new Date().toISOString();
   const st: { state: "stored" | "ended" | "refunded" } = { state: "stored" };
   const doc = await updateSimulation(a.uid, a.simId, (d) => {
-    if (d.status !== "active") {
+    if (!ownsClaim(d, a.since)) {
       st.state = "ended";
       return false;
     }
@@ -533,7 +672,8 @@ export async function storeEvaluation(a: {
     st.state = "stored";
     d.status = "finished";
     d.finishedAt = finishedAt;
-    d.selfAssessment = a.selfAssessment || null;
+    d.finishing = null;
+    d.finishError = null;
     d.feedbackJson = ev.feedback;
     d.competencyRatings = ev.competencyRatings;
     d.competencyError = ev.competencyError;
@@ -560,6 +700,9 @@ export async function storeEvaluation(a: {
       d.workspaceId = a.grant.workspaceId;
       d.centralSpendTxId = a.grant.centralTxId ?? null;
     }
+    // Entscheid 5: Diese Auswertung war der freie Testlauf des Szenarios — nichts gebucht. Ein Vermerk, der vom
+    // Beanspruchen stehen blieb, obwohl dann doch gebucht wurde, gilt nicht.
+    if (a.free || d.freeTestEval) d.freeTestEval = a.free;
     // C8a: Die Buchung ist jetzt durch die gespeicherte Auswertung gedeckt — Vermerk austragen.
     d.openCharge = null;
   });

@@ -45,5 +45,7 @@ describe("simulation-store (pure)", () => {
     expect(abortDecision("aborted")).toBe("already");
     // Bezahlte Auswertung wird NIE abgebrochen.
     expect(abortDecision("finished")).toBe("conflict");
+    // Paket 3: Während die Auswertung rechnet, geht der Abbruch noch — der Auftrag speichert dann nichts und bucht zurück.
+    expect(abortDecision("finishing")).toBe("abort");
   });
 });

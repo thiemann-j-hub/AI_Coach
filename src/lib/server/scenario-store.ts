@@ -279,6 +279,17 @@ export async function claimFreeTestEval(uid: string, oid: string | null | undefi
   return setFreeTestEval(uid, oid, scenarioId, "offen", "verbraucht");
 }
 
+/**
+ * Steht für diese Person an diesem Szenario noch ein freier Testlauf offen? Nur lesen. Die Start-Route lässt damit
+ * den Probelauf auch bei leerem Guthaben beginnen (die Auswertung kostet dann keinen Credit).
+ */
+export async function hasOpenFreeTestEval(uid: string, oid: string | null | undefined, scenarioId: string): Promise<boolean> {
+  if (!freeTestEvalCandidate(scenarioId)) return false;
+  const workspaceId = await resolveWorkspaceIdForScenarios(uid, oid);
+  const doc = await readItem<ScenarioDoc>(runsContainer(), scenarioId, scenarioPartitionKey(workspaceId));
+  return !!doc && doc.docType === SCENARIO_DOC_TYPE && doc.createdByUid === uid && doc.freeTestEval === "offen";
+}
+
 /** Freilauf zurückgeben, wenn die Auswertung nach dem Beanspruchen gescheitert ist (sonst wäre er ohne Ergebnis weg). */
 export async function releaseFreeTestEval(uid: string, oid: string | null | undefined, scenarioId: string): Promise<boolean> {
   return setFreeTestEval(uid, oid, scenarioId, "verbraucht", "offen");

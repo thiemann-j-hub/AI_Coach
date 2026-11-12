@@ -11,6 +11,11 @@ describe("openChargeLage", () => {
     expect(openChargeLage(row({ openCharge: { key: KEY, at: "2026-11-12T11:55:00.000Z", txId: "tx-1" } }), now)).toBe("laeuft");
   });
 
+  it("Paket 3: Lauf in `finishing` rechnet noch, solange der Vermerk jung ist; hängt er, ist die Buchung ohne Auswertung", () => {
+    expect(openChargeLage(row({ status: "finishing", openCharge: { key: KEY, at: "2026-11-12T11:58:00.000Z", txId: "tx-1" } }), now)).toBe("laeuft");
+    expect(openChargeLage(row({ status: "finishing", openCharge: { key: KEY, at: "2026-11-12T10:00:00.000Z", txId: "tx-1" } }), now)).toBe("gebucht-ohne-auswertung");
+  });
+
   it("alter Vermerk ohne Buchungsnummer: unbestätigt (Frist des Credit-Dienstes oder Prozess-Ende vor der Antwort)", () => {
     expect(openChargeLage(row({ openCharge: { key: KEY, at: "2026-11-12T10:00:00.000Z" } }), now)).toBe("unbestaetigt");
   });
