@@ -12,6 +12,9 @@ const h = vi.hoisted(() => ({
   failLatest: false,
   failResults: false,
   queries: [] as string[],
+  admin: false,
+  wsDocs: {} as Record<string, unknown>,
+  wsKatalog: [] as unknown[],
 }));
 
 vi.mock("@/lib/cosmos", () => ({
@@ -28,7 +31,17 @@ vi.mock("@/lib/server/simulation-store", () => ({
   simPartitionKey: (uid: string) => `sim:${uid}`,
   listSimulations: async () => [],
 }));
-vi.mock("@/lib/server/scenario-store", () => ({ listScenariosForUser: async () => [] }));
+vi.mock("@/lib/server/scenario-store", () => ({
+  listScenariosForUser: async () => h.wsKatalog,
+  getScenarioForUser: async (_uid: string, id: string) => h.wsDocs[id] ?? null,
+}));
+vi.mock("@/lib/server/scenario-admin", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    requireWorkspaceAdmin: async () =>
+      h.admin ? { workspaceId: "ws-1" } : NextResponse.json({ ok: false, code: "ADMIN_ONLY" }, { status: 403 }),
+  };
+});
 vi.mock("@/lib/server/aufraeumen", () => ({ aufraeumenAnstossen: () => undefined }));
 vi.mock("@/lib/api-auth", () => ({ requireAuth: async () => ({ uid: "u1", email: "a@example.com", oid: "oid-1" }) }));
 vi.mock("@/lib/logger", () => ({ logger: { api: vi.fn(), apiError: vi.fn(), warn: vi.fn(), info: vi.fn(), error: vi.fn() } }));
@@ -47,6 +60,9 @@ beforeEach(() => {
   h.failLatest = false;
   h.failResults = false;
   h.queries.length = 0;
+  h.admin = false;
+  h.wsDocs = {};
+  h.wsKatalog = [];
 });
 
 afterEach(() => {
@@ -139,5 +155,30 @@ describe("GET /api/simulation/scenarios — Einblick und Empfehlung", () => {
       expect(q).not.toContain("c.turns");
       expect(q).not.toMatch(/SELECT\s+(TOP 1\s+)?\*/);
     }
+  });
+
+  it("Probelauf eines Entwurfs: Admins bekommen den gewünschten Entwurf als `probe`, im Katalog steht er nicht (12.11.2026)", async () => {
+    const { getScenario } = await import("@/lib/simulation/scenarios");
+    const entwurf = { ...getScenario("sim-coaching-morgan")!, id: "ws-entwurf-abc123", title: "Mein Entwurf" };
+    h.wsDocs = { [entwurf.id]: entwurf };
+    const mit = async (id: string) => (await GET(new NextRequest(`http://localhost/api/simulation/scenarios?szenario=${id}`))).json();
+
+    // Mitglied ohne Admin-Rolle: kein Entwurf.
+    expect((await mit(entwurf.id)).probe).toBeNull();
+
+    h.admin = true;
+    const json = await mit(entwurf.id);
+    expect(json.probe).toMatchObject({ id: entwurf.id, title: "Mein Entwurf" });
+    expect("personaDna" in json.probe).toBe(false);
+    expect(json.scenarios.some((s: { id: string }) => s.id === entwurf.id)).toBe(false);
+
+    // Unbekannte oder unpassende Kennung, eingebautes Szenario, ohne Parameter: nichts.
+    expect((await mit("ws-gibt-es-nicht")).probe).toBeNull();
+    expect((await mit("sim-coaching-morgan")).probe).toBeNull();
+    expect((await katalog()).json.probe).toBeNull();
+
+    // Steht das Szenario schon im Katalog (veröffentlicht), braucht es kein `probe`.
+    h.wsKatalog = [entwurf];
+    expect((await mit(entwurf.id)).probe).toBeNull();
   });
 });

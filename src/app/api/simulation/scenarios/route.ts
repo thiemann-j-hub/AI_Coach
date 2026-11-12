@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { coachLiveEnabledFor, simulationEnabled } from "@/lib/simulation/flags";
 import { publicScenario, publicScenarios } from "@/lib/simulation/scenarios";
-import { listScenariosForUser } from "@/lib/server/scenario-store";
+import { getScenarioForUser, listScenariosForUser } from "@/lib/server/scenario-store";
+import { requireWorkspaceAdmin } from "@/lib/server/scenario-admin";
 import { weakestObservedSkill, type SkillRatingLike } from "@/lib/simulation/empfehlung";
 import { bestByScenario, type PlayedInfo } from "@/lib/simulation/katalog";
 import { queryItems, runsContainer } from "@/lib/cosmos";
@@ -92,6 +93,22 @@ export async function GET(req: NextRequest) {
     // B3a: Workspace-Szenarien des Mandanten hinter den Katalog hängen —
     // dieselbe Anti-Leak-Projektion (publicScenario), fail-soft leere Liste.
     const workspaceScenarios = (await listScenariosForUser(auth.uid, auth.oid)).map(publicScenario);
+    // Probelauf eines Entwurfs (12.11.2026): Der Builder führt per `/?szenario=<id>` ins Briefing. Entwürfe stehen
+    // aber nicht im Katalog, also öffnete sich bisher nichts. Admins des Arbeitsbereichs bekommen den gewünschten
+    // Entwurf als `probe` mit; in der Katalogliste erscheint er nicht. Ohne Auskunft bleibt es beim Katalog.
+    let probe: (ReturnType<typeof publicScenario> & { liveAvailable: boolean }) | null = null;
+    const wanted = req.nextUrl.searchParams.get("szenario") ?? "";
+    if (/^ws-[a-z0-9-]{3,100}$/.test(wanted) && !workspaceScenarios.some((s) => s.id === wanted)) {
+      try {
+        const gate = await requireWorkspaceAdmin(auth);
+        if (!(gate instanceof NextResponse)) {
+          const s = await getScenarioForUser(auth.uid, wanted, auth.oid);
+          if (s) probe = { ...publicScenario(s), liveAvailable: coachLiveEnabledFor(s.id) };
+        }
+      } catch (e) {
+        logger.apiError("/api/simulation/scenarios probe", e);
+      }
+    }
     // Paket 2, C19 (12.11.2026): höchstens einmal pro Stunde abgelaufene private Szenarien und alte abgebrochene
     // Läufe aller Personen wegräumen; läuft neben der Antwort.
     aufraeumenAnstossen();
@@ -101,6 +118,7 @@ export async function GET(req: NextRequest) {
       recent,
       insight,
       played,
+      probe,
     });
   } catch (err) {
     logger.apiError("/api/simulation/scenarios", err);

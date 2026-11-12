@@ -436,6 +436,8 @@ export default function SimulationClient() {
 
   const [view, setView] = useState<View>('loading');
   const [scenarios, setScenarios] = useState<PublicScenario[]>([]);
+  /** Entwurf aus dem Builder für den Probelauf (`/?szenario=<id>`): steht nicht im Katalog, die Route gibt ihn Admins mit. */
+  const [probe, setProbe] = useState<PublicScenario | null>(null);
   const [recent, setRecent] = useState<RecentSim[]>([]);
   const [scenario, setScenario] = useState<PublicScenario | null>(null);
   const [briefStep, setBriefStep] = useState(0);
@@ -954,7 +956,10 @@ export default function SimulationClient() {
 
   const loadCatalog = useCallback(async () => {
     try {
-      const res = await authFetch('/api/simulation/scenarios');
+      const gewuenscht = new URLSearchParams(window.location.search).get('szenario');
+      const res = await authFetch(
+        gewuenscht ? `/api/simulation/scenarios?szenario=${encodeURIComponent(gewuenscht)}` : '/api/simulation/scenarios'
+      );
       if (res.status === 503) {
         // 503 heißt hier zweierlei: Simulation nicht freigeschaltet — oder (PulseNorth-
         // Konto, 02.10.2026) das Register gibt gerade keine Auskunft. Das zweite ist eine
@@ -971,6 +976,7 @@ export default function SimulationClient() {
       const json = await res.json();
       if (!res.ok || !json.ok) throw new Error('catalog');
       setScenarios(json.scenarios ?? []);
+      setProbe(json.probe ?? null);
       setRecent(json.recent ?? []);
       setInsight(json.insight ?? null);
       setPlayed(json.played ?? {});
@@ -1020,7 +1026,7 @@ export default function SimulationClient() {
     if (view !== 'list' || scenarios.length === 0) return;
     const wanted = searchParams.get('szenario');
     if (!wanted) return;
-    const s = scenarios.find((x) => x.id === wanted);
+    const s = scenarios.find((x) => x.id === wanted) ?? (probe?.id === wanted ? probe : undefined);
     if (!s) return;
     setBriefFocus(searchParams.get('fokus')?.trim() || null);
     setScenario(s);
@@ -1033,7 +1039,7 @@ export default function SimulationClient() {
     // Query-Parameter verbrauchen — Reload soll wieder am Einstieg landen.
     router.replace('/', { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, scenarios]);
+  }, [view, scenarios, probe]);
 
   // U20 (Paket 1, 12.11.2026): „Fortsetzen“ im Verlauf führt per /?simId=<id> direkt ins laufende Gespräch.
   // Vorher landete man auf der Startseite und musste die Fortsetzen-Zeile noch einmal anklicken.
