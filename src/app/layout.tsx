@@ -92,7 +92,9 @@ export default async function RootLayout({
           storageKey={themePlattform ? PLATTFORM_THEME_KEY : STORAGE_KEY_THEME}
           disableTransitionOnChange
         >
-          <AuthProvider>
+          {/* Paket 6, C21 (12.11.2026): Der Browser bekommt nur das Wörterbuch der aktiven Sprache, und zwar
+              mit der Seite selbst. So steht der erste Bildaufbau sofort in der richtigen Sprache. */}
+          <AuthProvider initialLocale={locale} initialDictionary={t}>
             {denied ? <NoAccess texts={t.noAccess} admins={admins} istAdmin={istAdmin} /> : children}
             <ChatWidget surface="coach" lang={locale === "de" ? "de" : "en"} />
             <Toaster />
