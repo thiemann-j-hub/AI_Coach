@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
-import { getSimulation, saveSimulation } from "@/lib/server/simulation-store";
-import { COMMITMENT_MAX_CHARS } from "@/lib/simulation/transfer";
+import { updateSimulation } from "@/lib/server/simulation-store";
+import { COMMITMENT_MAX_CHARS, type Commitment } from "@/lib/simulation/transfer";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -23,6 +24,8 @@ const requestSchema = z.object({
  * Nur für abgeschlossene eigene Läufe; eine bereits beantwortete Nachfrage
  * bleibt bestehen (der Vorsatz danach zu ändern, verfälscht nichts — die
  * Rückmeldung bezieht sich auf den Stand zu ihrem Zeitpunkt).
+ * Paket 2 (12.11.2026): C3 — der Vorsatz wird auf den frisch gelesenen Lauf angewandt (Versionsprüfung) statt
+ * die alte Kopie ganz zu überschreiben; C5 — Begrenzung je Person statt je Adresse.
  */
 export async function POST(req: NextRequest) {
   if (!simulationEnabled()) {
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "sim-commit"), 30, 60_000);
+  const rl = checkRateLimit(`sim-commit:${auth.uid}`, 30, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {
@@ -38,19 +41,17 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
     }
-    const doc = await getSimulation(auth.uid, parsed.data.simId);
+    const text = parsed.data.text.trim().slice(0, COMMITMENT_MAX_CHARS);
+    const source: Commitment["source"] = parsed.data.source ?? "user";
+    const createdAt = new Date().toISOString();
+    const doc = await updateSimulation(auth.uid, parsed.data.simId, (d) => {
+      if (d.status !== "finished") return false;
+      d.commitment = { text, source, createdAt, dueHint: d.commitment?.dueHint ?? null };
+    });
     if (!doc) return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     if (doc.status !== "finished") {
       return NextResponse.json({ ok: false, code: "NOT_FINISHED" }, { status: 409 });
     }
-    const text = parsed.data.text.trim().slice(0, COMMITMENT_MAX_CHARS);
-    doc.commitment = {
-      text,
-      source: parsed.data.source ?? "user",
-      createdAt: new Date().toISOString(),
-      dueHint: doc.commitment?.dueHint ?? null,
-    };
-    await saveSimulation(doc);
     logger.api("/api/simulation/commit", "ok", { uid: auth.uid, simId: doc.id, len: text.length });
     return NextResponse.json({ ok: true, commitment: doc.commitment });
   } catch (err) {

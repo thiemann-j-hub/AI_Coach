@@ -54,6 +54,8 @@ export function tatsachenText(a: TatsachenArgs): string {
 /**
  * Ergebnis des Gesprächs für das Debrief: Die Rolle hat Vorrang (sie hat das Ziel freigegeben oder abgebrochen);
  * sonst entscheidet das Urteil des Richters (zielErreicht), sonst „offen“.
+ * Paket 2, C6 (Owner-Entscheid 12.11.2026): Das Ergebnis ist eine Tatsache über das Gespräch. Ob „ziel“ zum
+ * Bestehen reicht, entscheidet `computeDebrief` — im Prüfungsmodus nur zusammen mit der Mindestpunktzahl.
  */
 export function bestimmeErgebnis(a: { closedByPersona?: TatsachenEnde | null; zielErreicht?: boolean | null }): DebriefErgebnis {
   if (a.closedByPersona?.ergebnis === "ziel") return "ziel";

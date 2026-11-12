@@ -132,6 +132,8 @@ async function main() {
       checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
       passThreshold,
       ergebnis: bestimmeErgebnis({ closedByPersona: doc.closedByPersona, zielErreicht: feedback.zielErreicht ?? null }),
+      // Paket 2, C6 (12.11.2026): im Prüfungsmodus gilt „bestanden“ nur mit Mindestpunktzahl, wie in der Route.
+      pruefung: doc.mode === "check",
     });
     console.log(
       `${doc.id.slice(0, 8)} ${doc.scenarioId} ${String(doc.finishedAt ?? doc.createdAt).slice(0, 10)} — vorher ${before?.overall ?? "–"} % ${before?.verdict ?? "–"} (zurückgehalten ${beforeWithheld.join(",") || "–"}) → nachher ${debrief.overall ?? "–"} % ${debrief.verdict} (zurückgehalten ${[...fabricated].join(",") || "–"}) · Richter ${feedback.judge ?? "?"} · Ergebnis ${debrief.ergebnis ?? "–"}/${debrief.verdictGrund ?? "–"} · Rubrik ${feedback.rubric.map((r) => `${r.key}=${r.score ?? "∅"}`).join(" ")}`

@@ -1,32 +1,10 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { generateSimulationFeedback } from "@/ai/flows/simulation-feedback";
-import { GENKIT_MODEL_ID } from "@/ai/genkit";
-import { scoreCompetencies } from "@/ai/flows/score-competencies";
 import { requireAuth } from "@/lib/api-auth";
-import { regieVerlaufText } from "@/ai/flows/simulation-regie";
-import { bestimmeErgebnis, tatsachenText } from "@/lib/simulation/tatsachen";
-import { RICHTER_OPUS_TIMEOUT_MS } from "@/ai/flows/simulation-feedback";
-import { coachRichter } from "@/lib/simulation/flags";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
-import {
-  creditGateEnabled,
-  reserveEntitlement,
-  settleEntitlement,
-  compensateEntitlement,
-  type EntitlementGrant,
-} from "@/lib/server/credits/entitlement";
-import {
-  defaultCompetencyRatings,
-  normalizeCompetencyRatings,
-} from "@/lib/competency-model";
-import {
-  qualityMode,
-  runQualityChecks,
-  type QualityNote,
-} from "@/lib/server/quality-checks";
+import { creditGateEnabled, settleEntitlement } from "@/lib/server/credits/entitlement";
 import { emitCoachMeasurement } from "@/lib/server/radar-emit";
 import {
   simulationEnabled,
@@ -37,28 +15,21 @@ import {
   assembleTranscript,
   countUserTurns,
   getSimulation,
-  latestFinishedForScenario,
-  latestTransferReview,
-  saveSimulation,
+  type SimulationDoc,
 } from "@/lib/server/simulation-store";
-import { buildTransferReviewText, commitmentExplicitOn } from "@/lib/simulation/transfer";
 import {
-  CHECK_PASS_THRESHOLD,
-  computeDebrief,
-  computeDelta,
-  type Debrief,
-} from "@/lib/simulation/debrief";
-import { computeMeasurementDelta } from "@/lib/measurement-delta";
-import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
-import { withRetry, withTimeout, timeoutMs } from "@/lib/with-timeout";
+  chargeFinish,
+  evaluateSimulation,
+  refundFinishCharge,
+  storeEvaluation,
+  type FinishCharge,
+} from "@/lib/server/simulation-finish";
 import { logger } from "@/lib/logger";
 import { aiErrorResponse } from "@/lib/server/request-id";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 180;
-
-const LLM_TIMEOUT_MS = timeoutMs("LLM_TIMEOUT_MS", 45_000);
 
 /** Mindestens so viele eigene Beiträge, bevor eine Auswertung sinnvoll (und bezahlbar) ist. */
 const MIN_USER_TURNS = 3;
@@ -78,11 +49,44 @@ const requestSchema = z.object({
 });
 
 /**
- * POST: Simulation beenden und auswerten. Kostet 1 Credit (spiegelt /api/analyze):
- * Charge vor dem teuren LLM-Call, Persistenz VOR settle, compensate bei jedem
- * Fehler. Idempotency: pro Auswertungs-VERSUCH ein frischer serverseitiger
- * chargeId (SV-Lektion: derselbe Key nur für Retries derselben Kaufentscheidung —
- * ein erneuter Finish-Klick nach Refund ist eine NEUE Entscheidung).
+ * Antwort für einen Lauf, der nicht (mehr) aktiv ist. Ausgewertet → das vorhandene Ergebnis, idempotent lesbar,
+ * nichts gebucht. Abgebrochen → saubere Ablehnung (Paket 2, C3): ein abgebrochener Lauf hat keine Auswertung;
+ * vorher kam hier „schon ausgewertet“ mit leerem Ergebnis.
+ */
+function endedResponse(doc: SimulationDoc): NextResponse {
+  if (doc.status === "aborted") {
+    return NextResponse.json({ ok: false, code: "ABORTED" }, { status: 409 });
+  }
+  return NextResponse.json({
+    ok: true,
+    alreadyFinished: true,
+    feedback: doc.feedbackJson ?? null,
+    competencyRatings: doc.competencyRatings ?? null,
+    competencyError: doc.competencyError ?? null,
+    debrief: doc.debriefJson ?? null,
+    delta: doc.deltaJson ?? null,
+    attempt: doc.attempt ?? 1,
+    focus: doc.focus ?? null,
+    selfAssessment: doc.selfAssessment ?? null,
+    mode: doc.mode ?? "practice",
+    hardness: doc.hardness ?? "standard",
+  });
+}
+
+/**
+ * POST: Simulation beenden und auswerten. Kostet 1 Credit (spiegelt /api/analyze).
+ *
+ * Reihenfolge seit Paket 2 (12.11.2026); die Schritte liegen in `@/lib/server/simulation-finish`:
+ *   1. Lauf lesen und prüfen (aktiv, genug Züge, Szenario, Tagesbudget).
+ *   2. Buchen: offene Buchung am Lauf vermerken, dann 1 Credit mit der Kennung `sim-finish:<simId>:<n>`
+ *      (n = bisherige Rückbuchungen am Lauf). Ein zweiter Klick oder ein zweiter Tab trifft dieselbe Buchung
+ *      statt einer zweiten (vorher: frische Kennung je Anfrage, doppelter Credit möglich).
+ *   3. Auswerten (Richter, Kompetenzen, Zitatprüfung, Rechnung) — schreibt nichts.
+ *   4. Speichern auf den FRISCHEN Lauf, nur wenn er noch aktiv ist; der Vermerk wird im selben Schreibvorgang
+ *      ausgetragen. Persistenz VOR settle: Credit verbraucht ⇒ Auswertung existiert.
+ *   5. Zurückbuchen bei jedem Fehler und wenn der Lauf inzwischen von anderer Stelle beendet wurde — außer die
+ *      gespeicherte Auswertung trägt genau diese Buchung. Scheitert die Rückbuchung, bleibt der Vermerk stehen.
+ * Das Antwortformat ist unverändert. Der Status „wird ausgewertet“ mit Abfrage kommt mit Paket 3 (C4, zweiter Teil).
  */
 export async function POST(req: NextRequest) {
   if (!simulationEnabled()) {
@@ -94,11 +98,13 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "sim-finish"), 3, 60_000);
+  // Paket 2, C5: Begrenzung je Person statt je Adresse (hinter einer Firmenadresse teilten sich alle drei Auswertungen pro Minute).
+  const rl = checkRateLimit(`sim-finish:${auth.uid}`, 3, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
-  const chargeId = crypto.randomUUID();
-  let grant: EntitlementGrant | null = null;
+  let simId = "";
+  // Die Buchung dieser Anfrage; null = nichts (mehr) zurückzugeben.
+  let charge: Extract<FinishCharge, { ok: true }> | null = null;
 
   try {
     const parsed = requestSchema.safeParse(await req.json());
@@ -108,27 +114,13 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const doc = await getSimulation(auth.uid, parsed.data.simId);
+    simId = parsed.data.simId;
+    const selfAssessment = parsed.data.selfAssessment || undefined;
+    const doc = await getSimulation(auth.uid, simId);
     if (!doc) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
-    if (doc.status !== "active") {
-      // Idempotent lesbar: bereits ausgewertet -> Ergebnis zurückgeben, nichts chargen.
-      return NextResponse.json({
-        ok: true,
-        alreadyFinished: true,
-        feedback: doc.feedbackJson ?? null,
-        competencyRatings: doc.competencyRatings ?? null,
-        competencyError: doc.competencyError ?? null,
-        debrief: doc.debriefJson ?? null,
-        delta: doc.deltaJson ?? null,
-        attempt: doc.attempt ?? 1,
-        focus: doc.focus ?? null,
-        selfAssessment: doc.selfAssessment ?? null,
-        mode: doc.mode ?? "practice",
-        hardness: doc.hardness ?? "standard",
-      });
-    }
+    if (doc.status !== "active") return endedResponse(doc);
     if (countUserTurns(doc.turns) < MIN_USER_TURNS) {
       return NextResponse.json(
         { ok: false, code: "NOT_ENOUGH_TURNS", minUserTurns: MIN_USER_TURNS },
@@ -140,274 +132,81 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
     }
 
-    const transcript = assembleTranscript(doc.turns, scenario.persona.name);
     const budget = await checkAndConsumeBudget({
       uid: auth.uid,
       email: auth.email,
-      estimatedTokens: estimateTokens(transcript),
+      estimatedTokens: estimateTokens(assembleTranscript(doc.turns, scenario.persona.name)),
     });
     if (!budget.allowed && budget.response) return budget.response;
 
     // Point-of-Sale VOR den teuren LLM-Calls (wie /api/analyze).
     if (creditGateEnabled()) {
-      const ent = await reserveEntitlement({
+      const c = await chargeFinish({ uid: auth.uid, email: auth.email, simId });
+      if (!c.ok) return "ended" in c ? endedResponse(c.ended) : c.response;
+      charge = c;
+    }
+
+    const evaluation = await evaluateSimulation({ uid: auth.uid, doc, scenario, selfAssessment });
+
+    // Speichern auf den frischen Lauf (C3). Höchstens ein zweiter Durchgang: wenn ein paralleler Versuch die
+    // gemeinsame Buchung inzwischen zurückgegeben hat, wird einmal neu gebucht.
+    let stored: SimulationDoc | null = null;
+    for (let runde = 0; !stored; runde++) {
+      const s = await storeEvaluation({
         uid: auth.uid,
-        email: auth.email,
-        runId: chargeId,
+        simId,
+        evaluation,
+        selfAssessment,
+        grant: charge?.grant ?? null,
+        refunds: charge?.refunds ?? 0,
       });
-      if (!ent.ok) return ent.response;
-      grant = ent.grant;
-    }
-
-    // O2: Rückmeldung aus dem Alltag (letzter beantworteter Vorsatz) als
-    // Kontext fürs Debrief — best effort, nie blockierend.
-    let transferReview = "";
-    try {
-      const tr = await latestTransferReview(auth.uid);
-      if (tr) {
-        transferReview = buildTransferReviewText({
-          lang: doc.convoLocale ?? scenario.locale,
-          commitmentText: tr.commitment.text,
-          outcome: tr.transferCheck.outcome,
-          note: tr.transferCheck.note,
-        });
+      if (s.state === "stored") {
+        stored = s.doc;
+      } else if (s.state === "refunded") {
+        charge = null;
+        if (runde >= 1) throw new Error("simulation finish: Buchung wurde zweimal von anderer Stelle zurückgegeben");
+        const again = await chargeFinish({ uid: auth.uid, email: auth.email, simId });
+        if (!again.ok) return "ended" in again ? endedResponse(again.ended) : again.response;
+        charge = again;
+      } else {
+        // Der Lauf wurde während der Rechnung von anderer Stelle beendet, abgebrochen oder gelöscht: nichts
+        // überschreiben, die eigene Buchung zurückgeben, das Vorhandene ausliefern.
+        const open = charge;
+        charge = null;
+        if (open) await refundFinishCharge({ uid: auth.uid, simId, grant: open.grant, refunds: open.refunds });
+        logger.api("/api/simulation/finish", "ended-elsewhere", { simId, state: s.state === "ended" ? s.doc.status : "missing" });
+        return s.state === "ended"
+          ? endedResponse(s.doc)
+          : NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
       }
-    } catch (e) {
-      logger.apiError("/api/simulation/finish/transfer-review", e, { simId: doc.id });
     }
 
-    // Rubrik-Feedback (Pflichtpfad) + C1–C10-Scoring (degradiert nur) parallel.
-    const [fbSettled, compSettled] = await Promise.allSettled([
-      withRetry(
-        () =>
-          generateSimulationFeedback({
-            scenario,
-            turns: doc.turns,
-            focus: doc.focus ?? undefined,
-            convoLocale: doc.convoLocale ?? undefined,
-            selfAssessment: parsed.data.selfAssessment || undefined,
-            transferReview: transferReview || undefined,
-            // Welle 2: Gesprächsende durch die Rolle und Öffnungsverlauf als Kontext (nie als Beleg).
-            gespraechsende: doc.closedByPersona
-              ? `${scenario.persona.name} beendete das Gespräch (${doc.closedByPersona.ergebnis}): ${doc.closedByPersona.grund}`
-              : doc.closedByTime
-                ? "Die Zeit lief ab; die Rolle verabschiedete sich."
-                : undefined,
-            regieVerlauf: regieVerlaufText(doc.regie, scenario.locale) || undefined,
-            // Bewertung 2.0 (01.11.2026): Ergebnis und erfüllte Bedingungen der Rolle als Tatsachen (Konsistenzregel).
-            tatsachen: tatsachenText({ personaName: scenario.persona.name, locale: scenario.locale, regie: doc.regie, closedByPersona: doc.closedByPersona, closedByTime: doc.closedByTime === true }) || undefined,
-          }),
-        // Welle 1: der Opus-Richter braucht länger (40–90 s); seine Frist plus Rückfall liegt im Flow.
-        { ms: coachRichter() === "opus" ? RICHTER_OPUS_TIMEOUT_MS + 50_000 : LLM_TIMEOUT_MS, label: "sim-feedback", retries: 1 }
-      ),
-      withTimeout(
-        scoreCompetencies({
-          transcriptText: transcript,
-          // W3-4: why-Begründungen folgen der GESPRÄCHSSPRACHE (vorher hart
-          // "de" — englische Läufe bekamen deutsche Begründungen). Zitate
-          // bleiben per Prompt im Originalwortlaut.
-          lang: doc.convoLocale ?? "de",
-          leaderLabel: "Teilnehmer:in",
-          employeeLabel: scenario.persona.name,
-          // V2 (28.08.): Szenario-Typ rahmt die Bewertung — ein Verkaufs-
-          // oder Konfliktgespräch wird nicht mehr als Führungssituation
-          // bewertet (Kategorie liegt im Szenario bereits vor).
-          scenarioCategory: scenario.category,
-        }),
-        LLM_TIMEOUT_MS,
-        "gemini-sim-competencies"
-      ),
-    ]);
-
-    if (fbSettled.status === "rejected") throw fbSettled.reason;
-    const feedback = fbSettled.value;
-
-    let competencyRatings = defaultCompetencyRatings();
-    let competencyError: string | null = null;
-    try {
-      if (compSettled.status === "rejected") throw compSettled.reason;
-      competencyRatings = normalizeCompetencyRatings(compSettled.value, {
-        lang: doc.convoLocale ?? "de",
-        leaderLabel: "Teilnehmer:in",
-        employeeLabel: scenario.persona.name,
-      });
-    } catch (e: any) {
-      competencyError = e?.message ?? String(e);
-      logger.apiError("/api/simulation/finish/competencies", e);
-    }
-
-    // P2 (COACH-UX-BLUEPRINT §6): Grounding auch im Rollenspiel — derselbe
-    // deterministische Zitat-Check wie /api/analyze, gegen das zusammengebaute
-    // Gesprächsprotokoll, für die C1–C10-Ratings UND die S1–S5-Evidence.
-    // Läuft VOR computeDebrief, damit die Gesamtwertung nie auf fabrizierten
-    // Belegen aufbaut. quality-core ist pure — direkt nutzbar.
-    let qualityNotes: QualityNote[] = [];
-    try {
-      const rubricForCheck = feedback.rubric.map((r) => ({
-        id: r.key,
-        score: r.score,
-        evidence: r.evidence ?? [],
-      }));
-      const qc = runQualityChecks(
-        {
-          summary: feedback.summary,
-          competency_ratings: [
-            ...(competencyRatings as Array<{ id: string; score: number | null; evidence?: string[] }>),
-            ...rubricForCheck,
-          ],
-        },
-        // O1a (N4-84, Gemini Zu 1): Vergleichstext sind die ROHEN Beiträge ohne
-        // Sprecher-Labels — Labels sind Metadaten, geprüft wird nur der Wortlaut.
-        doc.turns.map((t) => t.text).join("\n")
-      );
-      qualityNotes = qc.notes;
-      if (qc.notes.length) {
-        // P3: Zählung je Modus sichtbar machen (App Insights) — Datenbasis
-        // für den E2-Entscheid (enforce), analog /api/analyze.
-        logger.api("/api/simulation/finish", "quality-notes", {
-          uid: auth.uid,
-          mode: qualityMode(),
-          count: qc.notes.length,
-          errors: qc.notes.filter((n) => n.severity === "error").length,
-        });
-      }
-      if (qc.blocked) {
-        const fabricated = new Set(
-          qc.notes.filter((n) => n.severity === "error" && n.field).map((n) => n.field as string)
-        );
-        // Gleicher heldWhy-Text wie analyze/route (Muster §2.2 enforce).
-        const heldWhy =
-          doc.convoLocale === "en"
-            ? "evidence not verifiable in transcript — score withheld (quality gate)"
-            : "Belege nicht im Transkript verifizierbar — Score zurückgehalten (Qualitäts-Gate)";
-        competencyRatings = (competencyRatings as any[]).map((c: any) =>
-          fabricated.has(c.id) ? { ...c, score: null, evidence: [], why: heldWhy } : c
-        ) as typeof competencyRatings;
-        feedback.rubric = feedback.rubric.map((r) =>
-          fabricated.has(r.key) ? { ...r, score: null, evidence: [], why: heldWhy } : r
-        );
-        logger.api("/api/simulation/finish", "quality-enforce-degraded", {
-          uid: auth.uid,
-          fields: [...fabricated],
-        });
-      }
-    } catch (e) {
-      logger.apiError("/api/simulation/finish/quality", e);
-    }
-
-    // Debrief 2.0 (D1): deterministische Gesamtwertung in Code — das LLM
-    // liefert nur Einzel-Scores. Plus Delta zum Vorversuch (D2), best effort.
-    // Welle B: Anker-Gewichte aus dem Szenario (B1) + strengere Grenze im
-    // Prüfungsmodus (B2).
-    const weightByKey = new Map(
-      scenario.assessment.competencies.map((c) => [c.key, c.weight])
-    );
-    const passThreshold =
-      doc.mode === "check"
-        ? (scenario.assessment.checkPassThreshold ?? CHECK_PASS_THRESHOLD)
-        : scenario.assessment.passThreshold;
-    const debrief = computeDebrief({
-      rubric: feedback.rubric.map((r) => ({
-        key: r.key,
-        label: r.label,
-        score: r.score,
-        weight: weightByKey.get(r.key),
-      })),
-      checkpoints: feedback.checkpoints.map((c) => ({ id: c.id, hit: c.hit })),
-      passThreshold,
-      // Bewertung 2.0: Ziel freigegeben → bestanden; Abbruch → nicht bestanden; sonst Punkte.
-      ergebnis: bestimmeErgebnis({ closedByPersona: doc.closedByPersona, zielErreicht: feedback.zielErreicht ?? null }),
-    });
-    let delta: (ReturnType<typeof computeDelta> & {
-      competencies?: Record<string, number | null>;
-    }) | null = null;
-    try {
-      const prev = await latestFinishedForScenario(auth.uid, doc.scenarioId, doc.id);
-      const prevFb = prev?.feedbackJson as SimulationFeedbackOutput | undefined;
-      if (prev && prevFb?.rubric) {
-        const prevDebrief =
-          (prev.debriefJson as Debrief | null) ??
-          computeDebrief({
-            rubric: prevFb.rubric.map((r) => ({ key: r.key, label: r.label, score: r.score })),
-            checkpoints: (prevFb.checkpoints ?? []).map((c) => ({ id: c.id, hit: c.hit })),
-            passThreshold: scenario.assessment.passThreshold,
-          });
-        delta = computeDelta({
-          current: debrief,
-          previous: prevDebrief,
-          prevAttempt: prev.attempt ?? 1,
-        });
-        // W3-1: zusätzlich das C1–C10-Delta (measurement-delta, dieselbe
-        // Rechnung wie die Delta-Card der Analyse) — Datenbasis des
-        // Endscreen-CTAs »Erkenntnis → Handlung«. Additiv, best effort.
-        if (prev.competencyRatings) {
-          try {
-            delta.competencies = computeMeasurementDelta(
-              competencyRatings,
-              prev.competencyRatings
-            ).deltas;
-          } catch {
-            /* C-Delta ist Komfort — Anker-Delta bleibt. */
-          }
-        }
-      }
-    } catch (e) {
-      logger.apiError("/api/simulation/finish/delta", e, { simId: doc.id });
-    }
-
-    // Persistenz VOR settle: Credit verbraucht => Auswertung existiert.
-    const finishedAt = new Date().toISOString();
-    doc.status = "finished";
-    doc.finishedAt = finishedAt;
-    doc.selfAssessment = parsed.data.selfAssessment || null;
-    doc.feedbackJson = feedback;
-    doc.competencyRatings = competencyRatings;
-    doc.competencyError = competencyError;
-    doc.debriefJson = debrief;
-    doc.deltaJson = delta;
-    doc.qualityNotes = qualityNotes;
-    // Provenienz (27.09.): welches Schreiber-Modell diese Auswertung erzeugt hat.
-    doc.modelId = GENKIT_MODEL_ID;
-    // O2: Der Vorschlag des Debriefs war ab sofort der Vorsatz (Gemini Zu 3: ein
-    // Schritt, keine Auswahl). Seit 11.10.2026 (N17/B8, Owner-GO) zählt er erst mit
-    // „Übernehmen“ in der Auswertung (/api/simulation/commit, source "model") — sonst
-    // fragt der Coach nach drei Tagen nach etwas, das nie gewählt wurde.
-    // Rückweg: COMMITMENT_EXPLICIT=off → alter Weg (stilles Setzen).
-    if (feedback.microTransfer?.step && !commitmentExplicitOn()) {
-      doc.commitment = {
-        text: feedback.microTransfer.step,
-        source: "model",
-        createdAt: finishedAt,
-        dueHint: feedback.microTransfer.when || null,
-      };
-    }
-    if (grant) {
-      doc.workspaceId = grant.workspaceId;
-      doc.centralSpendTxId = grant.centralTxId ?? null;
-    }
-    await saveSimulation(doc);
-
+    const grant = charge?.grant ?? null;
+    charge = null; // ab hier ist der Credit durch die gespeicherte Auswertung gedeckt
     if (grant) await settleEntitlement(grant);
+
+    const { feedback, competencyRatings, competencyError, debrief, delta } = evaluation;
 
     // Radar-Messpunkt nur mit doppeltem Opt-in (RADAR_EMIT im Emitter +
     // SIMULATION_RADAR_EMIT hier) — Owner-Entscheid offen (Blueprint §6 SIM-2).
     if (grant && simulationRadarEmitEnabled()) {
       try {
+        const weightByKey = new Map(scenario.assessment.competencies.map((c) => [c.key, c.weight]));
         void emitCoachMeasurement({
           workspaceId: grant.workspaceId,
           subjectId: auth.oid ?? "",
-          runId: doc.id,
-          createdAt: finishedAt,
+          runId: stored.id,
+          createdAt: stored.finishedAt ?? new Date().toISOString(),
           competencyRatings,
           // Welle 5: Anker je Fähigkeit (Stufe, Gewicht), Szenario und Urteil — Datenbasis des Team-Bilds im Hub.
           rubric: feedback.rubric.map((r) => ({ ...r, weight: weightByKey.get(r.key) })),
           szenarioId: scenario.id,
           bestanden: debrief.verdict === "passed" ? true : debrief.verdict === "failed" ? false : null,
         }).catch((e) =>
-          logger.apiError("/api/simulation/finish/radar", e, { simId: doc.id })
+          logger.apiError("/api/simulation/finish/radar", e, { simId })
         );
       } catch (e) {
-        logger.apiError("/api/simulation/finish/radar", e, { simId: doc.id });
+        logger.apiError("/api/simulation/finish/radar", e, { simId });
       }
     }
 
@@ -417,7 +216,7 @@ export async function POST(req: NextRequest) {
     // sonst durch die Log-Leserechte ausgehebelt).
     logger.api("/api/simulation/finish", "complete", {
       uid: auth.uid,
-      simId: doc.id,
+      simId,
     });
     return NextResponse.json({
       ok: true,
@@ -426,14 +225,14 @@ export async function POST(req: NextRequest) {
       competencyError,
       debrief,
       delta,
-      attempt: doc.attempt ?? 1,
-      focus: doc.focus ?? null,
-      selfAssessment: doc.selfAssessment ?? null,
-      mode: doc.mode ?? "practice",
-      hardness: doc.hardness ?? "standard",
+      attempt: stored.attempt ?? 1,
+      focus: stored.focus ?? null,
+      selfAssessment: stored.selfAssessment ?? null,
+      mode: stored.mode ?? "practice",
+      hardness: stored.hardness ?? "standard",
     });
   } catch (err) {
-    if (grant) await compensateEntitlement(grant);
+    if (charge) await refundFinishCharge({ uid: auth.uid, simId, grant: charge.grant, refunds: charge.refunds });
     // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).
     return aiErrorResponse(err, req, "/api/simulation/finish");
   }

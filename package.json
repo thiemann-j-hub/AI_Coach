@@ -19,6 +19,7 @@
     "quality:stats": "node --conditions=react-server --import tsx scripts/quality/quality-stats.ts",
     "sim:recompute": "node --conditions=react-server --import tsx scripts/recompute-sim-evaluations.ts",
     "quality:reliability": "node --conditions=react-server --import tsx scripts/quality/reliability.ts",
+    "credits:abgleich": "node --conditions=react-server --import tsx scripts/credits-abgleich.mts",
     "verify:debrief": "tsx scripts/verify-debrief.ts",
     "verify:retrieval": "node --conditions=react-server --import tsx scripts/verify-retrieval-gate.ts",
     "cards:publish": "tsx scripts/publish-coach-cards.ts"

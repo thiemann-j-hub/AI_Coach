@@ -23,8 +23,38 @@ export interface QualityStats {
     withheldScores: number;
     avgCoverage: number | null;
     cScoredShare: number | null;
+    /** Paket 2, C7 (12.11.2026): Rückfälle vom starken Richter auf das schnelle Modell. */
+    judge: JudgeStats;
   };
   analyses: { count: number; withGateErrors: number };
+}
+
+export interface JudgeStats {
+  /** Läufe mit Kennzahlen der Auswertung (`evalStats`; Läufe vor dem 12.11.2026 haben keine). */
+  measured: number;
+  fallbacks: number;
+  /** Anteil Rückfälle an den Läufen mit Kennzahlen. */
+  fallbackShare: number | null;
+  /** Rückfälle je Grund (konfiguration, frist, schema, fehler). */
+  reasons: Record<string, number>;
+}
+
+/** Rein (getestet): zählt Rückfälle des Richters über die Läufe mit Kennzahlen. */
+export function summarizeJudge(
+  rows: ReadonlyArray<{ evalStats?: { fallback?: string | null } | null }>
+): JudgeStats {
+  let measured = 0;
+  let fallbacks = 0;
+  const reasons: Record<string, number> = {};
+  for (const r of rows) {
+    if (!r.evalStats) continue;
+    measured++;
+    const grund = r.evalStats.fallback;
+    if (!grund) continue;
+    fallbacks++;
+    reasons[grund] = (reasons[grund] ?? 0) + 1;
+  }
+  return { measured, fallbacks, fallbackShare: measured ? +(fallbacks / measured).toFixed(2) : null, reasons };
 }
 
 export async function computeQualityStats(days: number): Promise<QualityStats> {
@@ -39,9 +69,10 @@ export async function computeQualityStats(days: number): Promise<QualityStats> {
       coverage?: number;
       notes?: Array<{ code: string; field?: string }>;
       ratings?: Array<{ id: string; score: number | null }>;
+      evalStats?: { fallback?: string | null } | null;
     }>({
       query:
-        "SELECT c.id, c.debriefJson.verdict AS verdict, c.debriefJson.coverage AS coverage, c.qualityNotes AS notes, c.competencyRatings AS ratings " +
+        "SELECT c.id, c.debriefJson.verdict AS verdict, c.debriefJson.coverage AS coverage, c.qualityNotes AS notes, c.competencyRatings AS ratings, c.evalStats AS evalStats " +
         "FROM c WHERE c.docType = 'simulation' AND c.status = 'finished' AND c.finishedAt >= @since",
       parameters: [{ name: "@since", value: since }],
     })
@@ -88,6 +119,7 @@ export async function computeQualityStats(days: number): Promise<QualityStats> {
       withheldScores,
       avgCoverage: share(coverageSum, sims.length),
       cScoredShare: share(cScored, cTotal),
+      judge: summarizeJudge(sims),
     },
     analyses: { count: runs.length, withGateErrors },
   };
@@ -100,9 +132,12 @@ export function formatQualityStatsLine(s: QualityStats): string {
     return `Coach: in den letzten ${s.days} Tagen keine Auswertungen.`;
   }
   const pct = (v: number | null) => (v == null ? "–" : `${Math.round(v * 100)} %`);
+  // Paket 2, C7: Rückfall-Anteil nur nennen, wenn es Läufe mit Kennzahlen gibt (sonst stünde dort dauerhaft „–“).
+  const j = sim.judge;
+  const rueckfall = j?.measured ? `, Rückfall auf den schnellen Richter ${pct(j.fallbackShare)} (${j.fallbacks} von ${j.measured})` : "";
   return (
     `Coach (${s.days} Tage): ${sim.finished} Rollenspiele ausgewertet — ohne Urteil ${pct(sim.unratedShare)}, ` +
-    `mit zurückgehaltenen Scores ${pct(sim.withheldRunShare)} (${sim.withheldScores} Scores), Belegquote Ø ${pct(sim.avgCoverage)}; ` +
+    `mit zurückgehaltenen Scores ${pct(sim.withheldRunShare)} (${sim.withheldScores} Scores), Belegquote Ø ${pct(sim.avgCoverage)}${rueckfall}; ` +
     `${s.analyses.count} Transkript-Analysen, davon ${s.analyses.withGateErrors} mit Gate-Fehlern.`
   );
 }

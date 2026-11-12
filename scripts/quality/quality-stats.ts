@@ -23,6 +23,7 @@ async function main() {
   console.log(`Rollenspiele ausgewertet: ${sim.finished} · Urteile: ${JSON.stringify(sim.verdicts)}`);
   console.log(`  ohne Urteil: ${sim.unratedShare ?? "–"} · Läufe mit zurückgehaltenen Scores: ${sim.withheldRuns} (${sim.withheldRunShare ?? "–"}) · Scores zurückgehalten gesamt: ${sim.withheldScores}`);
   console.log(`  Ø Belegquote Rubrik: ${sim.avgCoverage ?? "–"} · Anteil bewerteter C-Werte: ${sim.cScoredShare ?? "–"}`);
+  console.log(`  Richter: ${sim.judge.measured} Läufe mit Kennzahlen · Rückfälle auf das schnelle Modell: ${sim.judge.fallbacks} (${sim.judge.fallbackShare ?? "–"}) · Gründe: ${JSON.stringify(sim.judge.reasons)}`);
   console.log(`Transkript-Analysen: ${out.analyses.count} · davon mit Gate-Fehlern: ${out.analyses.withGateErrors}`);
   console.log(`Briefing-Zeile: ${formatQualityStatsLine(out)}`);
   if (jsonOut) {

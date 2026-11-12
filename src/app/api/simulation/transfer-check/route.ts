@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
-  getSimulation,
   latestPendingTransferCheck,
-  saveSimulation,
+  updateSimulation,
 } from "@/lib/server/simulation-store";
 import {
   TRANSFER_NOTE_MAX_CHARS,
   isTransferOutcome,
   transferCheckMinHours,
+  type TransferCheck,
 } from "@/lib/simulation/transfer";
 import { logger } from "@/lib/logger";
 
@@ -59,14 +60,18 @@ const postSchema = z.object({
   note: z.string().max(TRANSFER_NOTE_MAX_CHARS).optional(),
 });
 
-/** POST: Rückmeldung speichern — done | partly | not | dismissed (= nie wieder fragen). */
+/**
+ * POST: Rückmeldung speichern — done | partly | not | dismissed (= nie wieder fragen).
+ * Paket 2 (12.11.2026): C3 — die Rückmeldung wird auf den frisch gelesenen Lauf angewandt (Versionsprüfung);
+ * C5 — Begrenzung je Person statt je Adresse.
+ */
 export async function POST(req: NextRequest) {
   if (!simulationEnabled()) {
     return NextResponse.json({ ok: false, code: "SIMULATION_DISABLED" }, { status: 503 });
   }
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "sim-transfer-check"), 30, 60_000);
+  const rl = checkRateLimit(`sim-transfer-check:${auth.uid}`, 30, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {
@@ -74,17 +79,19 @@ export async function POST(req: NextRequest) {
     if (!parsed.success || !isTransferOutcome(parsed.data.outcome)) {
       return NextResponse.json({ ok: false, code: "BAD_REQUEST" }, { status: 400 });
     }
-    const doc = await getSimulation(auth.uid, parsed.data.simId);
-    if (!doc) return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
-    if (doc.status !== "finished" || !doc.commitment?.text) {
-      return NextResponse.json({ ok: false, code: "NO_COMMITMENT" }, { status: 409 });
-    }
-    doc.transferCheck = {
+    const transferCheck: TransferCheck = {
       outcome: parsed.data.outcome,
       note: parsed.data.note?.trim() ? parsed.data.note.trim() : null,
       at: new Date().toISOString(),
     };
-    await saveSimulation(doc);
+    const doc = await updateSimulation(auth.uid, parsed.data.simId, (d) => {
+      if (d.status !== "finished" || !d.commitment?.text) return false;
+      d.transferCheck = transferCheck;
+    });
+    if (!doc) return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
+    if (doc.status !== "finished" || !doc.commitment?.text) {
+      return NextResponse.json({ ok: false, code: "NO_COMMITMENT" }, { status: 409 });
+    }
     logger.api("/api/simulation/transfer-check", "ok", {
       uid: auth.uid,
       simId: doc.id,

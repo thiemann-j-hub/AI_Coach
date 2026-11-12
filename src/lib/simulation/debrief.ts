@@ -42,6 +42,8 @@ export type DebriefVerdict = "passed" | "failed" | "unrated";
  * Bewertung 2.0 (Owner-GO 01.11.2026): Ergebnis des Gesprächs als eigene Größe, getrennt von der Punktzahl.
  * `ziel` = die Rolle hat das Gespräch beendet, weil ihre Endbedingung „Ziel erreicht“ galt (oder der Richter sah die
  * Szenario-Ziele erreicht); `abbruch` = die Rolle hat abgebrochen; `offen` = alles andere (Zeit, Verabschiedung, Person).
+ * Paket 2, C6 (Owner-Entscheid 12.11.2026): Im Prüfungsmodus entscheidet das erreichte Ziel NICHT über das Urteil —
+ * „bestanden“ gibt es dort nur mit der Mindestpunktzahl. Das Ergebnis bleibt als eigene Größe am Debrief stehen.
  */
 export type DebriefErgebnis = "ziel" | "offen" | "abbruch";
 export type DebriefVerdictGrund = "punkte" | "ziel" | "abbruch";
@@ -115,6 +117,11 @@ export function computeDebrief(args: {
   passThreshold?: number;
   /** Bewertung 2.0: Ergebnis des Gesprächs (siehe DebriefErgebnis); fehlt = Alt-Lauf, Urteil nur aus Punkten. */
   ergebnis?: DebriefErgebnis | null;
+  /**
+   * Paket 2, C6 (Owner-Entscheid 12.11.2026): Prüfungsmodus. Das erreichte Ziel allein reicht dann nicht für
+   * „bestanden“ — die Mindestpunktzahl (Bestehensgrenze des Prüfungsmodus) muss dazu erreicht sein.
+   */
+  pruefung?: boolean;
 }): Debrief {
   const passThreshold =
     typeof args.passThreshold === "number" &&
@@ -193,9 +200,11 @@ export function computeDebrief(args: {
   // Bewertung 2.0: Die Punktzahl bleibt die Punktzahl (vergleichbar über Versuche). Das Urteil kennt zusätzlich das
   // Ergebnis: Hat die Rolle das Ziel freigegeben, ist der Lauf bestanden; hat sie abgebrochen, nicht bestanden.
   // Beides nur, wenn überhaupt ein Wert da ist — ohne Beobachtung bleibt es „nicht bewertbar“.
+  // Paket 2, C6: Im Prüfungsmodus hebt das Ziel das Urteil nicht an. Dort entscheiden die Punkte (Grund „punkte“),
+  // das Ergebnis „ziel“ steht daneben. Vorher genügte es, die Rolle zum Zustimmen zu bringen. Der Abbruch bleibt hart.
   let verdict = ausPunkten;
   let verdictGrund: DebriefVerdictGrund = "punkte";
-  if (args.ergebnis === "ziel" && overall != null) {
+  if (args.ergebnis === "ziel" && overall != null && !args.pruefung) {
     verdict = "passed";
     verdictGrund = "ziel";
   } else if (args.ergebnis === "abbruch" && overall != null) {

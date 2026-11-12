@@ -165,9 +165,25 @@ async function getCsCredential(): Promise<CsCredentialResult> {
 }
 
 export type CentralReserveResult =
-  | { ok: true; workspaceId: string; transactionId?: string; balance?: number }
+  | {
+      ok: true;
+      workspaceId: string;
+      transactionId?: string;
+      balance?: number;
+      /** Paket 2, C4 (12.11.2026): true = unter dieser Kennung war schon gebucht (derselbe Schlüssel = dieselbe Buchung, nichts neu abgezogen). */
+      idempotent?: boolean;
+    }
   | { ok: false; reason: "insufficient"; workspaceId: string }
-  | { ok: false; reason: "no_token" | "error"; status?: number }
+  | {
+      ok: false;
+      reason: "no_token" | "error";
+      status?: number;
+      /**
+       * Paket 2, C8 (12.11.2026): true = der Buchungs-Aufruf selbst blieb ohne klare Antwort (Frist, Netz, 5xx).
+       * Zentral KANN gebucht sein — der Aufrufer darf das nicht als „nicht gebucht“ behandeln.
+       */
+      unklar?: boolean;
+    }
   | { ok: false; reason: "ki_aus" };
 
 /**
@@ -198,7 +214,7 @@ export async function centralReserve(opts: { runId: string }): Promise<CentralRe
       idempotencyKey: `spend:${opts.runId}`,
       description: `coach:consume:${opts.runId}`,
     });
-    return { ok: true, workspaceId, transactionId: r.transactionId, balance: r.balance };
+    return { ok: true, workspaceId, transactionId: r.transactionId, balance: r.balance, ...(r.idempotent ? { idempotent: true } : {}) };
   } catch (e) {
     if (e instanceof CreditServiceError && e.status === 402) {
       return { ok: false, reason: "insufficient", workspaceId };
@@ -207,8 +223,10 @@ export async function centralReserve(opts: { runId: string }): Promise<CentralRe
     if (e instanceof CreditServiceError && e.status === 403 && e.message.includes("ki_aus")) {
       return { ok: false, reason: "ki_aus" };
     }
-    logger.apiError("credit-service/centralReserve/spend", e, { runId: opts.runId });
-    return { ok: false, reason: "error", status: e instanceof CreditServiceError ? e.status : undefined };
+    // Paket 2, C8: Eine klare Ablehnung (4xx) hat nichts gebucht. Frist, Netzfehler und 5xx lassen es offen.
+    const unklar = !(e instanceof CreditServiceError) || e.status >= 500;
+    logger.apiError("credit-service/centralReserve/spend", e, { runId: opts.runId, unklar });
+    return { ok: false, reason: "error", status: e instanceof CreditServiceError ? e.status : undefined, ...(unklar ? { unklar: true } : {}) };
   }
 }
 

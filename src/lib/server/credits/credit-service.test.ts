@@ -255,6 +255,38 @@ describe("Microsoft-Konto — unverändert mit dem Entra-Token", () => {
   });
 });
 
+describe("Buchung mit fester Kennung — Paket 2 (C4, C8, 12.11.2026)", () => {
+  beforeEach(asMicrosoft);
+  const KEY = "sim-finish:sim-abcdefgh:0";
+
+  it("derselbe Schlüssel = dieselbe Buchung: die Wiederholung wird als solche gemeldet", async () => {
+    setFetch({ status: 200, body: { workspaceId: "ws-9" } }, { status: 200, body: { transactionId: `tx-spend:${KEY}`, balance: 4, idempotent: true } });
+    expect(await centralReserve({ runId: KEY })).toEqual({
+      ok: true,
+      workspaceId: "ws-9",
+      transactionId: `tx-spend:${KEY}`,
+      balance: 4,
+      idempotent: true,
+    });
+    expect(calls()[1].headers["Idempotency-Key"]).toBe(`spend:${KEY}`);
+  });
+
+  it("Netzfehler oder 5xx beim Buchen: unklar — zentral kann gebucht sein", async () => {
+    setFetch({ status: 200, body: { workspaceId: "ws-9" } }, new Error("ECONNRESET"));
+    expect(await centralReserve({ runId: KEY })).toEqual({ ok: false, reason: "error", status: undefined, unklar: true });
+    setFetch({ status: 200, body: { workspaceId: "ws-9" } }, { status: 503, body: { error: "unavailable" } });
+    expect(await centralReserve({ runId: KEY })).toEqual({ ok: false, reason: "error", status: 503, unklar: true });
+  });
+
+  it("klare Ablehnung beim Buchen (4xx) und Fehler VOR dem Buchen: nichts gebucht, nicht unklar", async () => {
+    setFetch({ status: 200, body: { workspaceId: "ws-9" } }, { status: 400, body: { error: "invalid_amount" } });
+    expect(await centralReserve({ runId: KEY })).toEqual({ ok: false, reason: "error", status: 400 });
+    setFetch({ status: 503, body: { error: "unavailable" } });
+    expect(await centralReserve({ runId: KEY })).toEqual({ ok: false, reason: "error", status: 503 });
+    expect(calls()).toHaveLength(1);
+  });
+});
+
 describe("ohne Sitzung", () => {
   it("no session / auth() throws → no request", async () => {
     setFetch({ status: 200, body: { workspaceId: "ws-1" } });

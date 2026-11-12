@@ -37,11 +37,18 @@ export interface EntitlementGrant {
   central?: boolean;
   /** transactionId der zentralen spend-Antwort — Pflicht-Anker fuer den zentralen Refund. */
   centralTxId?: string;
+  /** Paket 2, C4 (12.11.2026): true = unter dieser Kennung war schon gebucht; es wurde nichts neu abgezogen. */
+  reused?: boolean;
 }
 
 export type EntitlementResult =
   | { ok: true; grant: EntitlementGrant }
-  | { ok: false; response: NextResponse };
+  | {
+      ok: false;
+      response: NextResponse;
+      /** Paket 2, C8 (12.11.2026): true = die Buchung blieb ohne klare Antwort; zentral kann gebucht sein. */
+      unklar?: boolean;
+    };
 
 function topUpUrl(): string | undefined {
   // Welle D (IA-Masterplan 15.08.): fester Fallback auf DIE eine Kasse —
@@ -124,11 +131,19 @@ export async function reserveEntitlement(opts: {
         { ok: false, code: "CENTRAL_UNAVAILABLE", error: "Guthaben-Dienst nicht erreichbar. Bitte erneut versuchen." },
         { status: 503 }
       ),
+      ...(c.reason === "error" && c.unklar ? { unklar: true } : {}),
     };
   }
   return {
     ok: true,
-    grant: { runId, workspaceId: c.workspaceId, held: true, central: true, centralTxId: c.transactionId },
+    grant: {
+      runId,
+      workspaceId: c.workspaceId,
+      held: true,
+      central: true,
+      centralTxId: c.transactionId,
+      ...(c.idempotent ? { reused: true } : {}),
+    },
   };
 }
 
@@ -137,8 +152,12 @@ export async function settleEntitlement(_grant: EntitlementGrant): Promise<void>
   // Zentral: spend war bereits final (kein Hold) -> nichts zu settlen.
 }
 
-/** Bei technischem Abbruch: zentral zurueckerstatten (MIT der spend-transactionId). */
-export async function compensateEntitlement(grant: EntitlementGrant): Promise<void> {
+/**
+ * Bei technischem Abbruch: zentral zurueckerstatten (MIT der spend-transactionId).
+ * Paket 2, C8 (12.11.2026): gibt das Ergebnis zurück (`ok: false` = der Credit ist NICHT zurück) — vorher wurde
+ * es verworfen, eine gescheiterte Rückbuchung stand nur im Protokoll des Credit-Abrufs.
+ */
+export async function compensateEntitlement(grant: EntitlementGrant): Promise<{ ok: boolean }> {
   // Refund MIT der spend-transactionId (Pflicht-Anker). Ohne sie kann der
   // zentrale Refund nicht greifen -> hart loggen (haengende Belastung).
   if (!grant.centralTxId) {
@@ -147,9 +166,9 @@ export async function compensateEntitlement(grant: EntitlementGrant): Promise<vo
       new Error("central compensate without spend transactionId"),
       { runId: grant.runId, workspaceId: grant.workspaceId }
     );
-    return;
+    return { ok: false };
   }
-  await centralRefund({
+  return centralRefund({
     amount: 1,
     description: "coach:refund_technical_failure",
     spendTransactionId: grant.centralTxId,

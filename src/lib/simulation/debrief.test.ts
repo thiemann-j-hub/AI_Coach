@@ -55,6 +55,37 @@ describe("computeDebrief — Bewertung 2.0: Ergebnis entscheidet über das Urtei
     const alt = computeDebrief({ rubric, checkpoints: [], passThreshold: 0.6 });
     expect("ergebnis" in alt).toBe(false);
   });
+  it("Paket 2, C6 — Prüfungsmodus: Ziel erreicht, Mindestpunktzahl fehlt → nicht bestanden; das Ergebnis bleibt „ziel“", () => {
+    const d = computeDebrief({ rubric, checkpoints: [], passThreshold: 0.7, ergebnis: "ziel", pruefung: true });
+    expect(d.overall).toBeLessThan(70);
+    expect(d.verdict).toBe("failed");
+    expect(d.verdictGrund).toBe("punkte");
+    expect(d.ergebnis).toBe("ziel");
+  });
+  it("Paket 2, C6 — Prüfungsmodus: Ziel erreicht UND Mindestpunktzahl → bestanden, Grund „punkte“ (das Ziel allein entscheidet dort nichts)", () => {
+    const d = computeDebrief({ rubric: [{ key: "a", label: "A", score: 4 }, { key: "b", label: "B", score: 3 }], checkpoints: [], passThreshold: 0.7, ergebnis: "ziel", pruefung: true });
+    expect(d.overall).toBeGreaterThanOrEqual(70);
+    expect(d.verdict).toBe("passed");
+    expect(d.verdictGrund).toBe("punkte");
+    expect(d.ergebnis).toBe("ziel");
+  });
+  it("Paket 2, C6 — Prüfungsmodus: zu wenig beobachtbar bleibt „nicht bewertbar“, der Abbruch bleibt „nicht bestanden“", () => {
+    const duenn = computeDebrief({
+      rubric: [{ key: "a", label: "A", score: 4 }, { key: "b", label: "B", score: null }, { key: "c", label: "C", score: null }],
+      checkpoints: [],
+      ergebnis: "ziel",
+      pruefung: true,
+    });
+    expect(duenn.verdict).toBe("unrated");
+    const abbruch = computeDebrief({ rubric: [{ key: "a", label: "A", score: 4 }], checkpoints: [], passThreshold: 0.7, ergebnis: "abbruch", pruefung: true });
+    expect(abbruch.verdict).toBe("failed");
+    expect(abbruch.verdictGrund).toBe("abbruch");
+  });
+  it("Übungsmodus unverändert: `pruefung: false` verhält sich wie ohne Angabe", () => {
+    const d = computeDebrief({ rubric, checkpoints: [], passThreshold: 0.6, ergebnis: "ziel", pruefung: false });
+    expect(d.verdict).toBe("passed");
+    expect(d.verdictGrund).toBe("ziel");
+  });
   it("nicht bewertbar bleibt nicht bewertbar, auch bei freigegebenem Ziel", () => {
     const d = computeDebrief({ rubric: [{ key: "a", label: "A", score: null }, { key: "b", label: "B", score: null }], checkpoints: [], ergebnis: "ziel" });
     expect(d.verdict).toBe("unrated");
