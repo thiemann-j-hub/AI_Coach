@@ -169,7 +169,7 @@ export function Sprechansicht(props: {
               disabled={pause.disabled}
               className={cx(knopfSeite, 'border-accent/40 text-accent hover:bg-accent/10')}
             >
-              <Pause className="h-4 w-4 shrink-0" aria-hidden />
+              <Pause className="hidden h-4 w-4 shrink-0 min-[430px]:block" aria-hidden />
               <span className="min-w-0 break-words">{ts.timeoutCta}</span>
               <span className="text-[10px] tabular-nums" title={ts.timeoutCounterLegend}>
                 {pause.zaehler}

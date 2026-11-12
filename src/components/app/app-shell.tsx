@@ -94,6 +94,15 @@ export default function AppShell(props: {
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
 
+  // Paket 4 (12.11.2026, live gesehen): Im Gespräch verdeckte die runde Assistenten-Schaltfläche am Handy den
+  // Senden-Knopf und „Beenden“. Solange ein Gespräch läuft, ist sie ausgeblendet (Regel in globals.css).
+  const imGespraech = !!g;
+  useEffect(() => {
+    if (!imGespraech) return;
+    document.documentElement.setAttribute('data-gespraech', '1');
+    return () => document.documentElement.removeAttribute('data-gespraech');
+  }, [imGespraech]);
+
   useEffect(() => {
     setMounted(true);
     try {

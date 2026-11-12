@@ -298,3 +298,9 @@
   -webkit-background-clip: text;
   background-clip: text;
 }
+
+/* Paket 4 (12.11.2026): Im Gespräch (Chat und Sprechansicht) ist die Assistenten-Schaltfläche ausgeblendet. Am Handy
+   verdeckte sie den Senden-Knopf und „Beenden“. Ein geöffnetes Assistenten-Fenster bleibt. Gesetzt von app-shell.tsx. */
+:root[data-gespraech] .pnchat-root[data-open="false"] {
+  display: none;
+}
