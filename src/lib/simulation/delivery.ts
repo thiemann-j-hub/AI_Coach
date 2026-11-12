@@ -272,3 +272,23 @@ export function computeDelivery(
     softenerMatches,
   };
 }
+
+/** Die vier Kennzahlen des Abschnitts „So hast Du kommuniziert“. */
+export type DeliveryKennzahl = 'talk' | 'sentence' | 'opener' | 'softener';
+
+/**
+ * Paket 3, U18 (12.11.2026): Welche Kennzahlen sagen etwas?
+ * Anlass: Im Textweg standen meist vier unauffällige Werte da („Satzanfänge 0 %“, „Weichmacher 0“).
+ * Regel: Eine Kennzahl zählt nur, wenn ihr Wert außerhalb des unauffälligen Bereichs liegt (Redeanteil nicht
+ * ausgewogen, Satzlänge nicht normal, Satzanfänge wiederholt, Weichmacher erhöht). Die Auswertung zeigt nur
+ * diese Zeilen; ohne eine solche Zeile entfällt der Abschnitt.
+ */
+export function auffaelligeKennzahlen(r: DeliveryReport | null | undefined): DeliveryKennzahl[] {
+  if (!r) return [];
+  const out: DeliveryKennzahl[] = [];
+  if (r.talkBand && r.talkBand !== 'balanced') out.push('talk');
+  if (r.sentenceBand && r.sentenceBand !== 'normal') out.push('sentence');
+  if (r.openerBand && r.openerBand !== 'varied') out.push('opener');
+  if (r.softenerBand && r.softenerBand !== 'normal') out.push('softener');
+  return out;
+}

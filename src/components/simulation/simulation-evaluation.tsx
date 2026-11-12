@@ -1,145 +1,40 @@
 'use client';
 
 /**
- * Gemeinsame Rollenspiel-Auswertung (COACH-UX-BLUEPRINT §3/W1-7+W1-8):
- * aus SimulationClient extrahiert, damit die Auswertung eine EIGENE Route
- * (/simulation/[simId]) bekommt — verlinkbar, bookmarkbar, Reload-fest.
- * W1-8: einheitlicher ScoreRing, Herkunfts-Pill, C1–C10-Block offen.
+ * Gemeinsame Rollenspiel-Auswertung (COACH-UX-BLUEPRINT §3/W1-7+W1-8) auf der eigenen Route
+ * /simulation/[simId]: verlinkbar, bookmarkbar, Reload-fest.
+ *
+ * Paket 3, U14 und S10 (12.11.2026): vier Reiter statt einer langen Seite mit zwölf Abschnitten.
+ * „Überblick“ · „Fähigkeiten“ · „Gespräch“ · „Weiter üben“ liegen je in einer eigenen Datei (eval-*.tsx);
+ * hier stehen der Kopf, die Reiterleiste und der Zustand, den mehrere Reiter teilen (Vorsatz, Sprung vom
+ * Zitat zur Stelle im Gespräch, Rechenweg). Der aktive Reiter steht als `#name` in der Adresse.
+ * Inhaltlich ist die Auswertung unverändert; neu sind das Gespräch zum Nachlesen (U17, S12), die Messlatte (S11)
+ * und „Sachlich nicht gedeckt“ (S13).
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MessagesSquare, Sparkles } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Activity,
-  ArrowRight,
-  BookOpen,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  GraduationCap,
-  History,
-  Lightbulb,
-  Loader2,
-  MessagesSquare,
-  Minus,
-  Pencil,
-  RotateCcw,
-  Sparkles,
-  TrendingDown,
-  TrendingUp,
-  XCircle,
-} from 'lucide-react';
-import { ScoreRing } from '@/components/app/score-ring';
-import { useHubNav } from '@/components/app/app-switcher';
-import { computeDeltaCta, computeStudioBridge } from '@/lib/simulation/endscreen';
-import { rechenweg } from '@/lib/simulation/rechenweg';
-import { matchCourse, type CourseMatch, type HubCourseLike, type HubRecommendationLike } from '@/lib/simulation/kurs-match';
-import { computeDelivery, type DeliveryReport } from '@/lib/simulation/delivery';
+  checkinAntworten,
+  reiterAusHash,
+  type AuswertungReiter,
+  type CheckinLike,
+} from '@/lib/simulation/auswertung-ablauf';
+import { findeZitatStelle, markiereZuege, type ZitatEingabe } from '@/lib/simulation/zitat-stelle';
 import { useTranslation } from '@/i18n/useTranslation';
-
-/* ── Typen (Vertrag der /api/simulation/get- bzw. finish-Antwort) ── */
-
-export interface SimEvalFeedback {
-  summary: string;
-  rubric: {
-    key: string;
-    label: string;
-    evidence: string[];
-    why: string;
-    score: number | null;
-    /** Welle 1: „Das gelang“ / „Nächstes Mal“ (fehlt bei Alt-Läufen). */
-    wentWell?: string[];
-    tryNext?: string[];
-  }[];
-  checkpoints: { id: string; hit: boolean; comment: string }[];
-  nextStep: string;
-  focusReview?: { addressed: boolean; comment: string } | null;
-  /** A1: Abgleich Selbstbild ↔ Auswertung (nur wenn Check-in beantwortet wurde). */
-  selfReview?: { agreement: 'confirms' | 'partly' | 'differs'; comment: string } | null;
-  /** V3: Merkkarten aus der Coaching-Bibliothek zum nächsten Schritt (fehlt bei Alt-Läufen). */
-  cards?: { id: string; title: string; hint: string }[];
-  /** O2: der EINE Schritt für den Alltag (fehlt bei Alt-Läufen). */
-  microTransfer?: { step: string; when: string } | null;
-}
-
-/** A3: ein Punkt der Verlaufskurve (aus /api/simulation/list, gleiche Quelle wie die Historie). */
-export interface SimEvalHistoryPoint {
-  id: string;
-  attempt: number;
-  overall: number | null;
-}
-
-export interface SimEvalDebriefAnchor {
-  key: string;
-  label: string;
-  score: number | null;
-  pct: number | null;
-  expectation: 'not-observable' | 'below' | 'approaching' | 'meets' | 'exceeds';
-  /** Welle 1: Gewicht (Prozent der beobachteten Anker) und Beitrag zur Gesamtnote in Punkten; fehlt bei Alt-Läufen. */
-  weightPct?: number | null;
-  contribution?: number | null;
-}
-
-export interface SimEvalDebrief {
-  overall: number | null;
-  verdict: 'passed' | 'failed' | 'unrated';
-  passMarkPct: number;
-  coverage: number;
-  anchors: SimEvalDebriefAnchor[];
-  checkpointsHit: number;
-  checkpointsTotal: number;
-  /** Rechenweg (N17): Teilwerte und Gewichte; fehlen bei Alt-Läufen. */
-  anchorPct?: number | null;
-  checkpointPct?: number | null;
-  weights?: { anchors: number; checkpoints: number };
-  /** Bewertung 2.0 (01.11.2026): Ergebnis des Gesprächs und Grund des Urteils; fehlen bei Alt-Läufen. */
-  ergebnis?: 'ziel' | 'offen' | 'abbruch' | null;
-  verdictGrund?: 'punkte' | 'ziel' | 'abbruch';
-}
-
-/** Hub `/api/lernbereich/courses` (same-origin, Sitzungs-Cookie): eigene Kurse mit Kompetenz-Tags. */
-interface HubCoursesResponse {
-  ok?: boolean;
-  courses?: HubCourseLike[];
-  recommendations?: HubRecommendationLike[];
-}
-let hubCoursesCache: Promise<HubCoursesResponse> | null = null;
-function fetchHubCourses(): Promise<HubCoursesResponse> {
-  if (!hubCoursesCache) {
-    // Hub-Wurzel, bewusst OHNE basePath /coach (wie /api/nav im App-Umschalter).
-    hubCoursesCache = fetch('/api/lernbereich/courses', { credentials: 'same-origin', cache: 'no-store' })
-      .then(async (r) => (r.ok ? ((await r.json()) as HubCoursesResponse) : {}))
-      .catch(() => ({}));
-  }
-  return hubCoursesCache;
-}
-
-export interface SimEvalDelta {
-  overall: number | null;
-  anchors: Array<{ key: string; delta: number | null }>;
-  prevOverall: number | null;
-  prevAttempt: number;
-  /** W3-1: C1–C10-Delta ggü. Vorversuch (measurement-delta, additiv). */
-  competencies?: Record<string, number | null> | null;
-}
-
-export interface SimEvalRating {
-  id: string;
-  name: string;
-  score: number | null;
-  why: string;
-  evidence: string[];
-}
-
-/** »Motto — Gesprächstyp mit Name« (geteilt mit SimulationClient). */
-export function splitTitle(title: string): { motto: string; heroTitle: string } {
-  const idx = title.indexOf('—');
-  if (idx < 0) return { motto: title, heroTitle: title };
-  return { motto: title.slice(0, idx).trim(), heroTitle: title.slice(idx + 1).trim() };
-}
-
-function cx(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ');
-}
+import { EvalFaehigkeiten } from './eval-faehigkeiten';
+import { EvalGespraech } from './eval-gespraech';
+import { EvalUeberblick } from './eval-ueberblick';
+import { EvalWeiterUeben } from './eval-weiter-ueben';
+import type {
+  SimEvalDebrief,
+  SimEvalDelta,
+  SimEvalFeedback,
+  SimEvalHistoryPoint,
+  SimEvalRating,
+  SimEvalTurn,
+} from './eval-teile';
 
 /**
  * Kürzt an der letzten Wort-/Satzgrenze vor `max` (statt mitten im Wort).
@@ -157,125 +52,8 @@ export function truncateAtWord(input: string, max: number): string {
   return (space > 0 ? head.slice(0, space) : head).trim();
 }
 
-function DeltaTag({ delta }: { delta: number | null }) {
-  if (delta == null || delta === 0) return null;
-  const up = delta > 0;
-  return (
-    <span
-      className={cx(
-        'inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums px-1.5 py-0.5 rounded-full',
-        up ? 'text-emerald-800 dark:text-emerald-400 bg-emerald-500/10' : 'text-rose-800 dark:text-rose-400 bg-rose-500/10'
-      )}
-    >
-      {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-      {up ? '+' : ''}
-      {delta}
-    </span>
-  );
-}
-
-/**
- * A3: Verlaufskurve — Score über Versuche als schlichtes Inline-SVG (keine
- * neue Bibliothek). Bestehenslinie gestrichelt, bester Versuch markiert.
- */
-function AttemptChart(props: {
-  points: SimEvalHistoryPoint[];
-  passMark: number;
-  currentAttempt: number;
-  bestLabel: string;
-}) {
-  const pts = [...props.points]
-    .filter((p) => p.overall != null)
-    .sort((a, b) => a.attempt - b.attempt);
-  if (pts.length < 2) return null;
-  const W = 320;
-  const H = 120;
-  const PAD = { l: 30, r: 14, t: 14, b: 20 };
-  const x = (i: number) =>
-    PAD.l + (i * (W - PAD.l - PAD.r)) / Math.max(1, pts.length - 1);
-  const y = (v: number) => PAD.t + ((100 - v) * (H - PAD.t - PAD.b)) / 100;
-  const best = pts.reduce((m, p) => ((p.overall ?? 0) > (m.overall ?? 0) ? p : m), pts[0]);
-  const line = pts.map((p, i) => `${x(i)},${y(p.overall as number)}`).join(' ');
-  return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      className="w-full max-w-md"
-      role="img"
-      aria-label="Score-Verlauf"
-    >
-      {[0, 50, 100].map((v) => (
-        <g key={v}>
-          <text x={PAD.l - 6} y={y(v) + 3} textAnchor="end" className="fill-current opacity-50" fontSize="8">
-            {v}
-          </text>
-          <line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} className="stroke-current opacity-10" strokeWidth="1" />
-        </g>
-      ))}
-      {/* Bestehenslinie */}
-      <line
-        x1={PAD.l}
-        x2={W - PAD.r}
-        y1={y(props.passMark)}
-        y2={y(props.passMark)}
-        className="stroke-amber-400/70"
-        strokeWidth="1"
-        strokeDasharray="4 3"
-      />
-      <polyline points={line} fill="none" className="stroke-current text-primary" strokeWidth="2" />
-      {pts.map((p, i) => (
-        <g key={p.id}>
-          <circle
-            cx={x(i)}
-            cy={y(p.overall as number)}
-            r={p.attempt === props.currentAttempt ? 4.5 : 3}
-            className={cx(
-              'fill-current',
-              p.attempt === props.currentAttempt ? 'text-accent' : 'text-primary'
-            )}
-          />
-          <text x={x(i)} y={H - 6} textAnchor="middle" className="fill-current opacity-60" fontSize="8">
-            {p.attempt}
-          </text>
-          {p.id === best.id && (
-            <text
-              x={x(i)}
-              y={y(p.overall as number) - 8}
-              textAnchor="middle"
-              className="fill-current text-emerald-800 dark:text-emerald-400 font-semibold"
-              fontSize="8"
-            >
-              {props.bestLabel}
-            </text>
-          )}
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-/** A2: Drei-Stufen-Skala eines Delivery-Werts — zeigt, WO auf der Skala der Lauf liegt. */
-function DeliveryScale(props: { position: 0 | 1 | 2; tone: 'ok' | 'mid' | 'off' }) {
-  const toneCls =
-    props.tone === 'ok' ? 'bg-emerald-400' : props.tone === 'mid' ? 'bg-amber-400' : 'bg-rose-400';
-  return (
-    <div className="flex gap-1 w-24 shrink-0" aria-hidden>
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className={cx('h-1.5 flex-1 rounded-full', i === props.position ? toneCls : 'bg-border')}
-        />
-      ))}
-    </div>
-  );
-}
-
-const EXPECTATION_STYLES: Record<SimEvalDebriefAnchor['expectation'], string> = {
-  exceeds: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30',
-  meets: 'bg-sky-500/15 text-sky-800 dark:text-sky-400 border-sky-500/30',
-  approaching: 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30',
-  below: 'bg-rose-500/15 text-rose-800 dark:text-rose-400 border-rose-500/30',
-  'not-observable': 'bg-muted text-muted-foreground border-border',
-};
+/** Ein Reiter bleibt eingehängt, wenn er nicht zu sehen ist: Eingaben (Vorsatz) und Aufgeklapptes bleiben stehen. */
+const REITER_FLAECHE = 'mt-5 space-y-6 data-[state=inactive]:hidden';
 
 export function SimulationEvaluation(props: {
   personaName: string | null;
@@ -285,10 +63,14 @@ export function SimulationEvaluation(props: {
   attempt: number;
   focus: string | null;
   ratings: SimEvalRating[] | null;
-  /** A1: die Selbsteinschätzung aus dem Check-in (wörtlich, für die Karte). */
+  /** A1: der Freitext alter Läufe aus dem Check-in (wörtlich, für die Karte „Selbstbild und Auswertung“). */
   selfAssessment?: string | null;
-  /** A2: Turns für das deterministische Delivery-Panel (null = Panel entfällt). */
-  turns?: Array<{ role: string; text: string }> | null;
+  /** Paket 3: die zwei Antworten des Check-ins (neue Läufe). */
+  checkin?: CheckinLike | null;
+  /** Paket 3: Der Check-in ist da, der Abgleich wird noch nachgeladen. */
+  selfReviewPending?: boolean;
+  /** Züge des Gesprächs: Reiter „Gespräch“, Sprungziele der Zitate, Kennzahlen (null = entfällt). */
+  turns?: SimEvalTurn[] | null;
   /** A2: Gesprächssprache — wählt das Weichmacher-Lexikon. */
   convoLocale?: string | null;
   /** A3: alle Versuche dieses Szenarios für die Verlaufskurve (inkl. aktuellem). */
@@ -314,93 +96,121 @@ export function SimulationEvaluation(props: {
 }) {
   const { t } = useTranslation();
   const ts = t.simulation;
-  const { feedback, debrief, delta, attempt, focus, ratings } = props;
+  const { feedback, debrief, delta, ratings, personaName, onCommit } = props;
+  const turns = props.turns && props.turns.length ? props.turns : null;
 
-  const [openEvidence, setOpenEvidence] = useState<Record<string, boolean>>({});
   // Vorsatz als bewusster Klick (N17 / B8, Owner-GO 11.10.2026): Der Coach schlägt EINEN Schritt vor
   // (Micro-Transfer, bei Alt-Läufen der größte Hebel, an der Wortgrenze gekürzt). Erst „Übernehmen“
   // oder ein eigener Text macht daraus den Vorsatz — nichts wird mehr still gespeichert.
   const suggestion = feedback.microTransfer?.step?.trim() || truncateAtWord(feedback.nextStep, 280);
   const [saved, setSaved] = useState<string | null>(props.initialCommitment?.trim() || null);
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState('');
   // Für „Nochmal üben — mit Fokus“: der gespeicherte Vorsatz, sonst der Vorschlag.
   const commitment = saved ?? suggestion;
-  function adoptSuggestion() {
-    const text = suggestion.slice(0, 300);
-    setSaved(text);
-    setEditing(false);
-    props.onCommit?.(text, 'model');
-  }
-  function startOwn(prefill: string) {
-    setDraft(prefill);
-    setEditing(true);
-  }
-  function saveOwn() {
-    const text = draft.trim().slice(0, 300);
-    if (!text) return;
-    setSaved(text);
-    setEditing(false);
-    props.onCommit?.(text, 'user');
-  }
-  // Rechenweg (N17 / C4): aufklappbar unter dem Ring.
+  const saveCommitment = useCallback(
+    (text: string, source: 'model' | 'user') => {
+      setSaved(text);
+      onCommit?.(text, source);
+    },
+    [onCommit]
+  );
+
+  // Reiter: der Name steht in der Adresse (teilbar, übersteht Neuladen), ohne neuen Eintrag im Verlauf des Browsers.
+  const [tab, setTab] = useState<AuswertungReiter>(
+    () => (typeof window === 'undefined' ? null : reiterAusHash(window.location.hash)) ?? 'ueberblick'
+  );
+  // U17: Zug, zu dem ein Klick auf ein Zitat rollt.
+  const [sprung, setSprung] = useState<{ turn: number; n: number } | null>(null);
+  // Rechenweg (N17 / C4): aufklappbar im Reiter „Fähigkeiten“, erreichbar auch von der Punktzahl im Überblick.
   const [calcOpen, setCalcOpen] = useState(false);
-
-  // W3-1: Erkenntnis → Handlung (pure, getestet).
-  const deltaCta = useMemo(
-    () =>
-      computeDeltaCta({
-        ratings,
-        deltaCompetencies: delta?.competencies ?? null,
-        scenarios: props.scenarios ?? [],
-        currentScenarioId: props.currentScenarioId ?? null,
-      }),
-    [ratings, delta, props.scenarios, props.currentScenarioId]
-  );
-  // W3-3: Studio-Brücke nur bei echter Schwäche (≤ 2).
-  const studioBridge = useMemo(() => computeStudioBridge(ratings), [ratings]);
-  // N17 / C8 (11.10.2026): erst einen vorhandenen passenden Kurs zeigen, dann „Kurs wünschen“;
-  // „Kurs im Studio erstellen“ nur, wenn die Person das Studio hat (Häkchen aus dem Hub).
-  const hubNav = useHubNav();
-  const hasStudio = hubNav.apps === null || hubNav.apps.includes('studio');
-  const [courseMatch, setCourseMatch] = useState<CourseMatch | 'loading'>('loading');
+  const zeigeReiter = useCallback((next: AuswertungReiter, adresse = true) => {
+    setTab(next);
+    if (next !== 'gespraech') setSprung(null);
+    if (!adresse) return;
+    try {
+      // null als Zustand: so übernimmt der App-Router die Adresse (basePath steckt schon in der aktuellen Adresse).
+      window.history.replaceState(null, '', `#${next}`);
+    } catch {
+      /* ohne Adresse bleibt der Reiter im Zustand */
+    }
+  }, []);
   useEffect(() => {
-    if (!studioBridge) return;
-    let aktiv = true;
-    fetchHubCourses().then((j) => {
-      if (!aktiv) return;
-      setCourseMatch(matchCourse(studioBridge.cKey, j.courses ?? [], j.recommendations ?? []));
-    });
-    return () => {
-      aktiv = false;
+    const liesAdresse = () => {
+      const r = reiterAusHash(window.location.hash);
+      if (r) zeigeReiter(r, false);
     };
-  }, [studioBridge]);
-  // A2: Delivery deterministisch aus den Turns — pure, kostenlos, auch für Alt-Läufe.
-  const delivery: DeliveryReport | null = useMemo(
-    () => (props.turns && props.turns.length ? computeDelivery(props.turns, props.convoLocale) : null),
-    [props.turns, props.convoLocale]
+    window.addEventListener('hashchange', liesAdresse);
+    return () => window.removeEventListener('hashchange', liesAdresse);
+  }, [zeigeReiter]);
+  const zurStelle = useCallback(
+    (turn: number) => {
+      setSprung((s) => ({ turn, n: (s?.n ?? 0) + 1 }));
+      zeigeReiter('gespraech');
+    },
+    [zeigeReiter]
   );
-  const [softenersOpen, setSoftenersOpen] = useState(false);
+  // Die Reiterleiste klebt beim Rollen oben. Wechselt man dann den Reiter, beginnt der neue an seinem Anfang
+  // (sonst stünde man mitten in einem anderen Inhalt). Der Sprung zu einem Zitat rollt selbst an seine Stelle.
+  const wurzel = useRef<HTMLDivElement>(null);
+  const leiste = useRef<HTMLDivElement>(null);
+  const zumAnfang = useCallback(() => {
+    requestAnimationFrame(() => {
+      const w = wurzel.current;
+      const l = leiste.current;
+      if (w && l && l.getBoundingClientRect().top - w.getBoundingClientRect().top > 1) w.scrollIntoView({ block: 'start' });
+    });
+  }, []);
+  const zeigeRechenweg = useCallback(() => {
+    setCalcOpen(true);
+    zeigeReiter('faehigkeiten');
+    zumAnfang();
+  }, [zeigeReiter, zumAnfang]);
 
-  const deltaByKey = new Map((delta?.anchors ?? []).map((a) => [a.key, a.delta]));
-  const verdict = debrief?.verdict ?? 'unrated';
-  const observedCount = debrief?.anchors.filter((a) => a.pct != null).length ?? 0;
+  // Selbstbild: die Antworten des Check-ins, bei alten Läufen der Freitext.
+  const selbstbild = useMemo(() => {
+    const antworten = checkinAntworten(props.checkin);
+    if (antworten.length) return antworten;
+    const alt = props.selfAssessment?.trim();
+    return alt ? [alt] : [];
+  }, [props.checkin, props.selfAssessment]);
+  // S13: ohne Feld (alte Läufe) oder mit leerer Liste steht nirgends etwas.
+  const sachlich = useMemo(
+    () =>
+      (Array.isArray(feedback.sachlichNichtGedeckt) ? feedback.sachlichNichtGedeckt : []).filter(
+        (s) => s && typeof s.zitat === 'string' && s.zitat.trim() && typeof s.warum === 'string'
+      ),
+    [feedback.sachlichNichtGedeckt]
+  );
+  // U17: Zitat → Zug im Gespräch (je Zitat einmal gesucht); null = kein Treffer, das Zitat bleibt ohne Sprung.
+  const turnOf = useMemo(() => {
+    const cache = new Map<string, number | null>();
+    return (zitat: string): number | null => {
+      if (!turns) return null;
+      if (!cache.has(zitat)) {
+        cache.set(zitat, findeZitatStelle(zitat, turns, { personaName, bevorzugt: 'user' })?.turn ?? null);
+      }
+      return cache.get(zitat) ?? null;
+    };
+  }, [turns, personaName]);
+  const marken = useMemo(() => {
+    if (!turns) return null;
+    const zitate: ZitatEingabe[] = [
+      ...feedback.rubric.flatMap((r) => (r.evidence ?? []).map((e) => ({ zitat: e, art: 'beleg' as const, hinweis: r.label }))),
+      ...sachlich.map((s) => ({ zitat: s.zitat, art: 'sachlich' as const, hinweis: s.warum })),
+    ];
+    return markiereZuege(turns, zitate, personaName);
+  }, [turns, feedback.rubric, sachlich, personaName]);
 
-  const expectationLabel = (e: SimEvalDebriefAnchor['expectation']) =>
-    e === 'exceeds'
-      ? ts.expExceeds
-      : e === 'meets'
-        ? ts.expMeets
-        : e === 'approaching'
-          ? ts.expApproaching
-          : e === 'below'
-            ? ts.expBelow
-            : ts.notObservable;
+  const reiter: Array<{ id: AuswertungReiter; label: string }> = [
+    { id: 'ueberblick', label: ts.evalTabOverview },
+    { id: 'faehigkeiten', label: ts.evalTabSkills },
+    { id: 'gespraech', label: ts.evalTabConversation },
+    { id: 'weiter', label: ts.evalTabPractice },
+  ];
 
     // mx-auto: die Auswertung klebte auf breiten Bildschirmen am linken Rand
     // (Test-Fund 11.08.) — Chat und Verlauf zentrieren bereits.
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-4">
       {/* Herkunfts-Pill (W1-8): woher diese Messung stammt */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
@@ -408,16 +218,6 @@ export function SimulationEvaluation(props: {
           {t.evaluation.sourceSim}
           {props.personaName ? ` · ${props.personaName}` : ''}
         </span>
-        {/* EU-KI-VO Art. 50 (T1.5, Owner-GO 25.09.): die Auswertung ist KI-erzeugt —
-            derselbe Wortlaut wie auf der Transkript-Seite (analyze.aiNotice). */}
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-[11px] text-muted-foreground">
-          <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
-          {t.analyze.aiNotice}
-        </span>
-        {/* W1-13 (14.10.2026): KI-Grenze in einem Satz (LXT Anhang F §4.4, F-03). */}
-        <p className="mt-2 text-[11px] text-muted-foreground" data-testid="ai-limit">
-          {t.aiWait.aiLimit}
-        </p>
         {props.mode === 'check' && (
           <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-800 dark:text-amber-400">
             {ts.modeCheckBadge}
@@ -429,697 +229,102 @@ export function SimulationEvaluation(props: {
           </span>
         )}
       </div>
+      {/* KI-Hinweis: einer bleibt (Paket 3). Er sagt beides: von einer KI erstellt (EU-KI-VO Art. 50), und sie kann
+          sich irren (W1-13). Der zweite Hinweis mit dem Wortlaut der Transkript-Seite ist hier entfallen. */}
+      <p className="flex items-start gap-1.5 text-[11px] text-muted-foreground" data-testid="ai-limit">
+        <Sparkles className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+        {t.aiWait.aiLimit}
+      </p>
 
-      {/* ── Debrief-Held: Score, Urteil, größter Hebel ── */}
-      {debrief && (
-        <section className="pn-tile glass-panel rounded-2xl p-6 border border-border">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <ScoreRing
-              value={debrief.overall}
-              verdict={verdict}
-              passMark={debrief.passMarkPct}
-              unratedLabel={ts.unrated}
-            />
-            <div className="flex-1 min-w-0 text-center sm:text-left space-y-2">
-              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                <span
-                  className={cx(
-                    'text-sm font-bold px-3 py-1 rounded-full border',
-                    verdict === 'passed'
-                      ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30'
-                      : verdict === 'failed'
-                        ? 'bg-rose-500/15 text-rose-800 dark:text-rose-400 border-rose-500/30'
-                        : 'bg-muted text-muted-foreground border-border'
-                  )}
-                >
-                  {verdict === 'passed'
-                    ? debrief.verdictGrund === 'ziel'
-                      ? ts.passedByGoal
-                      : ts.passed
-                    : verdict === 'failed'
-                      ? debrief.verdictGrund === 'abbruch'
-                        ? ts.failedByAbort
-                        : ts.failed
-                      : ts.unrated}
-                </span>
-                {/* Bewertung 2.0: das Ergebnis des Gesprächs als eigene Dimension neben der Punktzahl. */}
-                {debrief.ergebnis && debrief.verdictGrund === 'punkte' && (
-                  <span
-                    className={cx(
-                      'text-xs font-semibold px-2 py-0.5 rounded-full border',
-                      debrief.ergebnis === 'ziel'
-                        ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/30'
-                        : debrief.ergebnis === 'abbruch'
-                          ? 'bg-rose-500/10 text-rose-800 dark:text-rose-400 border-rose-500/30'
-                          : 'bg-muted text-muted-foreground border-border'
-                    )}
-                    data-testid="ergebnis-badge"
-                  >
-                    {debrief.ergebnis === 'ziel' ? ts.ergebnisZiel : debrief.ergebnis === 'abbruch' ? ts.ergebnisAbbruch : ts.ergebnisOffen}
-                  </span>
-                )}
-                <span className="text-xs text-muted-foreground">
-                  {ts.passMark}: {debrief.passMarkPct} %
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  · {ts.attemptLabel} {attempt}
-                </span>
-                {delta?.overall != null && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    · <DeltaTag delta={delta.overall} /> {ts.deltaVsPrev} {delta.prevAttempt}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {observedCount}/{debrief.anchors.length} {ts.coverageNote} · {debrief.checkpointsHit}/{debrief.checkpointsTotal} {ts.checkpointsTitle}
-              </p>
-              {/* Rechenweg (N17 / C4, 11.10.2026): jede Zahl sagt, was sie zählt. */}
-              <div className="text-left">
-                <button
-                  type="button"
-                  onClick={() => setCalcOpen((v) => !v)}
-                  aria-expanded={calcOpen}
-                  className="pn-none inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                  data-testid="calc-toggle"
-                >
-                  <ChevronDown className={cx('h-3.5 w-3.5 transition-transform', calcOpen && 'rotate-180')} /> {t.evaluation.calcToggle}
-                </button>
-                {calcOpen && (
-                  <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground" data-testid="calc-lines">
-                    {rechenweg(debrief, {
-                      scale: t.evaluation.calcScale,
-                      anchors: t.evaluation.calcAnchors,
-                      checkpoints: t.evaluation.calcCheckpoints,
-                      sum: t.evaluation.calcSum,
-                      onlyAnchors: t.evaluation.calcOnlyAnchors,
-                      onlyCheckpoints: t.evaluation.calcOnlyCheckpoints,
-                      pass: t.evaluation.calcPass,
-                      unrated: t.evaluation.calcUnrated,
-                      goal: t.evaluation.calcGoal,
-                      abort: t.evaluation.calcAbort,
-                    }).map((line, i) => (
-                      <li key={i}>{line}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className="pn-none rounded-xl border border-primary/30 bg-primary/5 p-3 text-left">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-primary mb-1 flex items-center gap-1">
-                  <Sparkles className="h-3.5 w-3.5" /> {ts.biggestLever}
-                </div>
-                <p className="text-sm leading-relaxed">{feedback.nextStep}</p>
-                {/* O2 (27.09.): der EINE Schritt für den Alltag — nach ihm wird beim nächsten Login gefragt. */}
-                {feedback.microTransfer?.step && (
-                  <div className="pn-none mt-3 rounded-lg border border-primary/40 bg-background/70 px-3 py-2" data-testid="micro-transfer">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1">
-                      <ArrowRight className="h-3 w-3" aria-hidden /> {t.evaluation.microTransferTitle}
-                      {feedback.microTransfer.when && (
-                        <span className="normal-case tracking-normal text-muted-foreground">· {feedback.microTransfer.when}</span>
-                      )}
-                    </div>
-                    <p className="text-sm font-medium leading-snug">{feedback.microTransfer.step}</p>
-                  </div>
-                )}
-                {/* V3 (Owner-GO 25.09.): Merkkarten aus der Coaching-Bibliothek zum nächsten Schritt. */}
-                {feedback.cards && feedback.cards.length > 0 && (
-                  <div className="mt-3 space-y-1.5" data-testid="debrief-cards">
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      {ts.coachCardsTitle}
-                    </div>
-                    {feedback.cards.map((c) => (
-                      <div key={c.id} className="pn-none rounded-lg border border-border bg-background/70 px-3 py-2">
-                        <div className="text-sm font-medium">{c.title}</div>
-                        {c.hint && <div className="text-xs text-muted-foreground leading-snug">{c.hint}</div>}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* A3: Verlaufskurve — erst ab dem zweiten bewerteten Versuch. */}
-      {debrief && (props.history?.filter((p) => p.overall != null).length ?? 0) >= 2 && (
-        <section className="pn-tile glass-panel rounded-2xl p-5 border border-border space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
-            <History className="h-4 w-4" /> {ts.historyTitle}
-          </h2>
-          <AttemptChart
-            points={props.history!}
-            passMark={debrief.passMarkPct}
-            currentAttempt={attempt}
-            bestLabel={ts.historyBest}
-          />
-          <p className="text-xs text-muted-foreground">{ts.historyHint}</p>
-        </section>
-      )}
-
-      {/* A1: Selbstbild ↔ Auswertung — der Synthesia-Moment, aber belegt. */}
-      {feedback.selfReview && props.selfAssessment && (
-        <section
-          className={cx(
-            'pn-none glass-panel rounded-2xl p-4 border flex items-start gap-3',
-            feedback.selfReview.agreement === 'confirms'
-              ? 'border-emerald-500/30 bg-emerald-500/5'
-              : feedback.selfReview.agreement === 'partly'
-                ? 'border-sky-500/30 bg-sky-500/5'
-                : 'border-amber-500/30 bg-amber-500/5'
-          )}
+      <Tabs
+        ref={wurzel}
+        value={tab}
+        onValueChange={(v) => {
+          zeigeReiter(v as AuswertungReiter);
+          zumAnfang();
+        }}
+      >
+        {/* Am Handy passen die vier Namen in eine Zeile; längere Namen anderer Sprachen rollen waagerecht, nie abgeschnitten. */}
+        <TabsList
+          ref={leiste}
+          aria-label={ts.feedbackTitle}
+          className="sticky top-0 z-20 flex h-auto w-full justify-start overflow-x-auto rounded-none border-b border-border bg-background p-0 sm:gap-1"
         >
-          {feedback.selfReview.agreement === 'confirms' ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-800 dark:text-emerald-400 shrink-0 mt-0.5" />
-          ) : feedback.selfReview.agreement === 'partly' ? (
-            <Minus className="h-5 w-5 text-sky-800 dark:text-sky-400 shrink-0 mt-0.5" />
-          ) : (
-            <RotateCcw className="h-5 w-5 text-amber-800 dark:text-amber-400 shrink-0 mt-0.5" />
-          )}
-          <div className="min-w-0">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {ts.selfReviewTitle} —{' '}
-              {feedback.selfReview.agreement === 'confirms'
-                ? ts.selfConfirms
-                : feedback.selfReview.agreement === 'partly'
-                  ? ts.selfPartly
-                  : ts.selfDiffers}
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5 italic">»{props.selfAssessment}«</p>
-            <p className="text-sm leading-relaxed mt-1">{feedback.selfReview.comment}</p>
-          </div>
-        </section>
-      )}
-
-      {/* Fokus-Review (D2) */}
-      {feedback.focusReview && focus && (
-        <section
-          className={cx(
-            'pn-none glass-panel rounded-2xl p-4 border flex items-start gap-3',
-            feedback.focusReview.addressed
-              ? 'border-emerald-500/30 bg-emerald-500/5'
-              : 'border-amber-500/30 bg-amber-500/5'
-          )}
-        >
-          {feedback.focusReview.addressed ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-800 dark:text-emerald-400 shrink-0 mt-0.5" />
-          ) : (
-            <RotateCcw className="h-5 w-5 text-amber-800 dark:text-amber-400 shrink-0 mt-0.5" />
-          )}
-          <div className="min-w-0">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {ts.focusReviewTitle} — {feedback.focusReview.addressed ? ts.focusYes : ts.focusNo}
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5 italic">»{focus}«</p>
-            <p className="text-sm leading-relaxed mt-1">{feedback.focusReview.comment}</p>
-          </div>
-        </section>
-      )}
-
-      <section className="pn-tile glass-panel rounded-2xl p-6 space-y-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {ts.summaryTitle}
-        </h2>
-        <p className="text-sm leading-relaxed">{feedback.summary}</p>
-      </section>
-
-      {/* Kompetenz-Anker mit Erwartungslabel, Balken, Delta und Belegen */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {ts.rubricTitle}
-        </h2>
-        {feedback.rubric.map((r) => {
-          const anchor = debrief?.anchors.find((a) => a.key === r.key);
-          const pct = anchor?.pct ?? null;
-          const exp = anchor?.expectation ?? (r.score == null ? 'not-observable' : 'meets');
-          const anchorDelta = deltaByKey.get(r.key) ?? null;
-          const isOpen = openEvidence[r.key] ?? false;
-          return (
-            <div key={r.key} className="pn-tile glass-panel rounded-xl border border-border p-4 space-y-3">
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <h3 className="text-sm font-semibold">{r.label}</h3>
-                <div className="flex items-center gap-2">
-                  <DeltaTag delta={anchorDelta} />
-                  <span
-                    className={cx(
-                      'text-xs font-semibold px-2 py-0.5 rounded-full border',
-                      EXPECTATION_STYLES[exp]
-                    )}
-                  >
-                    {expectationLabel(exp)}
-                  </span>
-                </div>
-              </div>
-              {pct != null && (
-                <div className="h-1.5 rounded-full bg-border overflow-hidden">
-                  <div
-                    className={cx(
-                      'h-full rounded-full transition-all duration-700',
-                      exp === 'exceeds' || exp === 'meets'
-                        ? 'bg-gradient-to-r from-primary to-accent'
-                        : exp === 'approaching'
-                          ? 'bg-amber-400'
-                          : 'bg-rose-400'
-                    )}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              )}
-              {/* Welle 1 (3.3): zwei kurze Listen statt eines Absatzes; Alt-Läufe zeigen weiter die Begründung. */}
-              {(r.wentWell?.length || r.tryNext?.length) ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {r.wentWell && r.wentWell.length > 0 && (
-                    <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-1">{ts.anchorWentWell}</div>
-                      <ul className="space-y-1">
-                        {r.wentWell.map((x, i) => (
-                          <li key={i} className="text-sm leading-relaxed flex gap-2"><Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" /><span>{x}</span></li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {r.tryNext && r.tryNext.length > 0 && (
-                    <div>
-                      <div className="text-[11px] font-bold uppercase tracking-wide text-primary mb-1">{ts.anchorTryNext}</div>
-                      <ul className="space-y-1">
-                        {r.tryNext.map((x, i) => (
-                          <li key={i} className="text-sm leading-relaxed flex gap-2"><ArrowRight className="h-4 w-4 text-primary shrink-0 mt-0.5" /><span>{x}</span></li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground leading-relaxed">{r.why}</p>
-              )}
-              {anchor?.weightPct != null && anchor.contribution != null && (
-                <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pt-2 border-t border-dashed border-border">
-                  <span>{ts.anchorWeight.replace('{pct}', String(anchor.weightPct))}</span>
-                  <span>{ts.anchorContribution.replace('{points}', String(anchor.contribution))}</span>
-                </div>
-              )}
-              {r.evidence.length > 0 && (
-                <div>
-                  <button
-                    onClick={() => setOpenEvidence((m) => ({ ...m, [r.key]: !isOpen }))}
-                    className="text-[11px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1"
-                  >
-                    <ChevronDown className={cx('h-3.5 w-3.5 transition-transform', isOpen && 'rotate-180')} />
-                    {isOpen ? ts.hideEvidence : ts.showEvidence} ({r.evidence.length})
-                  </button>
-                  {isOpen && (
-                    <div className="space-y-1.5 mt-2">
-                      {r.evidence.map((e, idx) => (
-                        <blockquote
-                          key={idx}
-                          className="text-xs italic border-l-2 border-primary/40 pl-2.5 py-0.5 text-muted-foreground leading-relaxed"
-                        >
-                          {e}
-                        </blockquote>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {ts.checkpointsTitle}
-        </h2>
-        <div className="space-y-2">
-          {feedback.checkpoints.map((c) => (
-            <div key={c.id} className="pn-tile glass-panel rounded-xl border border-border p-3 flex gap-3">
-              {c.hit ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-800 dark:text-emerald-400 shrink-0 mt-0.5" />
-              ) : (
-                <XCircle className="h-5 w-5 text-rose-800 dark:text-rose-400 shrink-0 mt-0.5" />
-              )}
-              <div className="min-w-0">
-                <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {c.hit ? ts.hit : ts.missed}
-                </div>
-                <p className="text-sm leading-relaxed">{c.comment}</p>
-              </div>
-            </div>
+          {reiter.map((r) => (
+            <TabsTrigger
+              key={r.id}
+              value={r.id}
+              data-testid={`eval-tab-${r.id}`}
+              className="shrink-0 rounded-none border-b-2 border-transparent px-2 py-2.5 text-sm font-semibold text-muted-foreground focus-visible:ring-inset focus-visible:ring-offset-0 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:px-3"
+            >
+              {r.label}
+            </TabsTrigger>
           ))}
-        </div>
-      </section>
+        </TabsList>
 
-      {/* A2: Delivery-Panel — WIE kommuniziert wurde. Deterministisch, ohne
-          Score-Einfluss (Sparring-Beschluss); Weichmacher-Treffer sind auf
-          Klick im Kontext einsehbar (Beleg-Philosophie). */}
-      {delivery && delivery.talkRatioPct != null && (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
-            <Activity className="h-4 w-4" /> {ts.deliveryTitle}
-          </h2>
-          <div className="pn-tile glass-panel rounded-xl border border-border p-4 space-y-3">
-            <p className="text-xs text-muted-foreground">{ts.deliveryHint}</p>
+        <TabsContent value="ueberblick" forceMount className={REITER_FLAECHE}>
+          <EvalUeberblick
+            feedback={feedback}
+            debrief={debrief}
+            delta={delta}
+            attempt={props.attempt}
+            focus={props.focus}
+            history={props.history}
+            selbstbild={selbstbild}
+            selfReviewPending={props.selfReviewPending}
+            sachlich={sachlich}
+            turns={turns}
+            personaName={personaName}
+            turnOf={turnOf}
+            onJump={zurStelle}
+            onShowCalc={zeigeRechenweg}
+            suggestion={suggestion}
+            saved={saved}
+            onSaveCommitment={saveCommitment}
+          />
+        </TabsContent>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-medium">{ts.dlvTalkRatio}</div>
-                <div className="text-xs text-muted-foreground">
-                  {delivery.talkRatioPct} % ·{' '}
-                  {delivery.talkBand === 'listening'
-                    ? ts.dlvTalkListening
-                    : delivery.talkBand === 'balanced'
-                      ? ts.dlvTalkBalanced
-                      : ts.dlvTalkTalking}
-                </div>
-              </div>
-              <DeliveryScale
-                position={delivery.talkBand === 'listening' ? 0 : delivery.talkBand === 'balanced' ? 1 : 2}
-                tone={delivery.talkBand === 'balanced' ? 'ok' : 'mid'}
-              />
-            </div>
+        <TabsContent value="faehigkeiten" forceMount className={REITER_FLAECHE}>
+          <EvalFaehigkeiten
+            feedback={feedback}
+            debrief={debrief}
+            delta={delta}
+            ratings={ratings}
+            convoLocale={props.convoLocale ?? null}
+            turnOf={turnOf}
+            onJump={zurStelle}
+            calcOpen={calcOpen}
+            onToggleCalc={() => setCalcOpen((v) => !v)}
+          />
+        </TabsContent>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-medium">{ts.dlvSentenceLength}</div>
-                <div className="text-xs text-muted-foreground">
-                  {delivery.medianSentenceWords} {ts.dlvWordsUnit} ·{' '}
-                  {delivery.sentenceBand === 'short'
-                    ? ts.dlvSentenceShort
-                    : delivery.sentenceBand === 'normal'
-                      ? ts.dlvSentenceNormal
-                      : ts.dlvSentenceLong}
-                </div>
-              </div>
-              <DeliveryScale
-                position={delivery.sentenceBand === 'short' ? 0 : delivery.sentenceBand === 'normal' ? 1 : 2}
-                tone={delivery.sentenceBand === 'normal' ? 'ok' : 'mid'}
-              />
-            </div>
+        <TabsContent value="gespraech" forceMount className={REITER_FLAECHE}>
+          <EvalGespraech
+            feedback={feedback}
+            turns={turns}
+            personaName={personaName}
+            convoLocale={props.convoLocale ?? null}
+            marken={marken}
+            sprung={sprung}
+            sichtbar={tab === 'gespraech'}
+          />
+        </TabsContent>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-sm font-medium">{ts.dlvOpeners}</div>
-                <div className="text-xs text-muted-foreground">
-                  {delivery.openerRepetitionPct} % ·{' '}
-                  {delivery.openerBand === 'varied'
-                    ? ts.dlvOpenersVaried
-                    : delivery.openerBand === 'some'
-                      ? ts.dlvOpenersSome
-                      : ts.dlvOpenersRepetitive}
-                </div>
-              </div>
-              <DeliveryScale
-                position={delivery.openerBand === 'varied' ? 0 : delivery.openerBand === 'some' ? 1 : 2}
-                tone={
-                  delivery.openerBand === 'varied' ? 'ok' : delivery.openerBand === 'some' ? 'mid' : 'off'
-                }
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium">{ts.dlvSofteners}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {delivery.softenersPer100} {ts.dlvPer100} ·{' '}
-                    {delivery.softenerBand === 'normal'
-                      ? ts.dlvSoftenersNormal
-                      : delivery.softenerBand === 'elevated'
-                        ? ts.dlvSoftenersElevated
-                        : ts.dlvSoftenersMany}
-                  </div>
-                </div>
-                <DeliveryScale
-                  position={
-                    delivery.softenerBand === 'normal' ? 0 : delivery.softenerBand === 'elevated' ? 1 : 2
-                  }
-                  tone={
-                    delivery.softenerBand === 'normal'
-                      ? 'ok'
-                      : delivery.softenerBand === 'elevated'
-                        ? 'mid'
-                        : 'off'
-                  }
-                />
-              </div>
-              {delivery.softenerMatches.length > 0 && (
-                <div>
-                  <button
-                    onClick={() => setSoftenersOpen((v) => !v)}
-                    className="text-[11px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1"
-                  >
-                    <ChevronDown
-                      className={cx('h-3.5 w-3.5 transition-transform', softenersOpen && 'rotate-180')}
-                    />
-                    {softenersOpen ? ts.dlvHideMatches : ts.dlvShowMatches} (
-                    {delivery.softenerMatches.length})
-                  </button>
-                  {softenersOpen && (
-                    <div className="space-y-1.5 mt-2">
-                      {delivery.softenerMatches.slice(0, 12).map((m, idx) => (
-                        <blockquote
-                          key={idx}
-                          className="text-xs italic border-l-2 border-primary/40 pl-2.5 py-0.5 text-muted-foreground leading-relaxed"
-                        >
-                          <span className="not-italic font-semibold">{m.phrase}</span> — {m.context}
-                        </blockquote>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* C1–C10 — W1-8: NICHT mehr zugeklappt; die Brücke zum Radar ist Kernaussage. */}
-      {ratings && (
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {ts.c10Title}
-          </h2>
-          <div className="pn-tile glass-panel rounded-xl border border-border p-4 space-y-2">
-            <p className="text-xs text-muted-foreground">{ts.c10Hint}</p>
-            {ratings.map((r) => (
-              <div
-                key={r.id}
-                className="flex items-center justify-between gap-3 py-1 border-b border-border/50 last:border-0"
-              >
-                <span className="text-sm">
-                  <span className="font-mono text-xs text-muted-foreground mr-2">{r.id}</span>
-                  {r.name}
-                </span>
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {r.score == null ? ts.notObservable : `${r.score} / 4`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── W3: Endscreen-Mechaniken — Reihenfolge Delta → Commitment → Brücke ── */}
-
-      {/* W3-1: Delta als Auslöser — Satz + Handlung statt stummem Tag. */}
-      {deltaCta && (
-        <section className="pn-none glass-panel rounded-2xl p-5 border border-primary/30 bg-primary/5">
-          <p className="text-sm leading-relaxed">
-            <span className="font-semibold">
-              {(deltaCta.mode === 'dropped'
-                ? t.evaluation.deltaDroppedSentence
-                : t.evaluation.deltaWeakestSentence
-              ).replace('{c}', deltaCta.cName ?? deltaCta.cKey)}
-            </span>
-            {deltaCta.scenarioTitle && (
-              <> {t.evaluation.deltaScenarioAims.replace('{s}', splitTitle(deltaCta.scenarioTitle).motto)}</>
-            )}
-          </p>
-          {deltaCta.scenarioId && props.onOpenScenario && (
-            <button
-              onClick={() => props.onOpenScenario!(deltaCta.scenarioId!)}
-              className="pn-none mt-3 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
-            >
-              {t.evaluation.deltaCtaButton} <ArrowRight className="h-4 w-4" />
-            </button>
-          )}
-        </section>
-      )}
-
-      {/* Vorsatz als bewusster Klick (N17 / B8, 11.10.2026): Vorschlag → „Übernehmen“ oder „Selbst formulieren“. */}
-      <section className="pn-surface glass-panel rounded-2xl p-5 border border-border space-y-3" data-testid="commitment-section" data-state={saved ? 'saved' : 'open'}>
-        <p className="text-sm font-semibold flex items-center gap-1.5">
-          <Sparkles className="h-4 w-4 text-primary" /> {t.evaluation.commitmentQuestion}
-        </p>
-        {saved && !editing ? (
-          <div className="pn-none rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5" data-testid="commitment-saved">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-400 flex items-center gap-1">
-              <Check className="h-3 w-3" aria-hidden /> {t.evaluation.commitSavedTitle} · {t.evaluation.commitSaved}
-            </div>
-            <p className="text-sm font-medium leading-snug">{saved}</p>
-            <button
-              type="button"
-              onClick={() => startOwn(saved)}
-              className="pn-none mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              data-testid="commitment-edit"
-            >
-              <Pencil className="h-3 w-3" /> {t.evaluation.commitEdit}
-            </button>
-          </div>
-        ) : editing ? (
-          <div className="space-y-2" data-testid="commitment-editor">
-            <textarea
-              id="commitment"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={t.evaluation.commitPlaceholder}
-              rows={3}
-              maxLength={300}
-              autoFocus
-              className="pn-field w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={saveOwn}
-                disabled={draft.trim().length === 0}
-                className="pn-none inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                data-testid="commitment-save"
-              >
-                <Check className="h-4 w-4" /> {t.evaluation.commitSave}
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditing(false)}
-                className="pn-none rounded-lg border border-border px-4 py-2 text-sm hover:bg-muted"
-              >
-                {t.common.cancel}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2" data-testid="commitment-suggestion">
-            <div className="pn-none rounded-xl border border-primary/40 bg-background/70 px-3 py-2.5">
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-primary flex items-center gap-1">
-                <ArrowRight className="h-3 w-3" aria-hidden /> {t.evaluation.commitSuggestionTitle}
-                {feedback.microTransfer?.when && (
-                  <span className="normal-case tracking-normal text-muted-foreground">· {feedback.microTransfer.when}</span>
-                )}
-              </div>
-              <p className="text-sm font-medium leading-snug">{suggestion}</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={adoptSuggestion}
-                className="pn-none inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-                data-testid="commitment-adopt"
-              >
-                <Check className="h-4 w-4" /> {t.evaluation.commitAdopt}
-              </button>
-              <button
-                type="button"
-                onClick={() => startOwn('')}
-                className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-                data-testid="commitment-own"
-              >
-                <Pencil className="h-4 w-4" /> {t.evaluation.commitOwn}
-              </button>
-            </div>
-            <p className="text-xs text-muted-foreground">{t.evaluation.commitHint}</p>
-          </div>
-        )}
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => props.onRetry(commitment.trim().slice(0, 300))}
-            disabled={props.retryBusy || commitment.trim().length === 0}
-            className="btn-gradient text-white font-semibold rounded-xl px-6 py-3 flex items-center gap-2 shadow-neon disabled:opacity-60"
-          >
-            {props.retryBusy ? <Loader2 className="h-5 w-5 animate-spin" /> : <RotateCcw className="h-5 w-5" />}
-            {ts.retryFocusCta}
-          </button>
-          <button
-            onClick={props.onNew}
-            className="pn-none rounded-xl px-6 py-3 text-sm font-semibold border border-border hover:bg-muted transition-colors flex items-center gap-2"
-          >
-            <MessagesSquare className="h-5 w-5" /> {ts.newSimulation}
-          </button>
-        </div>
-      </section>
-
-      {/* N17 / C8 (11.10.2026): bei echter Schwäche zuerst ein vorhandener Kurs, sonst „Kurs wünschen“. */}
-      {studioBridge && courseMatch !== 'loading' && (
-        <section
-          className="pn-none glass-panel rounded-2xl p-5 border border-primary/30 bg-primary/5"
-          data-testid="course-bridge"
-          data-kind={courseMatch ? courseMatch.kind : 'wish'}
-        >
-          <div className="flex items-start gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-              {courseMatch?.kind === 'course' ? <BookOpen className="h-5 w-5" /> : <Lightbulb className="h-5 w-5" />}
-            </span>
-            <div className="min-w-0">
-              {courseMatch?.kind === 'course' ? (
-                <>
-                  <h3 className="text-sm font-semibold">{t.evaluation.courseMatchTitle}</h3>
-                  <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
-                    {t.evaluation.courseMatchBody.replace('{c}', studioBridge.cName ?? studioBridge.cKey).replace('{title}', courseMatch.title)}
-                  </p>
-                  <a
-                    href={courseMatch.learnUrl}
-                    className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-colors"
-                    data-testid="course-open"
-                  >
-                    <BookOpen className="h-4 w-4" /> {courseMatch.refresh ? t.evaluation.courseRefresh : t.evaluation.courseOpen}
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-sm font-semibold">{t.evaluation.courseWishTitle}</h3>
-                  <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">{t.evaluation.courseWishBody}</p>
-                  <a
-                    href={`/radar?wunsch${courseMatch?.kind === 'recommendation' ? `=${encodeURIComponent(courseMatch.title)}` : `Text=${encodeURIComponent(t.evaluation.courseWishText.replace('{c}', studioBridge.cName ?? studioBridge.cKey))}`}#lernwuensche`}
-                    className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
-                    data-testid="course-wish"
-                  >
-                    <Lightbulb className="h-4 w-4" /> {t.evaluation.courseWishCta}
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* W3-3: Studio-Brücke — nur bei echter Schwäche (≤ 2), neuer Tab; seit 11.10.2026 nur mit Studio-Häkchen. */}
-      {studioBridge && hasStudio && (
-        <section className="pn-none glass-panel rounded-2xl p-5 border border-accent/30 bg-accent/5">
-          <div className="flex items-start gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent">
-              <GraduationCap className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold">{t.evaluation.studioBridgeTitle}</h3>
-              <p className="mt-0.5 text-sm text-muted-foreground leading-relaxed">
-                {t.evaluation.studioBridgeBody.replace(
-                  '{c}',
-                  studioBridge.cName ?? studioBridge.cKey
-                )}
-              </p>
-              <a
-                href={studioBridge.href}
-                target="_blank"
-                rel="noreferrer"
-                className="pn-none mt-2 inline-flex items-center gap-2 rounded-lg border border-accent/40 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/10 transition-colors"
-              >
-                <GraduationCap className="h-4 w-4" /> {t.evaluation.studioBridgeCta}
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
+        <TabsContent value="weiter" forceMount className={REITER_FLAECHE}>
+          <EvalWeiterUeben
+            ratings={ratings}
+            delta={delta}
+            commitment={commitment}
+            commitmentSaved={saved != null}
+            currentScenarioId={props.currentScenarioId}
+            scenarios={props.scenarios}
+            onOpenScenario={props.onOpenScenario}
+            onRetry={props.onRetry}
+            retryBusy={props.retryBusy}
+            onNew={props.onNew}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

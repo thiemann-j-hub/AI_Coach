@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  auffaelligeKennzahlen,
   computeDelivery,
   splitSentences,
   MIN_WORDS_FOR_DELIVERY,
@@ -106,5 +107,36 @@ describe('computeDelivery', () => {
     const r = computeDelivery(richUser, 'de');
     expect(r.medianSentenceWords).not.toBeNull();
     expect(['short', 'normal', 'long']).toContain(r.sentenceBand);
+  });
+});
+
+// Paket 3, U18 (12.11.2026): Der Abschnitt erscheint nur mit Kennzahlen, die etwas sagen.
+describe('auffaelligeKennzahlen', () => {
+  const unauffaellig = {
+    ...computeDelivery([], 'de'),
+    talkBand: 'balanced' as const,
+    sentenceBand: 'normal' as const,
+    openerBand: 'varied' as const,
+    softenerBand: 'normal' as const,
+  };
+
+  it('vier unauffällige Werte → nichts zu zeigen', () => {
+    expect(auffaelligeKennzahlen(unauffaellig)).toEqual([]);
+  });
+
+  it('zu wenig Material (Bänder null) oder kein Bericht → nichts zu zeigen', () => {
+    expect(auffaelligeKennzahlen(computeDelivery([userTurn('Hallo.')], 'de'))).toEqual([]);
+    expect(auffaelligeKennzahlen(null)).toEqual([]);
+  });
+
+  it('nennt genau die Kennzahlen außerhalb des unauffälligen Bereichs, in fester Reihenfolge', () => {
+    expect(auffaelligeKennzahlen({ ...unauffaellig, talkBand: 'talking', softenerBand: 'elevated' })).toEqual(['talk', 'softener']);
+    expect(auffaelligeKennzahlen({ ...unauffaellig, sentenceBand: 'long', openerBand: 'repetitive' })).toEqual(['sentence', 'opener']);
+    expect(auffaelligeKennzahlen({ ...unauffaellig, talkBand: 'listening', sentenceBand: 'short', openerBand: 'some', softenerBand: 'many' })).toEqual([
+      'talk',
+      'sentence',
+      'opener',
+      'softener',
+    ]);
   });
 });
