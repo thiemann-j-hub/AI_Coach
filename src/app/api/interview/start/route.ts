@@ -2,7 +2,8 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { resolveWorkspaceIdForScenarios } from "@/lib/server/scenario-store";
 import { createInterview, findActiveInterview } from "@/lib/server/interview-store";
@@ -26,7 +27,7 @@ const requestSchema = z.object({
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "interview-start"), 5, 60_000);
+  const rl = checkRateLimit(`interview-start:${auth.uid}`, 5, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   const ki = await kiSchalterBlockt();
   if (ki) return ki;

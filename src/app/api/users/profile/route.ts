@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { readItem, upsertItem, usersContainer } from "@/lib/cosmos";
 import { getRequestLocale, getApiMessages } from "@/lib/server/get-request-locale";
 import { locales } from "@/i18n/config";
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid, email, oid } = authResult;
 
-  const rl = checkRateLimit(rateLimitKey(req, "profile-get"), 30, 60_000);
+  const rl = checkRateLimit(`profile-get:${uid}`, 30, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {
@@ -117,7 +117,7 @@ export async function PATCH(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid, email, oid } = authResult;
 
-  const rl = checkRateLimit(rateLimitKey(req, "profile-patch"), 20, 60_000);
+  const rl = checkRateLimit(`profile-patch:${uid}`, 20, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {

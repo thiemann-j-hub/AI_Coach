@@ -1,7 +1,8 @@
 // src/app/api/invoices/route.ts — Liste der Rechnungen des eigenen Workspaces
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { invoicesContainer, queryItems } from "@/lib/cosmos";
 import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
 import { InvoiceDoc } from "@/lib/server/credits/types";
@@ -15,8 +16,8 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  const rlKey = rateLimitKey(req, "invoices-list");
-  const rlResponse = checkRateLimit(rlKey, 30, 60_000);
+  const rlKey = `invoices-list:${uid}`;
+  const rlResponse = checkRateLimit(rlKey, 30, 60_000, getApiMessages(req).rateLimited);
   if (rlResponse) return rlResponse;
 
   try {

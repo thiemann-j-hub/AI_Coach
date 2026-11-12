@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { deleteSimulation } from "@/lib/server/simulation-store";
 import { logger } from "@/lib/logger";
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "sim-delete"), 20, 60_000);
+  const rl = checkRateLimit(`sim-delete:${auth.uid}`, 20, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {

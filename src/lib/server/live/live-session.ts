@@ -2,6 +2,7 @@ import { buildPersonaSystemPrompt, personaStageNote, type PersonaEndeErgebnis, t
 import { regieStageNote, type RegieStand } from "@/ai/flows/simulation-regie";
 import { ENDE_PRUEFUNG_TIMEOUT_MS, endeAbgelehntNote } from "@/ai/flows/simulation-ende-pruefung";
 import type { SimulationScenario, SimulationTurn } from "@/lib/simulation/types";
+import { ohneRegieKlammern } from "@/lib/simulation/beitrag";
 import {
   SIM_MAX_USER_TURNS,
   SIM_TIME_WARN_FRACTION,
@@ -364,7 +365,8 @@ export function parseEndeCall(call: LiveToolCall): { grund: string; ergebnis: Pe
 function toHistory(turns: SimulationTurn[]): Array<{ role: "user" | "model"; text: string }> {
   return turns
     .filter((t) => t.text.trim())
-    .map((t) => ({ role: t.role === "user" ? ("user" as const) : ("model" as const), text: t.text }));
+    // S6: Eckige Klammern der Person werden rund, damit ein früherer Beitrag nicht wie eine Regie-Notiz aussieht.
+    .map((t) => (t.role === "user" ? { role: "user" as const, text: ohneRegieKlammern(t.text) } : { role: "model" as const, text: t.text }));
 }
 
 function asBuffer(data: Buffer | ArrayBuffer | Buffer[] | string): Buffer {

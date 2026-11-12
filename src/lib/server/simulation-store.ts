@@ -3,6 +3,7 @@ import "server-only";
 import { deleteItem, queryItems, readItem, replaceItemIfMatch, runsContainer, upsertItem } from "@/lib/cosmos";
 import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import type { SimulationTurn } from "@/lib/simulation/types";
+import { einzeilig } from "@/lib/simulation/beitrag";
 import type { Commitment, TransferCheck } from "@/lib/simulation/transfer";
 
 /**
@@ -199,7 +200,7 @@ export function assembleTranscript(
   userLabel = "Teilnehmer:in"
 ): string {
   return turns
-    .map((t) => `${t.role === "user" ? userLabel : personaName}: ${t.text}`)
+    .map((t) => `${t.role === "user" ? userLabel : personaName}: ${einzeilig(t.text)}`)
     .join("\n\n");
 }
 

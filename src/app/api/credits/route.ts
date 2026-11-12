@@ -1,7 +1,8 @@
 // src/app/api/credits/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { creditsCentralEnabled, centralWalletStatus } from "@/lib/server/credits/credit-service";
 
 export const runtime = "nodejs";
@@ -23,8 +24,8 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof NextResponse) return authResult;
   const { uid } = authResult;
 
-  const rlKey = rateLimitKey(req, "credits");
-  const rlResponse = checkRateLimit(rlKey, 30, 60_000);
+  const rlKey = `credits:${uid}`;
+  const rlResponse = checkRateLimit(rlKey, 30, 60_000, getApiMessages(req).rateLimited);
   if (rlResponse) return rlResponse;
 
   // Welle F (IA-Masterplan 15.08.): Kauf-Links sieht nur, wer kaufen KANN —

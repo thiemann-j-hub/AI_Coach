@@ -16,6 +16,7 @@ import { z } from 'genkit';
 import { logger } from '@/lib/logger';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import { coachEndeOn } from '@/lib/simulation/flags';
+import { ohneRegieKlammern } from '@/lib/simulation/beitrag';
 import { rollenFirma, spielbuchBlock } from '@/lib/simulation/spielbuch';
 import type {
   SimConversationLocale,
@@ -251,7 +252,8 @@ export async function runPersonaTurn(args: {
   /** Welle 2: Regie-Notiz des Beobachters (Öffnungsstufe), falls vorhanden — außerhalb des Nutzer-Fence. */
   regieNotiz?: string | null;
 }): Promise<PersonaTurnResult> {
-  const { sanitized, injectionDetected } = sanitizeForPrompt(args.userMessage, {
+  // S6: Eckige Klammern der Person werden rund, im aktuellen Beitrag und im Verlauf (siehe beitrag.ts).
+  const { sanitized, injectionDetected } = sanitizeForPrompt(ohneRegieKlammern(args.userMessage), {
     label: 'GESPRÄCHSBEITRAG',
   });
   if (injectionDetected) {
@@ -261,7 +263,7 @@ export async function runPersonaTurn(args: {
 
   const history = args.turns.map((t) => ({
     role: t.role === 'user' ? ('user' as const) : ('model' as const),
-    content: [{ text: t.text }],
+    content: [{ text: t.role === 'user' ? ohneRegieKlammern(t.text) : t.text }],
   }));
 
   // Zeit-Regie DOPPELT verankern: als Regel im System-Prompt UND als

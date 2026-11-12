@@ -22,6 +22,8 @@ const db = vi.hoisted(() => {
     "c.sessionId = @pk": (d, p) => d.sessionId === p["@pk"],
     "c.docType = @dt": (d, p) => d.docType === p["@dt"],
     "c.workspaceId = @ws": (d, p) => d.workspaceId === p["@ws"],
+    "c.entraOid = @oid": (d, p) => d.entraOid === p["@oid"],
+    "c.id = @id": (d, p) => d.id === p["@id"],
     "c.privat = true": (d) => d.privat === true,
     "c.expiresAt <= @now": (d, p) => typeof d.expiresAt === "string" && d.expiresAt <= String(p["@now"]),
     "c.status = 'aborted'": (d) => d.status === "aborted",
@@ -86,6 +88,7 @@ vi.mock("@/lib/logger", () => ({
 
 import { NextRequest } from "next/server";
 import { POST as workspacePurge } from "@/app/api/service/workspace-purge/route";
+import { POST as anonymize } from "@/app/api/service/anonymize/route";
 import { getScenario } from "@/lib/simulation/scenarios";
 import { deleteAccount, deleteLearningHistory } from "./account-delete";
 import { ABGEBROCHEN_TAGE, AUFRAEUMEN_ABSTAND_MS, aufraeumenAnstossen, raeumeAuf } from "./aufraeumen";
@@ -218,6 +221,39 @@ describe("(a) Firmen-Löschung", () => {
     const res = await workspacePurge(req);
     expect(await res.json()).toMatchObject({ ok: true, accountsDeleted: 1, scenariosDeleted: 2 });
     expect(db.ids("runs")).toEqual(["spielbuch:ws-andere-ccc333", "ws-andere-ccc333"]);
+  });
+
+  it("S2 (12.11.2026): findet Microsoft-Konten über `entraOid` im Profil und zählt nur, wo etwas gelöscht wurde", async () => {
+    // Microsoft-Konto: Der Coach schlüsselt auf den OIDC-sub, das Register kennt nur die oid.
+    db.put("users", { id: "sub-anna", entraOid: "oid-anna" });
+    lauf("sub-anna", "sim-anna-1", "finished", -3);
+    lauf("sub-anna", "sim-anna-2", "active", -1);
+    // PulseNorth-Konto: Kennung und Nutzer-Kennung sind gleich.
+    lauf("ml:bert", "sim-bert-1", "finished", -3);
+    // Fremde Person einer anderen Firma bleibt.
+    db.put("users", { id: "sub-fremd", entraOid: "oid-fremd" });
+    lauf("sub-fremd", "sim-fremd-1", "finished", -3);
+    const req = new NextRequest("http://localhost/api/service/workspace-purge", {
+      method: "POST",
+      body: JSON.stringify({ workspaceId: "ws1", oids: ["oid-anna", "ml:bert", "oid-niemand"] }),
+    });
+    const res = await workspacePurge(req);
+    expect(await res.json()).toMatchObject({ ok: true, accountsDeleted: 2, accountsEmpty: 1 });
+    expect(hatLauf("sub-anna", "sim-anna-1")).toBe(false);
+    expect(hatLauf("sub-anna", "sim-anna-2")).toBe(false);
+    expect(hatLauf("ml:bert", "sim-bert-1")).toBe(false);
+    expect(db.ids("users")).toEqual(["sub-fremd"]);
+    expect(hatLauf("sub-fremd", "sim-fremd-1")).toBe(true);
+  });
+
+  it("S2: die Dienst-Löschung einer Person sagt, ob etwas zu löschen war", async () => {
+    db.put("users", { id: "sub-anna", entraOid: "oid-anna" });
+    lauf("sub-anna", "sim-anna-1", "finished", -3);
+    const ruf = (oid: string) =>
+      anonymize(new NextRequest("http://localhost/api/service/anonymize", { method: "POST", body: JSON.stringify({ oid }) }));
+    expect(await (await ruf("oid-anna")).json()).toMatchObject({ ok: true, found: true, result: { runsDeleted: 1, profileDeleted: true } });
+    expect(hatLauf("sub-anna", "sim-anna-1")).toBe(false);
+    expect(await (await ruf("oid-niemand")).json()).toMatchObject({ ok: true, found: false, result: { runsDeleted: 0 } });
   });
 });
 

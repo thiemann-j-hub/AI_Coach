@@ -86,6 +86,27 @@ export async function deleteLearningHistory(
   return { runsDeleted, measurementsDeleted };
 }
 
+/**
+ * Go-Live-Prüfung 12.11.2026 (S2): Nutzer-Kennungen zu einer Register-Kennung (oid). Bei PulseNorth-Konten („ml:…“)
+ * ist die Kennung selbst die Nutzer-Kennung. Bei Microsoft-Konten schlüsselt der Coach auf den OIDC-`sub`; das Profil
+ * trägt die oid im Feld `entraOid` (seit dem ersten Aufruf der App). Vorher suchten die Dienst-Löschungen nur nach
+ * der oid, fanden bei Microsoft-Konten nichts und meldeten trotzdem Erfolg.
+ */
+export async function uidsFuerOid(oid: string): Promise<string[]> {
+  const uids = new Set<string>([oid]);
+  const rows = await queryItems<IdRow>(usersContainer(), "SELECT c.id FROM c WHERE c.entraOid = @oid", [
+    { name: "@oid", value: oid },
+  ]);
+  for (const r of rows) if (r.id) uids.add(r.id);
+  return [...uids];
+}
+
+/** Hat die Löschung etwas gefunden? Für ehrliche Zähler in den Dienst-Routen. */
+export function etwasGeloescht(r: AccountDeletionResult): boolean {
+  // `tokenStoreDeleted` zählt nicht: Das Löschen eines fehlenden Eintrags gilt dort als gelungen.
+  return r.runsDeleted > 0 || r.sessionsDeleted > 0 || r.usageDeleted > 0 || r.profileDeleted;
+}
+
 export interface AccountDeletionResult extends HistoryDeletionResult {
   sessionsDeleted: number;
   usageDeleted: number;
@@ -128,7 +149,11 @@ export async function deleteAccount(
     : false;
 
   // Profil (users, pk /id = uid) — zuletzt
-  const profileDeleted = await safeDelete(() => deleteItem(usersContainer(), uid, uid));
+  // S2 (12.11.2026): `deleteItem` schluckt ein fehlendes Dokument. Damit der Zähler stimmt, wird erst nachgesehen,
+  // ob es ein Profil gibt; vorher meldete die Löschung auch dann `profileDeleted: true`, wenn nichts da war.
+  const profilDa =
+    (await queryItems<IdRow>(usersContainer(), "SELECT c.id FROM c WHERE c.id = @id", [{ name: "@id", value: uid }])).length > 0;
+  const profileDeleted = profilDa && (await safeDelete(() => deleteItem(usersContainer(), uid, uid)));
 
   logger.api("account/delete", "account-deleted", {
     uid,

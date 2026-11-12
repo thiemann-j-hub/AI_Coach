@@ -97,6 +97,22 @@ function centralOn(): boolean {
 
 const cache = new Map<string, { at: number; info: CentralMemberInfo }>();
 const TTL_MS = 60_000;
+/**
+ * Go-Live-Prüfung 12.11.2026 (S5, C18): Bei einer Störung des Registers gilt die letzte gute Auskunft bis zu
+ * 15 Minuten weiter. Vorher bekam jedes PulseNorth-Konto nach 60 Sekunden auf jeder Route 503, auch mitten im
+ * Gespräch, und ein Zug in einem Kunden-Szenario fand den Arbeitsbereich nicht mehr. Eine Absage des Registers
+ * (401) und eine fehlende Anmeldung sind keine Störung: Dort gilt nie die alte Auskunft.
+ * Preis: Wer während einer Störung deaktiviert wird, kommt noch höchstens 15 Minuten hinein.
+ */
+const STALE_MAX_MS = 15 * 60_000;
+/** Nach einem Fehlversuch wird das Register für Personen mit alter Auskunft 10 Sekunden lang nicht erneut gefragt: Sonst wartet jede ihrer Anfragen bis zur Frist. */
+const FEHLPAUSE_MS = 10_000;
+let stoerungAt = 0;
+
+function beiStoerung(oid: string): CentralMemberState {
+  const hit = cache.get(oid);
+  return hit && Date.now() - hit.at < STALE_MAX_MS ? { kind: "info", info: hit.info } : { kind: "unavailable" };
+}
 
 /**
  * B26 (02.10.2026): Warum es KEINE Mitglieds-Info gibt, entscheidet jetzt mit.
@@ -126,9 +142,14 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
   if (!centralOn()) return { kind: "unavailable" };
   const hit = cache.get(oid);
   if (hit && Date.now() - hit.at < TTL_MS) return { kind: "info", info: hit.info };
+  // Nur wer eine alte Auskunft hat, spart sich den Abruf. Alle anderen fragen das Register weiter: Ein einzelner
+  // Fehlversuch darf nicht dazu führen, dass neue Personen zehn Sekunden lang ungeprüft durchgehen.
+  if (hit && stoerungAt && Date.now() - stoerungAt < FEHLPAUSE_MS && Date.now() - hit.at < STALE_MAX_MS) {
+    return { kind: "info", info: hit.info };
+  }
   try {
     const tok = await csCredentialFor(oid);
-    if (!tok.ok) return loginRequired(tok) ? { kind: "login-required" } : { kind: "unavailable" };
+    if (!tok.ok) return loginRequired(tok) ? { kind: "login-required" } : beiStoerung(oid);
     const res = await fetch(`${BASE_URL}/resolve-workspace`, {
       headers: { ...csAuthHeaders(tok.credential), Accept: "application/json" },
       cache: "no-store",
@@ -145,7 +166,8 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
         );
         return { kind: "denied" };
       }
-      return { kind: "unavailable" };
+      stoerungAt = Date.now();
+      return beiStoerung(oid);
     }
     const j = (await res.json()) as {
       workspaceId?: string | null;
@@ -172,9 +194,11 @@ export async function getCentralMemberState(oid: string): Promise<CentralMemberS
       admins: adminsAus(j.admins),
     };
     cache.set(oid, { at: Date.now(), info });
+    stoerungAt = 0;
     return { kind: "info", info };
   } catch {
-    return { kind: "unavailable" };
+    stoerungAt = Date.now();
+    return beiStoerung(oid);
   }
 }
 

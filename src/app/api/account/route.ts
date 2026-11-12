@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { deleteAccount } from "@/lib/server/account-delete";
 import { logger } from "@/lib/logger";
 
@@ -18,7 +19,7 @@ export async function DELETE(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "account-del"), 3, 60_000);
+  const rl = checkRateLimit(`account-del:${auth.uid}`, 3, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   let body: { confirm?: string } = {};

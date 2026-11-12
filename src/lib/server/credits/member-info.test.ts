@@ -126,6 +126,57 @@ describe("getCentralMemberState — PulseNorth-Konto (Dienst-Ausweis)", () => {
     expect(await garbled.getCentralMemberInfo(PN_ID)).toBeNull();
   });
 
+  it("S5 (12.11.2026): bei einer Störung gilt die letzte gute Auskunft bis zu 15 Minuten, danach nicht mehr", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t0 = Date.UTC(2026, 10, 12, 10, 0, 0);
+    vi.setSystemTime(t0);
+    let kaputt = false;
+    const gut = answer({ workspaceId: "ws-1", role: "member", apps: ["coach"], disabled: false });
+    const m = await load(async () => {
+      if (kaputt) throw new Error("ETIMEDOUT");
+      return gut();
+    });
+    expect((await m.getCentralMemberState(PN_ID)).kind).toBe("info");
+
+    // Zwei Minuten später ist das Register weg: Die alte Auskunft gilt weiter.
+    kaputt = true;
+    vi.setSystemTime(t0 + 2 * 60_000);
+    const s = await m.getCentralMemberState(PN_ID);
+    expect(s.kind === "info" && s.info.workspaceId).toBe("ws-1");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // In den nächsten zehn Sekunden wird das Register nicht noch einmal gefragt.
+    vi.setSystemTime(t0 + 2 * 60_000 + 5_000);
+    expect((await m.getCentralMemberState(PN_ID)).kind).toBe("info");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    // Wer keine alte Auskunft hat, bleibt bei „nicht erreichbar“.
+    expect(await m.getCentralMemberState("ml:0b1c2d3e-0000-4000-8000-000000000002")).toEqual({ kind: "unavailable" });
+
+    // Nach 15 Minuten ohne gute Auskunft ist Schluss.
+    vi.setSystemTime(t0 + 16 * 60_000);
+    expect(await m.getCentralMemberState(PN_ID)).toEqual({ kind: "unavailable" });
+
+    // Das Register ist wieder da: frische Auskunft, die Fehlpause endet.
+    kaputt = false;
+    vi.setSystemTime(t0 + 17 * 60_000);
+    expect((await m.getCentralMemberState(PN_ID)).kind).toBe("info");
+    vi.useRealTimers();
+  });
+
+  it("S5: eine Absage des Registers (401) schlägt die alte Auskunft, auch kurz nach einer guten", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t0 = Date.UTC(2026, 10, 12, 10, 0, 0);
+    vi.setSystemTime(t0);
+    let abgewiesen = false;
+    const gut = answer({ workspaceId: "ws-1", role: "member", apps: ["coach"], disabled: false });
+    const nein = status(401);
+    const m = await load(async () => (abgewiesen ? nein() : gut()));
+    expect((await m.getCentralMemberState(PN_ID)).kind).toBe("info");
+    abgewiesen = true;
+    vi.setSystemTime(t0 + 2 * 60_000);
+    expect(await m.getCentralMemberState(PN_ID)).toEqual({ kind: "denied" });
+    vi.useRealTimers();
+  });
+
   it("an answer without apps is an answer without apps (the gate then refuses)", async () => {
     const m = await load(answer({ workspaceId: null, invited: false }));
     const s = await m.getCentralMemberState(PN_ID);

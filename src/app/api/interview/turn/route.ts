@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
 import { resolveWorkspaceIdForScenarios } from "@/lib/server/scenario-store";
@@ -26,7 +27,7 @@ const requestSchema = z.object({
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
-  const rl = checkRateLimit(rateLimitKey(req, "interview-turn"), 30, 60_000);
+  const rl = checkRateLimit(`interview-turn:${auth.uid}`, 30, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   // A4 (31.10.2026): derselbe Schalter wie beim Start, jetzt vor jedem Zug des Interviewers.
   const ki = await kiSchalterBlockt("/api/interview/turn");

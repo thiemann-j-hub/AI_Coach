@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { runsContainer, upsertItem } from "@/lib/cosmos";
 import { scenarioWishSchema } from "@/lib/scenario-wish-schema";
 import { logger } from "@/lib/logger";
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "scenario-wish"), 5, 60_000);
+  const rl = checkRateLimit(`scenario-wish:${auth.uid}`, 5, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {
