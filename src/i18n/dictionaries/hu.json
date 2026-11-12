@@ -24,17 +24,18 @@
     "collapseSidebar": "Oldalsáv összecsukása",
     "balanceEmptyMember": "Az Ön cégének kerete elfogyott — az adminja értesítést kapott.",
     "adminBuys": "A krediteket a vállalata adminisztrátora vásárolja meg. Ön tagként van bejelentkezve. Kérjük, szóljon az adminisztrátorának.",
-    "newVersion": "A new version of the Coach is available.",
+    "newVersion": "Elérhető a Coach új verziója.",
     "sessionExpired": "A munkamenet lejárt – kérjük, jelentkezzen be újra",
     "reLogin": "Újbóli bejelentkezés",
-    "languageLoadFailed": "A nyelvet nem sikerült betölteni. Próbálja újra."
+    "languageLoadFailed": "A nyelvet nem sikerült betölteni. Próbálja újra.",
+    "deleteFailed": "A törlés nem sikerült"
   },
   "nav": {
     "analyze": "Átirat-elemzés",
     "history": "Előzmények",
     "newAnalysis": "Új elemzés",
     "practice": "Gyakorlás",
-    "mainGroup": "MAIN",
+    "mainGroup": "Menü",
     "home": "Kezdőlap",
     "lernbereich": "Az Ön tanulási területe",
     "profile": "Profil"
@@ -245,10 +246,10 @@
     "micNoticeBody": "Amikor Ön a szereppel beszél, a Google Vertex AI dolgozza fel a hangját az EU-ban. Diktáláskor a Microsoft Azure Nyugat-Európában szöveggé alakítja a hangját, és nem tárolja a felvételt. Beszéd helyett bármikor írhat.",
     "micNoticeAccept": "Értem, mikrofon használata",
     "micNoticeDecline": "Inkább gépelek",
-    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
-    "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step",
-    "builderVoice": "Voice",
+    "aiStartNotice": "Ön egy MI-ügynökkel gyakorol. A szereplő, a hang és a válaszok számítógéppel készülnek.",
+    "coachCardLabel": "Coachingkártya",
+    "coachCardsTitle": "A következő lépéséhez illő kártyák",
+    "builderVoice": "Hang",
     "builderVoiceFemale": "Női",
     "builderVoiceMale": "Férfi",
     "builderVoiceListen": "Meghallgatás",
@@ -398,7 +399,21 @@
     "loginFailed": "A bejelentkezés nem sikerült",
     "genericError": "Valami hiba történt.",
     "signInWithMicrosoft": "Bejelentkezés Microsoft-fiókkal",
-    "microsoftHint": "Személyes Microsoft-fiókokkal (pl. @outlook.com) és munkahelyi fiókokkal is működik."
+    "microsoftHint": "Személyes Microsoft-fiókokkal (pl. @outlook.com) és munkahelyi fiókokkal is működik.",
+    "loginProduct": "Beszélgetéscoach",
+    "loginTagline": "MI-elemzés a jobb munkatársi beszélgetésekért",
+    "loginDescription": "Töltse fel egy beszélgetés átiratát, és percek alatt strukturált elemzést kap kompetenciapontozással és konkrét, megvalósítható visszajelzéssel.",
+    "legalPrivacy": "Adatvédelem",
+    "legalTerms": "ÁSZF",
+    "legalDpa": "Adatfeldolgozási szerződés",
+    "legalImprint": "Impresszum",
+    "featureAnalysisTitle": "Beszélgetéselemzés",
+    "featureAnalysisBody": "MI-alapú elemzés a munkatársi beszélgetésekről, konkrét, megvalósítható visszajelzéssel.",
+    "featureScoringTitle": "Kompetenciapontozás",
+    "featureScoringBody": "A vezetői kompetenciák strukturált értékelése — az átiratból vett bizonyítékokkal.",
+    "featureGdprTitle": "GDPR-kompatibilis",
+    "featureGdprBody": "Anonimizálás a böngészőben az elemzés előtt; adatkezelés az EU-ban (Azure).",
+    "loginFooter": "EU-s tárhely · GDPR-kompatibilis · Az adataival nem történik modelltanítás."
   },
   "analyze": {
     "title": "Átirat-elemzés",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "pl. világosan és tisztességesen, eszkaláció nélkül",
     "conversationType": "Beszélgetéstípus",
     "employeeConversation": "Munkatársi beszélgetés",
-    "conversationTypeNote": "(A beszélgetéstípus jelenleg rögzített a stabil RAG érdekében.)",
+    "conversationTypeNote": "A kiértékelés munkatársi beszélgetésekre van hangolva. További beszélgetéstípusok következnek.",
     "roles": "Szerepek a beszélgetésben",
     "rolesHint": "Válassza ki a vezetőt (a munkatárs automatikusan beállítódik)",
     "manager": "Vezető (én)",
@@ -460,7 +475,9 @@
     "retrySave": "Mentés újrapróbálása",
     "saveFailed": "Az elemzés sikerült, de a mentés nem. Az eredménye megmarad — próbálja újra a mentést.",
     "anonymizeOffWarning": "Anonimizálás nélkül az átirat valódi nevei az MI-modellhez kerülnek.",
-    "aiNotice": "A kiértékelést mesterséges intelligencia végzi. Ehhez az Ön átiratát egy MI-modellnek küldjük el."
+    "aiNotice": "A kiértékelést mesterséges intelligencia végzi. Ehhez az Ön átiratát egy MI-modellnek küldjük el.",
+    "reauthBody": "A bejelentkezése lejárt. Kérjük, jelentkezzen be újra — nem használtunk fel kreditet.",
+    "paywallBody": "Az ingyenes kerete elfogyott. Vásároljon kreditet további elemzések indításához."
   },
   "dashboard": {
     "title": "Munkamenet-előzmények",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Nagyon erős",
     "badgeStrong": "Erős",
     "badgeSolid": "Szilárd",
-    "badgeNeedsWork": "Fókusz kell"
+    "badgeNeedsWork": "Fókusz kell",
+    "deleteRefunded": "1 kreditet visszatérítettünk.",
+    "deleteNotRefunded": "Nem történt kredit-visszatérítés (a határidő lejárt).",
+    "deleted": "Elemzés törölve",
+    "deleteYes": "Igen, törlés",
+    "refundOpen": "A visszatérítési időn belül — a kredit visszajár",
+    "refundClosed": "A visszatérítési idő lejárt — a kredit nem jár vissza",
+    "deleteAndRefund": "Törlés és kredit vissza",
+    "refundUntil": "Visszatérítés eddig: {time}",
+    "studioNextStep": "Következő lépés: célzott gyakorlás",
+    "studioPotential": "Legnagyobb fejlődési lehetőség: {id} · {name}. Készítsen hozzá percek alatt tanulási modult a Learning Studióban.",
+    "studioCta": "Tanulási modul létrehozása a Studióban",
+    "studioModuleTitle": "Tanulási modul: {name}",
+    "studioModuleGoal": "A(z) „{name}” ({id}) vezetői kompetencia célzott erősítése — egy PulseNorth-beszélgetéselemzés alapján."
   },
   "api": {
     "unauthorized": "Bejelentkezés szükséges",
@@ -580,15 +610,15 @@
     "wishSend": "Kérés elküldése",
     "wishThanks": "Köszönjük! Kérése megérkezett, és beszámít az új forgatókönyvek priorizálásába.",
     "resumeTimeLeft": "még ~{min} perc",
-    "resumeTimeUp": "Lejárt az idő",
+    "resumeTimeUp": "Szünetel – Önre vár",
     "dropWrongType": "Itt csak PDF fogadható el — szöveghez használja az elemzés oldalt.",
-    "transferTitle": "Your intention from the last conversation",
-    "transferQuestion": "How did it go in real life?",
-    "transferDone": "Did it",
-    "transferPartly": "Partly",
-    "transferNot": "Didn't get to it",
-    "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "transferTitle": "Az Ön fogadalma a legutóbbi beszélgetésből",
+    "transferQuestion": "Hogy ment a mindennapokban?",
+    "transferDone": "Megcsináltam",
+    "transferPartly": "Részben",
+    "transferNot": "Nem sikerült",
+    "transferDismiss": "Ne kérdezze újra",
+    "transferThanks": "Köszönjük — ezt figyelembe vesszük az Ön következő kiértékelésében.",
     "variantsAlso": "Így is:",
     "prepTitle": "Készítsem elő a valódi beszélgetésemet",
     "prepBody": "Írja le három mondatban, mi vár Önre, és hogyan viselkedik a beszélgetőpartnere. Privát gyakorló beszélgetést kap, amit csak Ön lát.",
@@ -668,11 +698,28 @@
     "saved": "Mentve.",
     "saveFailed": "A mentés nem sikerült.",
     "appearance": "Megjelenés",
-    "system": "Rendszer"
+    "system": "Rendszer",
+    "accountData": "Fiók és adatok",
+    "accountDataIntro": "Kezelje az adatait. A törlés végleges, és nem vonható vissza.",
+    "historyDelete": "Tanulási előzmények törlése",
+    "historyDeleteBody": "Eltávolítja az összes elemzését és a fejlődési előzményeit (radar). A fiókja, az egyenlege és a számlái megmaradnak.",
+    "historyConfirmTitle": "Biztosan törli a tanulási előzményeket?",
+    "historyConfirmBody": "Az összes elemzés és a fejlődési előzményei véglegesen törlődnek. Ez a művelet nem vonható vissza.",
+    "historyDeleted": "Tanulási előzmények törölve",
+    "historyDeletedBody": "{runs} elemzés és {points} radar-mérési pont törölve.",
+    "deleting": "Törlés…",
+    "tryAgainLater": "Kérjük, próbálja újra később.",
+    "accountDeleteTitle": "Fiók és minden adat törlése",
+    "accountDeleteBody": "Véglegesen eltávolítja a személyes adatait: tanulási előzmények, munkamenetek, profil és tárolt hozzáférési tokenek. Jogszabályi okokból a számlák a törvényes megőrzési idő végéig megmaradnak (§ 147 AO, német adótörvény). Ezután kijelentkeztetjük.",
+    "accountDelete": "Fiók törlése",
+    "accountConfirmTitle": "Véglegesen törli a fiókot?",
+    "accountConfirmBody": "Ez a művelet visszavonhatatlan. A tanulási előzmények, a munkamenetek, a profil és a tárolt hozzáférési tokenek törlődnek.",
+    "accountDeleted": "Fiók törölve",
+    "accountDeletedBody": "Az adatait eltávolítottuk. Most kijelentkeztetjük."
   },
   "noAccess": {
-    "title": "Nincs hozzáférés a MI-beszélgetéscoach alkalmazáshoz",
-    "body": "A MI-beszélgetéscoach alkalmazás nincs engedélyezve az Ön fiókja számára. A hozzáférést az Ön vállalatának adminisztrátora adja meg a „Csapat és hozzáférés” menüpontban. Az Önhöz rendelt tanfolyamokat „Az Ön tanulási területe” menüpontban találja.",
+    "title": "Nincs hozzáférés az MI-beszélgetéscoach alkalmazáshoz",
+    "body": "Az MI-beszélgetéscoach alkalmazás nincs engedélyezve az Ön fiókja számára. A hozzáférést az Ön vállalatának adminisztrátora adja meg a „Csapat és hozzáférés” menüpontban. Az Önhöz rendelt tanfolyamokat „Az Ön tanulási területe” menüpontban találja.",
     "cta": "Ugrás ide: „Az Ön tanulási területe”",
     "wer": "Hozzáférést adhat:",
     "geben": "Hozzáférés megadása (Csapat és hozzáférés)"
@@ -680,7 +727,7 @@
   "aiErrors": {
     "errorNumber": "Hibakód: {id}",
     "quota_exhausted": {
-      "title": "A KI-keretünk jelenleg kimerült.",
+      "title": "Az MI-keretünk jelenleg kimerült.",
       "next": "Próbálja meg újra néhány perc múlva. A folyamat állása megmarad, és semmi sem kerül kétszer felszámításra."
     },
     "credits_empty": {
@@ -688,31 +735,31 @@
       "next": "Töltse fel kreditegyenlegét, és pontosan ott folytathatja, ahol abbahagyta."
     },
     "daily_limit": {
-      "title": "A KI-futtatások napi korlátja elérve.",
+      "title": "Az MI-futtatások napi korlátja elérve.",
       "next": "A folyamat holnap folytatódik. Ha még ma többre lenne szüksége, kérjük, értesítse az adminisztrátorát."
     },
     "content_blocked": {
-      "title": "A KI elutasította ezt a tartalmat.",
+      "title": "Az MI elutasította ezt a tartalmat.",
       "next": "Fogalmazza át ezt a részt, vagy hozasson létre először egy másik részt. Semmi nem került felszámításra."
     },
     "model_not_enabled": {
-      "title": "Ez a KI-modell jelenleg nem érhető el.",
+      "title": "Ez az MI-modell jelenleg nem érhető el.",
       "next": "Már dolgozunk a megoldáson. Próbálja meg újra később, vagy használja az alapértelmezett beállítást."
     },
     "timeout": {
-      "title": "A KI válaszideje túl hosszú volt.",
+      "title": "Az MI válaszideje túl hosszú volt.",
       "next": "Próbálja meg azonnal újra; második alkalommal általában sikerülni szokott."
     },
     "throttled": {
-      "title": "A KI-szolgáltatás jelenleg túlterhelt.",
+      "title": "Az MI-szolgáltatás jelenleg túlterhelt.",
       "next": "Várjon egy percet, majd próbálja meg újra. Semmin nem kell módosítania."
     },
     "ai_unavailable": {
-      "title": "A KI-szolgáltatás jelenleg nem érhető el.",
+      "title": "Az MI-szolgáltatás jelenleg nem érhető el.",
       "next": "Próbálja meg újra néhány perc múlva. A folyamat állása megmarad."
     },
     "ai_general": {
-      "title": "Ez a művelet nem sikerült a KI-vel.",
+      "title": "Ez a művelet nem sikerült az MI-vel.",
       "next": "Próbálja meg újra. Ha a hiba továbbra is fennáll, kérjük, küldje el nekünk a hibakódot."
     }
   },
@@ -785,5 +832,24 @@
     "berichtStrengths": "Ami működik",
     "berichtImprove": "Amin dolgozni kell",
     "berichtPlans": "Amit a tanulók terveznek"
+  },
+  "creditsPage": {
+    "title": "Kreditek",
+    "subtitle": "Egyenleg és vásárlás",
+    "loadFailed": "Az egyenleget nem sikerült betölteni.",
+    "buyOnWebsite": "A vásárlás a weboldalon történik.",
+    "paymentSuccess": "Sikeres fizetés — a krediteket jóváírtuk. A számlát az áttekintésben találja.",
+    "paymentCancelled": "A vásárlás megszakadt — nem történt terhelés.",
+    "currentBalance": "Aktuális egyenleg",
+    "unit": "kredit",
+    "balanceUnknown": "Az egyenleg ismeretlen — a munkamenet lejárt.",
+    "paymentInactive": "Megjegyzés: a fizetési rendszer még nincs aktiválva.",
+    "platformWide": "A kreditek a teljes PulseNorth platformon érvényesek.",
+    "invoices": "Számlák",
+    "invoicesIntro": "A számlái PDF-ben.",
+    "noInvoices": "Még nincs számla.",
+    "reverseCharge": "0% · fordított adózás",
+    "vatRate": "{rate}% áfa",
+    "downloadPdf": "PDF letöltése"
   }
 }

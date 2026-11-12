@@ -24,17 +24,18 @@
     "collapseSidebar": "Ahenda külgriba",
     "balanceEmptyMember": "Teie ettevõtte kvoot on otsas — administraatorit on teavitatud.",
     "adminBuys": "Krediite ostab teie ettevõtte administraator. Olete sisse logitud liikmena. Palun andke oma administraatorile teada.",
-    "newVersion": "A new version of the Coach is available.",
+    "newVersion": "Saadaval on Coachi uus versioon.",
     "sessionExpired": "Seanss on aegunud – palun logige uuesti sisse",
     "reLogin": "Logi uuesti sisse",
-    "languageLoadFailed": "Keele laadimine ebaõnnestus. Proovige uuesti."
+    "languageLoadFailed": "Keele laadimine ebaõnnestus. Proovige uuesti.",
+    "deleteFailed": "Kustutamine ebaõnnestus"
   },
   "nav": {
     "analyze": "Transkriptsioonianalüüs",
     "history": "Ajalugu",
     "newAnalysis": "Uus analüüs",
     "practice": "Harjuta",
-    "mainGroup": "MAIN",
+    "mainGroup": "Menüü",
     "home": "Avaleht",
     "lernbereich": "Minu õppimisala",
     "profile": "Profiil"
@@ -233,7 +234,7 @@
     "builderReviseLabel": "Muuda — mis peaks teisiti olema?",
     "builderRevisePlaceholder": "nt Persona peaks kauplema karmimalt ja eesmärk 3 peaks puudutama aastaplaani …",
     "builderReviseCta": "Muuda (1 krediit)",
-    "builderTestCta": "Proovisõit",
+    "builderTestCta": "Proovivestlus",
     "builderPublishCta": "Avalda",
     "builderUnpublishCta": "Võta tagasi",
     "builderDeleteCta": "Kustuta",
@@ -245,10 +246,10 @@
     "micNoticeBody": "Kui räägite rolliga, töötleb teie häält Google Vertex AI ELis. Dikteerimisel muudab Microsoft Azure Lääne-Euroopas teie hääle tekstiks ega säilita salvestist. Võite alati rääkimise asemel kirjutada.",
     "micNoticeAccept": "Selge, kasuta mikrofoni",
     "micNoticeDecline": "Pigem trükin",
-    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
-    "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step",
-    "builderVoice": "Voice",
+    "aiStartNotice": "Harjutate tehisintellekti agendiga. Tegelane, hääl ja vastused on arvuti loodud.",
+    "coachCardLabel": "Meelespeakaart",
+    "coachCardsTitle": "Teie järgmise sammu jaoks sobivad kaardid",
+    "builderVoice": "Hääl",
     "builderVoiceFemale": "Naishääl",
     "builderVoiceMale": "Meeshääl",
     "builderVoiceListen": "Kuula",
@@ -344,7 +345,7 @@
     "builderRoleReady": "Roll on valmis",
     "builderRoleFailed": "Ettevalmistus ebaõnnestus. Proovime hiljem uuesti; vestlused toimivad siiski.",
     "builderRoleOpen": "Roll valmistatakse ette esimese vestluse ajal",
-    "builderFreeTestNote": "Teie esimese proovisõidu hindamine ei maksa ühtegi krediiti.",
+    "builderFreeTestNote": "Teie esimese proovivestluse hindamine ei maksa ühtegi krediiti.",
     "wegTitle": "Nii peate vestlust",
     "wegSprechen": "Rääkimine",
     "wegSchreiben": "Kirjutamine",
@@ -385,7 +386,7 @@
     "clockPaused": "peatatud",
     "timeoutHintOver": "Paus on läbi, kell käib jälle.",
     "speakUnavailable": "Rääkimine ei ole praegu võimalik. Saate vestlust kirjalikult jätkata.",
-    "confirmBodyFree": "Teie esimese proovisõidu hindamine ei maksa ühtegi krediiti. Saate üksikasjaliku tagasiside hinnete, sõnasõnaliste tsitaatide, võtmehetkede ja ühe konkreetse järgmise sammuga. Pärast seda ei saa vestlust jätkata.",
+    "confirmBodyFree": "Teie esimese proovivestluse hindamine ei maksa ühtegi krediiti. Saate üksikasjaliku tagasiside hinnete, sõnasõnaliste tsitaatide, võtmehetkede ja ühe konkreetse järgmise sammuga. Pärast seda ei saa vestlust jätkata.",
     "confirmCtaFree": "Jah, hinda"
   },
   "auth": {
@@ -398,7 +399,21 @@
     "loginFailed": "Sisselogimine ebaõnnestus",
     "genericError": "Midagi läks valesti.",
     "signInWithMicrosoft": "Logi sisse Microsofti kontoga",
-    "microsoftHint": "Töötab isiklike Microsofti kontodega (nt @outlook.com) ja töökontodega."
+    "microsoftHint": "Töötab isiklike Microsofti kontodega (nt @outlook.com) ja töökontodega.",
+    "loginProduct": "Vestlustreener",
+    "loginTagline": "AI-analüüs paremate arenguvestluste jaoks",
+    "loginDescription": "Laadige üles vestluse transkriptsioon ja saate mõne minutiga struktureeritud analüüsi koos kompetentside hindamise ning konkreetse, rakendatava tagasisidega.",
+    "legalPrivacy": "Privaatsus",
+    "legalTerms": "Tingimused",
+    "legalDpa": "Andmetöötlusleping",
+    "legalImprint": "Juriidiline teave",
+    "featureAnalysisTitle": "Vestlusanalüüs",
+    "featureAnalysisBody": "AI-põhine arenguvestluste analüüs konkreetse, rakendatava tagasisidega.",
+    "featureScoringTitle": "Kompetentside hindamine",
+    "featureScoringBody": "Juhtimiskompetentside struktureeritud hindamine — tõenditega transkriptsioonist.",
+    "featureGdprTitle": "GDPR-iga kooskõlas",
+    "featureGdprBody": "Anonüümimine brauseris enne analüüsi; töötlemine ELis (Azure).",
+    "loginFooter": "Majutus ELis · GDPR-iga kooskõlas · Teie andmetega mudeleid ei treenita."
   },
   "analyze": {
     "title": "Transkriptsioonianalüüs",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "nt selge ja õiglane, ilma eskaleerumiseta",
     "conversationType": "Vestluse tüüp",
     "employeeConversation": "Arenguvestlus",
-    "conversationTypeNote": "(Vestluse tüüp on praegu stabiilse RAG-i huvides fikseeritud.)",
+    "conversationTypeNote": "Hindamine on häälestatud arenguvestlustele. Teisi vestlustüüpe lisandub edaspidi.",
     "roles": "Rollid vestluses",
     "rolesHint": "Valige juht (töötaja määratakse automaatselt)",
     "manager": "Juht (mina)",
@@ -460,7 +475,9 @@
     "retrySave": "Proovi salvestamist uuesti",
     "saveFailed": "Analüüs õnnestus, kuid salvestamine ebaõnnestus. Teie tulemus säilib — proovige salvestamist uuesti.",
     "anonymizeOffWarning": "Ilma anonüümimiseta saadetakse transkriptsioonis olevad pärisnimed AI-mudelile.",
-    "aiNotice": "Hindamise teeb tehisintellekt. Selleks saadetakse teie transkriptsioon AI-mudelile."
+    "aiNotice": "Hindamise teeb tehisintellekt. Selleks saadetakse teie transkriptsioon AI-mudelile.",
+    "reauthBody": "Teie sisselogimine on aegunud. Palun logige uuesti sisse — krediiti ei kulunud.",
+    "paywallBody": "Teie tasuta kvoot on otsas. Ostke krediite, et alustada uusi analüüse."
   },
   "dashboard": {
     "title": "Seansside ajalugu",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Väga tugev",
     "badgeStrong": "Tugev",
     "badgeSolid": "Kindel",
-    "badgeNeedsWork": "Vajab fookust"
+    "badgeNeedsWork": "Vajab fookust",
+    "deleteRefunded": "1 krediit tagastati.",
+    "deleteNotRefunded": "Krediiti ei tagastatud (tähtaeg möödas).",
+    "deleted": "Analüüs kustutatud",
+    "deleteYes": "Jah, kustuta",
+    "refundOpen": "Tagastusaja sees — krediit tagastatakse",
+    "refundClosed": "Tagastusaeg on möödas — krediiti ei tagastata",
+    "deleteAndRefund": "Kustuta ja saa krediit tagasi",
+    "refundUntil": "Tagastus kuni {time}",
+    "studioNextStep": "Järgmine samm: sihipärane harjutamine",
+    "studioPotential": "Suurim potentsiaal: {id} · {name}. Looge selle kohta mõne minutiga õppemoodul Learning Studios.",
+    "studioCta": "Loo õppemoodul Studios",
+    "studioModuleTitle": "Õppemoodul: {name}",
+    "studioModuleGoal": "Tugevdada sihipäraselt juhtimiskompetentsi „{name}“ ({id}) — tuletatud PulseNorthi vestlusanalüüsist."
   },
   "api": {
     "unauthorized": "Vajalik on sisselogimine",
@@ -580,15 +610,15 @@
     "wishSend": "Saada soov",
     "wishThanks": "Aitäh! Teie soov on kohal ja läheb uute stsenaariumide prioriseerimisse.",
     "resumeTimeLeft": "~{min} min jäänud",
-    "resumeTimeUp": "Aeg läbi",
+    "resumeTimeUp": "Peatatud – ootab teid",
     "dropWrongType": "Siin võetakse vastu ainult PDF — teksti jaoks kasutage analüüsilehte.",
-    "transferTitle": "Your intention from the last conversation",
-    "transferQuestion": "How did it go in real life?",
-    "transferDone": "Did it",
-    "transferPartly": "Partly",
-    "transferNot": "Didn't get to it",
-    "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "transferTitle": "Teie eesmärk viimasest vestlusest",
+    "transferQuestion": "Kuidas päriselus läks?",
+    "transferDone": "Tehtud",
+    "transferPartly": "Osaliselt",
+    "transferNot": "Jäi tegemata",
+    "transferDismiss": "Ära enam küsi",
+    "transferThanks": "Aitäh — see läheb arvesse teie järgmises hinnangus.",
     "variantsAlso": "Ka kui:",
     "prepTitle": "Valmista ette minu päris vestlus",
     "prepBody": "Kirjeldage kolme lausega, mis on tulemas ja kuidas teie vestluspartner käitub. Saate privaatse harjutusvestluse, mida näete ainult teie.",
@@ -668,7 +698,24 @@
     "saved": "Salvestatud.",
     "saveFailed": "Salvestamine ebaõnnestus.",
     "appearance": "Välimus",
-    "system": "Süsteem"
+    "system": "Süsteem",
+    "accountData": "Konto ja andmed",
+    "accountDataIntro": "Hallake oma andmeid. Kustutamine on lõplik ja seda ei saa tagasi võtta.",
+    "historyDelete": "Kustuta õppeajalugu",
+    "historyDeleteBody": "Eemaldab kõik teie analüüsid ja edenemise ajaloo (radar). Teie konto, saldo ja arved jäävad alles.",
+    "historyConfirmTitle": "Kas tõesti kustutada õppeajalugu?",
+    "historyConfirmBody": "Kõik analüüsid ja teie edenemise ajalugu eemaldatakse jäädavalt. Seda toimingut ei saa tagasi võtta.",
+    "historyDeleted": "Õppeajalugu kustutatud",
+    "historyDeletedBody": "Eemaldatud: analüüse {runs}, radari mõõtepunkte {points}.",
+    "deleting": "Kustutamine…",
+    "tryAgainLater": "Palun proovige hiljem uuesti.",
+    "accountDeleteTitle": "Kustuta konto ja kõik andmed",
+    "accountDeleteBody": "Eemaldab jäädavalt teie isikuandmed: õppeajaloo, seansid, profiili ja salvestatud juurdepääsutõendid. Seadusest tulenevalt säilitatakse arveid seadusjärgse säilitustähtaja jooksul (§ 147 AO, Saksamaa maksuseadustik). Seejärel logitakse teid välja.",
+    "accountDelete": "Kustuta konto",
+    "accountConfirmTitle": "Kas kustutada konto jäädavalt?",
+    "accountConfirmBody": "See toiming on pöördumatu. Õppeajalugu, seansid, profiil ja salvestatud juurdepääsutõendid eemaldatakse.",
+    "accountDeleted": "Konto kustutatud",
+    "accountDeletedBody": "Teie andmed on eemaldatud. Nüüd logitakse teid välja."
   },
   "noAccess": {
     "title": "Ligipääs rakendusele AI-vestlustreener puudub",
@@ -680,7 +727,7 @@
   "aiErrors": {
     "errorNumber": "Vea nr {id}",
     "quota_exhausted": {
-      "title": "Meie KI maht on hetkel ammendatud.",
+      "title": "Meie tehisintellekti maht on hetkel ammendatud.",
       "next": "Proovige mõne minuti pärast uuesti. Teie edenemine säilitatakse ja teilt ei võeta midagi topelt."
     },
     "credits_empty": {
@@ -688,38 +735,38 @@
       "next": "Laadige krediiti juurde ja saate jätkata täpselt sealt, kus pooleli jäite."
     },
     "daily_limit": {
-      "title": "KI päevalimiit on täis saanud.",
+      "title": "Tehisintellekti päevalimiit on täis saanud.",
       "next": "Edasi saab jätkata homme. Kui vajate täna rohkem, andke sellest oma administraatorile teada."
     },
     "content_blocked": {
-      "title": "KI lükkas selle sisu tagasi.",
+      "title": "Tehisintellekt lükkas selle sisu tagasi.",
       "next": "Sõnastage see lõik ümber või laske kõigepealt luua teine osa. Tasu ei võetud."
     },
     "model_not_enabled": {
-      "title": "See KI-mudel pole praegu saadaval.",
+      "title": "See tehisintellekti mudel pole praegu saadaval.",
       "next": "Töötame selle kallal. Proovige hiljem uuesti või kasutage vaikeseadistust."
     },
     "timeout": {
-      "title": "KI vastamine võttis liiga kaua aega.",
+      "title": "Tehisintellekti vastamine võttis liiga kaua aega.",
       "next": "Proovige kohe uuesti, tavaliselt see teisel korral õnnestub."
     },
     "throttled": {
-      "title": "KI-teenus on hetkel ülekoormatud.",
+      "title": "Tehisintellekti teenus on hetkel ülekoormatud.",
       "next": "Oodake minut ja proovige uuesti. Te ei pea midagi muutma."
     },
     "ai_unavailable": {
-      "title": "KI-teenus ei ole praegu kättesaadav.",
+      "title": "Tehisintellekti teenus ei ole praegu kättesaadav.",
       "next": "Proovige mõne minuti pärast uuesti. Teie edenemine säilitatakse."
     },
     "ai_general": {
-      "title": "KI-ga ei läinud see korda.",
+      "title": "Tehisintellektiga ei läinud see korda.",
       "next": "Proovige uuesti. Kui viga püsib, saatke meile vea number."
     }
   },
   "diagnose": {
     "title": "Vearaport kasutajatoele",
     "intro": "See fail aitab meil vea kiiresti üles leida. Näete enne salvestamist täpselt, mida see sisaldab.",
-    "itemBuild": "Coach versioon ({sha})",
+    "itemBuild": "Coachi versioon ({sha})",
     "itemBrowser": "Veebilehitseja, ekraani suurus, keel, võrguolek",
     "itemSwitches": "{count} lüliti olek (ainult sees/väljas)",
     "itemErrors": "Viimased {count} veanumbrit",
@@ -785,5 +832,24 @@
     "berichtStrengths": "Mis toimib",
     "berichtImprove": "Mis vajab tööd",
     "berichtPlans": "Mida õppijad kavatsevad teha"
+  },
+  "creditsPage": {
+    "title": "Krediidid",
+    "subtitle": "Saldo ja ost",
+    "loadFailed": "Saldo laadimine ebaõnnestus.",
+    "buyOnWebsite": "Ost toimub veebilehel.",
+    "paymentSuccess": "Makse õnnestus — krediidid on teie kontole lisatud. Arve leiate oma ülevaatest.",
+    "paymentCancelled": "Ost katkestati — tasu ei võetud.",
+    "currentBalance": "Praegune saldo",
+    "unit": "krediiti",
+    "balanceUnknown": "Saldo teadmata — seanss on aegunud.",
+    "paymentInactive": "Märkus: maksesüsteem ei ole veel aktiveeritud.",
+    "platformWide": "Krediidid kehtivad kogu PulseNorthi platvormil.",
+    "invoices": "Arved",
+    "invoicesIntro": "Teie arved PDF-ina.",
+    "noInvoices": "Arveid veel pole.",
+    "reverseCharge": "0% · pöördmaksustamine",
+    "vatRate": "{rate}% käibemaks",
+    "downloadPdf": "Laadi PDF alla"
   }
 }

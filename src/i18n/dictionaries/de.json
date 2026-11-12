@@ -27,7 +27,8 @@
     "newVersion": "Eine neue Version des Coaches ist da.",
     "sessionExpired": "Sitzung abgelaufen – bitte neu anmelden",
     "reLogin": "Neu anmelden",
-    "languageLoadFailed": "Die Sprache ließ sich nicht laden. Bitte versuche es erneut."
+    "languageLoadFailed": "Die Sprache ließ sich nicht laden. Bitte versuche es erneut.",
+    "deleteFailed": "Löschen fehlgeschlagen"
   },
   "nav": {
     "analyze": "Transkript-Analyse",
@@ -239,7 +240,7 @@
     "builderDeleteCta": "Löschen",
     "builderDeleteConfirm": "Wirklich löschen?",
     "builderCardTitle": "Eigenes Szenario erstellen",
-    "builderCardBody": "Baue ein Rollenspiel aus eurer echten Gesprächssituation — mit euren Einwänden und Fakten.",
+    "builderCardBody": "Baue ein Rollenspiel aus Eurer echten Gesprächssituation — mit Euren Einwänden und Fakten.",
     "builderCardCta": "Builder öffnen",
     "micNoticeTitle": "Hinweis zur Spracheingabe",
     "micNoticeBody": "Wenn Du mit der Rolle sprichst, verarbeitet Google Vertex AI in der EU Deine Stimme. Beim Diktat wandelt Microsoft Azure in Westeuropa Deine Stimme in Text um und speichert die Aufnahme nicht. Du kannst jederzeit schreiben statt sprechen.",
@@ -398,7 +399,21 @@
     "loginFailed": "Anmeldung fehlgeschlagen",
     "genericError": "Etwas ist schiefgelaufen.",
     "signInWithMicrosoft": "Mit Microsoft anmelden",
-    "microsoftHint": "Funktioniert mit privaten Microsoft-Konten (z.B. @outlook.de) und Arbeitskonten."
+    "microsoftHint": "Funktioniert mit privaten Microsoft-Konten (z.B. @outlook.de) und Arbeitskonten.",
+    "loginProduct": "Gesprächs-Coach",
+    "loginTagline": "KI-Analyse für bessere Mitarbeitergespräche",
+    "loginDescription": "Lade ein Gesprächs-Transkript hoch und erhalte in Minuten eine strukturierte Analyse mit Kompetenz-Scoring und konkretem, umsetzbarem Feedback.",
+    "legalPrivacy": "Datenschutz",
+    "legalTerms": "AGB",
+    "legalDpa": "AVV",
+    "legalImprint": "Impressum",
+    "featureAnalysisTitle": "Gesprächsanalyse",
+    "featureAnalysisBody": "KI-gestützte Analyse von Mitarbeitergesprächen mit konkretem, umsetzbarem Feedback.",
+    "featureScoringTitle": "Kompetenz-Scoring",
+    "featureScoringBody": "Strukturierte Bewertung der Führungskompetenzen — mit Evidenz aus dem Transkript.",
+    "featureGdprTitle": "DSGVO-konform",
+    "featureGdprBody": "Anonymisierung im Browser vor der Analyse; Verarbeitung in der EU (Azure).",
+    "loginFooter": "EU-Hosting · DSGVO-konform · Kein Training mit Deinen Daten."
   },
   "analyze": {
     "title": "Transkript-Analyse",
@@ -460,7 +475,9 @@
     "retrySave": "Speichern wiederholen",
     "saveFailed": "Analyse erfolgreich, aber Speichern fehlgeschlagen. Dein Ergebnis bleibt erhalten — wiederhole das Speichern.",
     "anonymizeOffWarning": "Ohne Anonymisierung werden Klarnamen aus dem Transkript an das KI-Modell übertragen.",
-    "aiNotice": "Die Auswertung erfolgt durch eine KI. Dein Transkript wird dafür an ein KI-Modell übertragen."
+    "aiNotice": "Die Auswertung erfolgt durch eine KI. Dein Transkript wird dafür an ein KI-Modell übertragen.",
+    "reauthBody": "Deine Anmeldung ist abgelaufen. Bitte melde Dich neu an — es wurde kein Credit verbraucht.",
+    "paywallBody": "Dein kostenloses Kontingent ist aufgebraucht. Kaufe Credits, um weitere Analysen zu starten."
   },
   "dashboard": {
     "title": "Sitzungsverlauf",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Sehr stark",
     "badgeStrong": "Stark",
     "badgeSolid": "Solide",
-    "badgeNeedsWork": "Fokus nötig"
+    "badgeNeedsWork": "Fokus nötig",
+    "deleteRefunded": "1 Credit wurde erstattet.",
+    "deleteNotRefunded": "Kein Credit erstattet (Fenster abgelaufen).",
+    "deleted": "Analyse gelöscht",
+    "deleteYes": "Ja, löschen",
+    "refundOpen": "Im Erstattungsfenster — Credit kommt zurück",
+    "refundClosed": "Erstattungsfenster abgelaufen — kein Credit zurück",
+    "deleteAndRefund": "Löschen & Credit zurück",
+    "refundUntil": "Erstattung bis {time}",
+    "studioNextStep": "Nächster Schritt: gezielt trainieren",
+    "studioPotential": "Größtes Potenzial: {id} · {name}. Erstelle dazu in Minuten ein Lernmodul im Learning Studio.",
+    "studioCta": "Lernmodul im Studio erstellen",
+    "studioModuleTitle": "Lernmodul: {name}",
+    "studioModuleGoal": "Führungskompetenz „{name}“ ({id}) gezielt stärken — abgeleitet aus einer PulseNorth-Gesprächsanalyse."
   },
   "api": {
     "unauthorized": "Anmeldung erforderlich",
@@ -668,7 +698,24 @@
     "saved": "Gespeichert.",
     "saveFailed": "Speichern fehlgeschlagen.",
     "appearance": "Erscheinungsbild",
-    "system": "System"
+    "system": "System",
+    "accountData": "Konto & Daten",
+    "accountDataIntro": "Verwalte Deine Daten. Löschungen sind endgültig und können nicht rückgängig gemacht werden.",
+    "historyDelete": "Lern-Historie löschen",
+    "historyDeleteBody": "Entfernt alle Deine Analysen und Deinen Fortschritts-Verlauf (Radar). Dein Konto, Dein Guthaben und Deine Rechnungen bleiben bestehen.",
+    "historyConfirmTitle": "Lern-Historie wirklich löschen?",
+    "historyConfirmBody": "Alle Analysen und Dein Fortschritts-Verlauf werden dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "historyDeleted": "Lern-Historie gelöscht",
+    "historyDeletedBody": "{runs} Analysen und {points} Radar-Messpunkte wurden entfernt.",
+    "deleting": "Wird gelöscht…",
+    "tryAgainLater": "Bitte versuche es später erneut.",
+    "accountDeleteTitle": "Account & alle Daten löschen",
+    "accountDeleteBody": "Entfernt Deine personenbezogenen Daten dauerhaft: Lern-Historie, Sitzungen, Profil und gespeicherte Zugriffs-Token. Aus gesetzlichen Gründen bleiben Rechnungen für die Aufbewahrungsfrist (§ 147 AO) erhalten. Du wirst anschließend abgemeldet.",
+    "accountDelete": "Account löschen",
+    "accountConfirmTitle": "Account endgültig löschen?",
+    "accountConfirmBody": "Diese Aktion ist unwiderruflich. Lern-Historie, Sitzungen, Profil und gespeicherte Zugriffs-Token werden entfernt.",
+    "accountDeleted": "Account gelöscht",
+    "accountDeletedBody": "Deine Daten wurden entfernt. Du wirst jetzt abgemeldet."
   },
   "noAccess": {
     "title": "Kein Zugang zu KI-Gesprächs-Coach",
@@ -785,5 +832,24 @@
     "berichtStrengths": "Das kommt an",
     "berichtImprove": "Das braucht Arbeit",
     "berichtPlans": "Das nehmen sich Lernende vor"
+  },
+  "creditsPage": {
+    "title": "Credits",
+    "subtitle": "Guthaben & Kauf",
+    "loadFailed": "Konnte Guthaben nicht laden.",
+    "buyOnWebsite": "Kauf erfolgt auf der Website.",
+    "paymentSuccess": "Zahlung erfolgreich — Deine Credits wurden gutgeschrieben. Die Rechnung findest Du in Deiner Übersicht.",
+    "paymentCancelled": "Kauf abgebrochen — es wurde nichts berechnet.",
+    "currentBalance": "Aktuelles Guthaben",
+    "unit": "Credits",
+    "balanceUnknown": "Guthaben unbekannt — Sitzung abgelaufen.",
+    "paymentInactive": "Hinweis: Das Bezahlsystem ist noch nicht aktiviert.",
+    "platformWide": "Credits gelten auf der ganzen PulseNorth-Plattform.",
+    "invoices": "Rechnungen",
+    "invoicesIntro": "Deine Rechnungen als PDF.",
+    "noInvoices": "Noch keine Rechnungen.",
+    "reverseCharge": "0 % · Reverse-Charge",
+    "vatRate": "{rate} % USt",
+    "downloadPdf": "PDF herunterladen"
   }
 }

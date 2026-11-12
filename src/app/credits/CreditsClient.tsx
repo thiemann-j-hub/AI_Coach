@@ -8,6 +8,7 @@ import { withBasePath } from '@/lib/base-path';
 import { signInAgain } from '@/lib/auth-service';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
+import { localeBcp47, type Locale } from '@/i18n/config';
 import { Download, FileText, LogIn } from 'lucide-react';
 
 type CreditsState = {
@@ -42,14 +43,18 @@ type Invoice = {
 export default function CreditsClient() {
   const { locale, t } = useTranslation();
   const { user } = useAuth();
-  const de = locale.startsWith('de');
+  // Go-Live-Prüfung (12.11.2026): Texte aus dem Wörterbuch, Zahlen und Datum in der Sprache der Oberfläche
+  // (vorher eine Weiche Deutsch/Englisch, die 20 Sprachen auf Englisch ließ).
+  const c = t.creditsPage;
+  const bcp47 = localeBcp47[locale as Locale] ?? 'en-US';
   const searchParams = useSearchParams();
   const status = searchParams.get('status'); // success | cancelled
 
   const [state, setState] = useState<CreditsState | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Der Fehler steht als Kennung im Zustand; der Text entsteht beim Anzeigen und folgt so einem Sprachwechsel.
+  const [error, setError] = useState<'load' | 'signIn' | 'buy' | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -75,7 +80,7 @@ export default function CreditsClient() {
           setInvoices(ij.invoices);
         }
       } catch {
-        if (active) setError(de ? 'Konnte Guthaben nicht laden.' : 'Could not load balance.');
+        if (active) setError('load');
       } finally {
         if (active) setLoading(false);
       }
@@ -83,17 +88,17 @@ export default function CreditsClient() {
     return () => {
       active = false;
     };
-  }, [de]);
+  }, []);
 
   function eur(cents: number, currency: string) {
-    return new Intl.NumberFormat(de ? 'de-DE' : 'en-US', {
+    return new Intl.NumberFormat(bcp47, {
       style: 'currency',
       currency: (currency || 'eur').toUpperCase(),
     }).format((cents ?? 0) / 100);
   }
   function dateFmt(iso: string) {
     try {
-      return new Date(iso).toLocaleDateString(de ? 'de-DE' : 'en-US', {
+      return new Date(iso).toLocaleDateString(bcp47, {
         day: '2-digit', month: '2-digit', year: 'numeric',
       });
     } catch {
@@ -106,7 +111,7 @@ export default function CreditsClient() {
       // PulseNorth-Konto: zur Anmeldekarte im Hub, nie direkt zu Microsoft (signInAgain).
       await signInAgain(user?.uid);
     } catch {
-      setError(de ? 'Anmeldung fehlgeschlagen.' : 'Sign-in failed.');
+      setError('signIn');
     }
   }
 
@@ -120,49 +125,46 @@ export default function CreditsClient() {
       window.location.href = state.topUpUrl;
       return;
     }
-    setError(de ? 'Kauf erfolgt auf der Website.' : 'Purchase happens on the website.');
+    setError('buy');
   }
 
+  const errorText =
+    error === 'load' ? c.loadFailed : error === 'signIn' ? t.auth.loginFailed : error === 'buy' ? c.buyOnWebsite : null;
+
   return (
-    <AppShell title={de ? 'Credits' : 'Credits'} subtitle={de ? 'Guthaben & Kauf' : 'Balance & purchase'}>
+    <AppShell title={c.title} subtitle={c.subtitle}>
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
         {status === 'success' && (
           <div className="pn-none p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-sm">
-            {de
-              ? 'Zahlung erfolgreich — deine Credits wurden gutgeschrieben. Die Rechnung findest du in deiner Übersicht.'
-              : 'Payment successful — your credits have been added. Your invoice is available in your overview.'}
+            {c.paymentSuccess}
           </div>
         )}
         {status === 'cancelled' && (
           <div className="pn-none p-4 rounded-xl bg-muted/30 border border-border text-muted-foreground text-sm">
-            {de ? 'Kauf abgebrochen — es wurde nichts berechnet.' : 'Purchase cancelled — nothing was charged.'}
+            {c.paymentCancelled}
           </div>
         )}
-        {error && (
-          <div className="pn-none p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-400 text-sm">{error}</div>
+        {errorText && (
+          <div className="pn-none p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-800 dark:text-red-400 text-sm">{errorText}</div>
         )}
 
         {/* Sitzung abgelaufen -> Re-Login statt stiller „0". */}
         {state?.sessionExpired && (
           <div className="pn-none p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-sm flex flex-wrap items-center justify-between gap-3">
-            <span>
-              {de
-                ? 'Sitzung abgelaufen — bitte melde dich neu an, um dein Guthaben zu sehen.'
-                : 'Session expired — please sign in again to see your balance.'}
-            </span>
+            <span>{t.common.sessionExpired}</span>
             <button
               onClick={relogin}
               className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-amber-400/40 px-3 py-1.5 text-sm font-medium text-amber-800 dark:text-amber-200 transition-colors hover:bg-amber-400/10"
             >
               <LogIn className="h-4 w-4" />
-              {de ? 'Neu anmelden' : 'Sign in again'}
+              {t.common.reLogin}
             </button>
           </div>
         )}
 
         {/* Saldo */}
         <div className="pn-tile p-6 rounded-2xl bg-card border border-border">
-          <div className="text-sm text-muted-foreground">{de ? 'Aktuelles Guthaben' : 'Current balance'}</div>
+          <div className="text-sm text-muted-foreground">{c.currentBalance}</div>
           <div className="mt-1 text-4xl font-bold">
             {loading
               ? '…'
@@ -170,31 +172,25 @@ export default function CreditsClient() {
                 ? '—'
                 : state.balance}
             <span className="ml-2 text-base font-normal text-muted-foreground">
-              {de ? 'Credits' : 'credits'}
+              {c.unit}
             </span>
           </div>
           {state?.sessionExpired ? (
             <div className="mt-3 text-xs text-amber-800 dark:text-amber-400">
-              {de
-                ? 'Guthaben unbekannt — Sitzung abgelaufen.'
-                : 'Balance unknown — session expired.'}
+              {c.balanceUnknown}
             </div>
           ) : state && !state.central && !state.enabled ? (
             <div className="mt-3 text-xs text-amber-800 dark:text-amber-400">
-              {de
-                ? 'Hinweis: Das Bezahlsystem ist noch nicht aktiviert.'
-                : 'Note: the payment system is not active yet.'}
+              {c.paymentInactive}
             </div>
           ) : null}
         </div>
 
         {/* Guthaben aufladen — zentraler Kauf über die Website (ein Wallet für alle Apps) */}
         <div>
-          <h2 className="text-lg font-semibold mb-1">{de ? 'Guthaben aufladen' : 'Top up credits'}</h2>
+          <h2 className="text-lg font-semibold mb-1">{t.common.topUp}</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {de
-              ? 'Credits gelten in allen PulseNorth-Apps (1 Credit = 1 Analyse).'
-              : 'Credits work across all PulseNorth apps (1 credit = 1 analysis).'}
+            {c.platformWide}
           </p>
           {/* B28 (03.10.2026): Credits kauft nur der Admin (der Credit-Dienst erzwingt es).
               Ein Mitglied bekommt zentral keinen Kauf-Link (topUpUrl fehlt) — dann steht hier
@@ -209,20 +205,20 @@ export default function CreditsClient() {
               onClick={() => buy('topup')}
               disabled={!state?.enabled}
             >
-              {de ? 'Guthaben aufladen' : 'Top up credits'}
+              {t.common.topUp}
             </button>
           )}
         </div>
 
         {/* Rechnungen */}
         <div>
-          <h2 className="text-lg font-semibold mb-1">{de ? 'Rechnungen' : 'Invoices'}</h2>
+          <h2 className="text-lg font-semibold mb-1">{c.invoices}</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            {de ? 'Deine Rechnungen als PDF.' : 'Your invoices as PDF.'}
+            {c.invoicesIntro}
           </p>
           {invoices.length === 0 ? (
             <div className="pn-none glass-panel rounded-xl p-6 text-sm text-muted-foreground">
-              {de ? 'Noch keine Rechnungen.' : 'No invoices yet.'}
+              {c.noInvoices}
             </div>
           ) : (
             <div className="pn-surface glass-panel rounded-xl divide-y divide-white/5">
@@ -245,15 +241,15 @@ export default function CreditsClient() {
                         }
                       >
                         {reverseCharge
-                          ? de ? '0 % · Reverse-Charge' : '0% · reverse charge'
-                          : `${Math.round(inv.taxRate * 100)} % ${de ? 'USt' : 'VAT'}`}
+                          ? c.reverseCharge
+                          : c.vatRate.replace('{rate}', String(Math.round(inv.taxRate * 100)))}
                       </span>
                     </div>
                     <a
                       href={withBasePath(`/api/invoices/${encodeURIComponent(inv.invoiceNumber)}`)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title={de ? 'PDF herunterladen' : 'Download PDF'}
+                      title={c.downloadPdf}
                       className="pn-none inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground hover:border-primary/30"
                     >
                       <Download className="h-4 w-4" />

@@ -45,50 +45,25 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
 
 /** Pulscraft-Login-Pattern: dark Hero, Glas-Top-Bar, Wortmarke, Neon-MS-Button. */
 function LoginScreen() {
-  const { t, locale } = useTranslation();
-  const de = locale.startsWith("de");
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
 
-  // App-Texte (Du-Form, Website-konform). DE/EN inline wie die Feature-Cards;
-  // andere Locales fallen auf EN zurueck (konsistent mit dem bestehenden Muster).
-  const tagline = de
-    ? "KI-Analyse für bessere Mitarbeitergespräche"
-    : "AI analysis for better employee conversations";
-  const description = de
-    ? "Lade ein Gesprächs-Transkript hoch und erhalte in Minuten eine strukturierte Analyse mit Kompetenz-Scoring und konkretem, umsetzbarem Feedback."
-    : "Upload a conversation transcript and get a structured analysis with competency scoring and concrete, actionable feedback in minutes.";
+  // Go-Live-Prüfung (12.11.2026): Alle Texte der Anmeldeseite kommen aus dem Wörterbuch (Abschnitt auth);
+  // vorher stand hier eine Weiche Deutsch/Englisch, und 20 Sprachen lasen Englisch.
 
   // Legal-Links → zentrale Website (neuer Tab, App bleibt offen).
   const legalLinks: Array<[string, string]> = [
-    [de ? "Datenschutz" : "Privacy", "datenschutz"],
-    [de ? "AGB" : "Terms", "agb"],
-    ["AVV", "avv"],
-    [de ? "Impressum" : "Imprint", "impressum"],
+    [t.auth.legalPrivacy, "datenschutz"],
+    [t.auth.legalTerms, "agb"],
+    [t.auth.legalDpa, "avv"],
+    [t.auth.legalImprint, "impressum"],
   ];
 
   const features = [
-    {
-      Icon: MessagesSquare,
-      title: de ? "Gesprächsanalyse" : "Conversation analysis",
-      desc: de
-        ? "KI-gestützte Analyse von Mitarbeitergesprächen mit konkretem, umsetzbarem Feedback."
-        : "AI-powered analysis of employee conversations with concrete, actionable feedback.",
-    },
-    {
-      Icon: BarChart3,
-      title: de ? "Kompetenz-Scoring" : "Competency scoring",
-      desc: de
-        ? "Strukturierte Bewertung der Führungskompetenzen — mit Evidenz aus dem Transkript."
-        : "Structured assessment of leadership competencies — grounded in the transcript.",
-    },
-    {
-      Icon: ShieldCheck,
-      title: de ? "DSGVO-konform" : "GDPR-compliant",
-      desc: de
-        ? "Anonymisierung im Browser vor der Analyse; Verarbeitung in der EU (Azure)."
-        : "In-browser anonymization before analysis; processing in the EU (Azure).",
-    },
+    { Icon: MessagesSquare, title: t.auth.featureAnalysisTitle, desc: t.auth.featureAnalysisBody },
+    { Icon: BarChart3, title: t.auth.featureScoringTitle, desc: t.auth.featureScoringBody },
+    { Icon: ShieldCheck, title: t.auth.featureGdprTitle, desc: t.auth.featureGdprBody },
   ];
 
   async function onSignIn() {
@@ -130,9 +105,9 @@ function LoginScreen() {
           <span className="text-foreground">PulseNorth</span>
           <span className="text-brand">.AI</span>
         </h1>
-        <p className="mt-2 text-sm font-medium text-muted-foreground">Gesprächs-Coach</p>
-        <p className="mt-3 text-lg font-medium text-gradient">{tagline}</p>
-        <p className="mt-4 max-w-xl text-muted-foreground">{description}</p>
+        <p className="mt-2 text-sm font-medium text-muted-foreground">{t.auth.loginProduct}</p>
+        <p className="mt-3 text-lg font-medium text-gradient">{t.auth.loginTagline}</p>
+        <p className="mt-4 max-w-xl text-muted-foreground">{t.auth.loginDescription}</p>
 
         <button
           type="button"
@@ -165,11 +140,7 @@ function LoginScreen() {
       </main>
 
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        <p>
-          {de
-            ? "EU-Hosting · DSGVO-konform · Kein Training mit Deinen Daten."
-            : "EU hosting · GDPR-compliant · No training on your data."}
-        </p>
+        <p>{t.auth.loginFooter}</p>
         <nav className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           {legalLinks.map(([label, slug]) => (
             <a

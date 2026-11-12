@@ -27,7 +27,8 @@
     "newVersion": "A new version of the Coach is available.",
     "sessionExpired": "Session expired — please sign in again",
     "reLogin": "Sign in again",
-    "languageLoadFailed": "The language could not be loaded. Please try again."
+    "languageLoadFailed": "The language could not be loaded. Please try again.",
+    "deleteFailed": "Delete failed"
   },
   "nav": {
     "analyze": "Transcript Analysis",
@@ -398,7 +399,21 @@
     "loginFailed": "Login failed",
     "genericError": "Something went wrong.",
     "signInWithMicrosoft": "Sign in with Microsoft",
-    "microsoftHint": "Works with personal Microsoft accounts (e.g. @outlook.com) and work accounts."
+    "microsoftHint": "Works with personal Microsoft accounts (e.g. @outlook.com) and work accounts.",
+    "loginProduct": "Conversation Coach",
+    "loginTagline": "AI analysis for better employee conversations",
+    "loginDescription": "Upload a conversation transcript and get a structured analysis with competency scoring and concrete, actionable feedback in minutes.",
+    "legalPrivacy": "Privacy",
+    "legalTerms": "Terms",
+    "legalDpa": "DPA",
+    "legalImprint": "Imprint",
+    "featureAnalysisTitle": "Conversation analysis",
+    "featureAnalysisBody": "AI-powered analysis of employee conversations with concrete, actionable feedback.",
+    "featureScoringTitle": "Competency scoring",
+    "featureScoringBody": "Structured assessment of leadership competencies — grounded in the transcript.",
+    "featureGdprTitle": "GDPR-compliant",
+    "featureGdprBody": "In-browser anonymization before analysis; processing in the EU (Azure).",
+    "loginFooter": "EU hosting · GDPR-compliant · No training on your data."
   },
   "analyze": {
     "title": "Transcript Analysis",
@@ -460,7 +475,9 @@
     "retrySave": "Retry saving",
     "saveFailed": "Analysis succeeded, but saving failed. Your result is kept — retry saving.",
     "anonymizeOffWarning": "Without anonymization, real names from the transcript are sent to the AI model.",
-    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this."
+    "aiNotice": "The evaluation is performed by an AI. Your transcript is sent to an AI model for this.",
+    "reauthBody": "Your session has expired. Please sign in again — no credit was used.",
+    "paywallBody": "Your free quota is used up. Buy credits to start more analyses."
   },
   "dashboard": {
     "title": "Session history",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Very strong",
     "badgeStrong": "Strong",
     "badgeSolid": "Solid",
-    "badgeNeedsWork": "Needs focus"
+    "badgeNeedsWork": "Needs focus",
+    "deleteRefunded": "1 credit was refunded.",
+    "deleteNotRefunded": "No credit refunded (window expired).",
+    "deleted": "Analysis deleted",
+    "deleteYes": "Yes, delete",
+    "refundOpen": "Within refund window — credit will be returned",
+    "refundClosed": "Refund window expired — no credit returned",
+    "deleteAndRefund": "Delete & refund credit",
+    "refundUntil": "Refund until {time}",
+    "studioNextStep": "Next step: targeted training",
+    "studioPotential": "Biggest potential: {id} · {name}. Create a matching learning module in minutes.",
+    "studioCta": "Create module in Studio",
+    "studioModuleTitle": "Learning module: {name}",
+    "studioModuleGoal": "Strengthen the leadership competency \"{name}\" ({id}) — derived from a PulseNorth conversation analysis."
   },
   "api": {
     "unauthorized": "Authentication required",
@@ -668,7 +698,24 @@
     "saved": "Saved.",
     "saveFailed": "Saving failed.",
     "appearance": "Appearance",
-    "system": "System"
+    "system": "System",
+    "accountData": "Account & data",
+    "accountDataIntro": "Manage your data. Deletions are permanent and cannot be undone.",
+    "historyDelete": "Delete learning history",
+    "historyDeleteBody": "Removes all your analyses and your progress history (radar). Your account, your balance and your invoices are kept.",
+    "historyConfirmTitle": "Really delete your learning history?",
+    "historyConfirmBody": "All analyses and your progress history are removed permanently. This action cannot be undone.",
+    "historyDeleted": "Learning history deleted",
+    "historyDeletedBody": "{runs} analyses and {points} radar data points were removed.",
+    "deleting": "Deleting…",
+    "tryAgainLater": "Please try again later.",
+    "accountDeleteTitle": "Delete account & all data",
+    "accountDeleteBody": "Permanently removes your personal data: learning history, sessions, profile and stored access tokens. For legal reasons, invoices are kept for the statutory retention period (§ 147 AO, German Fiscal Code). You will then be signed out.",
+    "accountDelete": "Delete account",
+    "accountConfirmTitle": "Delete account permanently?",
+    "accountConfirmBody": "This action is irreversible. Learning history, sessions, profile and stored access tokens are removed.",
+    "accountDeleted": "Account deleted",
+    "accountDeletedBody": "Your data has been removed. You will now be signed out."
   },
   "noAccess": {
     "title": "No access to AI Conversation Coach",
@@ -785,5 +832,24 @@
     "berichtStrengths": "What lands well",
     "berichtImprove": "What needs work",
     "berichtPlans": "What learners plan to do"
+  },
+  "creditsPage": {
+    "title": "Credits",
+    "subtitle": "Balance & purchase",
+    "loadFailed": "Could not load balance.",
+    "buyOnWebsite": "Purchase happens on the website.",
+    "paymentSuccess": "Payment successful — your credits have been added. Your invoice is available in your overview.",
+    "paymentCancelled": "Purchase cancelled — nothing was charged.",
+    "currentBalance": "Current balance",
+    "unit": "credits",
+    "balanceUnknown": "Balance unknown — session expired.",
+    "paymentInactive": "Note: the payment system is not active yet.",
+    "platformWide": "Credits work across the whole PulseNorth platform.",
+    "invoices": "Invoices",
+    "invoicesIntro": "Your invoices as PDF.",
+    "noInvoices": "No invoices yet.",
+    "reverseCharge": "0% · reverse charge",
+    "vatRate": "{rate} % VAT",
+    "downloadPdf": "Download PDF"
   }
 }

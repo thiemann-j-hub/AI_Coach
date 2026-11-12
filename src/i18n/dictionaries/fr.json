@@ -27,14 +27,15 @@
     "newVersion": "Une nouvelle version du Coach est disponible.",
     "sessionExpired": "Session expirée — veuillez vous reconnecter",
     "reLogin": "Se reconnecter",
-    "languageLoadFailed": "La langue n'a pas pu être chargée. Veuillez réessayer."
+    "languageLoadFailed": "La langue n'a pas pu être chargée. Veuillez réessayer.",
+    "deleteFailed": "Échec de la suppression"
   },
   "nav": {
     "analyze": "Analyse de transcription",
     "history": "Historique",
     "newAnalysis": "Nouvelle analyse",
     "practice": "S'entraîner",
-    "mainGroup": "MAIN",
+    "mainGroup": "Menu",
     "home": "Accueil",
     "lernbereich": "Mon espace d’apprentissage",
     "profile": "Profil"
@@ -398,7 +399,21 @@
     "loginFailed": "Échec de la connexion",
     "genericError": "Une erreur s'est produite.",
     "signInWithMicrosoft": "Se connecter avec Microsoft",
-    "microsoftHint": "Fonctionne avec les comptes Microsoft personnels (p. ex. @outlook.fr) et professionnels."
+    "microsoftHint": "Fonctionne avec les comptes Microsoft personnels (p. ex. @outlook.fr) et professionnels.",
+    "loginProduct": "Coach de conversation",
+    "loginTagline": "Analyse par IA pour de meilleurs entretiens avec les collaborateurs",
+    "loginDescription": "Importez la transcription d'un entretien et recevez en quelques minutes une analyse structurée avec évaluation des compétences et un feedback concret et applicable.",
+    "legalPrivacy": "Confidentialité",
+    "legalTerms": "Conditions générales",
+    "legalDpa": "Accord de sous-traitance",
+    "legalImprint": "Mentions légales",
+    "featureAnalysisTitle": "Analyse d'entretiens",
+    "featureAnalysisBody": "Analyse par IA des entretiens avec les collaborateurs, avec un feedback concret et applicable.",
+    "featureScoringTitle": "Évaluation des compétences",
+    "featureScoringBody": "Évaluation structurée des compétences de leadership — avec des preuves tirées de la transcription.",
+    "featureGdprTitle": "Conforme au RGPD",
+    "featureGdprBody": "Anonymisation dans le navigateur avant l'analyse ; traitement dans l'UE (Azure).",
+    "loginFooter": "Hébergement dans l'UE · Conforme au RGPD · Aucun entraînement avec vos données."
   },
   "analyze": {
     "title": "Analyse de transcription",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "ex. clair et équitable, sans escalade",
     "conversationType": "Type de conversation",
     "employeeConversation": "Entretien avec un collaborateur",
-    "conversationTypeNote": "(Le type de conversation est actuellement fixé pour un RAG stable.)",
+    "conversationTypeNote": "L'évaluation est conçue pour les entretiens avec les collaborateurs. D'autres types de conversation suivront.",
     "roles": "Rôles dans la conversation",
     "rolesHint": "Choisissez le manager (le collaborateur sera défini automatiquement)",
     "manager": "Manager (Moi)",
@@ -460,7 +475,9 @@
     "retrySave": "Réessayer l'enregistrement",
     "saveFailed": "Analyse réussie, mais l'enregistrement a échoué. Votre résultat est conservé — réessayez l'enregistrement.",
     "anonymizeOffWarning": "Sans anonymisation, les noms réels de la transcription sont transmis au modèle d'IA.",
-    "aiNotice": "L'évaluation est réalisée par une IA. Votre transcription est transmise pour cela à un modèle d'IA."
+    "aiNotice": "L'évaluation est réalisée par une IA. Votre transcription est transmise pour cela à un modèle d'IA.",
+    "reauthBody": "Votre session a expiré. Veuillez vous reconnecter — aucun crédit n'a été utilisé.",
+    "paywallBody": "Votre quota gratuit est épuisé. Achetez des crédits pour lancer d'autres analyses."
   },
   "dashboard": {
     "title": "Historique des sessions",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Très solide",
     "badgeStrong": "Solide",
     "badgeSolid": "Correct",
-    "badgeNeedsWork": "Focus requis"
+    "badgeNeedsWork": "Focus requis",
+    "deleteRefunded": "1 crédit a été remboursé.",
+    "deleteNotRefunded": "Aucun crédit remboursé (délai dépassé).",
+    "deleted": "Analyse supprimée",
+    "deleteYes": "Oui, supprimer",
+    "refundOpen": "Dans le délai de remboursement — le crédit est restitué",
+    "refundClosed": "Délai de remboursement dépassé — aucun crédit restitué",
+    "deleteAndRefund": "Supprimer et récupérer le crédit",
+    "refundUntil": "Remboursement jusqu'à {time}",
+    "studioNextStep": "Prochaine étape : un entraînement ciblé",
+    "studioPotential": "Plus grand potentiel : {id} · {name}. Créez en quelques minutes un module d'apprentissage sur ce thème dans le Learning Studio.",
+    "studioCta": "Créer un module dans le Studio",
+    "studioModuleTitle": "Module d'apprentissage : {name}",
+    "studioModuleGoal": "Renforcer de manière ciblée la compétence de leadership « {name} » ({id}) — issu d'une analyse d'entretien PulseNorth."
   },
   "api": {
     "unauthorized": "Authentification requise",
@@ -580,7 +610,7 @@
     "wishSend": "Envoyer la demande",
     "wishThanks": "Merci ! Votre demande a bien été reçue et alimente la priorisation des nouveaux scénarios.",
     "resumeTimeLeft": "encore ~{min} min",
-    "resumeTimeUp": "Temps écoulé",
+    "resumeTimeUp": "En pause – vous attend",
     "dropWrongType": "Seul le PDF est accepté ici — utilisez la page d'analyse pour du texte.",
     "transferTitle": "Votre intention issue du dernier entretien",
     "transferQuestion": "Comment cela s'est-il passé au quotidien ?",
@@ -668,7 +698,24 @@
     "saved": "Enregistré.",
     "saveFailed": "Échec de l'enregistrement.",
     "appearance": "Apparence",
-    "system": "Système"
+    "system": "Système",
+    "accountData": "Compte et données",
+    "accountDataIntro": "Gérez vos données. Les suppressions sont définitives et ne peuvent pas être annulées.",
+    "historyDelete": "Supprimer l'historique d'apprentissage",
+    "historyDeleteBody": "Supprime toutes vos analyses et votre historique de progression (radar). Votre compte, votre solde et vos factures sont conservés.",
+    "historyConfirmTitle": "Vraiment supprimer l'historique d'apprentissage ?",
+    "historyConfirmBody": "Toutes les analyses et votre historique de progression seront supprimés définitivement. Cette action ne peut pas être annulée.",
+    "historyDeleted": "Historique d'apprentissage supprimé",
+    "historyDeletedBody": "{runs} analyses et {points} points de mesure du radar ont été supprimés.",
+    "deleting": "Suppression…",
+    "tryAgainLater": "Veuillez réessayer plus tard.",
+    "accountDeleteTitle": "Supprimer le compte et toutes les données",
+    "accountDeleteBody": "Supprime définitivement vos données personnelles : historique d'apprentissage, sessions, profil et jetons d'accès enregistrés. Pour des raisons légales, les factures sont conservées pendant la durée légale de conservation (§ 147 AO, code fiscal allemand). Votre session sera ensuite fermée.",
+    "accountDelete": "Supprimer le compte",
+    "accountConfirmTitle": "Supprimer définitivement le compte ?",
+    "accountConfirmBody": "Cette action est irréversible. L'historique d'apprentissage, les sessions, le profil et les jetons d'accès enregistrés seront supprimés.",
+    "accountDeleted": "Compte supprimé",
+    "accountDeletedBody": "Vos données ont été supprimées. Votre session va maintenant être fermée."
   },
   "noAccess": {
     "title": "Aucun accès à Coach de conversation IA",
@@ -785,5 +832,24 @@
     "berichtStrengths": "Ce qui passe bien",
     "berichtImprove": "Ce qui demande du travail",
     "berichtPlans": "Ce que les apprenants prévoient"
+  },
+  "creditsPage": {
+    "title": "Crédits",
+    "subtitle": "Solde et achat",
+    "loadFailed": "Impossible de charger le solde.",
+    "buyOnWebsite": "L'achat se fait sur le site web.",
+    "paymentSuccess": "Paiement réussi — vos crédits ont été ajoutés. Vous trouverez la facture dans votre aperçu.",
+    "paymentCancelled": "Achat annulé — rien n'a été facturé.",
+    "currentBalance": "Solde actuel",
+    "unit": "crédits",
+    "balanceUnknown": "Solde inconnu — session expirée.",
+    "paymentInactive": "Remarque : le système de paiement n'est pas encore activé.",
+    "platformWide": "Les crédits sont valables sur toute la plateforme PulseNorth.",
+    "invoices": "Factures",
+    "invoicesIntro": "Vos factures au format PDF.",
+    "noInvoices": "Pas encore de factures.",
+    "reverseCharge": "0 % · autoliquidation",
+    "vatRate": "{rate} % TVA",
+    "downloadPdf": "Télécharger le PDF"
   }
 }

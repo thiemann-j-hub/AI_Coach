@@ -31,8 +31,8 @@ type AnyObj = Record<string, any>;
 // Sichtbarster Suite-Mehrwert: aus der Diagnose wird direkt eine Maßnahme.
 
 function StudioRecommendationCard({ competencies }: { competencies: any[] }) {
-  const { locale } = useTranslation();
-  const de = locale.startsWith('de');
+  // Go-Live-Prüfung (12.11.2026): Texte aus dem Wörterbuch statt der Weiche Deutsch/Englisch.
+  const { t, locale } = useTranslation();
 
   const scored = (Array.isArray(competencies) ? competencies : [])
     .map((c: AnyObj) => {
@@ -52,13 +52,11 @@ function StudioRecommendationCard({ competencies }: { competencies: any[] }) {
   // Nur empfehlen, wenn wirklich Luft nach oben ist — sonst wirkt es verkäuferisch.
   if (weakest.pct >= 75) return null;
 
-  const studioLocale = de ? 'de' : locale.startsWith('es') ? 'es' : 'en';
-  const title = de
-    ? `Lernmodul: ${weakest.name}`
-    : `Learning module: ${weakest.name}`;
-  const goal = de
-    ? `Führungskompetenz „${weakest.name}" (${weakest.id}) gezielt stärken — abgeleitet aus einer PulseNorth-Gesprächsanalyse.`
-    : `Strengthen the leadership competency "${weakest.name}" (${weakest.id}) — derived from a PulseNorth conversation analysis.`;
+  // Adresse im Studio: dort gibt es nur diese drei Sprachen (keine Text-Weiche). Titel und Ziel des
+  // vorbefüllten Projekts stehen in der Sprache der Oberfläche.
+  const studioLocale = locale.startsWith('de') ? 'de' : locale.startsWith('es') ? 'es' : 'en';
+  const title = t.report.studioModuleTitle.replace('{name}', weakest.name);
+  const goal = t.report.studioModuleGoal.replace('{name}', weakest.name).replace('{id}', weakest.id);
   const href = `/studio/${studioLocale}/projects/new?title=${encodeURIComponent(title)}&goal=${encodeURIComponent(goal)}&src=coach`;
 
   return (
@@ -69,19 +67,17 @@ function StudioRecommendationCard({ competencies }: { competencies: any[] }) {
         </span>
         <div className="min-w-0">
           <h3 className="font-semibold text-foreground">
-            {de ? 'Nächster Schritt: gezielt trainieren' : 'Next step: targeted training'}
+            {t.report.studioNextStep}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {de
-              ? `Größtes Potenzial: ${weakest.id} · ${weakest.name}. Erstelle dazu in Minuten ein Lernmodul im Learning Studio.`
-              : `Biggest potential: ${weakest.id} · ${weakest.name}. Create a matching learning module in minutes.`}
+            {t.report.studioPotential.replace('{id}', weakest.id).replace('{name}', weakest.name)}
           </p>
           <a
             href={href}
             className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-primary-foreground shadow-neon transition-all hover:bg-primary-dark"
           >
             <GraduationCap className="h-4 w-4" />
-            {de ? 'Lernmodul im Studio erstellen' : 'Create module in Studio'}
+            {t.report.studioCta}
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>

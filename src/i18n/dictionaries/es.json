@@ -27,14 +27,15 @@
     "newVersion": "Hay una nueva versión del Coach.",
     "sessionExpired": "Sesión caducada: vuelva a iniciar sesión",
     "reLogin": "Volver a iniciar sesión",
-    "languageLoadFailed": "No se pudo cargar el idioma. Inténtelo de nuevo."
+    "languageLoadFailed": "No se pudo cargar el idioma. Inténtelo de nuevo.",
+    "deleteFailed": "Error al eliminar"
   },
   "nav": {
     "analyze": "Análisis de transcripción",
     "history": "Historial",
     "newAnalysis": "Nuevo análisis",
     "practice": "Practicar",
-    "mainGroup": "MAIN",
+    "mainGroup": "Menú",
     "home": "Inicio",
     "lernbereich": "Mi área de aprendizaje",
     "profile": "Perfil"
@@ -217,7 +218,7 @@
     "builderGenerateFailed": "La generación ha fallado. Inténtelo de nuevo o concrete más el brief.",
     "builderNoCredits": "No hay créditos suficientes para una generación.",
     "builderLimit": "Se alcanzó el máximo de escenarios propios — borre uno primero.",
-    "builderListTitle": "Vuestros escenarios",
+    "builderListTitle": "Sus escenarios",
     "builderEmpty": "Aún no hay escenarios propios — describa arriba su primera conversación.",
     "builderPublished": "Publicado",
     "builderDraft": "Borrador",
@@ -398,7 +399,21 @@
     "loginFailed": "Error al iniciar sesión",
     "genericError": "Algo salió mal.",
     "signInWithMicrosoft": "Iniciar sesión con Microsoft",
-    "microsoftHint": "Funciona con cuentas Microsoft personales (p. ej. @outlook.es) y de trabajo."
+    "microsoftHint": "Funciona con cuentas Microsoft personales (p. ej. @outlook.es) y de trabajo.",
+    "loginProduct": "Coach de conversación",
+    "loginTagline": "Análisis con IA para mejores conversaciones con empleados",
+    "loginDescription": "Suba la transcripción de una conversación y reciba en pocos minutos un análisis estructurado con puntuación de competencias y comentarios concretos y aplicables.",
+    "legalPrivacy": "Privacidad",
+    "legalTerms": "Condiciones",
+    "legalDpa": "Encargo de tratamiento",
+    "legalImprint": "Aviso legal",
+    "featureAnalysisTitle": "Análisis de conversaciones",
+    "featureAnalysisBody": "Análisis con IA de conversaciones con empleados, con comentarios concretos y aplicables.",
+    "featureScoringTitle": "Puntuación de competencias",
+    "featureScoringBody": "Evaluación estructurada de las competencias de liderazgo — con evidencias de la transcripción.",
+    "featureGdprTitle": "Conforme al RGPD",
+    "featureGdprBody": "Anonimización en el navegador antes del análisis; tratamiento en la UE (Azure).",
+    "loginFooter": "Alojamiento en la UE · Conforme al RGPD · Sin entrenamiento con sus datos."
   },
   "analyze": {
     "title": "Análisis de transcripción",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "ej. claro y justo, sin escalada",
     "conversationType": "Tipo de conversación",
     "employeeConversation": "Conversación con empleado",
-    "conversationTypeNote": "(El tipo de conversación está fijado actualmente para un RAG estable.)",
+    "conversationTypeNote": "La evaluación está ajustada a conversaciones con empleados. Más adelante se añadirán otros tipos de conversación.",
     "roles": "Roles en la conversación",
     "rolesHint": "Elija al gerente (el empleado se establecerá automáticamente)",
     "manager": "Gerente (Yo)",
@@ -460,7 +475,9 @@
     "retrySave": "Reintentar guardado",
     "saveFailed": "Análisis completado, pero no se pudo guardar. Su resultado se conserva — reintente el guardado.",
     "anonymizeOffWarning": "Sin anonimización, los nombres reales de la transcripción se envían al modelo de IA.",
-    "aiNotice": "La evaluación la realiza una IA. Para ello, su transcripción se envía a un modelo de IA."
+    "aiNotice": "La evaluación la realiza una IA. Para ello, su transcripción se envía a un modelo de IA.",
+    "reauthBody": "Su sesión ha caducado. Vuelva a iniciar sesión — no se ha consumido ningún crédito.",
+    "paywallBody": "Su contingente gratuito está agotado. Compre créditos para iniciar más análisis."
   },
   "dashboard": {
     "title": "Historial de sesiones",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Muy fuerte",
     "badgeStrong": "Fuerte",
     "badgeSolid": "Sólido",
-    "badgeNeedsWork": "Necesita foco"
+    "badgeNeedsWork": "Necesita foco",
+    "deleteRefunded": "Se ha devuelto 1 crédito.",
+    "deleteNotRefunded": "No se ha devuelto ningún crédito (plazo vencido).",
+    "deleted": "Análisis eliminado",
+    "deleteYes": "Sí, eliminar",
+    "refundOpen": "Dentro del plazo de devolución — el crédito se devuelve",
+    "refundClosed": "Plazo de devolución vencido — no se devuelve ningún crédito",
+    "deleteAndRefund": "Eliminar y recuperar el crédito",
+    "refundUntil": "Devolución hasta: {time}",
+    "studioNextStep": "Siguiente paso: entrenar de forma específica",
+    "studioPotential": "Mayor potencial: {id} · {name}. Cree en pocos minutos un módulo de aprendizaje sobre ello en el Learning Studio.",
+    "studioCta": "Crear módulo en el Studio",
+    "studioModuleTitle": "Módulo de aprendizaje: {name}",
+    "studioModuleGoal": "Reforzar de forma específica la competencia de liderazgo «{name}» ({id}) — derivado de un análisis de conversación de PulseNorth."
   },
   "api": {
     "unauthorized": "Se requiere autenticación",
@@ -580,7 +610,7 @@
     "wishSend": "Enviar petición",
     "wishThanks": "¡Gracias! Su petición ha llegado y alimenta la priorización de nuevos escenarios.",
     "resumeTimeLeft": "quedan ~{min} min",
-    "resumeTimeUp": "Tiempo agotado",
+    "resumeTimeUp": "En pausa – le espera",
     "dropWrongType": "Aquí solo se acepta PDF — use la página de análisis para texto.",
     "transferTitle": "Su propósito de la última conversación",
     "transferQuestion": "¿Cómo fue en el día a día?",
@@ -668,7 +698,24 @@
     "saved": "Guardado.",
     "saveFailed": "Error al guardar.",
     "appearance": "Apariencia",
-    "system": "Sistema"
+    "system": "Sistema",
+    "accountData": "Cuenta y datos",
+    "accountDataIntro": "Gestione sus datos. Las eliminaciones son definitivas y no se pueden deshacer.",
+    "historyDelete": "Eliminar el historial de aprendizaje",
+    "historyDeleteBody": "Elimina todos sus análisis y su historial de progreso (radar). Su cuenta, su saldo y sus facturas se conservan.",
+    "historyConfirmTitle": "¿Eliminar de verdad el historial de aprendizaje?",
+    "historyConfirmBody": "Todos los análisis y su historial de progreso se eliminarán de forma permanente. Esta acción no se puede deshacer.",
+    "historyDeleted": "Historial de aprendizaje eliminado",
+    "historyDeletedBody": "Se han eliminado {runs} análisis y {points} puntos de medición del radar.",
+    "deleting": "Eliminando…",
+    "tryAgainLater": "Vuelva a intentarlo más tarde.",
+    "accountDeleteTitle": "Eliminar la cuenta y todos los datos",
+    "accountDeleteBody": "Elimina de forma permanente sus datos personales: historial de aprendizaje, sesiones, perfil y tokens de acceso guardados. Por motivos legales, las facturas se conservan durante el plazo legal de conservación (§ 147 AO, código tributario alemán). Después se cerrará su sesión.",
+    "accountDelete": "Eliminar la cuenta",
+    "accountConfirmTitle": "¿Eliminar la cuenta definitivamente?",
+    "accountConfirmBody": "Esta acción es irreversible. Se eliminarán el historial de aprendizaje, las sesiones, el perfil y los tokens de acceso guardados.",
+    "accountDeleted": "Cuenta eliminada",
+    "accountDeletedBody": "Sus datos se han eliminado. Ahora se cerrará su sesión."
   },
   "noAccess": {
     "title": "Sin acceso a Coach de conversación con IA",
@@ -785,5 +832,24 @@
     "berichtStrengths": "Lo que funciona",
     "berichtImprove": "Lo que necesita trabajo",
     "berichtPlans": "Lo que se proponen las personas"
+  },
+  "creditsPage": {
+    "title": "Créditos",
+    "subtitle": "Saldo y compra",
+    "loadFailed": "No se pudo cargar el saldo.",
+    "buyOnWebsite": "La compra se realiza en el sitio web.",
+    "paymentSuccess": "Pago realizado — sus créditos se han abonado. Encontrará la factura en su resumen.",
+    "paymentCancelled": "Compra cancelada — no se ha cobrado nada.",
+    "currentBalance": "Saldo actual",
+    "unit": "créditos",
+    "balanceUnknown": "Saldo desconocido — la sesión ha caducado.",
+    "paymentInactive": "Nota: el sistema de pago aún no está activado.",
+    "platformWide": "Los créditos son válidos en toda la plataforma PulseNorth.",
+    "invoices": "Facturas",
+    "invoicesIntro": "Sus facturas en PDF.",
+    "noInvoices": "Aún no hay facturas.",
+    "reverseCharge": "0 % · inversión del sujeto pasivo",
+    "vatRate": "{rate} % IVA",
+    "downloadPdf": "Descargar PDF"
   }
 }

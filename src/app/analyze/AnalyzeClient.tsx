@@ -236,11 +236,23 @@ export default function AnalyzeClient() {
         employeeLabel: roleLabels.employeeLabel,
       };
 
-      const res = await authFetch('/api/analyze', {
-        method: 'POST',
-        // sessionId mitsenden: ermoeglicht die Schatten-Persistenz (Credit verbraucht => Run existiert)
-        body: JSON.stringify({ ...payload, sessionId: sid }),
-      });
+      // sessionId mitsenden: ermoeglicht die Schatten-Persistenz (Credit verbraucht => Run existiert)
+      const sende = (sitzung: string) =>
+        authFetch('/api/analyze', { method: 'POST', body: JSON.stringify({ ...payload, sessionId: sitzung }) });
+      let aktiveSitzung = sid;
+      let res = await sende(aktiveSitzung);
+      // Go-Live-Prüfung 12.11.2026: Die gemerkte Sitzung gehört einem anderen Konto an diesem Gerät. Die Route lehnt
+      // sie vor jeder Buchung ab (403 FORBIDDEN). Dann eine frische Sitzung nehmen und einmal neu senden.
+      if (res.status === 403) {
+        const fj = await res.clone().json().catch(() => null);
+        if (fj?.code === 'FORBIDDEN') {
+          aktiveSitzung = newSessionId();
+          try { localStorage.setItem(STORAGE_KEY_SESSION, aktiveSitzung); } catch {}
+          setSessionId(aktiveSitzung);
+          router.replace(`/analyze?sessionId=${encodeURIComponent(aktiveSitzung)}`);
+          res = await sende(aktiveSitzung);
+        }
+      }
       // Paywall: kein Guthaben -> CTA zur Credits-Seite statt generischem Fehler
       if (res.status === 402) {
         const pj = await res.json().catch(() => ({} as any));
@@ -271,7 +283,7 @@ export default function AnalyzeClient() {
 
       setStep(t.analyze.statusSaving);
       const savePayload = {
-        sessionId: sid,
+        sessionId: aktiveSitzung,
         runId: analyzeRunId,
         request: { ...payload, transcriptText: saveTranscript ? transcriptToSend : null },
         options: { storeTranscript: saveTranscript },
@@ -670,19 +682,19 @@ export default function AnalyzeClient() {
                 <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
                     <LogIn className="h-4 w-4" />
-                    {lang === 'de' ? 'Sitzung abgelaufen' : 'Session expired'}
+                    {/* Go-Live-Prüfung (12.11.2026): Texte aus dem Wörterbuch. Vorher hing die Sprache dieser
+                        Hinweise an der Sprache der Analyse (Deutsch/Englisch), nicht an der Oberfläche. */}
+                    {t.common.sessionExpired}
                   </div>
                   <p className="text-amber-800 dark:text-amber-200">
-                    {lang === 'de'
-                      ? 'Deine Anmeldung ist abgelaufen. Bitte melde dich neu an — es wurde kein Credit verbraucht.'
-                      : 'Your session has expired. Please sign in again — no credit was used.'}
+                    {t.analyze.reauthBody}
                   </p>
                   <button
                     onClick={() => { void signInAgain(user?.uid); }}
                     className="self-start inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"
                   >
                     <LogIn className="h-4 w-4" />
-                    {lang === 'de' ? 'Neu anmelden' : 'Sign in again'}
+                    {t.common.reLogin}
                   </button>
                 </div>
               )}
@@ -691,14 +703,10 @@ export default function AnalyzeClient() {
                 <div className="pn-none p-4 mb-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-sm flex flex-col gap-3">
                   <div className="flex items-center gap-2 font-semibold">
                     <Lock className="h-4 w-4" />
-                    {lang === 'de' ? 'Kein Guthaben mehr' : 'Out of credits'}
+                    {t.aiErrors.credits_empty.title}
                   </div>
                   <p className="text-amber-800 dark:text-amber-200">
-                    {paywall.canTopUp === false
-                      ? t.common.balanceEmptyMember
-                      : lang === 'de'
-                        ? 'Dein kostenloses Kontingent ist aufgebraucht. Kaufe Credits, um weitere Analysen zu starten.'
-                        : 'Your free quota is used up. Buy credits to start more analyses.'}
+                    {paywall.canTopUp === false ? t.common.balanceEmptyMember : t.analyze.paywallBody}
                   </p>
                   {/* B13 (01.10.2026): Mitglieder sehen keinen Kauf-Knopf — Credits kauft der Admin. */}
                   {paywall.canTopUp === false ? null : paywall.topUpUrl ? (
@@ -706,14 +714,14 @@ export default function AnalyzeClient() {
                       href={paywall.topUpUrl}
                       className="self-start px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"
                     >
-                      {lang === 'de' ? 'Credits kaufen' : 'Buy credits'}
+                      {t.common.topUp}
                     </a>
                   ) : (
                     <Link
                       href="/credits"
                       className="self-start px-4 py-2 rounded-lg bg-amber-500 text-amber-950 font-semibold hover:bg-amber-400 transition-colors"
                     >
-                      {lang === 'de' ? 'Credits kaufen' : 'Buy credits'}
+                      {t.common.topUp}
                     </Link>
                   )}
                 </div>

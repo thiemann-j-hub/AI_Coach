@@ -24,18 +24,19 @@
     "collapseSidebar": "Zijbalk inklappen",
     "balanceEmptyMember": "Het tegoed van uw bedrijf is op — uw admin is geïnformeerd.",
     "adminBuys": "Credits worden gekocht door de admin van uw bedrijf. U bent aangemeld als lid. Laat het uw admin weten.",
-    "newVersion": "A new version of the Coach is available.",
+    "newVersion": "Er is een nieuwe versie van de Coach beschikbaar.",
     "sessionExpired": "Sessie verlopen – meld u opnieuw aan",
     "reLogin": "Opnieuw aanmelden",
-    "languageLoadFailed": "De taal kon niet worden geladen. Probeer het opnieuw."
+    "languageLoadFailed": "De taal kon niet worden geladen. Probeer het opnieuw.",
+    "deleteFailed": "Verwijderen mislukt"
   },
   "nav": {
     "analyze": "Transcriptanalyse",
     "history": "Geschiedenis",
     "newAnalysis": "Nieuwe analyse",
     "practice": "Oefenen",
-    "mainGroup": "MAIN",
-    "home": "Home",
+    "mainGroup": "Menu",
+    "home": "Start",
     "lernbereich": "Mijn leergebied",
     "profile": "Profiel"
   },
@@ -233,7 +234,7 @@
     "builderReviseLabel": "Herzien — wat moet anders?",
     "builderRevisePlaceholder": "bijv. De persona moet harder onderhandelen, en doel 3 moet over het jaarplan gaan …",
     "builderReviseCta": "Herzien (1 credit)",
-    "builderTestCta": "Proefrit",
+    "builderTestCta": "Proefgesprek",
     "builderPublishCta": "Publiceren",
     "builderUnpublishCta": "Intrekken",
     "builderDeleteCta": "Verwijderen",
@@ -245,10 +246,10 @@
     "micNoticeBody": "Als u met de rol praat, verwerkt Google Vertex AI in de EU uw stem. Bij het dicteren zet Microsoft Azure in West-Europa uw stem om in tekst en slaat de opname niet op. U kunt altijd schrijven in plaats van spreken.",
     "micNoticeAccept": "Begrepen, microfoon gebruiken",
     "micNoticeDecline": "Liever typen",
-    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
-    "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step",
-    "builderVoice": "Voice",
+    "aiStartNotice": "U oefent met een AI-agent. Het personage, de stem en de antwoorden zijn door de computer gegenereerd.",
+    "coachCardLabel": "Coachingkaart",
+    "coachCardsTitle": "Kaarten die passen bij uw volgende stap",
+    "builderVoice": "Stem",
     "builderVoiceFemale": "Vrouwelijk",
     "builderVoiceMale": "Mannelijk",
     "builderVoiceListen": "Beluisteren",
@@ -344,7 +345,7 @@
     "builderRoleReady": "Rol is klaar",
     "builderRoleFailed": "Voorbereiding mislukt. We proberen het later opnieuw; gesprekken werken gewoon.",
     "builderRoleOpen": "Rol wordt bij het eerste gesprek voorbereid",
-    "builderFreeTestNote": "De evaluatie van uw eerste proefrit kost geen credit.",
+    "builderFreeTestNote": "De evaluatie van uw eerste proefgesprek kost geen credit.",
     "wegTitle": "Zo voert u het gesprek",
     "wegSprechen": "Spreken",
     "wegSchreiben": "Schrijven",
@@ -385,7 +386,7 @@
     "clockPaused": "gepauzeerd",
     "timeoutHintOver": "De pauze is voorbij, de klok loopt weer.",
     "speakUnavailable": "Spreken is nu niet mogelijk. U kunt het gesprek schriftelijk voortzetten.",
-    "confirmBodyFree": "De evaluatie van uw eerste proefrit kost geen credit. U ontvangt gedetailleerde feedback met scores, letterlijke citaten, sleutelmomenten en één concrete volgende stap. Daarna kan het gesprek niet worden voortgezet.",
+    "confirmBodyFree": "De evaluatie van uw eerste proefgesprek kost geen credit. U ontvangt gedetailleerde feedback met scores, letterlijke citaten, sleutelmomenten en één concrete volgende stap. Daarna kan het gesprek niet worden voortgezet.",
     "confirmCtaFree": "Ja, beoordelen"
   },
   "auth": {
@@ -398,7 +399,21 @@
     "loginFailed": "Aanmelden mislukt",
     "genericError": "Er is iets misgegaan.",
     "signInWithMicrosoft": "Aanmelden met Microsoft",
-    "microsoftHint": "Werkt met persoonlijke Microsoft-accounts (bijv. @outlook.com) en werkaccounts."
+    "microsoftHint": "Werkt met persoonlijke Microsoft-accounts (bijv. @outlook.com) en werkaccounts.",
+    "loginProduct": "Gesprekscoach",
+    "loginTagline": "AI-analyse voor betere medewerkersgesprekken",
+    "loginDescription": "Upload een gesprekstranscript en ontvang binnen enkele minuten een gestructureerde analyse met competentiescores en concrete, bruikbare feedback.",
+    "legalPrivacy": "Privacy",
+    "legalTerms": "Voorwaarden",
+    "legalDpa": "Verwerkersovereenkomst",
+    "legalImprint": "Colofon",
+    "featureAnalysisTitle": "Gespreksanalyse",
+    "featureAnalysisBody": "AI-ondersteunde analyse van medewerkersgesprekken met concrete, bruikbare feedback.",
+    "featureScoringTitle": "Competentiescores",
+    "featureScoringBody": "Gestructureerde beoordeling van leiderschapscompetenties — onderbouwd met het transcript.",
+    "featureGdprTitle": "AVG-conform",
+    "featureGdprBody": "Anonimisering in de browser vóór de analyse; verwerking in de EU (Azure).",
+    "loginFooter": "EU-hosting · AVG-conform · Geen training met uw gegevens."
   },
   "analyze": {
     "title": "Transcriptanalyse",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "bijv. duidelijk en fair, zonder escalatie",
     "conversationType": "Gesprekstype",
     "employeeConversation": "Medewerkersgesprek",
-    "conversationTypeNote": "(Het gesprekstype ligt momenteel vast voor een stabiele RAG.)",
+    "conversationTypeNote": "De beoordeling is afgestemd op medewerkersgesprekken. Meer gesprekstypen volgen.",
     "roles": "Rollen in het gesprek",
     "rolesHint": "Kies de leidinggevende (de medewerker wordt automatisch ingesteld)",
     "manager": "Leidinggevende (ik)",
@@ -460,7 +475,9 @@
     "retrySave": "Opslaan opnieuw proberen",
     "saveFailed": "Analyse gelukt, maar opslaan mislukt. Uw resultaat blijft bewaard — probeer het opslaan opnieuw.",
     "anonymizeOffWarning": "Zonder anonimisering worden echte namen uit het transcript naar het AI-model gestuurd.",
-    "aiNotice": "De beoordeling wordt door een AI gedaan. Uw transcript wordt daarvoor naar een AI-model gestuurd."
+    "aiNotice": "De beoordeling wordt door een AI gedaan. Uw transcript wordt daarvoor naar een AI-model gestuurd.",
+    "reauthBody": "Uw aanmelding is verlopen. Meld u opnieuw aan — er is geen credit verbruikt.",
+    "paywallBody": "Uw gratis tegoed is op. Koop credits om meer analyses te starten."
   },
   "dashboard": {
     "title": "Sessiegeschiedenis",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Zeer sterk",
     "badgeStrong": "Sterk",
     "badgeSolid": "Solide",
-    "badgeNeedsWork": "Focus nodig"
+    "badgeNeedsWork": "Focus nodig",
+    "deleteRefunded": "1 credit is teruggeboekt.",
+    "deleteNotRefunded": "Geen credit teruggeboekt (termijn verstreken).",
+    "deleted": "Analyse verwijderd",
+    "deleteYes": "Ja, verwijderen",
+    "refundOpen": "Binnen de terugboektermijn — credit komt terug",
+    "refundClosed": "Terugboektermijn verstreken — geen credit terug",
+    "deleteAndRefund": "Verwijderen en credit terug",
+    "refundUntil": "Terugboeking tot {time}",
+    "studioNextStep": "Volgende stap: gericht trainen",
+    "studioPotential": "Grootste potentieel: {id} · {name}. Maak hiervoor in enkele minuten een leermodule in de Learning Studio.",
+    "studioCta": "Leermodule in Studio maken",
+    "studioModuleTitle": "Leermodule: {name}",
+    "studioModuleGoal": "De leiderschapscompetentie “{name}” ({id}) gericht versterken — afgeleid uit een PulseNorth-gespreksanalyse."
   },
   "api": {
     "unauthorized": "Authenticatie vereist",
@@ -580,15 +610,15 @@
     "wishSend": "Wens versturen",
     "wishThanks": "Bedankt! Uw wens is ontvangen en telt mee in de prioritering van nieuwe scenario's.",
     "resumeTimeLeft": "nog ~{min} min",
-    "resumeTimeUp": "Tijd verstreken",
+    "resumeTimeUp": "Gepauzeerd – wacht op u",
     "dropWrongType": "Hier wordt alleen pdf geaccepteerd — gebruik voor tekst de analysepagina.",
-    "transferTitle": "Your intention from the last conversation",
-    "transferQuestion": "How did it go in real life?",
-    "transferDone": "Did it",
-    "transferPartly": "Partly",
-    "transferNot": "Didn't get to it",
-    "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "transferTitle": "Uw voornemen uit het laatste gesprek",
+    "transferQuestion": "Hoe ging het in de praktijk?",
+    "transferDone": "Gedaan",
+    "transferPartly": "Gedeeltelijk",
+    "transferNot": "Niet gelukt",
+    "transferDismiss": "Niet meer vragen",
+    "transferThanks": "Bedankt — dit wordt meegenomen in uw volgende evaluatie.",
     "variantsAlso": "Ook als:",
     "prepTitle": "Mijn echte gesprek voorbereiden",
     "prepBody": "Beschrijf in drie zinnen wat eraan komt en hoe uw gesprekspartner zich gedraagt. U krijgt een privé-oefengesprek dat alleen u ziet.",
@@ -668,7 +698,24 @@
     "saved": "Opgeslagen.",
     "saveFailed": "Opslaan mislukt.",
     "appearance": "Weergave",
-    "system": "Systeem"
+    "system": "Systeem",
+    "accountData": "Account en gegevens",
+    "accountDataIntro": "Beheer uw gegevens. Verwijderingen zijn definitief en kunnen niet ongedaan worden gemaakt.",
+    "historyDelete": "Leergeschiedenis verwijderen",
+    "historyDeleteBody": "Verwijdert al uw analyses en uw voortgangsgeschiedenis (radar). Uw account, uw saldo en uw facturen blijven behouden.",
+    "historyConfirmTitle": "Leergeschiedenis echt verwijderen?",
+    "historyConfirmBody": "Alle analyses en uw voortgangsgeschiedenis worden definitief verwijderd. Deze actie kan niet ongedaan worden gemaakt.",
+    "historyDeleted": "Leergeschiedenis verwijderd",
+    "historyDeletedBody": "{runs} analyses en {points} radarmeetpunten zijn verwijderd.",
+    "deleting": "Wordt verwijderd…",
+    "tryAgainLater": "Probeer het later opnieuw.",
+    "accountDeleteTitle": "Account en alle gegevens verwijderen",
+    "accountDeleteBody": "Verwijdert uw persoonsgegevens definitief: leergeschiedenis, sessies, profiel en opgeslagen toegangstokens. Om wettelijke redenen blijven facturen bewaard gedurende de wettelijke bewaartermijn (§ 147 AO, Duitse belastingwet). Daarna wordt u afgemeld.",
+    "accountDelete": "Account verwijderen",
+    "accountConfirmTitle": "Account definitief verwijderen?",
+    "accountConfirmBody": "Deze actie is onherroepelijk. Leergeschiedenis, sessies, profiel en opgeslagen toegangstokens worden verwijderd.",
+    "accountDeleted": "Account verwijderd",
+    "accountDeletedBody": "Uw gegevens zijn verwijderd. U wordt nu afgemeld."
   },
   "noAccess": {
     "title": "Geen toegang tot AI-gesprekscoach",
@@ -680,7 +727,7 @@
   "aiErrors": {
     "errorNumber": "Foutnr. {id}",
     "quota_exhausted": {
-      "title": "Ons KI-quota is op dit moment uitgeput.",
+      "title": "Ons AI-quotum is op dit moment uitgeput.",
       "next": "Probeer het over een paar minuten opnieuw. Uw voortgang blijft behouden en er wordt niets dubbel in rekening gebracht."
     },
     "credits_empty": {
@@ -688,27 +735,27 @@
       "next": "Waardeer uw credits op en u kunt direct verdergaan waar u was gebleven."
     },
     "daily_limit": {
-      "title": "De dagelijkse limiet voor KI-taken is bereikt.",
+      "title": "De dagelijkse limiet voor AI-taken is bereikt.",
       "next": "Morgen kunt u weer verder. Als u vandaag meer nodig heeft, neem dan contact op met uw beheerder."
     },
     "content_blocked": {
-      "title": "De KI heeft deze inhoud geweigerd.",
+      "title": "De AI heeft deze inhoud geweigerd.",
       "next": "Formuleer de passage opnieuw of laat eerst een ander onderdeel genereren. Er is niets in rekening gebracht."
     },
     "model_not_enabled": {
-      "title": "Dit KI-model is momenteel niet beschikbaar.",
+      "title": "Dit AI-model is momenteel niet beschikbaar.",
       "next": "We werken eraan. Probeer het later opnieuw of gebruik de standaardinstelling."
     },
     "timeout": {
-      "title": "De KI deed er te lang over.",
+      "title": "De AI deed er te lang over.",
       "next": "Probeer het direct opnieuw; meestal lukt het de tweede keer wel."
     },
     "throttled": {
-      "title": "De KI-dienst is op dit moment overbelast.",
+      "title": "De AI-dienst is op dit moment overbelast.",
       "next": "Wacht een minuut en probeer het opnieuw. U hoeft niets te wijzigen."
     },
     "ai_unavailable": {
-      "title": "De KI-dienst is op dit moment niet bereikbaar.",
+      "title": "De AI-dienst is op dit moment niet bereikbaar.",
       "next": "Probeer het over een paar minuten opnieuw. Uw voortgang blijft behouden."
     },
     "ai_general": {
@@ -785,5 +832,24 @@
     "berichtStrengths": "Wat goed aankomt",
     "berichtImprove": "Wat werk nodig heeft",
     "berichtPlans": "Wat cursisten zich voornemen"
+  },
+  "creditsPage": {
+    "title": "Credits",
+    "subtitle": "Saldo en aankoop",
+    "loadFailed": "Saldo kon niet worden geladen.",
+    "buyOnWebsite": "De aankoop verloopt via de website.",
+    "paymentSuccess": "Betaling geslaagd — uw credits zijn bijgeschreven. U vindt de factuur in uw overzicht.",
+    "paymentCancelled": "Aankoop geannuleerd — er is niets in rekening gebracht.",
+    "currentBalance": "Huidig saldo",
+    "unit": "credits",
+    "balanceUnknown": "Saldo onbekend — sessie verlopen.",
+    "paymentInactive": "Let op: het betaalsysteem is nog niet geactiveerd.",
+    "platformWide": "Credits gelden op het hele PulseNorth-platform.",
+    "invoices": "Facturen",
+    "invoicesIntro": "Uw facturen als pdf.",
+    "noInvoices": "Nog geen facturen.",
+    "reverseCharge": "0% · btw verlegd",
+    "vatRate": "{rate}% btw",
+    "downloadPdf": "Pdf downloaden"
   }
 }

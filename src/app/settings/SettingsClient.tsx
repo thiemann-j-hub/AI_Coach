@@ -7,9 +7,13 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { authFetch } from "@/lib/api-client";
 import { signOut } from "@/lib/auth-service";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export default function SettingsClient() {
   const { toast } = useToast();
+  // Go-Live-Prüfung (12.11.2026): Alle Texte kommen aus dem Wörterbuch, vorher stand hier nur Deutsch.
+  const { t } = useTranslation();
+  const p = t.profilePage;
   const [busyHistory, setBusyHistory] = useState(false);
   const [busyAccount, setBusyAccount] = useState(false);
   // W1-10 (14.10.2026): Bestätigen als await confirm() mit Wort — Fokus auf „Abbrechen“.
@@ -17,9 +21,8 @@ export default function SettingsClient() {
 
   async function deleteHistory() {
     const ok = await confirm({
-      title: "Lern-Historie wirklich löschen?",
-      description:
-        "Alle Analysen und Dein Fortschritts-Verlauf werden dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+      title: p.historyConfirmTitle,
+      description: p.historyConfirmBody,
       typeToConfirm: true,
     });
     if (!ok) return;
@@ -29,13 +32,15 @@ export default function SettingsClient() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || String(res.status));
       toast({
-        title: "Lern-Historie gelöscht",
-        description: `${data.runsDeleted ?? 0} Analysen und ${data.measurementsDeleted ?? 0} Radar-Messpunkte wurden entfernt.`,
+        title: p.historyDeleted,
+        description: p.historyDeletedBody
+          .replace("{runs}", String(data.runsDeleted ?? 0))
+          .replace("{points}", String(data.measurementsDeleted ?? 0)),
       });
     } catch (e) {
       toast({
-        title: "Löschung fehlgeschlagen",
-        description: "Bitte versuche es später erneut.",
+        title: t.common.deleteFailed,
+        description: p.tryAgainLater,
         variant: "destructive",
       });
     } finally {
@@ -45,9 +50,9 @@ export default function SettingsClient() {
 
   async function deleteAccount() {
     const ok = await confirm({
-      title: "Account endgültig löschen?",
-      description: "Diese Aktion ist unwiderruflich. Lern-Historie, Sitzungen, Profil und gespeicherte Zugriffs-Token werden entfernt.",
-      confirmLabel: "Account löschen",
+      title: p.accountConfirmTitle,
+      description: p.accountConfirmBody,
+      confirmLabel: p.accountDelete,
       typeToConfirm: true,
     });
     if (!ok) return;
@@ -61,8 +66,8 @@ export default function SettingsClient() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || String(res.status));
       toast({
-        title: "Account gelöscht",
-        description: "Deine Daten wurden entfernt. Du wirst jetzt abgemeldet.",
+        title: p.accountDeleted,
+        description: p.accountDeletedBody,
       });
       // Kurz warten, damit der Toast sichtbar ist, dann ausloggen.
       setTimeout(() => {
@@ -70,8 +75,8 @@ export default function SettingsClient() {
       }, 1500);
     } catch (e) {
       toast({
-        title: "Löschung fehlgeschlagen",
-        description: "Bitte versuche es später erneut.",
+        title: t.common.deleteFailed,
+        description: p.tryAgainLater,
         variant: "destructive",
       });
       setBusyAccount(false);
@@ -83,24 +88,19 @@ export default function SettingsClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Konto &amp; Daten</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Verwalte deine Daten. Löschungen sind endgültig und können nicht rückgängig gemacht werden.
-        </p>
+        <h2 className="text-lg font-semibold text-foreground">{p.accountData}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{p.accountDataIntro}</p>
       </div>
 
       {/* Lern-Historie löschen */}
       <Card className="pn-surface">
         <CardHeader>
-          <CardTitle>Lern-Historie löschen</CardTitle>
-          <CardDescription>
-            Entfernt alle deine Analysen und deinen Fortschritts-Verlauf (Radar). Dein Konto, dein
-            Guthaben und deine Rechnungen bleiben bestehen.
-          </CardDescription>
+          <CardTitle>{p.historyDelete}</CardTitle>
+          <CardDescription>{p.historyDeleteBody}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" disabled={busyHistory} onClick={() => void deleteHistory()}>
-            {busyHistory ? "Wird gelöscht…" : "Lern-Historie löschen"}
+            {busyHistory ? p.deleting : p.historyDelete}
           </Button>
         </CardContent>
       </Card>
@@ -108,16 +108,12 @@ export default function SettingsClient() {
       {/* Account & alle Daten löschen */}
       <Card className="pn-none border-destructive/40">
         <CardHeader>
-          <CardTitle className="text-destructive">Account &amp; alle Daten löschen</CardTitle>
-          <CardDescription>
-            Entfernt deine personenbezogenen Daten dauerhaft: Lern-Historie, Sitzungen, Profil und
-            gespeicherte Zugriffs-Token. Aus gesetzlichen Gründen bleiben Rechnungen für die
-            Aufbewahrungsfrist (§ 147 AO) erhalten. Du wirst anschließend abgemeldet.
-          </CardDescription>
+          <CardTitle className="text-destructive">{p.accountDeleteTitle}</CardTitle>
+          <CardDescription>{p.accountDeleteBody}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="destructive" disabled={busyAccount} onClick={() => void deleteAccount()}>
-            {busyAccount ? "Wird gelöscht…" : "Account löschen"}
+            {busyAccount ? p.deleting : p.accountDelete}
           </Button>
         </CardContent>
       </Card>

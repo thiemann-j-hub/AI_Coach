@@ -23,18 +23,19 @@
     "expandSidebar": "Rozwiń pasek boczny",
     "collapseSidebar": "Zwiń pasek boczny",
     "balanceEmptyMember": "Limit Twojej firmy został wyczerpany — administrator został poinformowany.",
-    "adminBuys": "Kredyty kupuje administrator Państwa firmy. Są Państwo zalogowani jako członek. Prosimy poinformować administratora.",
-    "newVersion": "A new version of the Coach is available.",
+    "adminBuys": "Kredyty kupuje administrator Twojej firmy. Korzystasz z konta członka. Daj znać swojemu administratorowi.",
+    "newVersion": "Dostępna jest nowa wersja Coacha.",
     "sessionExpired": "Sesja wygasła — zaloguj się ponownie",
     "reLogin": "Zaloguj ponownie",
-    "languageLoadFailed": "Nie udało się wczytać języka. Spróbuj ponownie."
+    "languageLoadFailed": "Nie udało się wczytać języka. Spróbuj ponownie.",
+    "deleteFailed": "Usuwanie nie powiodło się"
   },
   "nav": {
     "analyze": "Analiza transkryptu",
     "history": "Historia",
     "newAnalysis": "Nowa analiza",
     "practice": "Ćwicz",
-    "mainGroup": "MAIN",
+    "mainGroup": "Menu",
     "home": "Strona główna",
     "lernbereich": "Mój obszar nauki",
     "profile": "Profil"
@@ -245,10 +246,10 @@
     "micNoticeBody": "Gdy rozmawiasz z rolą na głos, Twój głos przetwarza Google Vertex AI w UE. Przy dyktowaniu Microsoft Azure w Europie Zachodniej zamienia Twój głos na tekst i nie zapisuje nagrania. Zawsze możesz pisać zamiast mówić.",
     "micNoticeAccept": "Rozumiem, użyj mikrofonu",
     "micNoticeDecline": "Wolę pisać",
-    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
-    "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step",
-    "builderVoice": "Voice",
+    "aiStartNotice": "Ćwiczysz z agentem AI. Postać, głos i odpowiedzi są generowane komputerowo.",
+    "coachCardLabel": "Karta coachingowa",
+    "coachCardsTitle": "Karty pasujące do Twojego następnego kroku",
+    "builderVoice": "Głos",
     "builderVoiceFemale": "Kobiecy",
     "builderVoiceMale": "Męski",
     "builderVoiceListen": "Odsłuchaj",
@@ -398,7 +399,21 @@
     "loginFailed": "Logowanie nie powiodło się",
     "genericError": "Coś poszło nie tak.",
     "signInWithMicrosoft": "Zaloguj się przez Microsoft",
-    "microsoftHint": "Działa z osobistymi kontami Microsoft (np. @outlook.com) i kontami służbowymi."
+    "microsoftHint": "Działa z osobistymi kontami Microsoft (np. @outlook.com) i kontami służbowymi.",
+    "loginProduct": "Coach rozmów",
+    "loginTagline": "Analiza AI dla lepszych rozmów z pracownikami",
+    "loginDescription": "Prześlij transkrypcję rozmowy i w kilka minut otrzymaj uporządkowaną analizę z oceną kompetencji oraz konkretną, praktyczną informacją zwrotną.",
+    "legalPrivacy": "Prywatność",
+    "legalTerms": "Regulamin",
+    "legalDpa": "Umowa powierzenia",
+    "legalImprint": "Nota prawna",
+    "featureAnalysisTitle": "Analiza rozmów",
+    "featureAnalysisBody": "Wspierana przez AI analiza rozmów z pracownikami z konkretną, praktyczną informacją zwrotną.",
+    "featureScoringTitle": "Ocena kompetencji",
+    "featureScoringBody": "Uporządkowana ocena kompetencji przywódczych — z dowodami z transkrypcji.",
+    "featureGdprTitle": "Zgodne z RODO",
+    "featureGdprBody": "Anonimizacja w przeglądarce przed analizą; przetwarzanie w UE (Azure).",
+    "loginFooter": "Hosting w UE · Zgodne z RODO · Bez trenowania na Twoich danych."
   },
   "analyze": {
     "title": "Analiza transkryptu",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "np. jasno i uczciwie, bez eskalacji",
     "conversationType": "Typ rozmowy",
     "employeeConversation": "Rozmowa z pracownikiem",
-    "conversationTypeNote": "(Typ rozmowy jest obecnie ustalony dla stabilnego RAG.)",
+    "conversationTypeNote": "Ocena jest dostosowana do rozmów z pracownikami. Kolejne typy rozmów pojawią się później.",
     "roles": "Role w rozmowie",
     "rolesHint": "Wybierz menedżera (pracownik zostanie ustawiony automatycznie)",
     "manager": "Menedżer (Ja)",
@@ -460,7 +475,9 @@
     "retrySave": "Ponów zapisywanie",
     "saveFailed": "Analiza powiodła się, ale zapisywanie nie. Twój wynik został zachowany — ponów zapisywanie.",
     "anonymizeOffWarning": "Bez anonimizacji prawdziwe nazwiska z transkrypcji są przesyłane do modelu AI.",
-    "aiNotice": "Ocenę przeprowadza sztuczna inteligencja. W tym celu Twoja transkrypcja jest przesyłana do modelu AI."
+    "aiNotice": "Ocenę przeprowadza sztuczna inteligencja. W tym celu Twoja transkrypcja jest przesyłana do modelu AI.",
+    "reauthBody": "Twoja sesja wygasła. Zaloguj się ponownie — nie zużyto żadnego kredytu.",
+    "paywallBody": "Twój bezpłatny limit został wyczerpany. Kup kredyty, aby rozpocząć kolejne analizy."
   },
   "dashboard": {
     "title": "Historia sesji",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Bardzo mocno",
     "badgeStrong": "Mocno",
     "badgeSolid": "Solidnie",
-    "badgeNeedsWork": "Wymaga uwagi"
+    "badgeNeedsWork": "Wymaga uwagi",
+    "deleteRefunded": "Zwrócono 1 kredyt.",
+    "deleteNotRefunded": "Nie zwrócono kredytu (termin minął).",
+    "deleted": "Analiza usunięta",
+    "deleteYes": "Tak, usuń",
+    "refundOpen": "W okresie zwrotu — kredyt wróci",
+    "refundClosed": "Okres zwrotu minął — kredyt nie wróci",
+    "deleteAndRefund": "Usuń i odzyskaj kredyt",
+    "refundUntil": "Zwrot do {time}",
+    "studioNextStep": "Następny krok: ukierunkowany trening",
+    "studioPotential": "Największy potencjał: {id} · {name}. Stwórz do tego w kilka minut moduł szkoleniowy w Learning Studio.",
+    "studioCta": "Stwórz moduł w Studio",
+    "studioModuleTitle": "Moduł szkoleniowy: {name}",
+    "studioModuleGoal": "Ukierunkowane wzmocnienie kompetencji przywódczej „{name}” ({id}) — na podstawie analizy rozmowy PulseNorth."
   },
   "api": {
     "unauthorized": "Wymagane uwierzytelnienie",
@@ -580,15 +610,15 @@
     "wishSend": "Wyślij prośbę",
     "wishThanks": "Dziękujemy! Twoja prośba dotarła i trafia do priorytetyzacji nowych scenariuszy.",
     "resumeTimeLeft": "jeszcze ~{min} min",
-    "resumeTimeUp": "Czas minął",
+    "resumeTimeUp": "Wstrzymana – czeka na Ciebie",
     "dropWrongType": "Tutaj przyjmowany jest tylko PDF — dla tekstu użyj strony analizy.",
-    "transferTitle": "Your intention from the last conversation",
-    "transferQuestion": "How did it go in real life?",
-    "transferDone": "Did it",
-    "transferPartly": "Partly",
-    "transferNot": "Didn't get to it",
-    "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "transferTitle": "Twoje postanowienie z ostatniej rozmowy",
+    "transferQuestion": "Jak poszło w praktyce?",
+    "transferDone": "Zrobione",
+    "transferPartly": "Częściowo",
+    "transferNot": "Nie udało się",
+    "transferDismiss": "Nie pytaj więcej",
+    "transferThanks": "Dziękujemy — uwzględnimy to w Twojej następnej ocenie.",
     "variantsAlso": "Także jako:",
     "prepTitle": "Przygotuj moją prawdziwą rozmowę",
     "prepBody": "Opisz w trzech zdaniach, co Cię czeka i jak zachowuje się Twój rozmówca. Otrzymasz prywatną rozmowę ćwiczebną, którą widzisz tylko Ty.",
@@ -625,11 +655,11 @@
     "commitAdopt": "Przyjmij",
     "commitOwn": "Sformułuję sam/a",
     "commitSave": "Zapisz postanowienie",
-    "commitSavedTitle": "Pana/Pani postanowienie",
+    "commitSavedTitle": "Twoje postanowienie",
     "commitSaved": "Zapisano",
     "commitEdit": "Zmień",
-    "commitHint": "Postanowieniem staje się dopiero po Pana/Pani kliknięciu. Po trzech dniach coach zapyta, jak poszło.",
-    "commitPlaceholder": "Co zrobi Pan/Pani następnym razem konkretnie inaczej?",
+    "commitHint": "Postanowieniem staje się dopiero po Twoim kliknięciu. Po trzech dniach coach zapyta, jak poszło.",
+    "commitPlaceholder": "Co następnym razem zrobisz konkretnie inaczej?",
     "courseMatchTitle": "Pasujący kurs",
     "courseMatchBody": "Ten kurs ćwiczy dokładnie {c}: {title}",
     "courseOpen": "Otwórz kurs",
@@ -668,11 +698,28 @@
     "saved": "Zapisano.",
     "saveFailed": "Zapis nie powiódł się.",
     "appearance": "Wygląd",
-    "system": "System"
+    "system": "System",
+    "accountData": "Konto i dane",
+    "accountDataIntro": "Zarządzaj swoimi danymi. Usunięcie jest ostateczne i nie można go cofnąć.",
+    "historyDelete": "Usuń historię nauki",
+    "historyDeleteBody": "Usuwa wszystkie Twoje analizy i historię Twoich postępów (radar). Twoje konto, saldo i faktury pozostają bez zmian.",
+    "historyConfirmTitle": "Na pewno usunąć historię nauki?",
+    "historyConfirmBody": "Wszystkie analizy i historia Twoich postępów zostaną trwale usunięte. Tej operacji nie można cofnąć.",
+    "historyDeleted": "Historia nauki usunięta",
+    "historyDeletedBody": "Usunięto: analizy {runs}, punkty pomiarowe radaru {points}.",
+    "deleting": "Usuwanie…",
+    "tryAgainLater": "Spróbuj ponownie później.",
+    "accountDeleteTitle": "Usuń konto i wszystkie dane",
+    "accountDeleteBody": "Trwale usuwa Twoje dane osobowe: historię nauki, sesje, profil i zapisane tokeny dostępu. Ze względów prawnych faktury są przechowywane przez ustawowy okres przechowywania (§ 147 AO, niemiecka ordynacja podatkowa). Następnie nastąpi wylogowanie.",
+    "accountDelete": "Usuń konto",
+    "accountConfirmTitle": "Trwale usunąć konto?",
+    "accountConfirmBody": "Tej operacji nie można cofnąć. Historia nauki, sesje, profil i zapisane tokeny dostępu zostaną usunięte.",
+    "accountDeleted": "Konto usunięte",
+    "accountDeletedBody": "Twoje dane zostały usunięte. Za chwilę nastąpi wylogowanie."
   },
   "noAccess": {
     "title": "Brak dostępu do narzędzia Coach rozmów AI",
-    "body": "Narzędzie Coach rozmów AI nie jest włączone dla Państwa konta. Dostęp przyznaje administrator Państwa firmy w sekcji „Zespół i dostępy”. Przypisane Państwu kursy znajdą Państwo w sekcji „Mój obszar nauki”.",
+    "body": "Narzędzie Coach rozmów AI nie jest włączone dla Twojego konta. Dostęp przyznaje administrator Twojej firmy w sekcji „Zespół i dostępy”. Przypisane Ci kursy znajdziesz w sekcji „Mój obszar nauki”.",
     "cta": "Przejść do sekcji „Mój obszar nauki”",
     "wer": "Dostępu mogą udzielić:",
     "geben": "Udziel dostępu (Zespół i dostęp)"
@@ -681,39 +728,39 @@
     "errorNumber": "Nr błędu: {id}",
     "quota_exhausted": {
       "title": "Limit SI został obecnie wyczerpany.",
-      "next": "Proszę spróbować ponownie za kilka minut. Postęp zostanie zachowany, a opłata nie zostanie naliczona podwójnie."
+      "next": "Spróbuj ponownie za kilka minut. Twój postęp zostanie zachowany, a opłata nie zostanie naliczona podwójnie."
     },
     "credits_empty": {
       "title": "Kredyty zostały wykorzystane.",
-      "next": "Proszę doładować kredyty, aby kontynuować w tym samym miejscu."
+      "next": "Doładuj kredyty, aby kontynuować w tym samym miejscu."
     },
     "daily_limit": {
       "title": "Dzienny limit uruchomień SI został osiągnięty.",
-      "next": "Kontynuacja będzie możliwa jutro. W przypadku zapotrzebowania na większy limit jeszcze dziś należy skontaktować się z administratorem."
+      "next": "Jutro będzie można kontynuować. Jeśli potrzebujesz więcej już dziś, daj znać swojemu administratorowi."
     },
     "content_blocked": {
       "title": "Sztuczna inteligencja odrzuciła tę treść.",
-      "next": "Proszę przeredagować ten fragment lub wygenerować najpierw inną część. Opłata nie została pobrana."
+      "next": "Przeredaguj ten fragment lub wygeneruj najpierw inną część. Opłata nie została pobrana."
     },
     "model_not_enabled": {
       "title": "Ten model SI jest w tej chwili niedostępny.",
-      "next": "Pracujemy nad tym. Proszę spróbować ponownie później lub użyć ustawienia domyślnego."
+      "next": "Pracujemy nad tym. Spróbuj ponownie później lub użyj ustawienia domyślnego."
     },
     "timeout": {
       "title": "Odpowiedź SI zajęła zbyt dużo czasu.",
-      "next": "Proszę spróbować ponownie za chwilę — zazwyczaj udaje się za drugim razem."
+      "next": "Spróbuj ponownie za chwilę — zazwyczaj udaje się za drugim razem."
     },
     "throttled": {
       "title": "Usługa SI jest w tej chwili przeciążona.",
-      "next": "Proszę odczekać minutę i spróbować ponownie. Nie trzeba niczego zmieniać."
+      "next": "Odczekaj minutę i spróbuj ponownie. Nie musisz niczego zmieniać."
     },
     "ai_unavailable": {
       "title": "Usługa SI jest obecnie niedostępna.",
-      "next": "Proszę spróbować ponownie za kilka minut. Postęp zostanie zachowany."
+      "next": "Spróbuj ponownie za kilka minut. Twój postęp zostanie zachowany."
     },
     "ai_general": {
       "title": "Wystąpił błąd podczas przetwarzania przez SI.",
-      "next": "Proszę spróbować ponownie. Jeśli błąd nadal występuje, proszę przesłać nam numer błędu."
+      "next": "Spróbuj ponownie. Jeśli błąd nadal występuje, prześlij nam numer błędu."
     }
   },
   "diagnose": {
@@ -728,10 +775,10 @@
     "previewLabel": "Podgląd raportu",
     "close": "Zamknij",
     "download": "Pobierz plik",
-    "shortcutHint": "Skrót: Ctrl + Alt + D. Prosimy przesłać plik do pomocy technicznej wraz z numerem błędu."
+    "shortcutHint": "Skrót: Ctrl + Alt + D. Prześlij plik do pomocy technicznej wraz z numerem błędu."
   },
   "version": {
-    "newVersion": "Dostępna jest nowa wersja. Prosimy o odświeżenie strony, aby wszystkie elementy były zgodne.",
+    "newVersion": "Dostępna jest nowa wersja. Odśwież stronę, aby wszystko do siebie pasowało.",
     "reload": "Odśwież teraz"
   },
   "confirmDialog": {
@@ -742,7 +789,7 @@
     "deleteOk": "Usuń trwale"
   },
   "aiWait": {
-    "aiLimit": "Treść została wygenerowana przez sztuczną inteligencję i może zawierać błędy. Prosimy o jej zweryfikowanie przed użyciem.",
+    "aiLimit": "Treść została wygenerowana przez sztuczną inteligencję i może zawierać błędy. Sprawdź ją przed użyciem.",
     "analyzeStep1": "Analizowanie rozmowy…",
     "analyzeStep2": "Przypisywanie wypowiedzi do kompetencji…",
     "analyzeStep3": "Formułowanie informacji zwrotnej…"
@@ -785,5 +832,24 @@
     "berichtStrengths": "Co się sprawdza",
     "berichtImprove": "Co wymaga pracy",
     "berichtPlans": "Co planują uczący się"
+  },
+  "creditsPage": {
+    "title": "Kredyty",
+    "subtitle": "Saldo i zakup",
+    "loadFailed": "Nie udało się wczytać salda.",
+    "buyOnWebsite": "Zakup odbywa się na stronie internetowej.",
+    "paymentSuccess": "Płatność udana — Twoje kredyty zostały dodane. Fakturę znajdziesz w swoim przeglądzie.",
+    "paymentCancelled": "Zakup anulowany — nic nie zostało naliczone.",
+    "currentBalance": "Aktualne saldo",
+    "unit": "kredytów",
+    "balanceUnknown": "Saldo nieznane — sesja wygasła.",
+    "paymentInactive": "Uwaga: system płatności nie jest jeszcze aktywny.",
+    "platformWide": "Kredyty obowiązują na całej platformie PulseNorth.",
+    "invoices": "Faktury",
+    "invoicesIntro": "Twoje faktury w formacie PDF.",
+    "noInvoices": "Brak faktur.",
+    "reverseCharge": "0% · odwrotne obciążenie",
+    "vatRate": "{rate}% VAT",
+    "downloadPdf": "Pobierz PDF"
   }
 }

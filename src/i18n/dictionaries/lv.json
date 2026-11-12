@@ -24,17 +24,18 @@
     "collapseSidebar": "Sakļaut sānjoslu",
     "balanceEmptyMember": "Jūsu uzņēmuma kvota ir iztērēta — administrators ir informēts.",
     "adminBuys": "Kredītus pērk jūsu uzņēmuma administrators. Jūs esat pieteicies kā dalībnieks. Lūdzu, paziņojiet savam administratoram.",
-    "newVersion": "A new version of the Coach is available.",
+    "newVersion": "Ir pieejama jauna Coach versija.",
     "sessionExpired": "Sesija beigusies — lūdzu, pierakstieties vēlreiz",
     "reLogin": "Pierakstīties vēlreiz",
-    "languageLoadFailed": "Valodu neizdevās ielādēt. Mēģiniet vēlreiz."
+    "languageLoadFailed": "Valodu neizdevās ielādēt. Mēģiniet vēlreiz.",
+    "deleteFailed": "Dzēšana neizdevās"
   },
   "nav": {
     "analyze": "Transkripta analīze",
     "history": "Vēsture",
     "newAnalysis": "Jauna analīze",
     "practice": "Trenējieties",
-    "mainGroup": "MAIN",
+    "mainGroup": "Izvēlne",
     "home": "Sākums",
     "lernbereich": "Mana mācību zona",
     "profile": "Profils"
@@ -245,10 +246,10 @@
     "micNoticeBody": "Kad runājat ar lomu, jūsu balsi apstrādā Google Vertex AI Eiropas Savienībā. Diktēšanas laikā Microsoft Azure Rietumeiropā pārvērš jūsu balsi tekstā un ierakstu nesaglabā. Runāšanas vietā vienmēr varat rakstīt.",
     "micNoticeAccept": "Skaidrs, izmantot mikrofonu",
     "micNoticeDecline": "Labāk rakstīšu",
-    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
-    "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step",
-    "builderVoice": "Voice",
+    "aiStartNotice": "Jūs trenējaties ar MI aģentu. Tēls, balss un atbildes ir datora ģenerētas.",
+    "coachCardLabel": "Trenera kartīte",
+    "coachCardsTitle": "Jūsu nākamajam solim piemērotas kartītes",
+    "builderVoice": "Balss",
     "builderVoiceFemale": "Sievietes balss",
     "builderVoiceMale": "Vīrieša balss",
     "builderVoiceListen": "Klausīties",
@@ -398,7 +399,21 @@
     "loginFailed": "Pierakstīšanās neizdevās",
     "genericError": "Kaut kas nogāja greizi.",
     "signInWithMicrosoft": "Pierakstīties ar Microsoft",
-    "microsoftHint": "Darbojas ar personīgajiem Microsoft kontiem (piem., @outlook.com) un darba kontiem."
+    "microsoftHint": "Darbojas ar personīgajiem Microsoft kontiem (piem., @outlook.com) un darba kontiem.",
+    "loginProduct": "Sarunu treneris",
+    "loginTagline": "MI analīze labākām sarunām ar darbiniekiem",
+    "loginDescription": "Augšupielādējiet sarunas transkriptu un dažu minūšu laikā saņemiet strukturētu analīzi ar kompetenču vērtējumu un konkrētu, izmantojamu atgriezenisko saiti.",
+    "legalPrivacy": "Privātums",
+    "legalTerms": "Noteikumi",
+    "legalDpa": "Datu apstrādes līgums",
+    "legalImprint": "Juridiskā informācija",
+    "featureAnalysisTitle": "Sarunu analīze",
+    "featureAnalysisBody": "MI atbalstīta sarunu ar darbiniekiem analīze ar konkrētu, izmantojamu atgriezenisko saiti.",
+    "featureScoringTitle": "Kompetenču vērtēšana",
+    "featureScoringBody": "Strukturēts vadības kompetenču vērtējums — ar pierādījumiem no transkripta.",
+    "featureGdprTitle": "Atbilst VDAR",
+    "featureGdprBody": "Anonimizācija pārlūkā pirms analīzes; apstrāde ES (Azure).",
+    "loginFooter": "Mitināšana ES · Atbilst VDAR · Ar jūsu datiem modeļi netiek apmācīti."
   },
   "analyze": {
     "title": "Transkripta analīze",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "piem., skaidri un godīgi, bez eskalācijas",
     "conversationType": "Sarunas veids",
     "employeeConversation": "Saruna ar darbinieku",
-    "conversationTypeNote": "(Sarunas veids pašlaik ir fiksēts stabilai RAG darbībai.)",
+    "conversationTypeNote": "Novērtēšana ir pielāgota sarunām ar darbiniekiem. Citi sarunu veidi sekos.",
     "roles": "Lomas sarunā",
     "rolesHint": "Izvēlieties vadītāju (darbinieks tiks iestatīts automātiski)",
     "manager": "Vadītājs (es)",
@@ -460,7 +475,9 @@
     "retrySave": "Mēģināt saglabāt vēlreiz",
     "saveFailed": "Analīze izdevās, bet saglabāšana neizdevās. Jūsu rezultāts netiek zaudēts — mēģiniet saglabāt vēlreiz.",
     "anonymizeOffWarning": "Bez anonimizācijas īstie vārdi no transkripcijas tiek nosūtīti MI modelim.",
-    "aiNotice": "Novērtēšanu veic mākslīgais intelekts. Šim nolūkam jūsu transkripcija tiek nosūtīta MI modelim."
+    "aiNotice": "Novērtēšanu veic mākslīgais intelekts. Šim nolūkam jūsu transkripcija tiek nosūtīta MI modelim.",
+    "reauthBody": "Jūsu pieteikšanās ir beigusies. Lūdzu, pierakstieties vēlreiz — kredīts netika izlietots.",
+    "paywallBody": "Jūsu bezmaksas kvota ir iztērēta. Iegādājieties kredītus, lai sāktu citas analīzes."
   },
   "dashboard": {
     "title": "Sesiju vēsture",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Ļoti spēcīgs",
     "badgeStrong": "Spēcīgs",
     "badgeSolid": "Stabils",
-    "badgeNeedsWork": "Vajag fokusu"
+    "badgeNeedsWork": "Vajag fokusu",
+    "deleteRefunded": "1 kredīts tika atmaksāts.",
+    "deleteNotRefunded": "Kredīts netika atmaksāts (termiņš beidzies).",
+    "deleted": "Analīze dzēsta",
+    "deleteYes": "Jā, dzēst",
+    "refundOpen": "Atmaksas termiņā — kredīts tiek atmaksāts",
+    "refundClosed": "Atmaksas termiņš beidzies — kredīts netiek atmaksāts",
+    "deleteAndRefund": "Dzēst un atgūt kredītu",
+    "refundUntil": "Atmaksa līdz {time}",
+    "studioNextStep": "Nākamais solis: mērķtiecīgs treniņš",
+    "studioPotential": "Lielākais potenciāls: {id} · {name}. Dažu minūšu laikā izveidojiet par to mācību moduli Learning Studio.",
+    "studioCta": "Izveidot mācību moduli Studio",
+    "studioModuleTitle": "Mācību modulis: {name}",
+    "studioModuleGoal": "Mērķtiecīgi stiprināt vadības kompetenci “{name}” ({id}) — izriet no PulseNorth sarunas analīzes."
   },
   "api": {
     "unauthorized": "Nepieciešama autentifikācija",
@@ -580,15 +610,15 @@
     "wishSend": "Nosūtīt vēlmi",
     "wishThanks": "Paldies! Jūsu vēlme ir saņemta un ietekmē jaunu scenāriju prioritātes.",
     "resumeTimeLeft": "atlicis ~{min} min",
-    "resumeTimeUp": "Laiks beidzies",
+    "resumeTimeUp": "Apturēta – gaida jūs",
     "dropWrongType": "Šeit tiek pieņemts tikai PDF — tekstam izmantojiet analīzes lapu.",
-    "transferTitle": "Your intention from the last conversation",
-    "transferQuestion": "How did it go in real life?",
-    "transferDone": "Did it",
-    "transferPartly": "Partly",
-    "transferNot": "Didn't get to it",
-    "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "transferTitle": "Jūsu apņemšanās no pēdējās sarunas",
+    "transferQuestion": "Kā veicās ikdienā?",
+    "transferDone": "Izdarīts",
+    "transferPartly": "Daļēji",
+    "transferNot": "Neizdevās",
+    "transferDismiss": "Vairs nejautāt",
+    "transferThanks": "Paldies — tas tiks ņemts vērā jūsu nākamajā novērtējumā.",
     "variantsAlso": "Arī kā:",
     "prepTitle": "Sagatavot manu īsto sarunu",
     "prepBody": "Trīs teikumos aprakstiet, kas gaidāms un kā uzvedas jūsu sarunu partneris. Jūs saņemsiet privātu treniņa sarunu, ko redzat tikai jūs.",
@@ -668,7 +698,24 @@
     "saved": "Saglabāts.",
     "saveFailed": "Neizdevās saglabāt.",
     "appearance": "Izskats",
-    "system": "Sistēma"
+    "system": "Sistēma",
+    "accountData": "Konts un dati",
+    "accountDataIntro": "Pārvaldiet savus datus. Dzēšana ir neatgriezeniska, un to nevar atsaukt.",
+    "historyDelete": "Dzēst mācību vēsturi",
+    "historyDeleteBody": "Noņem visas jūsu analīzes un progresa vēsturi (radars). Jūsu konts, atlikums un rēķini tiek saglabāti.",
+    "historyConfirmTitle": "Vai tiešām dzēst mācību vēsturi?",
+    "historyConfirmBody": "Visas analīzes un jūsu progresa vēsture tiks neatgriezeniski noņemtas. Šo darbību nevar atsaukt.",
+    "historyDeleted": "Mācību vēsture dzēsta",
+    "historyDeletedBody": "Noņemts: analīzes {runs}, radara mērījumu punkti {points}.",
+    "deleting": "Notiek dzēšana…",
+    "tryAgainLater": "Lūdzu, mēģiniet vēlreiz vēlāk.",
+    "accountDeleteTitle": "Dzēst kontu un visus datus",
+    "accountDeleteBody": "Neatgriezeniski noņem jūsu personas datus: mācību vēsturi, sesijas, profilu un saglabātos piekļuves marķierus. Juridisku iemeslu dēļ rēķini tiek glabāti likumā noteikto glabāšanas termiņu (§ 147 AO, Vācijas nodokļu kodekss). Pēc tam notiks izrakstīšanās.",
+    "accountDelete": "Dzēst kontu",
+    "accountConfirmTitle": "Vai neatgriezeniski dzēst kontu?",
+    "accountConfirmBody": "Šī darbība ir neatgriezeniska. Mācību vēsture, sesijas, profils un saglabātie piekļuves marķieri tiks noņemti.",
+    "accountDeleted": "Konts dzēsts",
+    "accountDeletedBody": "Jūsu dati ir noņemti. Tagad notiks izrakstīšanās."
   },
   "noAccess": {
     "title": "Nav piekļuves rīkam MI sarunu treneris",
@@ -680,7 +727,7 @@
   "aiErrors": {
     "errorNumber": "Kļūdas Nr. {id}",
     "quota_exhausted": {
-      "title": "Mūsu KI kvota šobrīd ir izsmelta.",
+      "title": "Mūsu MI kvota šobrīd ir izsmelta.",
       "next": "Mēģiniet vēlreiz pēc dažām minūtēm. Jūsu progress tiek saglabāts, un nekas netiek aprēķināts dubultā."
     },
     "credits_empty": {
@@ -688,31 +735,31 @@
       "next": "Papildiniet kredītpunktus un turpiniet no tās pašas vietas."
     },
     "daily_limit": {
-      "title": "Dienas limits KI darbībām ir sasniegts.",
+      "title": "Dienas limits MI darbībām ir sasniegts.",
       "next": "Turpinājums būs rīt. Ja jums šodien nepieciešams vairāk, sazinieties ar savu administratoru."
     },
     "content_blocked": {
-      "title": "KI noraidīja šo saturu.",
+      "title": "MI noraidīja šo saturu.",
       "next": "Pārfrāzējiet šo daļu vai vispirms ļaujiet izveidot citu daļu. Nekas netika apmaksāts."
     },
     "model_not_enabled": {
-      "title": "Šis KI modelis pašlaik nav pieejams.",
+      "title": "Šis MI modelis pašlaik nav pieejams.",
       "next": "Mēs risinām šo jautājumu. Mēģiniet vēlreiz vēlāk vai izmantojiet noklusējuma iestatījumu."
     },
     "timeout": {
-      "title": "KI darbība prasīja pārāk daudz laika.",
+      "title": "MI darbība prasīja pārāk daudz laika.",
       "next": "Mēģiniet vēlreiz tūlīt; parasti ar otro reizi viss izdodas."
     },
     "throttled": {
-      "title": "KI pakalpojums šobrīd ir pārslogots.",
+      "title": "MI pakalpojums šobrīd ir pārslogots.",
       "next": "Uzgaidiet minūti un mēģiniet vēlreiz. Jums nekas nav jāmaina."
     },
     "ai_unavailable": {
-      "title": "KI pakalpojums šobrīd nav sasniedzams.",
+      "title": "MI pakalpojums šobrīd nav sasniedzams.",
       "next": "Mēģiniet vēlreiz pēc dažām minūtēm. Jūsu progress tiek saglabāts."
     },
     "ai_general": {
-      "title": "Darbība ar KI neizdevās.",
+      "title": "Darbība ar MI neizdevās.",
       "next": "Mēģiniet vēlreiz. Ja kļūda atkārtojas, nosūtiet mums kļūdas numuru."
     }
   },
@@ -728,7 +775,7 @@
     "previewLabel": "Ziņojuma priekšskatījums",
     "close": "Aizvērt",
     "download": "Lejupielādēt failu",
-    "shortcutHint": "Tustiņu saīsne: Ctrl + Alt + D. Nosūtiet failu atbalsta dienestam kopā ar kļūdas numuru."
+    "shortcutHint": "Taustiņu saīsne: Ctrl + Alt + D. Nosūtiet failu atbalsta dienestam kopā ar kļūdas numuru."
   },
   "version": {
     "newVersion": "Ir pieejama jauna versija. Lūdzu, pārlādējiet lapu, lai viss darbotos pareizi.",
@@ -744,7 +791,7 @@
   "aiWait": {
     "aiLimit": "Šo saturu ir ģenerējis mākslīgais intelekts, un tajā var būt kļūdas. Lūdzu, pārbaudiet to pirms izmantošanas.",
     "analyzeStep1": "Tiek lasīta jūsu saruna…",
-    "analyzeStep2": "Tiek piesaistīti izteikumi prasmes līmeņiem…",
+    "analyzeStep2": "Izteikumi tiek piesaistīti kompetencēm…",
     "analyzeStep3": "Tiek sagatavots jūsu atgriezeniskās saites melnraksts…"
   },
   "interview": {
@@ -785,5 +832,24 @@
     "berichtStrengths": "Kas darbojas",
     "berichtImprove": "Kam vajadzīgs darbs",
     "berichtPlans": "Ko apmācāmie plāno darīt"
+  },
+  "creditsPage": {
+    "title": "Kredīti",
+    "subtitle": "Atlikums un pirkšana",
+    "loadFailed": "Atlikumu neizdevās ielādēt.",
+    "buyOnWebsite": "Pirkums notiek tīmekļa vietnē.",
+    "paymentSuccess": "Maksājums veiksmīgs — jūsu kredīti ir ieskaitīti. Rēķinu atradīsiet savā pārskatā.",
+    "paymentCancelled": "Pirkums atcelts — nekas netika ieturēts.",
+    "currentBalance": "Pašreizējais atlikums",
+    "unit": "kredīti",
+    "balanceUnknown": "Atlikums nav zināms — sesija ir beigusies.",
+    "paymentInactive": "Piezīme: maksājumu sistēma vēl nav aktivizēta.",
+    "platformWide": "Kredīti ir derīgi visā PulseNorth platformā.",
+    "invoices": "Rēķini",
+    "invoicesIntro": "Jūsu rēķini PDF formātā.",
+    "noInvoices": "Rēķinu vēl nav.",
+    "reverseCharge": "0 % · nodokļa apgrieztā maksāšana",
+    "vatRate": "{rate} % PVN",
+    "downloadPdf": "Lejupielādēt PDF"
   }
 }

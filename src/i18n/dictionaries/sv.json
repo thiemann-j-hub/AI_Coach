@@ -24,17 +24,18 @@
     "collapseSidebar": "Fäll ihop sidofältet",
     "balanceEmptyMember": "Ditt företags saldo är slut — din admin har informerats.",
     "adminBuys": "Credits köps av ditt företags admin. Du är inloggad som medlem. Meddela din admin.",
-    "newVersion": "A new version of the Coach is available.",
+    "newVersion": "En ny version av Coach är tillgänglig.",
     "sessionExpired": "Sessionen har gått ut – logga in igen",
     "reLogin": "Logga in igen",
-    "languageLoadFailed": "Språket kunde inte laddas. Försök igen."
+    "languageLoadFailed": "Språket kunde inte laddas. Försök igen.",
+    "deleteFailed": "Raderingen misslyckades"
   },
   "nav": {
     "analyze": "Transkriptanalys",
     "history": "Historik",
     "newAnalysis": "Ny analys",
     "practice": "Öva",
-    "mainGroup": "MAIN",
+    "mainGroup": "Meny",
     "home": "Hem",
     "lernbereich": "Mitt lärandeområde",
     "profile": "Profil"
@@ -233,7 +234,7 @@
     "builderReviseLabel": "Revidera — vad ska ändras?",
     "builderRevisePlaceholder": "t.ex. Personan ska förhandla hårdare, och mål 3 ska gälla årsplanen …",
     "builderReviseCta": "Revidera (1 kredit)",
-    "builderTestCta": "Provkörning",
+    "builderTestCta": "Provsamtal",
     "builderPublishCta": "Publicera",
     "builderUnpublishCta": "Dra tillbaka",
     "builderDeleteCta": "Ta bort",
@@ -245,10 +246,10 @@
     "micNoticeBody": "När du talar med rollen behandlar Google Vertex AI i EU din röst. Vid diktering omvandlar Microsoft Azure i Västeuropa din röst till text och sparar inte inspelningen. Du kan alltid skriva i stället för att tala.",
     "micNoticeAccept": "Uppfattat, använd mikrofonen",
     "micNoticeDecline": "Jag skriver hellre",
-    "aiStartNotice": "You are training with an AI agent. The character, voice and answers are computer-generated.",
-    "coachCardLabel": "Coaching card",
-    "coachCardsTitle": "Cards that support your next step",
-    "builderVoice": "Voice",
+    "aiStartNotice": "Du tränar med en AI-agent. Person, röst och svar är datorgenererade.",
+    "coachCardLabel": "Coachingkort",
+    "coachCardsTitle": "Kort som passar ditt nästa steg",
+    "builderVoice": "Röst",
     "builderVoiceFemale": "Kvinnlig",
     "builderVoiceMale": "Manlig",
     "builderVoiceListen": "Lyssna",
@@ -344,7 +345,7 @@
     "builderRoleReady": "Rollen är klar",
     "builderRoleFailed": "Förberedelsen misslyckades. Vi försöker igen senare; samtal fungerar ändå.",
     "builderRoleOpen": "Rollen förbereds vid första samtalet",
-    "builderFreeTestNote": "Utvärderingen av din första provkörning kostar ingen kredit.",
+    "builderFreeTestNote": "Utvärderingen av ditt första provsamtal kostar ingen kredit.",
     "wegTitle": "Så för du samtalet",
     "wegSprechen": "Tala",
     "wegSchreiben": "Skriva",
@@ -385,7 +386,7 @@
     "clockPaused": "pausad",
     "timeoutHintOver": "Pausen är slut, klockan går igen.",
     "speakUnavailable": "Det går inte att tala just nu. Du kan fortsätta samtalet i skrift.",
-    "confirmBodyFree": "Utvärderingen av din första provkörning kostar ingen kredit. Du får detaljerad feedback med betyg, ordagranna belägg, nyckelögonblick och ett konkret nästa steg. Samtalet kan inte fortsättas efteråt.",
+    "confirmBodyFree": "Utvärderingen av ditt första provsamtal kostar ingen kredit. Du får detaljerad feedback med betyg, ordagranna belägg, nyckelögonblick och ett konkret nästa steg. Samtalet kan inte fortsättas efteråt.",
     "confirmCtaFree": "Ja, utvärdera"
   },
   "auth": {
@@ -398,7 +399,21 @@
     "loginFailed": "Inloggningen misslyckades",
     "genericError": "Något gick fel.",
     "signInWithMicrosoft": "Logga in med Microsoft",
-    "microsoftHint": "Fungerar med privata Microsoft-konton (t.ex. @outlook.com) och jobbkonton."
+    "microsoftHint": "Fungerar med privata Microsoft-konton (t.ex. @outlook.com) och jobbkonton.",
+    "loginProduct": "Samtalscoach",
+    "loginTagline": "AI-analys för bättre medarbetarsamtal",
+    "loginDescription": "Ladda upp en transkription av ett samtal och få på några minuter en strukturerad analys med kompetensbedömning och konkret, användbar feedback.",
+    "legalPrivacy": "Integritet",
+    "legalTerms": "Villkor",
+    "legalDpa": "Personuppgiftsbiträdesavtal",
+    "legalImprint": "Juridisk information",
+    "featureAnalysisTitle": "Samtalsanalys",
+    "featureAnalysisBody": "AI-stödd analys av medarbetarsamtal med konkret, användbar feedback.",
+    "featureScoringTitle": "Kompetensbedömning",
+    "featureScoringBody": "Strukturerad bedömning av ledarkompetenser — med belägg från transkriptet.",
+    "featureGdprTitle": "GDPR-kompatibel",
+    "featureGdprBody": "Anonymisering i webbläsaren före analysen; behandling inom EU (Azure).",
+    "loginFooter": "EU-hosting · GDPR-kompatibel · Ingen träning med dina data."
   },
   "analyze": {
     "title": "Transkriptanalys",
@@ -423,7 +438,7 @@
     "goalPlaceholder": "t.ex. tydligt och rättvist, utan eskalering",
     "conversationType": "Samtalstyp",
     "employeeConversation": "Medarbetarsamtal",
-    "conversationTypeNote": "(Samtalstypen är för närvarande låst för stabil RAG.)",
+    "conversationTypeNote": "Bedömningen är anpassad för medarbetarsamtal. Fler samtalstyper kommer.",
     "roles": "Roller i samtalet",
     "rolesHint": "Välj chefen (medarbetaren sätts automatiskt)",
     "manager": "Chef (jag)",
@@ -460,7 +475,9 @@
     "retrySave": "Försök spara igen",
     "saveFailed": "Analysen lyckades, men sparandet misslyckades. Ditt resultat finns kvar — försök spara igen.",
     "anonymizeOffWarning": "Utan anonymisering skickas riktiga namn från transkriptionen till AI-modellen.",
-    "aiNotice": "Bedömningen görs av en AI. Din transkription skickas därför till en AI-modell."
+    "aiNotice": "Bedömningen görs av en AI. Din transkription skickas därför till en AI-modell.",
+    "reauthBody": "Din inloggning har gått ut. Logga in igen — ingen kredit har använts.",
+    "paywallBody": "Din kostnadsfria kvot är slut. Köp krediter för att starta fler analyser."
   },
   "dashboard": {
     "title": "Sessionshistorik",
@@ -545,7 +562,20 @@
     "badgeVeryStrong": "Mycket stark",
     "badgeStrong": "Stark",
     "badgeSolid": "Solid",
-    "badgeNeedsWork": "Behöver fokus"
+    "badgeNeedsWork": "Behöver fokus",
+    "deleteRefunded": "1 kredit återbetalades.",
+    "deleteNotRefunded": "Ingen kredit återbetalad (tidsfristen har gått ut).",
+    "deleted": "Analys raderad",
+    "deleteYes": "Ja, radera",
+    "refundOpen": "Inom återbetalningsfristen — krediten kommer tillbaka",
+    "refundClosed": "Återbetalningsfristen har gått ut — ingen kredit tillbaka",
+    "deleteAndRefund": "Radera och få tillbaka krediten",
+    "refundUntil": "Återbetalning till {time}",
+    "studioNextStep": "Nästa steg: riktad träning",
+    "studioPotential": "Störst potential: {id} · {name}. Skapa en lärmodul om det i Learning Studio på några minuter.",
+    "studioCta": "Skapa lärmodul i Studio",
+    "studioModuleTitle": "Lärmodul: {name}",
+    "studioModuleGoal": "Stärk ledarkompetensen ”{name}” ({id}) målinriktat — härlett från en PulseNorth-samtalsanalys."
   },
   "api": {
     "unauthorized": "Inloggning krävs",
@@ -580,15 +610,15 @@
     "wishSend": "Skicka önskemål",
     "wishThanks": "Tack! Ditt önskemål har tagits emot och går in i prioriteringen av nya scenarier.",
     "resumeTimeLeft": "~{min} min kvar",
-    "resumeTimeUp": "Tiden är ute",
+    "resumeTimeUp": "Pausad – väntar på dig",
     "dropWrongType": "Endast PDF accepteras här — använd analyssidan för text.",
-    "transferTitle": "Your intention from the last conversation",
-    "transferQuestion": "How did it go in real life?",
-    "transferDone": "Did it",
-    "transferPartly": "Partly",
-    "transferNot": "Didn't get to it",
-    "transferDismiss": "Don't ask again",
-    "transferThanks": "Thanks — this feeds into your next debrief.",
+    "transferTitle": "Din föresats från det senaste samtalet",
+    "transferQuestion": "Hur gick det i vardagen?",
+    "transferDone": "Gjort",
+    "transferPartly": "Delvis",
+    "transferNot": "Hann inte",
+    "transferDismiss": "Fråga inte igen",
+    "transferThanks": "Tack — det här tas med i din nästa utvärdering.",
     "variantsAlso": "Även som:",
     "prepTitle": "Förbered mitt riktiga samtal",
     "prepBody": "Beskriv i tre meningar vad som väntar och hur din motpart beter sig. Du får ett privat övningssamtal som bara du ser.",
@@ -668,7 +698,24 @@
     "saved": "Sparat.",
     "saveFailed": "Det gick inte att spara.",
     "appearance": "Utseende",
-    "system": "System"
+    "system": "System",
+    "accountData": "Konto och data",
+    "accountDataIntro": "Hantera dina uppgifter. Raderingar är slutgiltiga och kan inte ångras.",
+    "historyDelete": "Radera lärhistorik",
+    "historyDeleteBody": "Tar bort alla dina analyser och din utvecklingshistorik (radar). Ditt konto, ditt saldo och dina fakturor finns kvar.",
+    "historyConfirmTitle": "Vill du verkligen radera lärhistoriken?",
+    "historyConfirmBody": "Alla analyser och din utvecklingshistorik tas bort permanent. Åtgärden kan inte ångras.",
+    "historyDeleted": "Lärhistorik raderad",
+    "historyDeletedBody": "{runs} analyser och {points} radarmätpunkter togs bort.",
+    "deleting": "Raderar…",
+    "tryAgainLater": "Försök igen senare.",
+    "accountDeleteTitle": "Radera konto och alla uppgifter",
+    "accountDeleteBody": "Tar bort dina personuppgifter permanent: lärhistorik, sessioner, profil och sparade åtkomsttoken. Av juridiska skäl sparas fakturor under den lagstadgade lagringstiden (§ 147 AO, den tyska skattelagen). Därefter loggas du ut.",
+    "accountDelete": "Radera konto",
+    "accountConfirmTitle": "Vill du radera kontot permanent?",
+    "accountConfirmBody": "Åtgärden kan inte ångras. Lärhistorik, sessioner, profil och sparade åtkomsttoken tas bort.",
+    "accountDeleted": "Konto raderat",
+    "accountDeletedBody": "Dina uppgifter har tagits bort. Du loggas nu ut."
   },
   "noAccess": {
     "title": "Ingen åtkomst till AI-samtalscoach",
@@ -680,7 +727,7 @@
   "aiErrors": {
     "errorNumber": "Fel nr {id}",
     "quota_exhausted": {
-      "title": "Vår KI-kvot är för närvarande förbrukad.",
+      "title": "Vår AI-kvot är för närvarande förbrukad.",
       "next": "Försök igen om några minuter. Dina framsteg sparas och ingenting debiteras dubbelt."
     },
     "credits_empty": {
@@ -688,31 +735,31 @@
       "next": "Fyll på kredit så fortsätter du precis där du var."
     },
     "daily_limit": {
-      "title": "Den dagliga gränsen för KI-körningar har uppnåtts.",
+      "title": "Den dagliga gränsen för AI-körningar har uppnåtts.",
       "next": "Det fortsätter i morgon. Om du behöver mer i dag, kontakta din administratör."
     },
     "content_blocked": {
-      "title": "KI avvisade detta innehåll.",
+      "title": "AI:n avvisade detta innehåll.",
       "next": "Omformulera avsnittet eller skapa en annan del först. Ingenting debiterades."
     },
     "model_not_enabled": {
-      "title": "Denna KI-modell är inte tillgänglig just nu.",
+      "title": "Denna AI-modell är inte tillgänglig just nu.",
       "next": "Vi arbetar på det. Försök igen senare eller använd standardinställningen."
     },
     "timeout": {
-      "title": "KI tog för lång tid på sig.",
+      "title": "AI:n tog för lång tid på sig.",
       "next": "Försök igen direkt, det brukar fungera på andra försöket."
     },
     "throttled": {
-      "title": "KI-tjänsten är överbelastad just nu.",
+      "title": "AI-tjänsten är överbelastad just nu.",
       "next": "Vänta en minut och försök igen. Du behöver inte ändra något."
     },
     "ai_unavailable": {
-      "title": "KI-tjänsten kan inte nås just nu.",
+      "title": "AI-tjänsten kan inte nås just nu.",
       "next": "Försök igen om några minuter. Dina framsteg sparas."
     },
     "ai_general": {
-      "title": "Det fungerade inte med KI.",
+      "title": "Det fungerade inte med AI:n.",
       "next": "Försök igen. Skicka felnumret till oss om felet kvarstår."
     }
   },
@@ -785,5 +832,24 @@
     "berichtStrengths": "Det som fungerar",
     "berichtImprove": "Det som behöver arbete",
     "berichtPlans": "Det deltagarna tänker göra"
+  },
+  "creditsPage": {
+    "title": "Krediter",
+    "subtitle": "Saldo och köp",
+    "loadFailed": "Saldot kunde inte laddas.",
+    "buyOnWebsite": "Köpet görs på webbplatsen.",
+    "paymentSuccess": "Betalningen lyckades — dina krediter har lagts till. Du hittar fakturan i din översikt.",
+    "paymentCancelled": "Köpet avbröts — inget har debiterats.",
+    "currentBalance": "Aktuellt saldo",
+    "unit": "krediter",
+    "balanceUnknown": "Saldo okänt — sessionen har gått ut.",
+    "paymentInactive": "Obs! Betalsystemet är inte aktiverat ännu.",
+    "platformWide": "Krediter gäller på hela PulseNorth-plattformen.",
+    "invoices": "Fakturor",
+    "invoicesIntro": "Dina fakturor som PDF.",
+    "noInvoices": "Inga fakturor ännu.",
+    "reverseCharge": "0 % · omvänd betalningsskyldighet",
+    "vatRate": "{rate} % moms",
+    "downloadPdf": "Ladda ner PDF"
   }
 }

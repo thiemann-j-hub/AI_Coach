@@ -6,6 +6,7 @@ import { Trash2, RotateCcw, Loader2 } from "lucide-react";
 import { authFetch } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/i18n/useTranslation";
+import { localeBcp47, type Locale } from "@/i18n/config";
 import { refundWindowFrom } from "@/lib/refund-affordance";
 
 /**
@@ -29,8 +30,9 @@ export function DeleteRunButton({
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const { locale } = useTranslation();
-  const de = locale.startsWith("de");
+  // Go-Live-Prüfung (12.11.2026): Texte aus dem Wörterbuch, Uhrzeit in der Sprache der Oberfläche.
+  const { t, locale } = useTranslation();
+  const bcp47 = localeBcp47[locale as Locale] ?? "en-US";
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -41,7 +43,7 @@ export function DeleteRunButton({
   const refundable = refundOnDelete && withinWindow;
   const refundUntil =
     refundable && windowEndsAtMs !== null
-      ? new Date(windowEndsAtMs).toLocaleTimeString(de ? "de-DE" : "en-US", {
+      ? new Date(windowEndsAtMs).toLocaleTimeString(bcp47, {
           hour: "2-digit",
           minute: "2-digit",
         })
@@ -61,23 +63,19 @@ export function DeleteRunButton({
       // Toast spiegelt die Server-Wahrheit. "Fenster abgelaufen" NUR zeigen,
       // wenn der Run erstattbar war (sonst gab es nie eine Refund-Erwartung).
       const description = j?.refunded
-        ? de
-          ? "1 Credit wurde erstattet."
-          : "1 credit was refunded."
+        ? t.report.deleteRefunded
         : refundOnDelete
-          ? de
-            ? "Kein Credit erstattet (Fenster abgelaufen)."
-            : "No credit refunded (window expired)."
+          ? t.report.deleteNotRefunded
           : undefined;
       toast({
-        title: de ? "Analyse gelöscht" : "Analysis deleted",
+        title: t.report.deleted,
         ...(description ? { description } : {}),
       });
       router.push("/runs-dashboard");
     } catch (e: any) {
       toast({
         variant: "destructive",
-        title: de ? "Löschen fehlgeschlagen" : "Delete failed",
+        title: t.common.deleteFailed,
         description: e?.message ?? "",
       });
       setBusy(false);
@@ -88,21 +86,21 @@ export function DeleteRunButton({
   if (confirming) {
     return (
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">{de ? "Wirklich löschen?" : "Really delete?"}</span>
+        <span className="text-muted-foreground">{t.simulation.builderDeleteConfirm}</span>
         <button
           onClick={doDelete}
           disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-lg bg-destructive/90 px-3 py-1.5 font-medium text-destructive-foreground hover:bg-destructive disabled:opacity-60"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-          {de ? "Ja, löschen" : "Yes, delete"}
+          {t.report.deleteYes}
         </button>
         <button
           onClick={() => setConfirming(false)}
           disabled={busy}
           className="rounded-lg px-3 py-1.5 text-muted-foreground hover:text-foreground"
         >
-          {de ? "Abbrechen" : "Cancel"}
+          {t.common.cancel}
         </button>
       </div>
     );
@@ -112,15 +110,7 @@ export function DeleteRunButton({
     <div className="flex flex-col items-end gap-0.5">
       <button
         onClick={() => setConfirming(true)}
-        title={
-          refundable
-            ? de
-              ? "Im Erstattungsfenster — Credit kommt zurück"
-              : "Within refund window — credit will be returned"
-            : de
-              ? "Erstattungsfenster abgelaufen — kein Credit zurück"
-              : "Refund window expired — no credit returned"
-        }
+        title={refundable ? t.report.refundOpen : t.report.refundClosed}
         className={
           refundable
             ? "pn-none inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
@@ -128,17 +118,11 @@ export function DeleteRunButton({
         }
       >
         {refundable ? <RotateCcw className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
-        {refundable
-          ? de
-            ? "Löschen & Credit zurück"
-            : "Delete & refund credit"
-          : de
-            ? "Löschen"
-            : "Delete"}
+        {refundable ? t.report.deleteAndRefund : t.simulation.builderDeleteCta}
       </button>
       {refundUntil && (
         <span className="text-[11px] text-muted-foreground">
-          {de ? `Erstattung bis ${refundUntil}` : `Refund until ${refundUntil}`}
+          {t.report.refundUntil.replace("{time}", refundUntil)}
         </span>
       )}
     </div>
