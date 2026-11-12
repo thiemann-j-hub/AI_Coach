@@ -384,7 +384,9 @@
     "aiRoleBadge": "AI-roll",
     "clockPaused": "pausad",
     "timeoutHintOver": "Pausen är slut, klockan går igen.",
-    "speakUnavailable": "Det går inte att tala just nu. Du kan fortsätta samtalet i skrift."
+    "speakUnavailable": "Det går inte att tala just nu. Du kan fortsätta samtalet i skrift.",
+    "confirmBodyFree": "Utvärderingen av din första provkörning kostar ingen kredit. Du får detaljerad feedback med betyg, ordagranna belägg, nyckelögonblick och ett konkret nästa steg. Samtalet kan inte fortsättas efteråt.",
+    "confirmCtaFree": "Ja, utvärdera"
   },
   "auth": {
     "signIn": "Logga in",

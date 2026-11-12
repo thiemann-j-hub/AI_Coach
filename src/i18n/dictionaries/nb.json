@@ -384,7 +384,9 @@
     "aiRoleBadge": "KI-rolle",
     "clockPaused": "satt på pause",
     "timeoutHintOver": "Pausen er over, klokken går igjen.",
-    "speakUnavailable": "Det er ikke mulig å snakke akkurat nå. Du kan fortsette samtalen skriftlig."
+    "speakUnavailable": "Det er ikke mulig å snakke akkurat nå. Du kan fortsette samtalen skriftlig.",
+    "confirmBodyFree": "Evalueringen av din første prøvekjøring koster ingen kreditt. Du får detaljert tilbakemelding med karakterer, ordrette belegg, nøkkeløyeblikk og ett konkret neste steg. Samtalen kan ikke fortsettes etterpå.",
+    "confirmCtaFree": "Ja, evaluer"
   },
   "auth": {
     "signIn": "Logg inn",

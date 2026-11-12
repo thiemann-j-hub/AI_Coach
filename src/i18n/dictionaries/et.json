@@ -384,7 +384,9 @@
     "aiRoleBadge": "TI-roll",
     "clockPaused": "peatatud",
     "timeoutHintOver": "Paus on läbi, kell käib jälle.",
-    "speakUnavailable": "Rääkimine ei ole praegu võimalik. Saad vestlust kirjalikult jätkata."
+    "speakUnavailable": "Rääkimine ei ole praegu võimalik. Saad vestlust kirjalikult jätkata.",
+    "confirmBodyFree": "Sinu esimese proovisõidu hindamine ei maksa ühtegi krediiti. Saad üksikasjaliku tagasiside hinnete, sõnasõnaliste tsitaatide, võtmehetkede ja ühe konkreetse järgmise sammuga. Pärast seda ei saa vestlust jätkata.",
+    "confirmCtaFree": "Jah, hinda"
   },
   "auth": {
     "signIn": "Logi sisse",

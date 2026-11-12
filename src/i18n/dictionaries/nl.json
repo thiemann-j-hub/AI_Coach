@@ -384,7 +384,9 @@
     "aiRoleBadge": "AI-rol",
     "clockPaused": "gepauzeerd",
     "timeoutHintOver": "De pauze is voorbij, de klok loopt weer.",
-    "speakUnavailable": "Spreken is nu niet mogelijk. Je kunt het gesprek schriftelijk voortzetten."
+    "speakUnavailable": "Spreken is nu niet mogelijk. Je kunt het gesprek schriftelijk voortzetten.",
+    "confirmBodyFree": "De evaluatie van je eerste proefrit kost geen credit. Je ontvangt gedetailleerde feedback met scores, letterlijke citaten, sleutelmomenten en één concrete volgende stap. Daarna kan het gesprek niet worden voortgezet.",
+    "confirmCtaFree": "Ja, beoordelen"
   },
   "auth": {
     "signIn": "Aanmelden",

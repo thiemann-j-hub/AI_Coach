@@ -174,6 +174,8 @@ export async function POST(req: NextRequest) {
         pauseSince: doc.pauseSince ?? null,
         // Paket 4: Erlaubt dieses Szenario das Live-Gespräch? Dann bietet der Browser „Sprechen“ an.
         liveAvailable: coachLiveEnabledFor(scenario.id),
+        // Freier Probelauf offen: Der Dialog vor der Auswertung nennt dann keinen Credit.
+        freeEval: freilauf,
       },
     });
   } catch (err) {

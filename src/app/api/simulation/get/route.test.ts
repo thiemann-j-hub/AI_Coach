@@ -11,9 +11,10 @@ vi.mock("@/lib/cosmos", () => db.cosmos);
 vi.mock("@/lib/server/radar-emit", () => ({ deleteCoachMeasurement: async () => undefined }));
 vi.mock("@/lib/api-auth", () => ({ requireAuth: async () => ({ uid: "u1", email: "a@example.com", oid: "oid-1" }) }));
 vi.mock("@/lib/logger", () => ({ logger: { api: vi.fn(), apiError: vi.fn(), warn: vi.fn(), info: vi.fn(), error: vi.fn() } }));
+const frei = vi.hoisted(() => ({ offen: false }));
 vi.mock("@/lib/server/scenario-store", async () => {
   const { getScenario } = await import("@/lib/simulation/scenarios");
-  return { getScenarioForUser: async () => getScenario("sim-coaching-morgan") };
+  return { getScenarioForUser: async () => getScenario("sim-coaching-morgan"), hasOpenFreeTestEval: async () => frei.offen };
 });
 
 import { GET } from "./route";
@@ -63,6 +64,14 @@ describe("GET /api/simulation/get — liveAvailable (Live-Prüfung 12.11.2026)",
     const { json } = await hole();
     expect(json.simulation.liveAvailable).toBe(false);
     expect(json.scenario.liveAvailable).toBe(false);
+  });
+
+  it("freeEval: sagt dem Dialog vor der Auswertung, ob der freie Probelauf noch offen ist (12.11.2026)", async () => {
+    db.seed();
+    expect((await hole()).json.simulation.freeEval).toBe(false);
+    frei.offen = true;
+    expect((await hole()).json.simulation.freeEval).toBe(true);
+    frei.offen = false;
   });
 
   it("Live für alle: true — wie in `start` und im Katalog", async () => {

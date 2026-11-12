@@ -384,7 +384,9 @@
     "aiRoleBadge": "Rôle IA",
     "clockPaused": "en pause",
     "timeoutHintOver": "La pause est terminée, le chrono tourne de nouveau.",
-    "speakUnavailable": "Parler n'est pas possible pour le moment. Vous pouvez poursuivre la conversation par écrit."
+    "speakUnavailable": "Parler n'est pas possible pour le moment. Vous pouvez poursuivre la conversation par écrit.",
+    "confirmBodyFree": "L'évaluation de votre premier essai ne coûte aucun crédit. Vous recevrez un retour détaillé avec des notes, des citations, les moments clés et une prochaine étape concrète. La conversation ne pourra plus être poursuivie ensuite.",
+    "confirmCtaFree": "Oui, évaluer"
   },
   "auth": {
     "signIn": "Se connecter",

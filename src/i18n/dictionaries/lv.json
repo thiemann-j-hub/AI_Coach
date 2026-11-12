@@ -384,7 +384,9 @@
     "aiRoleBadge": "MI loma",
     "clockPaused": "apturēts",
     "timeoutHintOver": "Pauze ir beigusies, pulkstenis atkal tek.",
-    "speakUnavailable": "Runāt pašlaik nav iespējams. Sarunu vari turpināt rakstiski."
+    "speakUnavailable": "Runāt pašlaik nav iespējams. Sarunu vari turpināt rakstiski.",
+    "confirmBodyFree": "Tava pirmā izmēģinājuma novērtējums nemaksā nevienu kredītu. Tu saņemsi detalizētu atgriezenisko saiti ar vērtējumiem, citātiem no sarunas, atslēgas momentiem un vienu konkrētu nākamo soli. Pēc tam sarunu vairs nevarēs turpināt.",
+    "confirmCtaFree": "Jā, novērtēt"
   },
   "auth": {
     "signIn": "Pierakstīties",

@@ -384,7 +384,9 @@
     "aiRoleBadge": "Rol IA",
     "clockPaused": "în pauză",
     "timeoutHintOver": "Pauza s-a încheiat, ceasul merge din nou.",
-    "speakUnavailable": "Vorbitul nu este posibil momentan. Poți continua conversația în scris."
+    "speakUnavailable": "Vorbitul nu este posibil momentan. Poți continua conversația în scris.",
+    "confirmBodyFree": "Evaluarea primului tău test nu costă niciun credit. Primești un feedback detaliat cu note, citate exacte, momente-cheie și un pas următor concret. După aceea, conversația nu mai poate fi continuată.",
+    "confirmCtaFree": "Da, evaluează"
   },
   "auth": {
     "signIn": "Conectare",

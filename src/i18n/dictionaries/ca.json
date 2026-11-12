@@ -384,7 +384,9 @@
     "aiRoleBadge": "Rol d'IA",
     "clockPaused": "en pausa",
     "timeoutHintOver": "La pausa s'ha acabat, el rellotge torna a córrer.",
-    "speakUnavailable": "Ara mateix no es pot parlar. Pots continuar la conversa per escrit."
+    "speakUnavailable": "Ara mateix no es pot parlar. Pots continuar la conversa per escrit.",
+    "confirmBodyFree": "L'avaluació de la teva primera prova no costa cap crèdit. Rebràs un feedback detallat amb notes, cites textuals, moments clau i un proper pas concret. Després no podràs continuar la conversa.",
+    "confirmCtaFree": "Sí, avalua"
   },
   "auth": {
     "signIn": "Inicia la sessió",

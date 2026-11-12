@@ -384,7 +384,9 @@
     "aiRoleBadge": "Ról IS",
     "clockPaused": "ar sos",
     "timeoutHintOver": "Tá an sos thart, tá an clog ag rith arís.",
-    "speakUnavailable": "Ní féidir labhairt faoi láthair. Is féidir leat leanúint den chomhrá i scríbhinn."
+    "speakUnavailable": "Ní féidir labhairt faoi láthair. Is féidir leat leanúint den chomhrá i scríbhinn.",
+    "confirmBodyFree": "Ní chosnaíonn measúnú do chéad trialach aon chreidmheas. Gheobhaidh tú aiseolas mionsonraithe le scóir, fianaise athfhriotail, príomhnóiméid agus céim nithiúil amháin le tógáil ina dhiaidh seo. Ní féidir leanúint den chomhrá ina dhiaidh sin.",
+    "confirmCtaFree": "Sea, measúnaigh"
   },
   "auth": {
     "signIn": "Sínigh isteach",

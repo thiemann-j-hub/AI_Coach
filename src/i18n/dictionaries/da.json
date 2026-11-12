@@ -384,7 +384,9 @@
     "aiRoleBadge": "AI-rolle",
     "clockPaused": "sat på pause",
     "timeoutHintOver": "Pausen er slut, uret går igen.",
-    "speakUnavailable": "Det er ikke muligt at tale lige nu. Du kan fortsætte samtalen på skrift."
+    "speakUnavailable": "Det er ikke muligt at tale lige nu. Du kan fortsætte samtalen på skrift.",
+    "confirmBodyFree": "Evalueringen af din første prøvekørsel koster ingen credit. Du får detaljeret feedback med karakterer, ordrette belæg, nøgleøjeblikke og ét konkret næste skridt. Samtalen kan ikke fortsættes bagefter.",
+    "confirmCtaFree": "Ja, evaluer"
   },
   "auth": {
     "signIn": "Log ind",

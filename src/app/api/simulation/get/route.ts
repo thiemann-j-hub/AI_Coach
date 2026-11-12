@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/api-auth";
 import { coachLiveEnabledFor, simulationEnabled } from "@/lib/simulation/flags";
 import { getSimulation } from "@/lib/server/simulation-store";
 import { publicScenario } from "@/lib/simulation/scenarios";
-import { getScenarioForUser } from "@/lib/server/scenario-store";
+import { getScenarioForUser, hasOpenFreeTestEval } from "@/lib/server/scenario-store";
 import { computeDebrief } from "@/lib/simulation/debrief";
 import type { SimulationFeedbackOutput } from "@/ai/flows/simulation-feedback";
 import { logger } from "@/lib/logger";
@@ -52,6 +52,8 @@ export async function GET(req: NextRequest) {
     // Live-Prüfung 12.11.2026: `liveAvailable` wie in `start` und im Katalog, am Szenario und am Lauf. Sonst fehlte
     // beim Fortsetzen eines Laufs, dessen Szenario nicht im geladenen Katalog steht, die Wahl „Sprechen“.
     const liveAvailable = coachLiveEnabledFor(doc.scenarioId);
+    // Wie in `start`: Steht der freie Probelauf dieses Szenarios noch offen, nennt der Dialog vor der Auswertung keinen Credit.
+    const freeEval = await hasOpenFreeTestEval(auth.uid, auth.oid, doc.scenarioId).catch(() => false);
     return NextResponse.json({
       ok: true,
       scenario: scenarioFull ? { ...publicScenario(scenarioFull), liveAvailable } : null,
@@ -68,6 +70,7 @@ export async function GET(req: NextRequest) {
         pausedMs: doc.pausedMs ?? 0,
         pauseSince: doc.pauseSince ?? null,
         liveAvailable,
+        freeEval,
         turns: doc.turns,
         feedback: doc.feedbackJson ?? null,
         competencyRatings: doc.competencyRatings ?? null,

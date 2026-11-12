@@ -384,7 +384,9 @@
     "aiRoleBadge": "MI-szerep",
     "clockPaused": "megállítva",
     "timeoutHintOver": "A szünet véget ért, az óra újra jár.",
-    "speakUnavailable": "A beszéd most nem lehetséges. A beszélgetést írásban folytathatod."
+    "speakUnavailable": "A beszéd most nem lehetséges. A beszélgetést írásban folytathatod.",
+    "confirmBodyFree": "Az első próbád kiértékelése nem kerül kreditbe. Részletes visszajelzést kapsz pontszámokkal, szó szerinti idézetekkel, kulcsmomentumokkal és egy konkrét következő lépéssel. A beszélgetés ezután nem folytatható.",
+    "confirmCtaFree": "Igen, kiértékelem"
   },
   "auth": {
     "signIn": "Bejelentkezés",

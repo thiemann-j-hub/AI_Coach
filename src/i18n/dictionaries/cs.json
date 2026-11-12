@@ -384,7 +384,9 @@
     "aiRoleBadge": "Role AI",
     "clockPaused": "pozastaveno",
     "timeoutHintOver": "Pauza skončila, čas zase běží.",
-    "speakUnavailable": "Mluvení teď není možné. V rozhovoru můžeš pokračovat písemně."
+    "speakUnavailable": "Mluvení teď není možné. V rozhovoru můžeš pokračovat písemně.",
+    "confirmBodyFree": "Vyhodnocení tvé první zkoušky nestojí žádný kredit. Obdržíte podrobnou zpětnou vazbu se známkami, citacemi, klíčovými momenty a konkrétním dalším krokem. Poté už nelze v rozhovoru pokračovat.",
+    "confirmCtaFree": "Ano, vyhodnotit"
   },
   "auth": {
     "signIn": "Přihlásit se",

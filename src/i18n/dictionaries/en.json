@@ -384,7 +384,9 @@
     "aiRoleBadge": "AI role",
     "clockPaused": "paused",
     "timeoutHintOver": "The break is over, the clock is running again.",
-    "speakUnavailable": "Speaking is not possible right now. You can continue the conversation in writing."
+    "speakUnavailable": "Speaking is not possible right now. You can continue the conversation in writing.",
+    "confirmBodyFree": "The evaluation of your first test run costs no credit. You'll receive detailed feedback with scores, quoted evidence, key moments and one concrete next step. The conversation cannot be continued afterwards.",
+    "confirmCtaFree": "Yes, evaluate"
   },
   "auth": {
     "signIn": "Sign In",

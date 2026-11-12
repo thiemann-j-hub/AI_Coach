@@ -384,7 +384,9 @@
     "aiRoleBadge": "Rola AI",
     "clockPaused": "wstrzymany",
     "timeoutHintOver": "Przerwa się skończyła, zegar znów biegnie.",
-    "speakUnavailable": "Mówienie jest teraz niemożliwe. Możesz kontynuować rozmowę pisemnie."
+    "speakUnavailable": "Mówienie jest teraz niemożliwe. Możesz kontynuować rozmowę pisemnie.",
+    "confirmBodyFree": "Ocena twojego pierwszego testu nie kosztuje żadnego kredytu. Otrzymasz szczegółową informację zwrotną z ocenami, cytatami, kluczowymi momentami i konkretnym następnym krokiem. Potem rozmowy nie można kontynuować.",
+    "confirmCtaFree": "Tak, oceń"
   },
   "auth": {
     "signIn": "Zaloguj się",

@@ -29,9 +29,10 @@ vi.mock("@/lib/server/cost-cap", async (original) => ({
   checkAndConsumeBudget: (...a: unknown[]) => h.budget(...a),
 }));
 vi.mock("@/lib/server/credits/entitlement", () => ({ preflightEntitlement: async () => null }));
+const frei = vi.hoisted(() => ({ offen: false }));
 vi.mock("@/lib/server/scenario-store", async () => {
   const { getScenario } = await import("@/lib/simulation/scenarios");
-  return { getScenarioForUser: async () => getScenario("sim-coaching-morgan"), hasOpenFreeTestEval: async () => false };
+  return { getScenarioForUser: async () => getScenario("sim-coaching-morgan"), hasOpenFreeTestEval: async () => frei.offen };
 });
 vi.mock("@/lib/server/simulation-store", () => ({
   countFinishedForScenario: async () => 0,
@@ -138,7 +139,12 @@ describe("Start: Sprechen nach vorn (Paket 4)", () => {
 
   it("C13 und liveAvailable: die Antwort trägt die Pausenfelder der Uhr und sagt, ob Sprechen geht", async () => {
     let json = await (await start()).json();
-    expect(json.simulation).toMatchObject({ createdAt: "2026-11-12T08:00:00.000Z", pausedMs: 0, pauseSince: null, liveAvailable: false });
+    expect(json.simulation).toMatchObject({ createdAt: "2026-11-12T08:00:00.000Z", pausedMs: 0, pauseSince: null, liveAvailable: false, freeEval: false });
+
+    // Freier Probelauf offen: Die Antwort sagt es, damit der Dialog vor der Auswertung keinen Credit nennt.
+    frei.offen = true;
+    expect((await (await start()).json()).simulation.freeEval).toBe(true);
+    frei.offen = false;
 
     process.env.COACH_LIVE = "sim-coaching-morgan,ws-anderes";
     json = await (await start()).json();

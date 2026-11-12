@@ -384,7 +384,9 @@
     "aiRoleBadge": "Tekoälyrooli",
     "clockPaused": "pysäytetty",
     "timeoutHintOver": "Tauko on ohi, kello käy taas.",
-    "speakUnavailable": "Puhuminen ei juuri nyt onnistu. Voit jatkaa keskustelua kirjoittamalla."
+    "speakUnavailable": "Puhuminen ei juuri nyt onnistu. Voit jatkaa keskustelua kirjoittamalla.",
+    "confirmBodyFree": "Ensimmäisen koeajosi arviointi ei maksa krediittiä. Saat yksityiskohtaisen palautteen, joka sisältää arvosanat, sanatarkat näyttölainaukset, avainhetket ja yhden konkreettisen seuraavan askeleen. Keskustelua ei voi jatkaa arvioinnin jälkeen.",
+    "confirmCtaFree": "Kyllä, arvioi"
   },
   "auth": {
     "signIn": "Kirjaudu sisään",

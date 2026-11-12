@@ -464,6 +464,8 @@ export default function SimulationClient() {
   const checkinFieldRef = useRef<HTMLTextAreaElement | null>(null);
   const [briefingOpen, setBriefingOpen] = useState(false);
   const [attempt, setAttempt] = useState(1);
+  /** Freier Probelauf (erste Auswertung eines selbst gebauten Szenarios): Der Dialog vor der Auswertung nennt keinen Credit. */
+  const [freeEval, setFreeEval] = useState(false);
   const [focus, setFocus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // ── Einstieg (COACH-UX-BLUEPRINT §1) ──
@@ -1110,6 +1112,7 @@ export default function SimulationClient() {
       // Die Antwort sagt selbst, ob das Sprachgespräch für diesen Lauf geht (z. B. bei einem gerade vorbereiteten
       // Gespräch, das der Katalog noch nicht kennt): Dann bietet das Menü im Gespräch „Sprechen“ an.
       setScenario(typeof json.simulation.liveAvailable === 'boolean' ? { ...s, liveAvailable: json.simulation.liveAvailable } : s);
+      setFreeEval(json.simulation.freeEval === true);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
@@ -1173,6 +1176,7 @@ export default function SimulationClient() {
       const s: PublicScenario =
         typeof json.simulation.liveAvailable === 'boolean' ? { ...basis, liveAvailable: json.simulation.liveAvailable } : basis;
       setScenario(s);
+      setFreeEval(json.simulation.freeEval === true);
       setSimId(json.simulation.id);
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
@@ -3238,10 +3242,10 @@ export default function SimulationClient() {
         >
           <DialogContent className={DIALOG_BOX} data-testid="finish-confirm">
             <DialogTitle className={DIALOG_TITLE}>{ts.confirmTitle}</DialogTitle>
-            <DialogDescription className="leading-relaxed">{ts.confirmBody}</DialogDescription>
+            <DialogDescription className="leading-relaxed">{freeEval ? ts.confirmBodyFree : ts.confirmBody}</DialogDescription>
             {/* Preis vor dem Klick (29.09.): die Auswertung ist der einzige kostenpflichtige Schritt.
                 U23: Den Eurobetrag sehen nur Admins und Selbstzahler; sonst entfällt die Zeile. */}
-            {finishCost && (
+            {finishCost && !freeEval && (
               <p className="text-xs text-muted-foreground" data-testid="finish-cost-note">
                 {finishCost}
               </p>
@@ -3264,7 +3268,7 @@ export default function SimulationClient() {
                 className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
               >
                 {finishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                {ts.confirmCta}
+                {freeEval ? ts.confirmCtaFree : ts.confirmCta}
               </button>
             </div>
           </DialogContent>

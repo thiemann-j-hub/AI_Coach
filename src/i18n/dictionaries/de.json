@@ -384,7 +384,9 @@
     "aiRoleBadge": "KI-Rolle",
     "clockPaused": "angehalten",
     "timeoutHintOver": "Die Pause ist zu Ende, die Uhr läuft wieder.",
-    "speakUnavailable": "Sprechen ist gerade nicht möglich. Du kannst das Gespräch schreibend weiterführen."
+    "speakUnavailable": "Sprechen ist gerade nicht möglich. Du kannst das Gespräch schreibend weiterführen.",
+    "confirmBodyFree": "Die Auswertung Deines ersten Probelaufs kostet keinen Credit. Du erhältst ein detailliertes Feedback mit Noten, wörtlichen Belegen, Schlüsselmomenten und einem konkreten nächsten Schritt. Danach kann das Gespräch nicht fortgesetzt werden.",
+    "confirmCtaFree": "Ja, auswerten"
   },
   "auth": {
     "signIn": "Anmelden",
