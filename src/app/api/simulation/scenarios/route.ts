@@ -9,6 +9,7 @@ import {
   listSimulations,
 } from "@/lib/server/simulation-store";
 import { latestRunForUid } from "@/lib/server/runs-store";
+import { aufraeumenAnstossen } from "@/lib/server/aufraeumen";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -63,6 +64,9 @@ export async function GET(req: NextRequest) {
     // B3a: Workspace-Szenarien des Mandanten hinter den Katalog hängen —
     // dieselbe Anti-Leak-Projektion (publicScenario), fail-soft leere Liste.
     const workspaceScenarios = (await listScenariosForUser(auth.uid, auth.oid)).map(publicScenario);
+    // Paket 2, C19 (12.11.2026): höchstens einmal pro Stunde abgelaufene private Szenarien und alte abgebrochene
+    // Läufe aller Personen wegräumen; läuft neben der Antwort.
+    aufraeumenAnstossen();
     return NextResponse.json({
       ok: true,
       scenarios: [...publicScenarios(), ...workspaceScenarios],

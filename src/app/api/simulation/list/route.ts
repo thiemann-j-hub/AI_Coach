@@ -4,6 +4,7 @@ import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenario } from "@/lib/simulation/scenarios";
 import { listScenariosForUser } from "@/lib/server/scenario-store";
 import { listSimulations } from "@/lib/server/simulation-store";
+import { aufraeumenAnstossen } from "@/lib/server/aufraeumen";
 import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
@@ -38,6 +39,9 @@ export async function GET(req: NextRequest) {
         personaName: s?.persona.name ?? null,
       };
     });
+    // Paket 2, C19 (12.11.2026): höchstens einmal pro Stunde abgelaufene private Szenarien und alte abgebrochene
+    // Läufe aller Personen wegräumen; läuft neben der Antwort.
+    aufraeumenAnstossen();
     return NextResponse.json({ ok: true, items });
   } catch (err) {
     logger.apiError("/api/simulation/list", err);

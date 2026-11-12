@@ -7,6 +7,8 @@
  * Unternehmen ist — deckt auch Microsoft-Konten mit abweichender uid) über deleteAccount (Rollenspiele,
  * Auswertungen, Messpunkte, Sitzungen, Zähler, Token-Speicher, Profil) sowie die Firmen-Szenarien und
  * Szenario-Wünsche. Rechnungen bleiben (10 Jahre). Idempotent, fail-soft je Konto, Bericht mit Zählern.
+ * Paket 2, C19 (12.11.2026): Mit jedem Firmen-Szenario geht sein Spielbuch (eigene Partition ohne Firmenkennung,
+ * blieb bisher liegen); die Spielbücher privater Szenarien löscht deleteAccount mit.
  * Fail-closed ohne Geheimnis 404. Rückweg PN_SERVICE_AUTH=off → 404.
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -14,6 +16,7 @@ import { serviceRequestOk } from "@/lib/server/credits/cs-credential";
 import { deleteAccount } from "@/lib/server/account-delete";
 import { deleteItem, queryItems, runsContainer, usersContainer } from "@/lib/cosmos";
 import { scenarioPartitionKey } from "@/lib/server/scenario-store";
+import { deleteSpielbuch } from "@/lib/server/spielbuch/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,6 +58,7 @@ export async function POST(req: NextRequest) {
     const docs = await queryItems<{ id: string }>(runsContainer(), "SELECT c.id FROM c WHERE c.sessionId = @pk", [{ name: "@pk", value: pk }]);
     for (const d of docs) {
       await deleteItem(runsContainer(), d.id, pk);
+      await deleteSpielbuch(d.id);
       report.scenariosDeleted++;
     }
   } catch (err) {

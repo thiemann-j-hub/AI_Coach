@@ -28,6 +28,8 @@ import {
   deleteItem,
 } from "@/lib/cosmos";
 import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
+import { isPrivateScenarioId } from "@/lib/server/scenario-store";
+import { deleteSpielbuch } from "@/lib/server/spielbuch/store";
 import { logger } from "@/lib/logger";
 
 type IdRow = { id: string; sessionId?: string; workspaceId?: string };
@@ -51,6 +53,8 @@ export async function deleteLearningHistory(
   uid: string,
   oid: string | null
 ): Promise<HistoryDeletionResult> {
+  // Ohne Statusfilter: Auch abgebrochene Rollenspiele, die in keiner Liste stehen, werden gelöscht (C19, geprüft
+  // 12.11.2026) — ebenso die privaten Szenarien der Person, die ihre Kennung tragen.
   const runs = await queryItems<IdRow>(
     runsContainer(),
     "SELECT c.id, c.sessionId, c.workspaceId FROM c WHERE c.uid = @uid",
@@ -68,6 +72,9 @@ export async function deleteLearningHistory(
     if (await safeDelete(() => deleteItem(runsContainer(), r.id, r.sessionId as string))) {
       runsDeleted++;
     }
+    // Paket 2, C19 (12.11.2026): Das Spielbuch eines privaten Szenarios liegt in einer eigenen Partition ohne
+    // Personenkennung, die Abfrage oben findet es nicht. Es geht mit seinem Szenario (fail-soft).
+    if (isPrivateScenarioId(r.id)) await deleteSpielbuch(r.id);
   }
 
   logger.api("account/delete", "learning-history-deleted", {

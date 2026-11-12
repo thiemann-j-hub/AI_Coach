@@ -78,8 +78,16 @@ function deps(over: Partial<LiveDeps> = {}, d: SimulationDoc = doc()) {
   const saved: SimulationDoc[] = [];
   const base: LiveDeps = {
     connect: up.connect,
-    loadSim: async () => d,
-    saveSim: async (x) => void saved.push(JSON.parse(JSON.stringify(x))),
+    // Paket 2, C3: Der Speicher der Attrappe verhält sich wie der echte. Gelesen wird eine frische Kopie,
+    // geschrieben wird nur die Änderung des Relais; `d` ist der gespeicherte Lauf.
+    loadSim: async () => structuredClone(d),
+    updateSim: async (_u, _s, mutate) => {
+      const frisch = structuredClone(d);
+      if (mutate(frisch) === false) return frisch;
+      Object.assign(d, frisch);
+      saved.push(structuredClone(d));
+      return structuredClone(d);
+    },
     loadScenario: async (_u, id) => getScenario(id),
     budget: async () => ({ allowed: true }),
     now: () => 1_000_000 + 60_000,

@@ -9,7 +9,7 @@ import { KI_AUS_TEXT, kiSchalterAus } from "@/lib/server/credits/entitlement";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { pruefeEnde } from "@/ai/flows/simulation-ende-pruefung";
-import { getSimulation, saveSimulation } from "@/lib/server/simulation-store";
+import { getSimulation, updateSimulation } from "@/lib/server/simulation-store";
 import { coachEndeOn, coachLiveLocation, coachLiveModel, coachLiveSprechpause, coachRegieOn } from "@/lib/simulation/flags";
 import {
   ENDE_WERKZEUG,
@@ -166,12 +166,15 @@ function realDeps(): LiveDeps {
   return {
     connect: createVertexLiveConnector(),
     loadSim: (uid, simId) => getSimulation(uid, simId),
-    saveSim: (doc) => saveSimulation(doc),
+    // Paket 2, C3 (12.11.2026): Das Relais schreibt nur seine Änderung auf den frisch gelesenen Lauf.
+    updateSim: (uid, simId, mutate) => updateSimulation(uid, simId, mutate),
     loadScenario: (uid, scenarioId, oid) => getScenarioForUser(uid, scenarioId, oid),
     // Torwächter (01.11.2026): Ende nur, wenn die Endbedingung wirklich erfüllt ist.
     endePruefen: (scenario, turns, ende) => pruefeEnde({ scenario, turns, ende }),
     loadSpielbuch: (scenario) => ensureSpielbuch(scenario),
-    regie: (scenario, turns, bisher) => (coachRegieOn() ? beobachteRegie({ scenario, turns, bisher }) : Promise.resolve(null)),
+    // Paket 2, C7: Ist der Beobachter ausgeschaltet, fehlt er ganz. So heißt „keine Beobachtung“ im Relais immer
+    // Ausfall (Frist oder Fehler) und landet im Protokoll.
+    regie: coachRegieOn() ? (scenario, turns, bisher) => beobachteRegie({ scenario, turns, bisher }) : undefined,
     endeOn: coachEndeOn(),
     sprechpause: coachLiveSprechpause(),
     budget: async (a) => ({ allowed: (await checkAndConsumeBudget(a)).allowed }),
@@ -185,6 +188,13 @@ function realDeps(): LiveDeps {
 
 /** Erste Nachricht eines frischen Sockets: die Karte. Dann läuft die Sitzung. */
 export async function acceptLiveSocket(ws: LiveSocket, deps: LiveDeps = realDeps()): Promise<void> {
+  // Paket 2, C36 (12.11.2026): error-Hörer zuerst, wie der close-Hörer. Ohne ihn wirft ein kaputter Frame eines
+  // noch unangemeldeten Sockets im Prozess (mit ws nachgestellt: „Invalid WebSocket frame“ als uncaughtException).
+  // Sobald die Sitzung läuft, protokolliert ihr eigener Hörer.
+  let sitzungLaeuft = false;
+  ws.on("error", (e) => {
+    if (!sitzungLaeuft) logger.warn("[live] ws-error vor der Karte", { err: e instanceof Error ? e.message : String(e) });
+  });
   const ticketId = await new Promise<string | null>((resolve) => {
     const timer = setTimeout(() => resolve(null), HELLO_TIMEOUT_MS);
     ws.on("message", function erste(data, isBinary) {
@@ -208,6 +218,7 @@ export async function acceptLiveSocket(ws: LiveSocket, deps: LiveDeps = realDeps
     if (ws.readyState === WS_OPEN) ws.close(4401, "UNAUTHORIZED");
     return;
   }
+  sitzungLaeuft = true;
   await runLiveSession(ws, ticket, deps);
 }
 

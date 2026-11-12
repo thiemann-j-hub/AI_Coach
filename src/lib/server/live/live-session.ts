@@ -1,6 +1,6 @@
 import { buildPersonaSystemPrompt, personaStageNote, type PersonaEndeErgebnis, type PersonaTimeSignal } from "@/ai/flows/simulation-persona";
 import { regieStageNote, type RegieStand } from "@/ai/flows/simulation-regie";
-import { endeAbgelehntNote } from "@/ai/flows/simulation-ende-pruefung";
+import { ENDE_PRUEFUNG_TIMEOUT_MS, endeAbgelehntNote } from "@/ai/flows/simulation-ende-pruefung";
 import type { SimulationScenario, SimulationTurn } from "@/lib/simulation/types";
 import {
   SIM_MAX_USER_TURNS,
@@ -35,6 +35,13 @@ import type { LiveTicket } from "./ticket-store";
  * geprüft vor dem Verbinden, nach jedem Zug und in festem Takt (auch wenn gerade niemand spricht, geht das
  * Mikrofon-Audio an das Live-Modell). Ist er aus: Fehler-Frame KI_AUS mit der Meldung, dann Ende.
  *
+ * Pakete 1 und 2 (Owner-GO 12.11.2026, Code-Review C3, C7, C14, C36):
+ *   - das Relais schreibt nie seine Kopie des Laufs zurück, sondern nur die eigene Änderung (Züge, Regie, Ende,
+ *     Antwortzeiten) auf den frisch gelesenen Lauf, und nur solange der Lauf aktiv ist,
+ *   - je Lauf gibt es höchstens eine Sitzung: eine neue Verbindung beendet die ältere (bye `replaced`),
+ *   - der Regie-Beobachter läuft neben der Speicher-Warteschlange; Züge werden sofort gespeichert und gemeldet,
+ *   - fällt der Torwächter oder der Beobachter aus, steht das im Protokoll (ohne Nutzertext).
+ *
  * Alle Außenwelt (Vertex, Cosmos, Budget, Uhr) kommt über `LiveDeps` herein — der Kern ist testbar.
  * Es verlässt nie etwas aus der Rollen-DNA den Server; der Browser sieht nur Audio und Mitschrift.
  */
@@ -63,7 +70,21 @@ export type LiveErrorCode =
   | "UNKNOWN_SCENARIO"
   | "UPSTREAM"
   | "KI_AUS";
-export type LiveByeReason = "time_up" | "ended_by_persona" | "turn_limit" | "budget" | "idle" | "upstream" | "ended" | "ki_aus";
+/**
+ * Paket 2 (12.11.2026), zwei neue Gründe: `replaced` = eine neuere Verbindung hat diesen Lauf übernommen (C36);
+ * `not_active` = der Lauf ist inzwischen ausgewertet, abgebrochen oder gelöscht, das Relais schreibt nichts mehr (C3).
+ */
+export type LiveByeReason =
+  | "time_up"
+  | "ended_by_persona"
+  | "turn_limit"
+  | "budget"
+  | "idle"
+  | "upstream"
+  | "ended"
+  | "ki_aus"
+  | "replaced"
+  | "not_active";
 
 /** Der Teil eines ws-Sockets, den der Kern braucht (so bleibt er ohne ws-Typen testbar). */
 export interface LiveSocket {
@@ -123,7 +144,12 @@ export type ConnectUpstream = (cfg: UpstreamConfig, events: UpstreamEvents) => P
 export interface LiveDeps {
   connect: ConnectUpstream;
   loadSim(uid: string, simId: string): Promise<SimulationDoc | null>;
-  saveSim(doc: SimulationDoc): Promise<void>;
+  /**
+   * Paket 2, C3 (12.11.2026): ändert den GESPEICHERTEN Lauf (`updateSimulation`): liest frisch, wendet `mutate`
+   * an, schreibt mit Versionsprüfung und wiederholt bei Konflikt. `mutate` muss wiederholbar sein; gibt es
+   * `false` zurück, wird nichts geschrieben. Liefert den Lauf, wie er jetzt gespeichert ist, oder null (Lauf weg).
+   */
+  updateSim(uid: string, simId: string, mutate: (doc: SimulationDoc) => void | false): Promise<SimulationDoc | null>;
   loadScenario(uid: string, scenarioId: string, oid: string | null): Promise<SimulationScenario | null>;
   /** Spielbuch des Szenarios (vorbereitet) oder null; optional (Tests, Rückweg). */
   loadSpielbuch?(scenario: SimulationScenario): Promise<string | null>;
@@ -153,6 +179,34 @@ export interface LiveDeps {
   idleWarnMs?: number;
   /** Obergrenze je Verbindung (Standard 30 Minuten). */
   maxConnectionMs?: number;
+  /** Paket 2, C36: laufende Sitzungen je Lauf (Standard: eine Liste je Prozess; Tests reichen eine eigene herein). */
+  sitzungen?: LiveSitzungen;
+}
+
+/** Laufende Sitzungen: Schlüssel `uid:simId`, Wert = „beende Dich, eine neuere Verbindung übernimmt“. */
+export type LiveSitzungen = Map<string, () => Promise<void>>;
+
+/** Eine Liste je Prozess, wie der Karten-Laden (ticket-store.ts): Der Coach läuft als EIN Prozess. */
+function liveSitzungen(): LiveSitzungen {
+  const g = globalThis as typeof globalThis & { __coachLiveSitzungen?: LiveSitzungen };
+  if (!g.__coachLiveSitzungen) g.__coachLiveSitzungen = new Map();
+  return g.__coachLiveSitzungen;
+}
+
+/** So lange wartet eine neue Verbindung höchstens darauf, dass die ältere ihr Angefangenes gespeichert hat. */
+const ERSETZEN_WARTE_MS = 3_000;
+
+/** Wartet auf `p`, höchstens aber `ms`; Fehler von `p` zählen als fertig. */
+function hoechstens(p: Promise<unknown>, ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    const t = setTimeout(resolve, ms);
+    void p
+      .catch(() => undefined)
+      .then(() => {
+        clearTimeout(t);
+        resolve();
+      });
+  });
 }
 
 /** Name des Werkzeugs, mit dem die Rolle das Gespräch beendet. */
@@ -246,8 +300,54 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     }
   };
 
-  const doc = await deps.loadSim(ticket.uid, ticket.simId);
-  if (!doc) return fail("NOT_FOUND", 4404);
+  const log = (level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>) =>
+    deps.log(level, msg, { simId: ticket.simId, uid: ticket.uid, ...meta });
+
+  // ── Ende der Sitzung ──────────────────────────────────────────────────────
+  // Paket 2, C36 (12.11.2026): Die Hörer für close und error stehen vor dem ersten Warten. Vorher wurde ein
+  // Auflegen während des Ladens verpasst, die Sitzung lief dann ohne Browser weiter.
+  let closing = false; // wir beenden gerade (kein Reconnect mehr)
+  const sitzungen = deps.sitzungen ?? liveSitzungen();
+  const sitzungsKey = `${ticket.uid}:${ticket.simId}`;
+  const abmelden = () => {
+    if (sitzungen.get(sitzungsKey) === ersetzen) sitzungen.delete(sitzungsKey);
+  };
+  /** Bis die Sitzung steht, gibt es nichts zu speichern; danach übernimmt der Abschluss weiter unten. */
+  let abschluss = async (): Promise<void> => abmelden();
+  /** Eine neuere Verbindung für denselben Lauf übernimmt: Grund melden, schließen, Angefangenes speichern. */
+  const ersetzen = async (): Promise<void> => {
+    if (!closing) {
+      closing = true;
+      sendJson({ t: "bye", reason: "replaced" });
+    }
+    try {
+      ws.close(1000, "replaced");
+    } catch {
+      /* schon zu */
+    }
+    await abschluss();
+  };
+  ws.on("error", (e) => log("warn", "live-ws-error", { err: e instanceof Error ? e.message : String(e) }));
+  ws.on("close", () => {
+    closing = true;
+    void abschluss();
+  });
+
+  // Paket 2, C36: höchstens eine Live-Sitzung je Lauf. Zwei Verbindungen (zweiter Tab, Doppelklick, Neuverbinden,
+  // bevor die alte Sitzung gespeichert hat) hielten je eine eigene Kopie. Die ältere endet, bevor die neue lädt.
+  const vorgaenger = sitzungen.get(sitzungsKey);
+  sitzungen.set(sitzungsKey, ersetzen);
+  if (vorgaenger) {
+    log("info", "live-ersetzt");
+    await hoechstens(vorgaenger(), ERSETZEN_WARTE_MS);
+    if (closing) return;
+  }
+
+  const geladen = await deps.loadSim(ticket.uid, ticket.simId);
+  if (!geladen) return fail("NOT_FOUND", 4404);
+  // Arbeitsstand für Prompts und Entscheidungen. Paket 2, C3: gespeichert wird nie diese Kopie, sondern nur die
+  // eigene Änderung (siehe „Speichern“); nach jedem Schreiben ist sie der gespeicherte Lauf.
+  let doc: SimulationDoc = geladen;
   if (doc.status !== "active") return fail("ALREADY_FINISHED", 4409);
   if (doc.closedByTime) return fail("TIME_UP", 4409);
   if (doc.closedByPersona) return fail("ENDED", 4409);
@@ -262,6 +362,8 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   const voice = liveVoiceFor(scenario.persona.voice, scenario.id, scenario.persona.liveVoice);
   const languageCode = liveLanguageCode(doc.convoLocale ?? scenario.locale);
   const spielbuch = deps.loadSpielbuch ? await deps.loadSpielbuch(scenario) : null;
+  // C36: während des Ladens aufgelegt (oder von einer neueren Verbindung ersetzt) → nichts verbinden.
+  if (closing) return;
   const endeWerkzeug =
     (deps.endeOn ?? true) && Boolean(scenario.personaDna.endbedingungen?.some((x) => x.trim()));
   const systemInstruction =
@@ -272,7 +374,6 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   let upstream: Upstream | null = null;
   let resumeHandle: string | undefined;
   let reconnects = 0;
-  let closing = false; // wir beenden gerade (kein Reconnect mehr)
   let farewellPending = false; // die Verabschiedung wurde angewiesen; ihr Zug schließt den Lauf
   let personaEnde: { grund: string; ergebnis: PersonaEndeErgebnis } | null = null; // Werkzeug gerufen und freigegeben
   let endeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -296,9 +397,6 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   let audioSeenThisTurn = false;
   const latencies: number[] = [];
 
-  const log = (level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>) =>
-    deps.log(level, msg, { simId: doc.id, uid: ticket.uid, ...meta });
-
   const bye = (reason: LiveByeReason) => {
     if (closing) return;
     closing = true;
@@ -320,6 +418,49 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     );
   };
 
+  // ── Speichern (Paket 2, C3, 12.11.2026) ───────────────────────────────────
+  // Vorher schrieb das Relais seine bis zu 30 Minuten alte Kopie jeweils ganz zurück: Coach-Tipps gingen verloren,
+  // zwei Verbindungen überschrieben sich, ein später Schreiber setzte eine fertige Auswertung auf „aktiv“ zurück.
+  // Jetzt geht nur die eigene Änderung auf den frisch gelesenen Lauf, eine nach der anderen, und nur solange der
+  // Lauf aktiv ist. Danach ist die Arbeitskopie der gespeicherte Lauf (samt fremder Änderungen wie coachNotes).
+  type Aenderung = (lauf: SimulationDoc) => void;
+  /** Änderungen, deren Speichern scheiterte: Sie gehen mit dem nächsten Schreiben mit. */
+  const offen: Aenderung[] = [];
+  let laufAktiv = true;
+  let schreibKette: Promise<unknown> = Promise.resolve();
+  /** true = gespeichert. false = der Lauf ist nicht mehr aktiv (ausgewertet, abgebrochen, gelöscht): nichts geschrieben, die Sitzung endet. */
+  const schreiben = (aenderung: Aenderung): Promise<boolean> => {
+    const lauf = schreibKette.then(async () => {
+      if (!laufAktiv) return false;
+      offen.push(aenderung);
+      const stapel = [...offen];
+      let aktiv = false as boolean;
+      let gespeichert: SimulationDoc | null;
+      try {
+        gespeichert = await deps.updateSim(ticket.uid, ticket.simId, (frisch) => {
+          aktiv = frisch.status === "active";
+          if (!aktiv) return false;
+          for (const a of stapel) a(frisch);
+        });
+      } catch (e) {
+        // Für Prompts und Zählung gilt die Änderung schon; gespeichert wird sie mit dem nächsten Schreiben.
+        aenderung(doc);
+        throw e;
+      }
+      offen.length = 0;
+      if (!gespeichert || !aktiv) {
+        laufAktiv = false;
+        log("info", "live-lauf-nicht-aktiv", { status: gespeichert?.status ?? "weg" });
+        bye("not_active");
+        return false;
+      }
+      doc = gespeichert;
+      return true;
+    });
+    schreibKette = lauf.catch(() => undefined);
+    return lauf;
+  };
+
   const resetIdle = () => {
     if (idleTimer) clearTimeout(idleTimer);
     if (idleWarnTimer) clearTimeout(idleWarnTimer);
@@ -336,6 +477,11 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     upstream.sendText(personaStageNote(scenario, signal), signal === "farewell");
     if (signal === "farewell") farewellPending = true;
   };
+  /** Zeit-Regie: Der Hinweis „muss gleich los“ ist gegeben (am Lauf merken, damit er nur einmal kommt). */
+  const zeitHinweisMerken = () =>
+    schreiben((lauf) => {
+      lauf.timeWarned = true;
+    });
 
   /** A4: Ist der KI-Schalter inzwischen aus? Dann Meldung an den Browser und Ende. true = beendet. */
   const kiPruefen = async (): Promise<boolean> => {
@@ -348,20 +494,54 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     return true;
   };
 
-  /** Welle 2: Regie-Beobachter nach dem Zug — Notiz an die Rolle, Verlauf am Lauf (in der Warteschlange). */
-  const beobachten = async () => {
-    if (!deps.regie || closing) return;
-    const last = [...doc.turns].reverse().find((t) => t.role === "user");
-    if (!last) return;
-    const bisher = doc.regie?.length ? doc.regie[doc.regie.length - 1] : null;
-    const stand = await deps.regie(scenario, doc.turns, bisher);
-    if (!stand || closing) return;
-    doc.regie = [...(doc.regie ?? []).slice(-40), { ...stand, delivered: Boolean(stand.notiz) }];
-    await deps.saveSim(doc);
-    if (stand.notiz && upstream) {
-      upstream.sendText(regieStageNote(scenario, stand), false);
-      log("info", "live-regie", { stufe: stand.stufe, eskaliert: stand.eskaliert, turn: stand.turn });
+  /**
+   * Welle 2: Regie-Beobachter nach dem Zug — Notiz an die Rolle, Verlauf am Lauf.
+   * Paket 1, C14 (12.11.2026): Er läuft NEBEN der Speicher-Warteschlange und hängt seine Notiz nach, wenn er fertig
+   * ist. Vorher stand er in der Warteschlange: Hing er, wurden folgende Züge weder gespeichert noch gemeldet, und
+   * das Abschluss-Speichern wartete. Es läuft höchstens einer; kam inzwischen ein Zug dazu, folgt genau ein
+   * weiterer Lauf mit dem neuesten Stand.
+   */
+  let beobachterLaeuft = false;
+  let beobachterNochmal = false;
+  const beobachten = () => {
+    const regie = deps.regie;
+    if (!regie || closing) return;
+    if (beobachterLaeuft) {
+      beobachterNochmal = true;
+      return;
     }
+    beobachterLaeuft = true;
+    void (async () => {
+      const bisher = doc.regie?.length ? doc.regie[doc.regie.length - 1] : null;
+      const t0 = deps.now();
+      // Paket 2, C7: Fällt der Beobachter aus, steht das im Protokoll (ohne Nutzertext). Er liefert null nach
+      // Frist oder Fehler; die Notiz dieses Zugs entfällt dann.
+      let stand: RegieStand | null;
+      try {
+        stand = await regie(scenario, doc.turns, bisher);
+      } catch {
+        return log("warn", "live-regie-ausfall", { anlass: "fehler", ms: deps.now() - t0 });
+      }
+      if (!stand) return log("warn", "live-regie-ausfall", { anlass: "frist-oder-fehler", ms: deps.now() - t0 });
+      if (closing) return;
+      const eintrag = { ...stand, delivered: Boolean(stand.notiz) };
+      const gespeichert = await schreiben((lauf) => {
+        lauf.regie = [...(lauf.regie ?? []).slice(-40), eintrag];
+      });
+      if (!gespeichert || closing) return;
+      if (stand.notiz && upstream) {
+        upstream.sendText(regieStageNote(scenario, stand), false);
+        log("info", "live-regie", { stufe: stand.stufe, eskaliert: stand.eskaliert, turn: stand.turn });
+      }
+    })()
+      .catch((e) => log("error", "live-regie-speichern", { err: e instanceof Error ? e.message : String(e) }))
+      .finally(() => {
+        beobachterLaeuft = false;
+        if (beobachterNochmal) {
+          beobachterNochmal = false;
+          beobachten();
+        }
+      });
   };
 
   /** Ein abgeschlossener Zug: Mitschriften werden Gesprächszüge, dann Regie wie in der Turn-Route. */
@@ -373,11 +553,15 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     audioSeenThisTurn = false;
     if (!user && !persona && !personaEnde) return;
     const ts = new Date(deps.now()).toISOString();
-    if (user) doc.turns.push({ role: "user", text: user, ts });
-    if (persona) doc.turns.push({ role: "persona", text: persona, ts });
-    if (farewellPending) doc.closedByTime = true;
-    if (personaEnde && !doc.closedByPersona) doc.closedByPersona = { ...personaEnde, at: ts };
-    await deps.saveSim(doc);
+    const zeitUm = farewellPending;
+    const ende = personaEnde;
+    const gespeichert = await schreiben((lauf) => {
+      if (user) lauf.turns.push({ role: "user", text: user, ts });
+      if (persona) lauf.turns.push({ role: "persona", text: persona, ts });
+      if (zeitUm) lauf.closedByTime = true;
+      if (ende && !lauf.closedByPersona) lauf.closedByPersona = { ...ende, at: ts };
+    });
+    if (!gespeichert) return; // Lauf nicht mehr aktiv: nichts geschrieben, die Sitzung endet (bye ist raus)
     sendJson({
       t: "turn",
       user: user || null,
@@ -402,13 +586,13 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
 
     const signal = decideTimeSignal({ createdAt: doc.createdAt, now: deps.now(), durationMin, timeWarned: doc.timeWarned === true });
     if (signal === "closing") {
-      doc.timeWarned = true;
-      await deps.saveSim(doc);
+      if (!(await zeitHinweisMerken())) return;
       sendStageNote("closing");
     } else if (signal === "farewell" && !farewellPending) {
       sendStageNote("farewell");
     }
-    if (user) await beobachten();
+    // C14: nicht warten — der nächste Zug wird gespeichert und gemeldet, auch wenn der Beobachter noch rechnet.
+    if (user) beobachten();
   };
   const enqueueFinalize = () => {
     queue = queue.then(finalizeTurn).catch((e) => log("error", "live-finalize", { err: e instanceof Error ? e.message : String(e) }));
@@ -461,16 +645,32 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
             ...(pendingUser.trim() ? [{ role: "user" as const, text: pendingUser.trim(), ts }] : []),
             ...(pendingPersona.trim() ? [{ role: "persona" as const, text: pendingPersona.trim(), ts }] : []),
           ];
-          const pruefung = deps.endePruefen
-            ? await deps.endePruefen(scenario, turnsJetzt, ende).catch(() => ({ erfuellt: true, fehlt: "" }))
-            : { erfuellt: true, fehlt: "" };
+          // Paket 2, C7 (12.11.2026): Fällt der Torwächter aus, gilt das Ende weiter (fail-open), aber es steht im
+          // Protokoll, ohne Nutzertext. Fehler sieht das Relais direkt; die Frist erkennt es an der Dauer (nach
+          // ihrem Ablauf gibt die Prüfung ungeprüft frei).
+          let pruefung = { erfuellt: true, fehlt: "" };
+          if (deps.endePruefen) {
+            const t0 = deps.now();
+            let anlass: "fehler" | "frist" | null = null;
+            try {
+              pruefung = await deps.endePruefen(scenario, turnsJetzt, ende);
+            } catch {
+              anlass = "fehler";
+            }
+            const ms = deps.now() - t0;
+            if (!anlass && pruefung.erfuellt && ms >= ENDE_PRUEFUNG_TIMEOUT_MS) anlass = "frist";
+            if (anlass) log("warn", "live-ende-ungeprueft", { anlass, ergebnis: ende.ergebnis, ms });
+          }
           if (closing) return;
           if (!pruefung.erfuellt) {
             const notiz = endeAbgelehntNote(scenario, pruefung.fehlt);
             antworten({ ok: false, hinweis: notiz });
             const letzte = doc.regie?.[doc.regie.length - 1];
             const stand: RegieStand = { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz, turn: turnsJetzt.length, ts, delivered: true, fehlt: pruefung.fehlt };
-            doc.regie = [...(doc.regie ?? []).slice(-40), stand];
+            // C3: nur diese Notiz an den gespeicherten Lauf hängen (vorher ging sie mit der ganzen Kopie mit).
+            void schreiben((lauf) => {
+              lauf.regie = [...(lauf.regie ?? []).slice(-40), stand];
+            }).catch((e) => log("error", "live-ende-notiz-speichern", { err: e instanceof Error ? e.message : String(e) }));
             try {
               upstream?.sendText(regieStageNote(scenario, stand), false);
             } catch (e) {
@@ -523,6 +723,15 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
       sprechpause: deps.sprechpause ?? "normal",
     };
     const up = await deps.connect(cfg, events);
+    // C36: Während des Verbindens beendet → die frische Verbindung zum Live-Modell gleich wieder schließen.
+    if (closing) {
+      try {
+        up.close();
+      } catch {
+        /* egal */
+      }
+      return;
+    }
     upstream = up;
     // Verlauf nur beim ersten Verbinden einspielen; die Wiederaufnahme kennt ihn schon.
     if (!resumeHandle && doc.turns.length) up.sendHistory(toHistory(doc.turns));
@@ -548,8 +757,10 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
     }
     if (msg?.t === "end") bye("ended");
   });
-  ws.on("error", (e) => log("warn", "live-ws-error", { err: e instanceof Error ? e.message : String(e) }));
-  ws.on("close", () => {
+  // Ende der Sitzung, genau einmal: ob der Browser auflegt oder eine neuere Verbindung übernimmt (C36).
+  let abschlussLauf: Promise<void> | null = null;
+  abschluss = () => {
+    if (abschlussLauf) return abschlussLauf;
     closing = true;
     if (idleTimer) clearTimeout(idleTimer);
     if (idleWarnTimer) clearTimeout(idleWarnTimer);
@@ -561,23 +772,31 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
       /* egal */
     }
     // Angefangenes nicht verlieren: was schon mitgeschrieben ist, wird noch gespeichert — und die Antwortzeiten.
-    queue = queue.then(async () => {
-      const user = pendingUser.trim();
-      const persona = pendingPersona.trim();
-      pendingUser = "";
-      pendingPersona = "";
-      const ts = new Date(deps.now()).toISOString();
-      if (user) doc.turns.push({ role: "user", text: user, ts });
-      if (persona) doc.turns.push({ role: "persona", text: persona, ts });
-      const stats = latencyStats(latencies);
-      if (stats) {
-        doc.liveStats = stats;
-        log("info", "live-latency", stats);
-      }
-      if (user || persona || stats) await deps.saveSim(doc);
-    }).catch((e) => log("error", "live-close-save", { err: e instanceof Error ? e.message : String(e) }));
-    void queue.then(() => resolveDone());
-  });
+    // Seit C14 steht der Beobachter nicht mehr in der Warteschlange, das Speichern wartet also nicht auf ihn.
+    abschlussLauf = queue
+      .then(async () => {
+        const user = pendingUser.trim();
+        const persona = pendingPersona.trim();
+        pendingUser = "";
+        pendingPersona = "";
+        const ts = new Date(deps.now()).toISOString();
+        const stats = latencyStats(latencies);
+        if (stats) log("info", "live-latency", stats);
+        if (user || persona || stats || offen.length) {
+          await schreiben((lauf) => {
+            if (user) lauf.turns.push({ role: "user", text: user, ts });
+            if (persona) lauf.turns.push({ role: "persona", text: persona, ts });
+            if (stats) lauf.liveStats = stats;
+          });
+        }
+      })
+      .catch((e) => log("error", "live-close-save", { err: e instanceof Error ? e.message : String(e) }))
+      .then(() => {
+        abmelden();
+        resolveDone();
+      });
+    return abschlussLauf;
+  };
 
   // ── Start ─────────────────────────────────────────────────────────────────
   try {
@@ -603,11 +822,9 @@ export async function runLiveSession(ws: LiveSocket, ticket: LiveTicket, deps: L
   const signal = decideTimeSignal({ createdAt: doc.createdAt, now: deps.now(), durationMin, timeWarned: doc.timeWarned === true });
   if (signal === "farewell") sendStageNote("farewell");
   else if (signal === "closing") {
-    doc.timeWarned = true;
-    await deps.saveSim(doc);
-    sendStageNote("closing");
+    if (await zeitHinweisMerken()) sendStageNote("closing");
   }
   const letzteRegie = doc.regie?.length ? doc.regie[doc.regie.length - 1] : null;
-  if (letzteRegie?.notiz && upstream) (upstream as Upstream).sendText(regieStageNote(scenario, letzteRegie), false);
+  if (letzteRegie?.notiz && upstream && !closing) (upstream as Upstream).sendText(regieStageNote(scenario, letzteRegie), false);
   return done;
 }

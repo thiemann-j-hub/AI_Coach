@@ -33,6 +33,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Paket 2, C9 (12.11.2026): Test-Tor vor dem Bau. Bisher liefen Typprüfung und Tests nur im getrennten
+      # CI-Lauf und hielten keinen Deploy auf; jeder Push startete die einzige Instanz neu, auch mit roten Tests.
+      # Beide Schritte brauchen keine Umgebung und dauern zusammen unter einer Minute.
+      - name: Typecheck (blocking)
+        run: npm run typecheck
+
+      - name: Unit tests (blocking)
+        run: npm run test
+
       # O4 Bündel-Frische (Blueprint COACH-OPTIMIERUNG 27.09.): Der Client trägt
       # seine Build-SHA eingebacken (NEXT_PUBLIC_BUILD_SHA) und vergleicht sie mit
       # public/build-info.json des laufenden Servers — weicht sie ab, lädt ein

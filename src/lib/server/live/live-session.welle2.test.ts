@@ -83,8 +83,15 @@ function deps(up: ReturnType<typeof fakeUpstream>, d: SimulationDoc, over: Parti
   let now = 1_000_000 + 60_000;
   const base: LiveDeps = {
     connect: up.connect,
-    loadSim: async () => d,
-    saveSim: async (x) => void saved.push(JSON.parse(JSON.stringify(x))),
+    // Paket 2, C3: Speicher wie der echte. Gelesen wird eine frische Kopie, geschrieben nur die Änderung des Relais.
+    loadSim: async () => structuredClone(d),
+    updateSim: async (_u, _s, mutate) => {
+      const frisch = structuredClone(d);
+      if (mutate(frisch) === false) return frisch;
+      Object.assign(d, frisch);
+      saved.push(structuredClone(d));
+      return structuredClone(d);
+    },
     loadScenario: async (_u, id) => getScenario(id),
     budget: async () => ({ allowed: true }),
     now: () => now,

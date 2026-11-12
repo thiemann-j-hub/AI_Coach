@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { readItem, runsContainer, upsertItem } from "@/lib/cosmos";
+import { deleteItem, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
 import { claudeMessage, claudeVertexConfigured } from "@/lib/server/claude-vertex";
 import { coachSpielbuchOn } from "@/lib/simulation/flags";
 import { buildSpielbuchPrompt, buildSpielbuchSystem, spielbuchPlausibel, SPIELBUCH_VERSION } from "@/lib/simulation/spielbuch";
@@ -16,6 +16,7 @@ import { logger } from "@/lib/logger";
  *  3. Fehlt ein passendes Spielbuch, startet die Erzeugung im Hintergrund (einmal je Schlüssel) und das
  *     laufende Gespräch kommt ohne aus — nie wartet eine Person auf Opus. `ensureSpielbuch(…, { wait: true })`
  *     wartet (Skript, Veröffentlichung im Builder).
+ *  4. Gelöscht wird ein Spielbuch mit seinem Szenario (`deleteSpielbuch`, Paket 2, C19).
  */
 export const SPIELBUCH_DOC_TYPE = "sim_spielbuch" as const;
 export const SPIELBUCH_PARTITION = "spielbuch";
@@ -112,4 +113,25 @@ export async function ensureSpielbuch(s: SimulationScenario, opts?: { wait?: boo
   if (opts?.wait) return job;
   void job;
   return null;
+}
+
+/**
+ * Paket 2, C19 (12.11.2026): Spielbuch eines Szenarios löschen. Das Dokument trägt weder Personen- noch
+ * Firmenkennung und blieb deshalb liegen, wenn das Szenario, das Konto oder die Firma gelöscht wurde. Jede Stelle,
+ * die ein Szenario löscht, ruft das hier auf. Läuft gerade eine Erzeugung, wird ihr Ergebnis danach ebenfalls
+ * gelöscht. Fail-soft: Das Löschen des Szenarios scheitert nie am Spielbuch (false = nicht gelungen, steht im Protokoll).
+ */
+export async function deleteSpielbuch(scenarioId: string): Promise<boolean> {
+  const loeschen = () => deleteItem(runsContainer(), spielbuchDocId(scenarioId), SPIELBUCH_PARTITION);
+  try {
+    for (const [key, job] of inflight()) {
+      if (!key.startsWith(`${scenarioId}:`)) continue;
+      void job.then(loeschen).catch((e) => logger.apiError("spielbuch/delete", e, { scenarioId }));
+    }
+    await loeschen();
+    return true;
+  } catch (e) {
+    logger.apiError("spielbuch/delete", e, { scenarioId });
+    return false;
+  }
 }

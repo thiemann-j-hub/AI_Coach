@@ -74,8 +74,14 @@ function deps(over: Partial<LiveDeps> = {}) {
   const d = doc();
   const base: LiveDeps = {
     connect: up.connect,
-    loadSim: async () => d,
-    saveSim: async () => {},
+    // Paket 2, C3: Speicher wie der echte. Gelesen wird eine frische Kopie, geschrieben nur die Änderung des Relais.
+    loadSim: async () => structuredClone(d),
+    updateSim: async (_u, _s, mutate) => {
+      const frisch = structuredClone(d);
+      if (mutate(frisch) === false) return frisch;
+      Object.assign(d, frisch);
+      return structuredClone(d);
+    },
     loadScenario: async (_u, id) => getScenario(id),
     budget: vi.fn(async () => ({ allowed: true })),
     now: () => 1_000_000 + 60_000,
