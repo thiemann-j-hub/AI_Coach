@@ -1,6 +1,6 @@
 import "server-only";
 
-import { deleteItem, queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
+import { deleteItem, queryItems, readItem, replaceItemIfMatch, runsContainer, upsertItem } from "@/lib/cosmos";
 import { deleteCoachMeasurement } from "@/lib/server/radar-emit";
 import type { SimulationTurn } from "@/lib/simulation/types";
 import type { Commitment, TransferCheck } from "@/lib/simulation/transfer";
@@ -95,8 +95,34 @@ export interface SimulationDoc {
   closedByPersona?: { grund: string; ergebnis: "ziel" | "verabschiedung" | "abbruch"; at: string } | null;
   /** Regie-Beobachter: Öffnungsstufe je Zug (Notizen an die Rolle, Verlauf für den Richter). */
   regie?: Array<{ stufe: number; erfuellt: string[]; eskaliert: boolean; notiz: string; turn: number; ts: string; delivered?: boolean; vorschnell?: boolean; fehlt?: string }>;
+  /** Version des Dokuments in Cosmos (kommt beim Lesen mit). Grundlage der Versionsprüfung beim Speichern (C3). */
+  _etag?: string;
   /** Live-Modus: Antwortzeiten (Ende der Eingabe-Mitschrift → erstes Audio), ungefähr. */
   liveStats?: { antworten: number; p50Ms: number; p95Ms: number; maxMs: number } | null;
+  // ── Paket 2 (12.11.2026): Geldweg und Kennzahlen der Auswertung ────────────
+  /**
+   * C8: Offene Buchung der Auswertung. Wird VOR der Buchung vermerkt (Kennung, Zeitpunkt), nach der Antwort des
+   * Credit-Dienstes um Buchungsnummer und Arbeitsbereich ergänzt und mit dem Speichern der Auswertung oder nach
+   * gelungener Rückbuchung ausgetragen. Bleibt er stehen (Prozess-Ende, Frist des Credit-Dienstes, gescheiterte
+   * Rückbuchung), listet `scripts/credits-abgleich.mts` den Lauf.
+   */
+  openCharge?: { key: string; at: string; txId?: string | null; workspaceId?: string | null; refundFailedAt?: string | null } | null;
+  /** C4: Zahl der gelungenen Rückbuchungen an diesem Lauf — Teil der Buchungs-Kennung (`sim-finish:<simId>:<n>`). */
+  chargeRefunds?: number;
+  /**
+   * C7/C17: Kennzahlen der Auswertung — welcher Richter geurteilt hat, Grund eines Rückfalls auf das schnelle
+   * Modell, Tokens und Dauer. Keine Noten, kein Nutzertext.
+   */
+  evalStats?: {
+    judge: "gemini" | "opus";
+    fallback: "konfiguration" | "frist" | "schema" | "fehler" | null;
+    tokensIn: number | null;
+    tokensOut: number | null;
+    /** Dauer des Richter-Aufrufs, der das Urteil geliefert hat. */
+    judgeMs: number;
+    /** Dauer der ganzen Auswertung (Richter, Kompetenzen, Zitatprüfung, Rechnung). */
+    ms: number;
+  } | null;
 }
 
 /** Ab diesem Anteil der Szenario-Zeitbox streut die Persona den Zeit-Hinweis ein. */
@@ -188,8 +214,68 @@ export async function getSimulation(
   return doc;
 }
 
+/** Jemand anderes hat den Lauf seit dem Lesen geändert (Cosmos 412). Neu lesen und wiederholen. */
+export class SimulationConflictError extends Error {
+  constructor(simId: string) {
+    super(`Lauf ${simId} wurde inzwischen von anderer Stelle geändert.`);
+    this.name = "SimulationConflictError";
+  }
+}
+
+function isPreconditionFailed(err: unknown): boolean {
+  const e = err as { code?: unknown; statusCode?: unknown } | null;
+  return e?.code === 412 || e?.statusCode === 412;
+}
+
+/**
+ * Speichert den Lauf. Paket 2, C3 (12.11.2026): Trägt das Dokument eine Version (`_etag`, kommt beim Lesen
+ * mit), wird nur geschrieben, wenn der Lauf seitdem unverändert ist — sonst `SimulationConflictError`.
+ * Die neue Version wird am übergebenen Objekt vermerkt, damit dieselbe Kopie erneut speichern kann.
+ * Ohne Version (frisch angelegte oder alte Kopien) bleibt es beim einfachen Überschreiben.
+ * Für kleine Änderungen an einem Lauf, den auch andere schreiben, `updateSimulation` nehmen.
+ */
 export async function saveSimulation(doc: SimulationDoc): Promise<void> {
-  await upsertItem(runsContainer(), { ...doc, updatedAt: new Date().toISOString() });
+  const item = { ...doc, updatedAt: new Date().toISOString() };
+  if (!doc._etag) {
+    const saved = await upsertItem(runsContainer(), item);
+    if (saved._etag) doc._etag = saved._etag;
+    return;
+  }
+  try {
+    const saved = await replaceItemIfMatch(runsContainer(), item, doc.sessionId, doc._etag);
+    if (saved._etag) doc._etag = saved._etag;
+  } catch (err) {
+    if (isPreconditionFailed(err)) throw new SimulationConflictError(doc.id);
+    throw err;
+  }
+}
+
+/** So oft liest `updateSimulation` neu, wenn ein anderer Schreiber dazwischenkam. */
+export const SIM_UPDATE_MAX_TRIES = 5;
+
+/**
+ * Ändert einen Lauf sicher gegen parallele Schreiber (Paket 2, C3): liest frisch, wendet `mutate` an und
+ * schreibt mit Versionsprüfung. Kam ein anderer Schreiber dazwischen, wird neu gelesen und `mutate` erneut
+ * angewandt (bis zu fünfmal). `mutate` muss deshalb wiederholbar sein und nur die eigenen Felder anfassen.
+ * Gibt `mutate` genau `false` zurück, wird nichts geschrieben. Rückgabe: der gespeicherte Lauf, oder `null`,
+ * wenn es ihn nicht gibt (oder er nicht dieser Person gehört).
+ */
+export async function updateSimulation(
+  uid: string,
+  simId: string,
+  mutate: (doc: SimulationDoc) => void | false
+): Promise<SimulationDoc | null> {
+  for (let attempt = 1; ; attempt++) {
+    const doc = await getSimulation(uid, simId);
+    if (!doc) return null;
+    if (mutate(doc) === false) return doc;
+    try {
+      await saveSimulation(doc);
+      return doc;
+    } catch (err) {
+      if (!(err instanceof SimulationConflictError) || attempt >= SIM_UPDATE_MAX_TRIES) throw err;
+    }
+  }
 }
 
 /**
@@ -215,6 +301,35 @@ export async function deleteSimulation(
   );
   await deleteItem(runsContainer(), simId, simPartitionKey(uid));
   return true;
+}
+
+/** So viele abgebrochene Läufe räumt ein Durchgang höchstens weg (der nächste macht weiter). */
+export const ABORTED_SWEEP_MAX = 100;
+
+/**
+ * Paket 2, C19 (12.11.2026): Abgebrochene Läufe behalten ihr Gespräch, stehen aber in keiner Liste und sind
+ * für die Person deshalb nicht löschbar. Der gelegentliche Aufräumer (aufraeumen.ts) löscht hiermit die Läufe
+ * ALLER Personen, die abgebrochen und seit `cutoffIso` unverändert sind. Abgebrochene Läufe haben weder
+ * Auswertung noch Messpunkt, das Dokument ist alles. Rückgabe: Zahl der gelöschten.
+ */
+export async function deleteAbortedSimulationsBefore(cutoffIso: string): Promise<number> {
+  const rows = await queryItems<{ id: string; sessionId: string }>(
+    runsContainer(),
+    // Über alle Partitionen (jede Person hat ihre eigene). Läufe mit offener Buchung (C8) bleiben liegen,
+    // sonst wäre die Spur für den Credit-Abgleich nach 30 Tagen weg.
+    `SELECT TOP ${ABORTED_SWEEP_MAX} c.id, c.sessionId FROM c WHERE c.docType = @dt AND c.status = 'aborted' AND c.updatedAt < @cutoff AND (NOT IS_DEFINED(c.openCharge) OR IS_NULL(c.openCharge))`,
+    [
+      { name: "@dt", value: SIM_DOC_TYPE },
+      { name: "@cutoff", value: cutoffIso },
+    ]
+  );
+  let deleted = 0;
+  for (const r of rows) {
+    if (!r.sessionId?.startsWith("sim:")) continue;
+    await deleteItem(runsContainer(), r.id, r.sessionId);
+    deleted++;
+  }
+  return deleted;
 }
 
 export interface SimulationListItem {

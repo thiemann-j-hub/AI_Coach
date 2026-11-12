@@ -109,6 +109,23 @@ export async function upsertItem<T extends { id: string }>(
   return (resource as unknown as T) ?? item;
 }
 
+/**
+ * Ersetzen mit Versionsprüfung (Paket 2, C3, 12.11.2026): schreibt nur, wenn das Dokument seit dem Lesen
+ * unverändert ist (ETag). Hat inzwischen jemand anderes geschrieben, wirft Cosmos 412 — der Aufrufer liest
+ * neu und wiederholt. Vorher überschrieb der letzte Schreiber stillschweigend alle anderen.
+ */
+export async function replaceItemIfMatch<T extends { id: string }>(
+  container: Container,
+  item: T,
+  partitionKey: string,
+  etag: string
+): Promise<T & { _etag?: string }> {
+  const { resource } = await container
+    .item(item.id, partitionKey)
+    .replace<T>(item, { accessCondition: { type: "IfMatch", condition: etag } });
+  return (resource as unknown as T & { _etag?: string }) ?? item;
+}
+
 /** Parametrisierte SQL-Query. */
 export async function queryItems<T>(
   container: Container,

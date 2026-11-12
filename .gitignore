@@ -74,3 +74,6 @@ boot-err.log
 
 # lokale Tools (Stripe CLI)
 .tools/
+
+# Sperre des Wörterbuch-Helfers (scripts/i18n-add.mjs)
+.i18n-add.lock

@@ -1,8 +1,9 @@
 import "server-only";
 
-import { deleteItem, queryItems, readItem, runsContainer, upsertItem } from "@/lib/cosmos";
+import { deleteItem, queryItems, readItem, replaceItemIfMatch, runsContainer, upsertItem } from "@/lib/cosmos";
 import { getCentralMemberInfo } from "@/lib/server/credits/member-info";
 import { getWorkspaceIdForUser } from "@/lib/server/credits/workspace-store";
+import { deleteSpielbuch } from "@/lib/server/spielbuch/store";
 import { getScenario } from "@/lib/simulation/scenarios";
 import { validateScenario } from "@/lib/simulation/scenario-schema";
 import type { PersonaVoice, SimulationScenario } from "@/lib/simulation/types";
@@ -38,6 +39,14 @@ export interface ScenarioDoc {
   status?: "draft" | "published";
   /** Welle C: uid des Erstellers (Builder); Concierge-Docs haben keine. */
   createdByUid?: string;
+  /**
+   * Freier Testlauf (Owner-Entscheid 12.11.2026, Befund S29): Die erste Auswertung je neu im Builder erzeugtem
+   * Szenario kostet die Person, die es gebaut hat, keinen Credit. „offen“ beim Anlegen, „verbraucht“ nach der
+   * ersten Auswertung. Alt-Docs ohne Feld haben keinen Freilauf. Lesen/Setzen nur über claimFreeTestEval/releaseFreeTestEval.
+   */
+  freeTestEval?: "offen" | "verbraucht";
+  /** Version des Dokuments in Cosmos (kommt beim Lesen mit); Grundlage für das einmalige Beanspruchen des Freilaufs. */
+  _etag?: string;
   /** Validiertes Szenario (Schema-geprüft beim Upsert). */
   scenario: SimulationScenario;
 }
@@ -50,13 +59,16 @@ export function scenarioPartitionKey(workspaceId: string): string {
  * Welle 4 (Owner-GO 30.10.2026, N4-240): „Mein echtes Gespräch vorbereiten“ — private Szenarien EINER Person.
  * Eigene Partition je uid (nicht je Workspace): kein Admin, kein Builder und keine Katalog-Liste des Mandanten
  * sieht sie. Id-Namensklasse `ws-mein-…` (Schema-konform, nie Kollision mit sim-/ws-Katalog). Nach 30 Tagen
- * verfallen sie (expiresAt; Liste filtert, Leser löscht verfallene Docs beim nächsten Zugriff).
+ * verfallen sie (expiresAt; Liste filtert, Leser löscht verfallene Docs beim nächsten Zugriff; seit Paket 2, C19
+ * räumt zusätzlich der gelegentliche Aufräumer die verfallenen Docs aller Personen weg).
  */
 export const PRIVATE_SCENARIO_PREFIX = "ws-mein-";
 export const PRIVATE_SCENARIO_TTL_DAYS = 30;
 
+const PRIVATE_SCENARIO_PARTITION_PREFIX = "simscn-mein:";
+
 export function privateScenarioPartitionKey(uid: string): string {
-  return `simscn-mein:${uid}`;
+  return `${PRIVATE_SCENARIO_PARTITION_PREFIX}${uid}`;
 }
 
 export function isPrivateScenarioId(id: string): boolean {
@@ -104,6 +116,15 @@ export async function upsertPrivateScenario(
   return doc;
 }
 
+/**
+ * Paket 2, C19 (12.11.2026): Löscht ein Szenario-Dokument und sein Spielbuch. Das Spielbuch (Partition
+ * „spielbuch“) blieb bisher bei jeder Szenario-Löschung liegen.
+ */
+async function deleteScenarioDoc(scenarioId: string, partitionKey: string): Promise<void> {
+  await deleteItem(runsContainer(), scenarioId, partitionKey);
+  await deleteSpielbuch(scenarioId);
+}
+
 /** Private Szenarien einer Person, verfallene werden still gelöscht (fail-soft). */
 export async function listPrivateScenarioDocs(uid: string, now: Date = new Date()): Promise<PrivateScenarioDoc[]> {
   const rows = await queryItems<PrivateScenarioDoc>(
@@ -117,7 +138,7 @@ export async function listPrivateScenarioDocs(uid: string, now: Date = new Date(
   const live: PrivateScenarioDoc[] = [];
   for (const r of rows) {
     if (privateScenarioExpired(r, now)) {
-      deleteItem(runsContainer(), r.id, privateScenarioPartitionKey(uid)).catch(() => undefined);
+      deleteScenarioDoc(r.id, privateScenarioPartitionKey(uid)).catch(() => undefined);
       continue;
     }
     live.push(r);
@@ -134,8 +155,36 @@ export async function getPrivateScenario(uid: string, scenarioId: string, now: D
 export async function deletePrivateScenario(uid: string, scenarioId: string): Promise<boolean> {
   const doc = await readItem<PrivateScenarioDoc>(runsContainer(), scenarioId, privateScenarioPartitionKey(uid));
   if (!doc || doc.docType !== SCENARIO_DOC_TYPE) return false;
-  await deleteItem(runsContainer(), scenarioId, privateScenarioPartitionKey(uid));
+  await deleteScenarioDoc(scenarioId, privateScenarioPartitionKey(uid));
   return true;
+}
+
+/** So viele abgelaufene private Szenarien räumt ein Durchgang höchstens weg (der nächste macht weiter). */
+export const PRIVATE_SCENARIO_SWEEP_MAX = 100;
+
+/**
+ * Paket 2, C19 (12.11.2026): Abgelaufene private Szenarien ALLER Personen löschen, samt Spielbuch. Bisher
+ * verschwanden sie erst, wenn dieselbe Person wieder ihre Liste öffnete; wer nicht wiederkam, behielt Szenario
+ * und Eingabesätze unbegrenzt. Aufgerufen vom gelegentlichen Aufräumer (aufraeumen.ts). Rückgabe: Zahl der gelöschten.
+ */
+export async function deleteExpiredPrivateScenarios(now: Date = new Date()): Promise<number> {
+  const rows = await queryItems<{ id: string; sessionId: string }>(
+    runsContainer(),
+    // Über alle Partitionen (jede Person hat ihre eigene); der Verfall steht als ISO-Zeit am Dokument.
+    `SELECT TOP ${PRIVATE_SCENARIO_SWEEP_MAX} c.id, c.sessionId FROM c WHERE c.docType = @dt AND c.privat = true AND c.expiresAt <= @now`,
+    [
+      { name: "@dt", value: SCENARIO_DOC_TYPE },
+      { name: "@now", value: now.toISOString() },
+    ]
+  );
+  let deleted = 0;
+  for (const r of rows) {
+    // Nur die private Namens- und Partitionsklasse: Der Aufräumer fasst nie ein Firmen-Szenario an.
+    if (!isPrivateScenarioId(r.id) || !r.sessionId?.startsWith(PRIVATE_SCENARIO_PARTITION_PREFIX)) continue;
+    await deleteScenarioDoc(r.id, r.sessionId);
+    deleted++;
+  }
+  return deleted;
 }
 
 /**
@@ -178,10 +227,61 @@ export async function upsertWorkspaceScenario(
       : existing?.createdByUid
         ? { createdByUid: existing.createdByUid }
         : {}),
+    // Freier Testlauf: nur beim ersten Anlegen durch eine Person im Builder; Überarbeiten erneuert ihn nicht.
+    ...(existing
+      ? existing.freeTestEval
+        ? { freeTestEval: existing.freeTestEval }
+        : {}
+      : opts?.createdByUid
+        ? { freeTestEval: "offen" as const }
+        : {}),
     scenario,
   };
   await upsertItem(runsContainer(), doc);
   return doc;
+}
+
+/** Nur im Builder erzeugte Firmen-Szenarien (`ws-…`, nicht `ws-mein-…`) können einen freien Testlauf haben. */
+function freeTestEvalCandidate(scenarioId: string): boolean {
+  return scenarioId.startsWith("ws-") && !isPrivateScenarioId(scenarioId);
+}
+
+async function setFreeTestEval(
+  uid: string,
+  oid: string | null | undefined,
+  scenarioId: string,
+  from: "offen" | "verbraucht",
+  to: "offen" | "verbraucht"
+): Promise<boolean> {
+  if (!freeTestEvalCandidate(scenarioId)) return false;
+  const workspaceId = await resolveWorkspaceIdForScenarios(uid, oid);
+  const pk = scenarioPartitionKey(workspaceId);
+  const doc = await readItem<ScenarioDoc>(runsContainer(), scenarioId, pk);
+  if (!doc || doc.docType !== SCENARIO_DOC_TYPE) return false;
+  if (doc.createdByUid !== uid || doc.freeTestEval !== from || !doc._etag) return false;
+  try {
+    await replaceItemIfMatch(runsContainer(), { ...doc, freeTestEval: to, updatedAt: new Date().toISOString() }, pk, doc._etag);
+    return true;
+  } catch (err) {
+    const e = err as { code?: unknown; statusCode?: unknown } | null;
+    // 412: jemand war schneller (zweiter Tab). Dann gilt der Freilauf als vergeben.
+    if (e?.code === 412 || e?.statusCode === 412) return false;
+    throw err;
+  }
+}
+
+/**
+ * Freien Testlauf beanspruchen (Owner-Entscheid 12.11.2026). Gibt genau einmal `true` zurück: für die Person, die
+ * das Szenario im Builder erzeugt hat, bei der ersten Auswertung. Die Auswertungs-Route ruft das VOR der Buchung
+ * auf; bei `true` wird kein Credit gebucht. Zwei gleichzeitige Aufrufe: nur einer gewinnt (Versionsprüfung).
+ */
+export async function claimFreeTestEval(uid: string, oid: string | null | undefined, scenarioId: string): Promise<boolean> {
+  return setFreeTestEval(uid, oid, scenarioId, "offen", "verbraucht");
+}
+
+/** Freilauf zurückgeben, wenn die Auswertung nach dem Beanspruchen gescheitert ist (sonst wäre er ohne Ergebnis weg). */
+export async function releaseFreeTestEval(uid: string, oid: string | null | undefined, scenarioId: string): Promise<boolean> {
+  return setFreeTestEval(uid, oid, scenarioId, "verbraucht", "offen");
 }
 
 /** Welle C: Status eines Workspace-Szenarios umschalten (publish/unpublish). */
@@ -225,7 +325,7 @@ export async function deleteWorkspaceScenario(
     scenarioPartitionKey(workspaceId)
   );
   if (!existing || existing.docType !== SCENARIO_DOC_TYPE) return false;
-  await deleteItem(runsContainer(), scenarioId, scenarioPartitionKey(workspaceId));
+  await deleteScenarioDoc(scenarioId, scenarioPartitionKey(workspaceId));
   return true;
 }
 
