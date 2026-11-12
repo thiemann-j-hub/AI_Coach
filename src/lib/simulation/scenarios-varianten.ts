@@ -63,7 +63,7 @@ const faber: SimulationScenario = {
   durationMin: 12,
   checkDurationMin: 10,
   locale: "de",
-  persona: { name: "Toni Faber", role: "Key-Account-Manager, Verpackungshersteller PackNord", voice: "florian-hd", liveVoice: "Schedar" },
+  persona: { name: "Toni Faber", role: "Key-Account-Manager, Verpackungshersteller PackNord", voice: "florian-hd", liveVoice: "Schedar", firma: "PackNord" },
   candidateBriefing: {
     yourRole:
       "Du leitest den Einkauf der NorthBay Foods Inc. und verantwortest das Lieferantenportfolio Verpackung. PackNord liefert seit fünf Jahren die Faltschachteln für BlueCrest und Oceana; Qualität und Liefertreue stimmen. Toni Faber ist dein Ansprechpartner dort.",

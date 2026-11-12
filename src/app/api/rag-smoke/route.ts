@@ -3,13 +3,35 @@ import { NextRequest, NextResponse } from "next/server";
 import { searchCards } from "@/lib/cosmos-cards";
 import { requireAuth } from "@/lib/api-auth";
 import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { isCostCapAdmin } from "@/lib/server/cost-cap";
+import { serviceRequestOk } from "@/lib/server/credits/cs-credential";
 
 export const runtime = "nodejs";
 
+/** Höchstzahl Treffer je Abruf. Vorher frei: mit großem topK kam die ganze Bibliothek. */
+const TOP_K_MAX = 10;
+const TOP_K_DEFAULT = 8;
+
+/** topK aus der Adresse, gedeckelt auf 1 bis TOP_K_MAX (nicht exportiert: Routen-Dateien dürfen nur Routen-Felder exportieren). */
+function gedeckeltesTopK(raw: string | null | undefined): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n < 1) return TOP_K_DEFAULT;
+  return Math.min(n, TOP_K_MAX);
+}
+
+/**
+ * Paket 2, C20 (12.11.2026): Der Prüfweg ist nur noch mit Dienst-Ausweis offen (wie /api/service/*) oder für
+ * Plattform-Admins (ADMIN_EMAILS). Vorher bekam jede angemeldete Person mit draft=1 und großem topK die ganze
+ * Kartenbibliothek samt Entwürfen. Alle anderen sehen 404, als gäbe es die Route nicht.
+ */
+async function darfPruefen(req: NextRequest): Promise<boolean> {
+  if (serviceRequestOk(req)) return true;
+  const auth = await requireAuth(req);
+  return !(auth instanceof NextResponse) && isCostCapAdmin(auth.email);
+}
+
 export async function GET(req: NextRequest) {
-  // Auth check
-  const authResult = await requireAuth(req);
-  if (authResult instanceof NextResponse) return authResult;
+  if (!(await darfPruefen(req))) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   // Rate limit: 10 requests per minute
   const rlKey = rateLimitKey(req, "rag-smoke");
@@ -19,7 +41,7 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams;
   const text = sp.get("text") ?? "";
   const lang = sp.get("lang") ?? undefined;
-  const topK = sp.get("topK") ?? sp.get("top_k") ?? undefined;
+  const topK = gedeckeltesTopK(sp.get("topK") ?? sp.get("top_k"));
 
   try {
     // V1 (25.09.): optionaler Kundenfilter, um die Treffermenge des echten
@@ -36,7 +58,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      query: { text, lang: lang ?? null, topK: topK ?? null, filter: Object.keys(filter).length ? filter : null, includeDraft },
+      query: { text, lang: lang ?? null, topK, filter: Object.keys(filter).length ? filter : null, includeDraft },
       count: out.count,
       results: out.results,
     });

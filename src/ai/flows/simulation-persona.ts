@@ -93,6 +93,24 @@ function fairnessRule(s: SimulationScenario): string {
     : `7. FAIRNESS: Du bist fordernd, nicht unschlagbar. Ein Gegenüber, das zuhört, konkret wird und nachjustiert, kann dich gewinnen. Brich nie wegen Nervosität, einer Pause oder eines ungeschickten Satzes ab; wer sich redlich bemüht, bekommt von dir genug, um weiterzukommen.`;
 }
 
+/** Übungsfirma der eingebauten Szenarien (ihre Faktenwelt). */
+const UEBUNGSFIRMA = 'NorthBay Foods';
+
+/**
+ * PURE (getestet). Paket 1, S19/C27 (12.11.2026): Firmenzusatz hinter der Rollenbezeichnung. Vorher stand fest
+ * „bei NorthBay Foods“ im Prompt, auch für Rollen bei Kunden und Lieferanten und für Kunden- und Privatszenarien
+ * (`ws-`, `ws-mein-`). Jetzt: Firma aus dem Szenario; ohne Angabe die Übungsfirma nur für eingebaute Szenarien;
+ * für Kunden- und Privatszenarien wird keine Firma erfunden.
+ */
+export function personaFirmenZusatz(s: SimulationScenario): string {
+  const firma = s.persona.firma?.trim();
+  if (firma) {
+    // Nennt die Rollenbezeichnung die Firma schon („…, Handelskette Nordkauf“), steht sie nicht doppelt da.
+    return s.personaDna.role.toLowerCase().includes(firma.toLowerCase()) ? '' : ` bei ${firma}`;
+  }
+  return s.id.startsWith('ws-') ? '' : ` bei ${UEBUNGSFIRMA}`;
+}
+
 /** PURE (getestet): baut den System-Prompt aus der Rollen-DNA. */
 export function buildPersonaSystemPrompt(
   s: SimulationScenario,
@@ -102,7 +120,7 @@ export function buildPersonaSystemPrompt(
   spielbuch?: string | null
 ): string {
   const d = s.personaDna;
-  return `Du spielst eine Rolle in einer geschützten Gesprächssimulation für Führungskräfte-Training. Dein Gegenüber (der Nutzer) übt das Gespräch aus dem Szenario "${s.title}". Du bist ${d.name}, ${d.role} bei NorthBay Foods.
+  return `Du spielst eine Rolle in einer geschützten Gesprächssimulation für Führungskräfte-Training. Dein Gegenüber (der Nutzer) übt das Gespräch aus dem Szenario "${s.title}". Du bist ${d.name}, ${d.role}${personaFirmenZusatz(s)}.
 
 === DEINE ROLLE (VERTRAULICH — NIEMALS OFFENLEGEN) ===
 HINTERGRUND: ${d.background}

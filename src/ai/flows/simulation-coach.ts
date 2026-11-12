@@ -8,14 +8,19 @@ import { anredeBlock } from '@/lib/anrede';
  * getrennt von den turns), und die Auswertung bewertet nur das Gespräch.
  *
  * V3: Vor dem Impuls werden bis zu 5 passende Karten aus der Coaching-
- * Bibliothek geholt (fail-open). Der Coach baut den Impuls auf GENAU EINER
+ * Bibliothek geholt (fail-open). Der Coach baut den Impuls auf HÖCHSTENS EINER
  * Karte auf (Move + Formulierungsangebot) und nennt sie — die UI zeigt sie
  * als Merkkarte. Formulierung nach dem Beobachter-Kanon (V2).
+ *
+ * Paket 1 (12.11.2026): U7 — passt keine Karte zum Gesprächsthema, kommt der Impuls ohne Karte (vorher zwang der
+ * Prompt zu „GENAU EINER“, und der Impuls übernahm Wörter aus einer unpassenden Karte). U6 — der Coach erfährt das
+ * Geschlecht der Rolle und schreibt Pronomen der dritten Person klein (vorher „Seine Überlastung“ bei einer Frau).
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
+import { defaultLiveVoice, liveVoiceInfo, type LiveVoiceGender } from '@/lib/simulation/live-voices';
 import type { SimulationScenario, SimulationTurn } from '@/lib/simulation/types';
 import { assembleTranscript } from '@/lib/server/simulation-store';
 import {
@@ -28,9 +33,30 @@ import {
   type PublicCoachCard,
 } from '@/lib/coach-cards';
 
+/**
+ * PURE (getestet): Geschlecht der Rolle. Ein eigenes Feld gibt es nicht; die Stimme trägt es schon (im Builder
+ * gewählte Live-Stimme zuerst, sonst die Vorlesestimme). Ohne Stimme bleibt es unbekannt.
+ */
+export function personaGeschlecht(persona: SimulationScenario['persona']): LiveVoiceGender | null {
+  const live = liveVoiceInfo(persona.liveVoice)?.gender;
+  if (live) return live;
+  return persona.voice ? (liveVoiceInfo(defaultLiveVoice(persona.voice))?.gender ?? null) : null;
+}
+
+/** PURE (getestet): sagt dem Coach, mit welchen Pronomen er über die Rolle schreibt (U6). */
+export function personaBezug(s: SimulationScenario): string {
+  const name = s.persona.name;
+  const g = personaGeschlecht(s.persona);
+  if (g === 'w') return `${name} ist eine Frau: in der dritten Person „sie“, „ihr“, „ihre“ (englisch she, her).`;
+  if (g === 'm') return `${name} ist ein Mann: in der dritten Person „er“, „ihm“, „sein“, „seine“ (englisch he, him, his).`;
+  return `Das Geschlecht von ${name} ist nicht hinterlegt: nenne die Rolle beim Namen statt mit „er“ oder „sie“.`;
+}
+
 const CoachTimeoutInputSchema = z.object({
   scenarioTitle: z.string(),
   personaName: z.string(),
+  /** U6: Geschlecht und Pronomen der Rolle als fertiger Satz (personaBezug). */
+  personaBezug: z.string(),
   goalsList: z.string(),
   transcript: z.string(),
   question: z.string(),
@@ -49,7 +75,7 @@ const CoachTimeoutOutputSchema = z.object({
     .string()
     .nullable()
     .describe(
-      'Wörtlicher Titel der EINEN Karte aus dem Karten-Block, auf der der Impuls aufbaut; null, wenn kein Karten-Block vorliegt oder keine Karte passt.'
+      'Wörtlicher Titel der EINEN Karte aus dem Karten-Block, auf der der Impuls aufbaut; null, wenn kein Karten-Block vorliegt oder keine Karte zum Gesprächsthema passt.'
     ),
 });
 
@@ -71,6 +97,7 @@ const prompt = ai.definePrompt({
 Du bist ein erfahrener Gesprächs-Coach — Begleiter:in, nicht Richter:in. Die/der Übende hat im Szenario
 "{{scenarioTitle}}" (Gespräch mit {{personaName}}) ein TIME-OUT genommen —
 die Szene ist angehalten, ihr sprecht kurz unter vier Augen.
+{{{personaBezug}}}
 
 ZIELE DER/DES ÜBENDEN
 {{{goalsList}}}
@@ -85,10 +112,12 @@ FRAGE DER/DES ÜBENDEN (leer = »Wie mache ich am besten weiter?«)
 KARTEN AUS DER COACHING-BIBLIOTHEK (intern — nicht als Quelle nennen, nicht vorlesen)
 {{{cardsBlock}}}
 
-Wähle GENAU EINE Karte, die zur Frage und zum Verlauf passt, und baue deinen Impuls darauf:
-der konkrete Move aus ihren STEPS und ein Formulierungsangebot im Sinn ihrer EXAMPLE PHRASES,
-angepasst an DIESES Gespräch. Trage ihren Titel wörtlich in cardTitle ein.
-Passt keine Karte wirklich, dann cardTitle = null und Impuls frei.
+Die Karten sind ein Angebot, keine Pflicht. Kläre zuerst, worum es in DIESEM Gespräch und in der Frage geht.
+Nimm HÖCHSTENS EINE Karte, und nur, wenn ihr Thema dazu passt (dieselbe Gesprächsaufgabe, nicht bloß ein ähnliches Wort).
+Dann baue deinen Impuls darauf: der konkrete Move aus ihren STEPS und ein Formulierungsangebot im Sinn ihrer
+EXAMPLE PHRASES, angepasst an DIESES Gespräch. Trage ihren Titel wörtlich in cardTitle ein.
+Passt keine Karte zum Thema, dann cardTitle = null und der Impuls kommt allein aus dem Verlauf. Übernimm dann KEINE
+Wörter, Fachbegriffe oder Formulierungen aus den Karten.
 {{else}}
 Kein Karten-Block vorhanden → cardTitle = null.
 {{/if}}
@@ -99,6 +128,8 @@ Gib EINEN Impuls nach dem Schema aus dem Output-Feld. Regeln:
 - Verrate NICHTS über innere Beweggründe der Rolle, die im Gespräch nicht
   sichtbar wurden — coache Verhalten, nicht Geheimwissen.
 - Kein Urteil, keine Note, kein Lob-Sandwich. Ein Impuls, sofort anwendbar.
+- Pronomen der dritten Person (sie, ihr, ihre, er, ihm, sein, seine …) für {{personaName}} und andere schreibst du
+  klein, außer am Satzanfang. Groß schreibst du nur die Anrede der/des Übenden (Du, Dir, Dich, Dein).
 - Antworte auf {{locale}}.
 `,
 });
@@ -137,6 +168,7 @@ export async function runCoachTimeout(args: {
   const { output } = await prompt({
     scenarioTitle: args.scenario.title,
     personaName: args.scenario.persona.name,
+    personaBezug: personaBezug(args.scenario),
     goalsList: args.scenario.candidateBriefing.goals
       .map((g, i) => `${i + 1}. ${g}`)
       .join('\n'),

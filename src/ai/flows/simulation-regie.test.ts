@@ -1,9 +1,62 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Keine echte KI: der Aufruf des Beobachters ist ersetzt (Paket 1, C14).
+const h = vi.hoisted(() => ({ generate: vi.fn(), warn: vi.fn() }));
+vi.mock("@/ai/genkit", () => ({ ai: { generate: (...a: unknown[]) => h.generate(...a) } }));
+vi.mock("@/lib/logger", () => ({ logger: { warn: h.warn, api: vi.fn(), apiError: vi.fn(), info: vi.fn(), error: vi.fn() } }));
+
 import { getScenario } from "@/lib/simulation/scenarios";
-import { buildRegiePrompt, halteNotiz, offeneRegieNotiz, regieStageNote, regieVerlaufText, type RegieStand } from "./simulation-regie";
+import { REGIE_TIMEOUT_MS, beobachteRegie, buildRegiePrompt, halteNotiz, offeneRegieNotiz, regieStageNote, regieVerlaufText, type RegieStand } from "./simulation-regie";
 
 const morgan = getScenario("sim-coaching-morgan")!;
 const stone = getScenario("sim-appraisal-stone")!;
+
+describe("Regie-Beobachter: Frist (C14, 12.11.2026)", () => {
+  const turns = [
+    { role: "persona" as const, text: "Du wolltest mich sprechen?", ts: "t0" },
+    { role: "user" as const, text: "GEHEIMER NUTZERTEXT über das Angebot", ts: "t1" },
+  ];
+
+  beforeEach(() => {
+    h.generate.mockReset();
+    h.warn.mockReset();
+  });
+
+  it("hängt der Beobachter, kommt nach der Frist null zurück (die Notiz dieses Zugs entfällt), und es steht im Protokoll", async () => {
+    h.generate.mockReturnValue(new Promise(() => {}));
+    const start = Date.now();
+    const stand = await beobachteRegie({ scenario: morgan, turns, bisher: null, timeoutMs: 20 });
+    expect(stand).toBeNull();
+    expect(Date.now() - start).toBeLessThan(1_000);
+    expect(h.warn).toHaveBeenCalledTimes(1);
+    expect(h.warn.mock.calls[0][1]).toMatchObject({ anlass: "frist", scenarioId: morgan.id, turn: 2 });
+    expect(JSON.stringify(h.warn.mock.calls[0])).not.toContain("GEHEIMER NUTZERTEXT");
+  });
+
+  it("die Standardfrist liegt zwischen drei und fünf Sekunden", () => {
+    expect(REGIE_TIMEOUT_MS).toBeGreaterThanOrEqual(3_000);
+    expect(REGIE_TIMEOUT_MS).toBeLessThanOrEqual(5_000);
+  });
+
+  it("Fehler des Modells: null, mit Protokollzeile ohne Nutzertext", async () => {
+    h.generate.mockRejectedValue(new Error("503 overloaded"));
+    expect(await beobachteRegie({ scenario: morgan, turns, bisher: null })).toBeNull();
+    expect(h.warn.mock.calls[0][1]).toMatchObject({ anlass: "fehler", scenarioId: morgan.id });
+    expect(JSON.stringify(h.warn.mock.calls[0])).not.toContain("GEHEIMER NUTZERTEXT");
+  });
+
+  it("antwortet der Beobachter in der Frist, kommt der Stand wie bisher (höchstens eine Stufe je Zug)", async () => {
+    h.generate.mockResolvedValue({ output: { stufe: 3, erfuellt: ["Anerkennung kam ehrlich"], eskaliert: false, notiz: "Du stehst jetzt auf Stufe 1.", vorschnell: false, fehlt: "nach der Ursache fragen" } });
+    const stand = await beobachteRegie({ scenario: morgan, turns, bisher: null, now: () => Date.parse("2026-11-12T08:00:00.000Z") });
+    expect(stand).toMatchObject({ stufe: 1, notiz: "Du stehst jetzt auf Stufe 1.", turn: 2, ts: "2026-11-12T08:00:00.000Z", fehlt: "nach der Ursache fragen" });
+    expect(h.warn).not.toHaveBeenCalled();
+  });
+
+  it("ohne Zug der lernenden Person läuft kein Aufruf", async () => {
+    expect(await beobachteRegie({ scenario: morgan, turns: [turns[0]], bisher: null })).toBeNull();
+    expect(h.generate).not.toHaveBeenCalled();
+  });
+});
 
 describe("Regie-Beobachter (Welle 2)", () => {
   it("gibt dem Beobachter Bedingungen, Freigabe-Regel, Trigger und nur die letzten Züge", () => {

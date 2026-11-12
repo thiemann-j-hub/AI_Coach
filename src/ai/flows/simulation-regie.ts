@@ -14,10 +14,18 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { logger } from '@/lib/logger';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import type { SimulationScenario, SimulationTurn } from '@/lib/simulation/types';
+import { TimeoutError, withTimeout } from '@/lib/with-timeout';
 
 export const REGIE_MAX_TURNS = 10;
+
+/**
+ * Paket 1, C14 (12.11.2026): Frist des Beobachters. Vorher hatte er keine: Hing er, wartete im Textweg die fertige
+ * Antwort der Rolle, und im Live-Weg stand die Speicher-Warteschlange. Nach der Frist entfällt die Notiz dieses Zugs.
+ */
+export const REGIE_TIMEOUT_MS = 4_000;
 
 export const RegieSchema = z.object({
   stufe: z.number().int().min(0).max(3).describe('Öffnungsstufe der Rolle: 0 = nichts erfüllt, 1 = erste Bedingung erfüllt, 2 = ungefähr die Hälfte, 3 = genug für volle Öffnung (nach der Zählregel der Bedingungen).'),
@@ -94,23 +102,30 @@ export function regieStageNote(s: SimulationScenario, stand: RegieStand): string
 }
 
 /**
- * Beobachtet den Verlauf nach dem letzten Zug der lernenden Person. Fehler → null (keine Notiz).
- * `turns` enthält den aktuellen Zug der lernenden Person bereits.
+ * Beobachtet den Verlauf nach dem letzten Zug der lernenden Person. Fehler oder Frist → null (keine Notiz).
+ * `turns` enthält den aktuellen Zug der lernenden Person bereits. Die Frist steckt hier, damit Textweg und
+ * Live-Weg sie beide bekommen.
  */
 export async function beobachteRegie(args: {
   scenario: SimulationScenario;
   turns: SimulationTurn[];
   bisher: RegieStand | null;
   now?: () => number;
+  /** Frist in Millisekunden (Standard REGIE_TIMEOUT_MS). */
+  timeoutMs?: number;
 }): Promise<RegieStand | null> {
   const lastUser = [...args.turns].reverse().find((t) => t.role === 'user');
   if (!lastUser) return null;
   try {
-    const response = await ai.generate({
-      prompt: buildRegiePrompt(args.scenario, args.turns, args.bisher),
-      output: { schema: RegieSchema },
-      config: { maxOutputTokens: 400, thinkingConfig: { thinkingBudget: 0 }, temperature: 0.1 },
-    });
+    const response = await withTimeout(
+      ai.generate({
+        prompt: buildRegiePrompt(args.scenario, args.turns, args.bisher),
+        output: { schema: RegieSchema },
+        config: { maxOutputTokens: 400, thinkingConfig: { thinkingBudget: 0 }, temperature: 0.1 },
+      }),
+      args.timeoutMs ?? REGIE_TIMEOUT_MS,
+      'regie-beobachter'
+    );
     const out = response.output;
     if (!out) return null;
     const vorher = args.bisher?.stufe ?? 0;
@@ -137,7 +152,16 @@ export async function beobachteRegie(args: {
       ...(fehlt ? { fehlt } : {}),
     };
   } catch (e) {
-    console.warn('[regie] Beobachter fehlgeschlagen:', e instanceof Error ? e.message : String(e));
+    // Ohne Nutzertext: Anlass, Szenario und Zug, damit sich Fristen und Fehler zählen lassen. Bei Fehlern nur Art und
+    // Status, nicht der Fehlertext (er kann die Modellantwort und damit Gesprächsinhalt enthalten).
+    const frist = e instanceof TimeoutError;
+    const status = (e as { status?: unknown } | null)?.status;
+    logger.warn(frist ? '[regie] Beobachter: Frist überschritten, Notiz dieses Zugs entfällt' : '[regie] Beobachter fehlgeschlagen, Notiz dieses Zugs entfällt', {
+      anlass: frist ? 'frist' : 'fehler',
+      scenarioId: args.scenario.id,
+      turn: args.turns.length,
+      ...(frist ? {} : { errorName: e instanceof Error ? e.name : 'unbekannt', ...(typeof status === 'string' || typeof status === 'number' ? { status } : {}) }),
+    });
     return null;
   }
 }

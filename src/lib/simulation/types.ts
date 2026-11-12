@@ -214,8 +214,13 @@ export interface SimulationScenario {
    * falsche Werte verschlechtern nur die Empfehlungs-Sortierung, nie Daten.
    */
   competencyFocus?: CompetencyKey[];
-  /** Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). `liveVoice` = Gemini-Live-Stimme (Builder-Wahl, 28.10.). */
-  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
+  /**
+   * Öffentliche Persona-Angaben (Name/Rolle stehen auch im Briefing). `liveVoice` = Gemini-Live-Stimme (Builder-Wahl, 28.10.).
+   * `firma` (Paket 1, S19/C27, 12.11.2026) = Firma, bei der die Rolle arbeitet. Fehlt sie, gilt für eingebaute Szenarien
+   * die Übungsfirma NorthBay Foods; Kunden- und Privatszenarien bekommen dann keine Firma. Bewusst hier und nicht in der
+   * DNA: die DNA bindet die vorbereiteten Spielbücher (spielbuchHash).
+   */
+  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string; firma?: string };
   /**
    * Welle 3 (30.10.2026): Persönlichkeits-Variante eines Grundszenarios — gleiche Fakten, Ziele und Messlatte,
    * anderes Gegenüber (Motive, Ton, Einwände). `von` = Id des Grundszenarios; der Katalog zeigt Varianten als
@@ -240,7 +245,7 @@ export interface PublicSimulationScenario {
   locale: "de" | "en";
   category: ScenarioCategory;
   competencyFocus?: CompetencyKey[];
-  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string };
+  persona: { name: string; role: string; voice?: PersonaVoice; liveVoice?: string; firma?: string };
   variante?: { von: string; name: { de: string; en: string } };
   candidateBriefing: CandidateBriefing;
   competencies: SimRubricCompetency[];

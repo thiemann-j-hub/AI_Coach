@@ -23,7 +23,8 @@ const kessler: SimulationScenario = {
   durationMin: 8,
   checkDurationMin: 6,
   locale: "de",
-  persona: { name: "Dr. Nadine Kessler", role: "Leiterin Einkauf Tiefkühl, Handelskette Nordkauf", voice: "seraphina-hd", liveVoice: "Pulcherrima" },
+  // Paket 1, S19 (12.11.2026): `firma` — die Rolle arbeitet beim Kunden, nicht bei NorthBay Foods.
+  persona: { name: "Dr. Nadine Kessler", role: "Leiterin Einkauf Tiefkühl, Handelskette Nordkauf", voice: "seraphina-hd", liveVoice: "Pulcherrima", firma: "Nordkauf" },
   candidateBriefing: {
     yourRole:
       "Du bist Key-Account-Manager:in Handel bei der NorthBay Foods Inc. und verantwortest die Tiefkühl-Marke BlueCrest im Norden. Nordkauf, eine Handelskette mit rund 180 Märkten in Norddeutschland, führt BlueCrest bisher nicht. Du rufst die Einkaufsleiterin Tiefkühl kalt an.",
@@ -151,7 +152,7 @@ const weber: SimulationScenario = {
   durationMin: 10,
   checkDurationMin: 8,
   locale: "de",
-  persona: { name: "Tomas Weber", role: "Leiter Category Management Tiefkühl, Handelsgruppe Velten", voice: "florian-hd", liveVoice: "Rasalgethi" },
+  persona: { name: "Tomas Weber", role: "Leiter Category Management Tiefkühl, Handelsgruppe Velten", voice: "florian-hd", liveVoice: "Rasalgethi", firma: "Velten" },
   candidateBriefing: {
     yourRole:
       "Du bist Account-Manager:in Handel bei der NorthBay Foods Inc. Die Handelsgruppe Velten (rund 320 Märkte in Süddeutschland) führt BlueCrest bereits in Teilen des Sortiments. Tomas Weber hat einem halbstündigen Bedarfsgespräch zugesagt, weil er NorthBay als möglichen Partner für Aktionsphasen prüfen will.",
@@ -279,7 +280,7 @@ const hartmann: SimulationScenario = {
   durationMin: 8,
   checkDurationMin: 6,
   locale: "de",
-  persona: { name: "Lena Hartmann", role: "Marktleiterin Nordkauf Northport-Hafen", voice: "seraphina-hd", liveVoice: "Erinome" },
+  persona: { name: "Lena Hartmann", role: "Marktleiterin Nordkauf Northport-Hafen", voice: "seraphina-hd", liveVoice: "Erinome", firma: "Nordkauf" },
   candidateBriefing: {
     yourRole:
       "Du betreust im Kundenservice Handel der NorthBay Foods Inc. die Nordkauf-Märkte im Raum Northport. Es ist Freitag, elf Uhr. Lena Hartmann, Marktleiterin des Marktes Northport-Hafen, ruft an. Die Lieferung von vierzig Kartons BlueCrest Fischgratin für das beworbene Aktionswochenende ist am Donnerstag ausgefallen (Lkw-Ausfall). Sie hatte gestern schon angerufen und einen Rückruf bis Freitagfrüh zugesagt bekommen, der nicht kam.",
@@ -406,7 +407,7 @@ const vogt: SimulationScenario = {
   durationMin: 7,
   checkDurationMin: 5,
   locale: "de",
-  persona: { name: "Mara Vogt", role: "Redakteurin, Radio Nordküste", voice: "seraphina-hd", liveVoice: "Laomedeia" },
+  persona: { name: "Mara Vogt", role: "Redakteurin, Radio Nordküste", voice: "seraphina-hd", liveVoice: "Laomedeia", firma: "Radio Nordküste" },
   candidateBriefing: {
     yourRole:
       "Du leitest die Unternehmenskommunikation der NorthBay Foods Inc. Gestern hat NorthBay die Charge 4471 des BlueCrest Lachsgratins zurückgerufen, weil drei Verbraucher Kunststoffsplitter in der Packung gemeldet haben. Niemand wurde verletzt. Radio Nordküste schaltet dich live ins Morgenmagazin.",

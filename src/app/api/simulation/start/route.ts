@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runPersonaOpening } from "@/ai/flows/simulation-persona";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens, isCostCapAdmin, simStartsExceeded, simStartsLimitResponse, simStartsPerDay } from "@/lib/server/cost-cap";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import { preflightEntitlement } from "@/lib/server/credits/entitlement";
@@ -54,7 +55,8 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "sim-start"), 5, 60_000);
+  // Paket 1, C5 (12.11.2026): Begrenzung je Person statt je Adresse (eine Gruppe hinter einer Firmenadresse teilte sich fünf Starts).
+  const rl = checkRateLimit(`sim-start:${auth.uid}`, 5, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {
@@ -79,6 +81,17 @@ export async function POST(req: NextRequest) {
     if (preflight) {
       logger.api("/api/simulation/start", "preflight-blocked", { uid: auth.uid, scenarioId: scenario.id });
       return preflight;
+    }
+
+    // Go-Live S3 (15.10.2026): Tagesgrenze je Person (Standard 6 Starts; Admins frei; COACH_SIM_STARTS_PER_DAY=0 aus).
+    // Paket 1, C29 (12.11.2026): Die Grenze wird geprüft, BEVOR die Eröffnung in einer anderen Sprache erzeugt wird.
+    const startLimit = simStartsPerDay();
+    if (startLimit > 0 && !isCostCapAdmin(auth.email)) {
+      const startedToday = await countSimulationsStartedToday(auth.uid);
+      if (simStartsExceeded(startedToday, startLimit)) {
+        logger.api("/api/simulation/start", "daily-starts-blocked", { uid: auth.uid, startedToday, limit: startLimit });
+        return simStartsLimitResponse(startLimit);
+      }
     }
 
     // Versuchszählung fuer Historie/Delta (D2) — best effort, blockiert nie.
@@ -107,16 +120,6 @@ export async function POST(req: NextRequest) {
         () => runPersonaOpening({ scenario, convoLocale, hardness }),
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-opening", retries: 1 }
       );
-    }
-
-    // Go-Live S3 (15.10.2026): Tagesgrenze je Person (Standard 6 Starts; Admins frei; COACH_SIM_STARTS_PER_DAY=0 aus).
-    const startLimit = simStartsPerDay();
-    if (startLimit > 0 && !isCostCapAdmin(auth.email)) {
-      const startedToday = await countSimulationsStartedToday(auth.uid);
-      if (simStartsExceeded(startedToday, startLimit)) {
-        logger.api("/api/simulation/start", "daily-starts-blocked", { uid: auth.uid, startedToday, limit: startLimit });
-        return simStartsLimitResponse(startLimit);
-      }
     }
 
     const simId = crypto.randomUUID();

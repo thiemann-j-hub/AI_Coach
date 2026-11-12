@@ -1,7 +1,9 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { logger } from '@/lib/logger';
 import { sanitizeForPrompt } from '@/lib/prompt-guard';
 import type { SimulationScenario, SimulationTurn } from '@/lib/simulation/types';
+import { TimeoutError, withTimeout } from '@/lib/with-timeout';
 
 /**
  * Rolle als Torwächter (Owner-GO 01.11.2026, Bewertung 2.0): Will die Rolle das Gespräch beenden, prüft die
@@ -48,26 +50,35 @@ ${verlauf}
 AUFGABE: Prüfe streng, ob die Endbedingung, auf die sich der Grund bezieht, im Verlauf VOLLSTÄNDIG erfüllt ist. Für „Ziel erreicht“ müssen alle in der Bedingung genannten Bestandteile vorkommen (z. B. Umfang, Kriterien, Termin, Zustimmung) — eine Absichtserklärung reicht nicht. Eine Verabschiedung durch die lernende Person oder ein Abbruch nach Eskalation gelten, wenn sie im Verlauf stehen. Antworte ausschließlich als JSON gemäß Schema.`;
 }
 
-/** Prüft das gewünschte Ende. Fail-open: bei Fehler oder Frist gilt das Ende als erfüllt. */
+/**
+ * Paket 2, C7 (12.11.2026): Gibt der Torwächter ein Ende frei, OHNE es geprüft zu haben (Frist, Fehler, leere
+ * Antwort), steht das jetzt im Protokoll. Vorher war es nirgends zu sehen. Ohne Nutzertext, damit man es zählen kann.
+ */
+function ungeprueftFrei(anlass: 'frist' | 'fehler' | 'leer', args: { scenario: SimulationScenario; turns: SimulationTurn[]; ende: EndeAnfrage }): EndePruefung {
+  logger.warn('[ende-pruefung] Ende ohne Prüfung freigegeben', { anlass, scenarioId: args.scenario.id, ergebnis: args.ende.ergebnis, turns: args.turns.length });
+  return { erfuellt: true, fehlt: '' };
+}
+
+/** Prüft das gewünschte Ende. Fail-open: bei Fehler oder Frist gilt das Ende als erfüllt (mit Protokollzeile). */
 export async function pruefeEnde(args: { scenario: SimulationScenario; turns: SimulationTurn[]; ende: EndeAnfrage; timeoutMs?: number }): Promise<EndePruefung> {
   if (!coachEndePruefungOn()) return { erfuellt: true, fehlt: '' };
   if (!(args.scenario.personaDna.endbedingungen?.length)) return { erfuellt: true, fehlt: '' };
-  const frist = new Promise<EndePruefung>((resolve) => setTimeout(() => resolve({ erfuellt: true, fehlt: '' }), args.timeoutMs ?? ENDE_PRUEFUNG_TIMEOUT_MS));
-  const pruefung = (async (): Promise<EndePruefung> => {
-    try {
-      const response = await ai.generate({
+  try {
+    const response = await withTimeout(
+      ai.generate({
         prompt: buildEndePruefungPrompt(args.scenario, args.turns, args.ende),
         output: { schema: EndePruefungSchema },
         config: { maxOutputTokens: 200, thinkingConfig: { thinkingBudget: 0 }, temperature: 0 },
-      });
-      const out = response.output;
-      if (!out) return { erfuellt: true, fehlt: '' };
-      return { erfuellt: out.erfuellt, fehlt: out.erfuellt ? '' : out.fehlt.trim().slice(0, 240) };
-    } catch {
-      return { erfuellt: true, fehlt: '' };
-    }
-  })();
-  return Promise.race([pruefung, frist]);
+      }),
+      args.timeoutMs ?? ENDE_PRUEFUNG_TIMEOUT_MS,
+      'ende-pruefung'
+    );
+    const out = response.output;
+    if (!out) return ungeprueftFrei('leer', args);
+    return { erfuellt: out.erfuellt, fehlt: out.erfuellt ? '' : out.fehlt.trim().slice(0, 240) };
+  } catch (e) {
+    return ungeprueftFrei(e instanceof TimeoutError ? 'frist' : 'fehler', args);
+  }
 }
 
 /** Regie-Notiz (Kern, ohne Hülle — die kommt von regieStageNote), wenn das Ende abgelehnt wurde. */

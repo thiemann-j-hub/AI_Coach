@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import {
   abortDecision,
-  getSimulation,
-  saveSimulation,
+  updateSimulation,
 } from "@/lib/server/simulation-store";
 import { logger } from "@/lib/logger";
 
@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "sim-abort"), 10, 60_000);
+  // Paket 1, C5 (12.11.2026): Begrenzung je Person statt je Adresse.
+  const rl = checkRateLimit(`sim-abort:${auth.uid}`, 10, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
 
   try {
@@ -48,13 +49,19 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const doc = await getSimulation(auth.uid, parsed.data.simId);
+    // Idempotent: erneuter Abort ist ok; ein FERTIGER Lauf wird nie abgebrochen
+    // (die Auswertung ist bezahlt — sie bleibt). Entscheidung pure + getestet.
+    // Paket 2, C3 (12.11.2026): Die Entscheidung fällt am frischen Lauf direkt vor dem Speichern. Vorher konnte ein
+    // Abbruch, der neben der Auswertung lief, einen fertigen Lauf mit seiner alten Kopie überschreiben.
+    let decision = null as ReturnType<typeof abortDecision> | null;
+    const doc = await updateSimulation(auth.uid, parsed.data.simId, (lauf) => {
+      decision = abortDecision(lauf.status);
+      if (decision !== "abort") return false;
+      lauf.status = "aborted";
+    });
     if (!doc) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
-    // Idempotent: erneuter Abort ist ok; ein FERTIGER Lauf wird nie abgebrochen
-    // (die Auswertung ist bezahlt — sie bleibt). Entscheidung pure + getestet.
-    const decision = abortDecision(doc.status);
     if (decision === "already") {
       return NextResponse.json({ ok: true, alreadyAborted: true });
     }
@@ -64,8 +71,6 @@ export async function POST(req: NextRequest) {
         { status: 409 }
       );
     }
-    doc.status = "aborted";
-    await saveSimulation(doc);
     // CP-3.2 (M9): kein uid im Abbruch-Log — "wer abgebrochen hat" gehört
     // nicht in Azure Monitor; simId genügt zur Fehlersuche.
     logger.api("/api/simulation/abort", "aborted", { simId: doc.id });

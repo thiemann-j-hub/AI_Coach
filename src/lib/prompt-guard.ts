@@ -53,16 +53,36 @@ export function detectInjection(text: string): string | null {
   return null;
 }
 
+/** Marken, die aus jedem Nutzertext entfernt werden (ältere Zäune und Systemmarken). */
+const FESTE_MARKEN = ["USER_CONTENT", "SYSTEM", "INST"];
+
+/** Zeichen mit Sonderbedeutung in regulären Ausdrücken entschärfen. */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Öffnungs- und Schließform einer Marke, unabhängig von Groß-/Kleinschreibung und Leerzeichen (`< / marke >`). */
+function markenMuster(label: string): RegExp {
+  return new RegExp("<\\s*/?\\s*" + escapeRegExp(label.trim()) + "\\s*>", "gi");
+}
+
 /**
  * Fence user content so the LLM treats it as data, not instructions.
  * Wraps text with XML-like delimiters and prepends a reminder.
+ *
+ * Paket 2, C6 (12.11.2026): Entfernt wird jetzt auch die tatsächlich verwendete Marke (`label`). Vorher fielen nur
+ * drei feste Marken weg; wer `</GESPRÄCH>` oder `</GESPRÄCHSBEITRAG>` schrieb oder sprach, stellte den Rest seines
+ * Textes außerhalb des Zauns (Richter, Rolle). Wiederholt, bis nichts mehr übrig ist, damit sich aus zwei
+ * verschachtelten Marken keine neue zusammensetzt.
  */
 export function fenceUserContent(text: string, label = "USER_CONTENT"): string {
-  // Strip any existing fence markers that could escape the boundary
-  const cleaned = text
-    .replace(/<\/?USER_CONTENT>/gi, "")
-    .replace(/<\/?SYSTEM>/gi, "")
-    .replace(/<\/?INST>/gi, "");
+  const muster = [...new Set([label, ...FESTE_MARKEN])].filter((m) => m.trim()).map(markenMuster);
+  let cleaned = text;
+  for (;;) {
+    const next = muster.reduce((t, re) => t.replace(re, ""), cleaned);
+    if (next === cleaned) break;
+    cleaned = next;
+  }
 
   return [
     `<${label}>`,

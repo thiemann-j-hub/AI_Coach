@@ -4,9 +4,10 @@ import { runPersonaTurn, type PersonaTimeSignal } from "@/ai/flows/simulation-pe
 import { beobachteRegie, offeneRegieNotiz, regieStageNote } from "@/ai/flows/simulation-regie";
 import { endeAbgelehntNote, pruefeEnde } from "@/ai/flows/simulation-ende-pruefung";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { ensureSpielbuch } from "@/lib/server/spielbuch/store";
 import { coachRegieOn, simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
@@ -16,7 +17,8 @@ import {
   SIM_TIME_WARN_FRACTION,
   countUserTurns,
   getSimulation,
-  saveSimulation,
+  updateSimulation,
+  type SimulationDoc,
 } from "@/lib/server/simulation-store";
 import { withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
@@ -37,6 +39,29 @@ const requestSchema = z.object({
   message: z.string().min(1).max(SIM_MAX_TURN_CHARS),
 });
 
+/**
+ * Warum der Lauf keinen Zug (mehr) annimmt. Gilt beim Einstieg und noch einmal am frischen Lauf direkt vor dem
+ * Speichern (Paket 2, C3, 12.11.2026): Wurde der Lauf beendet, während die Rolle antwortete, bleibt er beendet.
+ */
+function zugSperre(doc: SimulationDoc): NextResponse | null {
+  if (doc.status !== "active") {
+    return NextResponse.json({ ok: false, code: "ALREADY_FINISHED" }, { status: 409 });
+  }
+  // Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der Persona
+  // ist das Gespräch zu — es bleibt nur noch die Auswertung.
+  if (doc.closedByTime) {
+    return NextResponse.json({ ok: false, code: "TIME_UP" }, { status: 409 });
+  }
+  // Welle 2: die Rolle hat das Gespräch selbst beendet — es bleibt nur die Auswertung.
+  if (doc.closedByPersona) {
+    return NextResponse.json({ ok: false, code: "ENDED", ende: doc.closedByPersona }, { status: 409 });
+  }
+  if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) {
+    return NextResponse.json({ ok: false, code: "TURN_LIMIT" }, { status: 409 });
+  }
+  return null;
+}
+
 /** POST: ein Gesprächszug — Persona antwortet, beide Turns werden persistiert. */
 export async function POST(req: NextRequest) {
   if (!simulationEnabled()) {
@@ -48,7 +73,8 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "sim-turn"), 20, 60_000);
+  // Paket 1, C5 (12.11.2026): Begrenzung je Person statt je Adresse (eine Gruppe hinter einer Firmenadresse teilte sich 20 Züge).
+  const rl = checkRateLimit(`sim-turn:${auth.uid}`, 20, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   // A4 (31.10.2026): KI-Schalter des Unternehmens vor JEDEM Gesprächszug, nicht nur beim Start.
   const ki = await kiSchalterBlockt("/api/simulation/turn");
@@ -68,21 +94,8 @@ export async function POST(req: NextRequest) {
     if (!doc) {
       return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
-    if (doc.status !== "active") {
-      return NextResponse.json({ ok: false, code: "ALREADY_FINISHED" }, { status: 409 });
-    }
-    // Zeit-Regie (Owner-Vorgabe 04.08.): nach der Verabschiedung der Persona
-    // ist das Gespräch zu — es bleibt nur noch die Auswertung.
-    if (doc.closedByTime) {
-      return NextResponse.json({ ok: false, code: "TIME_UP" }, { status: 409 });
-    }
-    // Welle 2: die Rolle hat das Gespräch selbst beendet — es bleibt nur die Auswertung.
-    if (doc.closedByPersona) {
-      return NextResponse.json({ ok: false, code: "ENDED", ende: doc.closedByPersona }, { status: 409 });
-    }
-    if (countUserTurns(doc.turns) >= SIM_MAX_USER_TURNS) {
-      return NextResponse.json({ ok: false, code: "TURN_LIMIT" }, { status: 409 });
-    }
+    const gesperrt = zugSperre(doc);
+    if (gesperrt) return gesperrt;
     const scenario = await getScenarioForUser(auth.uid, doc.scenarioId, auth.oid);
     if (!scenario) {
       return NextResponse.json({ ok: false, code: "UNKNOWN_SCENARIO" }, { status: 410 });
@@ -137,6 +150,8 @@ export async function POST(req: NextRequest) {
         { ms: LLM_TIMEOUT_MS, label: "gemini-sim-turn", retries: 1 }
       ),
       // Beobachter parallel zur Antwort; sein Ergebnis wirkt beim nächsten Zug. Fehler → null.
+      // Paket 1, C14 (12.11.2026): Er trägt seine eigene Frist (REGIE_TIMEOUT_MS). Hängt er, geht die Antwort
+      // der Rolle trotzdem raus, und die Regie-Notiz dieses Zugs entfällt.
       coachRegieOn()
         ? beobachteRegie({ scenario, turns: turnsMitNutzer, bisher: doc.regie?.length ? doc.regie[doc.regie.length - 1] : null })
         : Promise.resolve(null),
@@ -165,38 +180,61 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    doc.turns.push({ role: "user", text: d.message, ts: now });
-    doc.turns.push({ role: "persona", text: reply, ts: new Date().toISOString() });
-    if (timeSignal === "closing") doc.timeWarned = true;
-    if (timeSignal === "farewell") doc.closedByTime = true;
-    if (offeneNotiz) offeneNotiz.delivered = true;
-    if (regie) doc.regie = [...(doc.regie ?? []).slice(-40), regie];
-    if (ende) doc.closedByPersona = { ...ende, at: new Date().toISOString() };
-    if (abgelehnt !== null) {
-      const letzte = doc.regie?.[doc.regie.length - 1];
-      doc.regie = [
-        ...(doc.regie ?? []).slice(-40),
-        { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz: endeAbgelehntNote(scenario, abgelehnt), turn: doc.turns.length, ts: new Date().toISOString(), delivered: true, fehlt: abgelehnt },
-      ];
+    // Paket 2, C3 (12.11.2026): Die Rolle hat Sekunden gebraucht; in der Zeit kann eine Coach-Pause, das Live-Gespräch
+    // oder die Auswertung den Lauf geändert haben. Deshalb wird nicht die alte Kopie zurückgeschrieben, sondern dieser
+    // Zug an den frischen Lauf angehängt. Ein beendeter Lauf bleibt beendet (dann wird nichts gespeichert).
+    const antwort = reply;
+    const geprueftesEnde = ende;
+    const fehlt = abgelehnt;
+    const antwortTs = new Date().toISOString();
+    let sperre = null as NextResponse | null;
+    const saved = await updateSimulation(auth.uid, d.simId, (lauf) => {
+      sperre = zugSperre(lauf);
+      if (sperre) return false;
+      lauf.turns.push({ role: "user", text: d.message, ts: now }, { role: "persona", text: antwort, ts: antwortTs });
+      if (timeSignal === "closing") lauf.timeWarned = true;
+      if (timeSignal === "farewell") lauf.closedByTime = true;
+      if (offeneNotiz) {
+        // Die übergebene Notiz am frischen Lauf abhaken (derselbe Eintrag: Zug und Zeitstempel).
+        const uebergeben = lauf.regie?.find((r) => r.turn === offeneNotiz.turn && r.ts === offeneNotiz.ts);
+        if (uebergeben) uebergeben.delivered = true;
+      }
+      if (regie) lauf.regie = [...(lauf.regie ?? []).slice(-40), regie];
+      if (geprueftesEnde) lauf.closedByPersona = { ...geprueftesEnde, at: antwortTs };
+      if (fehlt !== null) {
+        const letzte = lauf.regie?.[lauf.regie.length - 1];
+        lauf.regie = [
+          ...(lauf.regie ?? []).slice(-40),
+          { stufe: letzte?.stufe ?? 0, erfuellt: letzte?.erfuellt ?? [], eskaliert: false, notiz: endeAbgelehntNote(scenario, fehlt), turn: lauf.turns.length, ts: antwortTs, delivered: true, fehlt },
+        ];
+      }
+    });
+    if (!saved) {
+      return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
     }
-    await saveSimulation(doc);
+    if (sperre) {
+      logger.api("/api/simulation/turn", "nicht-gespeichert", { uid: auth.uid, simId: d.simId, status: saved.status });
+      return sperre;
+    }
 
+    // Paket 1, C2 (12.11.2026): Antwort und Protokoll nennen das GEPRÜFTE Ende. Bis heute stand hier das ungeprüfte
+    // Ende der Rolle (Fehler vom 01.11.2026): Ein vom Torwächter abgelehntes Ende erschien im Browser als beendet.
     logger.api("/api/simulation/turn", "ok", {
       uid: auth.uid,
       simId: d.simId,
-      turns: doc.turns.length,
+      turns: saved.turns.length,
       ...(timeSignal ? { timeSignal } : {}),
-      ...(result.ende ? { ende: result.ende.ergebnis } : {}),
+      ...(geprueftesEnde ? { ende: geprueftesEnde.ergebnis } : {}),
       ...(regie ? { regieStufe: regie.stufe } : {}),
     });
     return NextResponse.json({
       ok: true,
-      reply,
-      turnCount: doc.turns.length,
-      userTurnsLeft: SIM_MAX_USER_TURNS - countUserTurns(doc.turns),
-      timeUp: doc.closedByTime === true,
+      reply: antwort,
+      turnCount: saved.turns.length,
+      userTurnsLeft: SIM_MAX_USER_TURNS - countUserTurns(saved.turns),
+      timeUp: saved.closedByTime === true,
       // Welle 2: die Rolle hat das Gespräch beendet — der Client zeigt den Hinweis und geht zur Auswertung.
-      ...(result.ende ? { ende: result.ende } : {}),
+      ...(geprueftesEnde ? { ende: geprueftesEnde } : {}),
     });
   } catch (err) {
     // W1-1/W1-2: KI-Fehlerart + Fehler-Nr. statt „Internal server error“ (Rückweg AI_ERROR_CONTRACT=off).

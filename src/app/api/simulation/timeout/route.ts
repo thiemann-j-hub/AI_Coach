@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runCoachTimeout } from "@/ai/flows/simulation-coach";
 import { requireAuth } from "@/lib/api-auth";
-import { checkRateLimit, rateLimitKey } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkAndConsumeBudget, estimateTokens } from "@/lib/server/cost-cap";
 import { kiSchalterBlockt } from "@/lib/server/credits/entitlement";
+import { getApiMessages } from "@/lib/server/get-request-locale";
 import { simulationEnabled } from "@/lib/simulation/flags";
 import { getScenarioForUser } from "@/lib/server/scenario-store";
 import {
   SIM_MAX_TIMEOUTS,
   getSimulation,
-  saveSimulation,
+  updateSimulation,
 } from "@/lib/server/simulation-store";
 import { withRetry, timeoutMs } from "@/lib/with-timeout";
 import { logger } from "@/lib/logger";
@@ -47,7 +48,8 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const rl = checkRateLimit(rateLimitKey(req, "sim-timeout"), 6, 60_000);
+  // Paket 1, C5 (12.11.2026): Begrenzung je Person statt je Adresse.
+  const rl = checkRateLimit(`sim-timeout:${auth.uid}`, 6, 60_000, getApiMessages(req).rateLimited);
   if (rl) return rl;
   // A4 (31.10.2026): Auch der Coach-Tipp ist KI — Schalter des Unternehmens prüfen.
   const ki = await kiSchalterBlockt("/api/simulation/timeout");
@@ -113,28 +115,45 @@ export async function POST(req: NextRequest) {
       { ms: LLM_TIMEOUT_MS, label: "gemini-sim-timeout", retries: 1 }
     );
 
-    doc.coachNotes = [
-      ...(doc.coachNotes ?? []),
-      {
-        question: d.question?.trim() ?? "",
-        answer: tip,
-        ts: new Date().toISOString(),
-        ...(card ? { card } : {}),
-      },
-    ];
-    await saveSimulation(doc);
+    // Paket 2, C3 (12.11.2026): Der Coach hat Sekunden gebraucht; in der Zeit kann das Gespräch weitergelaufen sein
+    // (Live) oder beendet worden sein. Die Notiz wird deshalb an den frischen Lauf angehängt, statt die alte Kopie
+    // zurückzuschreiben. Ein beendeter Lauf bleibt beendet, und mehr als SIM_MAX_TIMEOUTS Notizen entstehen nie.
+    const note = {
+      question: d.question?.trim() ?? "",
+      answer: tip,
+      ts: new Date().toISOString(),
+      ...(card ? { card } : {}),
+    };
+    let sperre = null as NextResponse | null;
+    const saved = await updateSimulation(auth.uid, d.simId, (lauf) => {
+      sperre = null;
+      if (lauf.status !== "active") {
+        sperre = NextResponse.json({ ok: false, code: "ALREADY_FINISHED" }, { status: 409 });
+        return false;
+      }
+      if ((lauf.coachNotes?.length ?? 0) >= SIM_MAX_TIMEOUTS) {
+        sperre = NextResponse.json({ ok: false, code: "TIMEOUT_LIMIT", max: SIM_MAX_TIMEOUTS }, { status: 409 });
+        return false;
+      }
+      lauf.coachNotes = [...(lauf.coachNotes ?? []), note];
+    });
+    if (!saved) {
+      return NextResponse.json({ ok: false, code: "NOT_FOUND" }, { status: 404 });
+    }
+    if (sperre) return sperre;
+    const timeoutsUsed = saved.coachNotes?.length ?? 0;
 
     logger.api("/api/simulation/timeout", "ok", {
       uid: auth.uid,
       simId: d.simId,
-      used: doc.coachNotes.length,
+      used: timeoutsUsed,
       card: card?.id ?? null,
     });
     return NextResponse.json({
       ok: true,
       tip,
       card,
-      timeoutsUsed: doc.coachNotes.length,
+      timeoutsUsed,
       timeoutsMax: SIM_MAX_TIMEOUTS,
     });
   } catch (err) {
