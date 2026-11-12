@@ -22,7 +22,6 @@ import {
   Compass,
   ListChecks,
   Flag,
-  GraduationCap,
   MessagesSquare,
   Lightbulb,
   Loader2,
@@ -51,10 +50,21 @@ import { openLiveConnection, type LiveConnection } from '@/lib/live-client';
 import { useAuth } from '@/providers/auth-provider';
 import { useTranslation } from '@/i18n/useTranslation';
 import { faehigkeit, faehigkeitText } from '@/lib/simulation/faehigkeiten';
-import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
-import { maxEurHint } from '@/lib/pricing-display';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { costNote, maxEurHint, showEurPrice } from '@/lib/pricing-display';
+import { useWorkspaceRole } from '@/lib/use-workspace-role';
 import type { FactVisual, PersonaVoice } from '@/lib/simulation/types';
 import { recommendScenarios } from '@/lib/simulation/empfehlung';
+import { catalogOrder, type PlayedInfo } from '@/lib/simulation/katalog';
+import {
+  CHECKIN_MAX_CHARS,
+  checkinAutoWeiterIn,
+  checkinSchritt,
+  checkinStart,
+  type CheckinAktion,
+  type CheckinBody,
+  type CheckinStand,
+} from '@/lib/simulation/checkin-ablauf';
 import { decideApiFailure, type ApiFailureBody } from '@/lib/simulation/api-failure';
 import { decideLiveEnd, dictationEndMessage, type LiveEndCause, type VoiceMessage } from '@/lib/simulation/live-failure';
 
@@ -76,7 +86,6 @@ interface PublicScenario {
   checkDurationMin?: number;
   locale?: 'de' | 'en';
   category: ScenarioCategory;
-  competencyFocus?: string[];
   persona: { name: string; role: string; voice?: PersonaVoice };
   /** Welle 3: Persönlichkeits-Variante eines Grundszenarios (Porträt und Karte kommen vom Grundszenario). */
   variante?: { von: string; name: { de: string; en: string } };
@@ -308,7 +317,8 @@ interface CoachNote {
 interface RecentSim {
   id: string;
   scenarioId: string;
-  status: 'active' | 'finished';
+  /** `finishing` (Paket 3): die Auswertung läuft gerade. */
+  status: 'active' | 'finishing' | 'finished';
   createdAt: string;
   updatedAt: string;
   turnCount: number;
@@ -317,12 +327,26 @@ interface RecentSim {
   verdict: 'passed' | 'failed' | 'unrated' | null;
 }
 
-/** Einstiegs-Insight des Katalog-Endpunkts (W1-4): schwächste beobachtete C. */
+/**
+ * Einstiegs-Insight des Katalog-Endpunkts (W1-4). U15 (Owner-Entscheid 12.11.2026): schwächste beobachtete
+ * FÄHIGKEIT der jüngsten Rollenspiel-Auswertung (Schlüssel aus `feedback.rubric`) und deren Szenario.
+ */
 interface EntryInsight {
-  weakestC: string;
-  weakestName: string | null;
-  source: 'sim' | 'run';
+  skill: string;
+  label: string | null;
+  scenarioId: string | null;
 }
+
+/**
+ * U28, C25 (12.11.2026): Bestätigung, Check-in und die zwei Hinweise zum Mikrofon nutzen die Dialog-Komponente
+ * (Fokusfang, Escape, `role="dialog"`). Aussehen wie die übrigen Dialoge dieser Seite; am Handy bleibt ein Rand.
+ * Das Schließen-Kreuz der Komponente ist ausgeblendet: Jeder dieser Dialoge hat eigene, beschriftete Knöpfe.
+ */
+const DIALOG_BOX =
+  'pn-none glass-panel w-[calc(100%-2rem)] max-w-md max-h-[90dvh] overflow-y-auto rounded-2xl sm:rounded-2xl border-border bg-card p-6 [&>button.absolute]:hidden';
+const DIALOG_TITLE = 'text-lg font-semibold leading-snug tracking-normal';
+/** Check-in am Handy: Der Dialog steht oben. Das Feld hat sofort den Cursor, die Tastatur verdeckte sonst „Weiter“. */
+const DIALOG_BOX_CHECKIN = `${DIALOG_BOX} top-4 translate-y-0 sm:top-[50%] sm:translate-y-[-50%]`;
 
 /** O2: die eine Nachfrage beim Login — Vorsatz aus dem letzten Debrief. */
 interface TransferItem {
@@ -432,12 +456,19 @@ export default function SimulationClient() {
   const [finishing, setFinishing] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   /**
-   * Coaching-Check-in (Welle A1, Synthesia-Vergleich §7): EINE statische
-   * Reflexionsfrage zwischen »Beenden« und Auswertung. Das Eingabefeld teilt
-   * sich den `input`-State mit dem Chat — so diktiert das Mikrofon ohne
-   * Umbau auch hier hinein. Überspringen ist gleichwertig (kein Zwang).
+   * Check-in nach dem Gespräch. Paket 3, S8 (12.11.2026): zwei kurze Fragen nacheinander, WÄHREND die Auswertung
+   * schon rechnet (vorher: eine Doppelfrage, erst danach startete der Richter). null = zu. Die Schrittfolge und
+   * die 20-Sekunden-Regel stehen getestet in src/lib/simulation/checkin-ablauf.ts. Das Eingabefeld teilt sich den
+   * `input`-State mit dem Chat — so diktiert das Mikrofon ohne Umbau auch hier hinein.
    */
-  const [checkinOpen, setCheckinOpen] = useState(false);
+  const [checkin, setCheckin] = useState<CheckinStand | null>(null);
+  /** Die Antworten sind unterwegs, gleich folgt der Wechsel zur Auswertungsseite. */
+  const [checkinBusy, setCheckinBusy] = useState(false);
+  /** Zeitpunkt der letzten Eingabe im Check-in: Ab hier zählen die 20 Sekunden. */
+  const [checkinInputAt, setCheckinInputAt] = useState(0);
+  /** Der Lauf hat schon einen Check-in (z. B. nach einer gescheiterten Auswertung): Dann fragen wir nicht noch einmal. */
+  const [checkinDone, setCheckinDone] = useState(false);
+  const checkinFieldRef = useRef<HTMLTextAreaElement | null>(null);
   const [briefingOpen, setBriefingOpen] = useState(false);
   const [attempt, setAttempt] = useState(1);
   const [focus, setFocus] = useState<string | null>(null);
@@ -445,29 +476,22 @@ export default function SimulationClient() {
   // ── Einstieg (COACH-UX-BLUEPRINT §1) ──
   /** Empfehlungs-Insight des Katalogs (W1-4); null = Cold Start. */
   const [insight, setInsight] = useState<EntryInsight | null>(null);
+  /** U21 (12.11.2026): bestes Ergebnis je Szenario aus den eigenen abgeschlossenen Läufen. */
+  const [played, setPlayed] = useState<Record<string, PlayedInfo>>({});
   // O2 Micro-Transfer: anstehende Nachfrage (null = keine) + Dank nach Antwort.
   const [transfer, setTransfer] = useState<TransferItem | null>(null);
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferThanks, setTransferThanks] = useState(false);
   /** Filterzeile: »Alle« oder eine nicht-leere Kategorie (W1-5). */
   const [categoryFilter, setCategoryFilter] = useState<'all' | ScenarioCategory>('all');
-  // Welle C: Builder-Karte nur für Workspace-Admins (Rolle aus dem Profil).
-  const [isWorkspaceAdmin, setIsWorkspaceAdmin] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await authFetch('/api/users/profile');
-        const j = await res.json().catch(() => null);
-        if (!cancelled && j?.profile?.workspaceRole === 'admin') setIsWorkspaceAdmin(true);
-      } catch {
-        /* ohne Rolle keine Builder-Karte — fail-soft */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Welle C: Builder-Karte nur für Workspace-Admins (Rolle aus dem Profil; ohne Rolle keine Karte).
+  const workspaceRole = useWorkspaceRole();
+  const isWorkspaceAdmin = workspaceRole === 'admin';
+  // U23 (Owner-Entscheid 12.11.2026): Den Eurobetrag sehen nur Admins und Selbstzahler. Lernende, deren Firma
+  // zahlt, lesen nur „1 Credit“; der Satz „1 Credit entspricht …“ entfällt für sie ganz.
+  const eurHint = showEurPrice(workspaceRole) ? maxEurHint(t.common.maxEurHint, locale) : null;
+  const startCost = costNote(ts.startCostNote, eurHint);
+  const finishCost = costNote(ts.finishCostNote, eurHint);
   // Geister-Karte → Szenario-Wunsch (W1-5)
   const [wishOpen, setWishOpen] = useState(false);
   const [wishText, setWishText] = useState('');
@@ -481,8 +505,11 @@ export default function SimulationClient() {
   const [vorbZiel, setVorbZiel] = useState('');
   const [vorbBusy, setVorbBusy] = useState(false);
   const [vorbError, setVorbError] = useState<string | null>(null);
-  /** Fokus aus dem Deep-Link (?szenario=&fokus= — Retry von der Auswertungsseite). */
-  const pendingFocusRef = useRef<string | null>(null);
+  /**
+   * Fokus aus dem Deep-Link (?szenario=&fokus= — „Nochmal üben mit Fokus“ auf der Auswertungsseite).
+   * U19 (12.11.2026): Er steht sichtbar im Briefing und lässt sich dort entfernen; vorher ging er unsichtbar mit.
+   */
+  const [briefFocus, setBriefFocus] = useState<string | null>(null);
   const [topUpUrl, setTopUpUrl] = useState<string | null>(null);
   // Time-out-Coach (D3)
   const [timeoutOpen, setTimeoutOpen] = useState(false);
@@ -630,12 +657,19 @@ export default function SimulationClient() {
           setPersonaEnded(d.ende);
           stopMic();
           break;
+        case 'evaluation':
+          // Paket 3 (12.11.2026): Der Lauf wurde inzwischen beendet (z. B. im zweiten Fenster) — kein roter Fehler,
+          // sondern zur Auswertungsseite: Dort steht „läuft“ oder das Ergebnis.
+          stopMic();
+          if (simId) router.push(`/simulation/${encodeURIComponent(simId)}`);
+          else setError(ts.genericError);
+          break;
         case 'text':
           setError(ts[d.key]);
           break;
       }
     },
-    [t, ts, stopMic]
+    [t, ts, stopMic, simId, router]
   );
 
   /** Paket 1, C10 (12.11.2026): der Satz, warum das Mikrofon aus ist. */
@@ -1122,6 +1156,32 @@ export default function SimulationClient() {
     });
   }
 
+  // ── Paket 3, S8 (12.11.2026): Check-in in zwei Fragen ──
+  // Mikrofon an oder aus und die Hinweise darüber zählen als Eingabe: Die 20 Sekunden beginnen neu.
+  useEffect(() => {
+    if (checkin) setCheckinInputAt(Date.now());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [micActive, micStarting, micNoticeOpen, consentUrl]);
+  // Bleibt das Feld leer und ohne Eingabe, geht es nach 20 Sekunden von selbst weiter (Regel in checkin-ablauf.ts).
+  useEffect(() => {
+    if (!checkin || checkinBusy || micNoticeOpen || consentUrl) return;
+    const rest = checkinAutoWeiterIn({
+      text: input,
+      diktatLaeuft: micActive || micStarting,
+      letzteEingabeMs: checkinInputAt,
+      jetztMs: Date.now(),
+    });
+    if (rest == null) return;
+    const id = window.setTimeout(() => checkinGo({ art: 'weiter', text: '' }), rest);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkin, checkinBusy, micNoticeOpen, consentUrl, input, micActive, micStarting, checkinInputAt]);
+  // Jede Frage beginnt mit dem Cursor im Feld.
+  const checkinFrage = checkin?.frage ?? null;
+  useEffect(() => {
+    if (checkinFrage) checkinFieldRef.current?.focus();
+  }, [checkinFrage]);
+
   const scenarioById = useMemo(() => {
     const m = new Map<string, PublicScenario>();
     for (const s of scenarios) m.set(s.id, s);
@@ -1155,6 +1215,7 @@ export default function SimulationClient() {
       setScenarios(json.scenarios ?? []);
       setRecent(json.recent ?? []);
       setInsight(json.insight ?? null);
+      setPlayed(json.played ?? {});
       setView('list');
       // O2: die eine Nachfrage — best effort, blockiert den Einstieg nie.
       try {
@@ -1196,14 +1257,14 @@ export default function SimulationClient() {
   }, []);
 
   // Deep-Link von der Auswertungsseite (W1-7): /?szenario=<id>&fokus=<text>
-  // öffnet direkt das Briefing des Szenarios; der Fokus geht beim Start mit.
+  // öffnet direkt das Briefing des Szenarios; der Fokus steht dort (U19) und geht beim Start mit.
   useEffect(() => {
     if (view !== 'list' || scenarios.length === 0) return;
     const wanted = searchParams.get('szenario');
     if (!wanted) return;
     const s = scenarios.find((x) => x.id === wanted);
     if (!s) return;
-    pendingFocusRef.current = searchParams.get('fokus');
+    setBriefFocus(searchParams.get('fokus')?.trim() || null);
     setScenario(s);
     setError(null);
     setBriefStep(0);
@@ -1260,9 +1321,8 @@ export default function SimulationClient() {
   async function startSimulation(s: PublicScenario, withFocus?: string | null) {
     setStarting(true);
     setError(null);
-    // Deep-Link-Fokus (Retry von der Auswertungsseite) — einmalig verbrauchen.
-    const focusToSend = withFocus ?? pendingFocusRef.current ?? undefined;
-    pendingFocusRef.current = null;
+    // Fokus aus dem Briefing (U19: dort sichtbar und entfernbar) oder vom Neustart desselben Szenarios.
+    const focusToSend = withFocus ?? briefFocus ?? undefined;
     try {
       const res = await authFetch('/api/simulation/start', {
         method: 'POST',
@@ -1284,6 +1344,8 @@ export default function SimulationClient() {
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
+      setBriefFocus(null);
+      setCheckinDone(false);
       setSimStartedAt(json.simulation.createdAt ?? new Date().toISOString());
       setCoachNotes([]);
       setBriefingOpen(false);
@@ -1302,8 +1364,9 @@ export default function SimulationClient() {
    * die Kennung bekannt, Szenario und Startzeit bringt die Antwort mit. true = Gespräch oder Auswertung geöffnet.
    */
   async function resumeSimulation(item: Pick<RecentSim, 'id'> & Partial<RecentSim>): Promise<boolean> {
-    // Fertige Auswertungen haben eine eigene Adresse (W1-7).
-    if (item.status === 'finished') {
+    // Fertige Auswertungen haben eine eigene Adresse (W1-7). Paket 3 (12.11.2026): Läuft die Auswertung noch,
+    // steht dort „Auswertung läuft“ mit dem Gespräch zum Nachlesen.
+    if (item.status === 'finished' || item.status === 'finishing') {
       router.push(`/simulation/${encodeURIComponent(item.id)}`);
       return true;
     }
@@ -1315,13 +1378,13 @@ export default function SimulationClient() {
         handleApiFailure(res, json);
         return false;
       }
-      if (json.simulation.status === 'finished') {
+      if (json.simulation.status === 'finished' || json.simulation.status === 'finishing') {
         router.push(`/simulation/${encodeURIComponent(item.id)}`);
         return true;
       }
       // Abgebrochene Läufe (z. B. über eine alte Adresse) werden nicht wieder geöffnet.
       if (json.simulation.status !== 'active') {
-        setError(ts.genericError);
+        setError(json.simulation.status === 'aborted' ? ts.runAborted : ts.genericError);
         return false;
       }
       const s = scenarioById.get(json.simulation.scenarioId) ?? (json.scenario as PublicScenario | null);
@@ -1334,6 +1397,7 @@ export default function SimulationClient() {
       setTurns(json.simulation.turns);
       setAttempt(json.simulation.attempt ?? 1);
       setFocus(json.simulation.focus ?? null);
+      setCheckinDone(json.simulation.checkin != null);
       setSimStartedAt(json.simulation.createdAt ?? item.createdAt ?? null);
       setCoachNotes(json.simulation.coachNotes ?? []);
       setConvoLocale(json.simulation.convoLocale ?? s.locale ?? 'de');
@@ -1353,7 +1417,8 @@ export default function SimulationClient() {
   async function sendTurn() {
     const message = input.trim();
     // Im Live-Gespräch geht nichts über den Textweg — das Live-Modell hört nur, was gesprochen wird.
-    if (!message || !simId || sending || liveState !== 'off') return;
+    // Nach dem Ende durch die Rolle oder nach „Zeit um“ bleibt nur die Auswertung.
+    if (!message || !simId || sending || liveState !== 'off' || timeUp || personaEnded) return;
     setSending(true);
     setError(null);
     const optimistic: Turn = { role: 'user', text: message, ts: new Date().toISOString() };
@@ -1430,16 +1495,20 @@ export default function SimulationClient() {
     }
   }
 
-  async function finishSimulation(selfAssessment?: string) {
+  /**
+   * Paket 3 (U12, S7; 12.11.2026): „Ja, auswerten“ startet die Auswertung sofort. Die Route antwortet gleich mit dem
+   * Zustand des Laufs (202 `finishing`, 200 `finished`); gerechnet wird auf dem Server. Währenddessen läuft der
+   * Check-in, gewartet wird hier nicht mehr. Fehler (kein Guthaben, zu wenige Beiträge, Limit) stehen im Dialog.
+   */
+  async function startEvaluation() {
     if (!simId || finishing) return;
     stopMic();
     setFinishing(true);
     setError(null);
     try {
-      const trimmed = (selfAssessment ?? '').trim().slice(0, 600);
       const res = await authFetch('/api/simulation/finish', {
         method: 'POST',
-        body: JSON.stringify({ simId, ...(trimmed ? { selfAssessment: trimmed } : {}) }),
+        body: JSON.stringify({ simId }),
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
@@ -1448,13 +1517,52 @@ export default function SimulationClient() {
       }
       // Header-Saldo nachladen — die Auswertung hat gerade 1 Credit gekostet.
       window.dispatchEvent(new Event(CREDITS_REFRESH_EVENT));
-      // W1-7: Auswertung hat eine eigene Adresse — Reload-fest, verlinkbar.
-      router.push(`/simulation/${encodeURIComponent(simId)}`);
+      // Das geteilte Eingabefeld wird geleert — ein liegengebliebener Entwurf gehört zum beendeten Gespräch.
+      setInput('');
+      if (checkinDone) {
+        // Der Check-in liegt schon vor (zweiter Anlauf nach einer gescheiterten Auswertung): gleich zur Auswertung.
+        router.push(`/simulation/${encodeURIComponent(simId)}`);
+        return;
+      }
+      setConfirmOpen(false);
+      setCheckinInputAt(Date.now());
+      setCheckin(checkinStart());
     } catch {
       setError(ts.genericError);
     } finally {
       setFinishing(false);
     }
+  }
+
+  /** Ein Schritt im Check-in: „Weiter“ (auch nach 20 Sekunden ohne Eingabe) oder „Überspringen“. */
+  function checkinGo(aktion: CheckinAktion) {
+    if (!checkin || checkinBusy) return;
+    stopMic();
+    const folge = checkinSchritt(checkin, aktion);
+    setInput('');
+    setError(null);
+    setCheckinInputAt(Date.now());
+    if (!folge.fertig) {
+      setCheckin(folge.stand);
+      return;
+    }
+    void submitCheckin(folge.body);
+  }
+
+  /**
+   * Antworten speichern, dann sofort zur Auswertungsseite (W1-7: eigene Adresse, Reload-fest). Auf die Antwort der
+   * Route warten wir höchstens zwei Sekunden: So liegen die Antworten in aller Regel vor, wenn die Seite lädt, und
+   * ein langsamer oder gescheiterter Aufruf hält niemanden auf — dann fehlt dort nur der Abgleich mit dem Selbstbild.
+   */
+  async function submitCheckin(body: CheckinBody) {
+    if (!simId) return;
+    setCheckinBusy(true);
+    const gesendet = authFetch('/api/simulation/checkin', {
+      method: 'POST',
+      body: JSON.stringify({ simId, ...body }),
+    }).catch(() => null);
+    await Promise.race([gesendet, new Promise((resolve) => window.setTimeout(resolve, 2000))]);
+    router.push(`/simulation/${encodeURIComponent(simId)}`);
   }
 
   function backToList() {
@@ -1466,6 +1574,8 @@ export default function SimulationClient() {
     setCoachNotes([]);
     setError(null);
     setConfirmOpen(false);
+    setCheckin(null);
+    setBriefFocus(null);
     setTimeoutOpen(false);
     setLeaveOpen(false);
     setSimStartedAt(null);
@@ -1538,7 +1648,8 @@ export default function SimulationClient() {
 
   if (view === 'list') {
     const firstName = (user?.displayName ?? '').trim().split(/\s+/)[0] || '';
-    const activeSims = recent.filter((r) => r.status === 'active');
+    // Paket 3 (12.11.2026): Läufe, deren Auswertung gerade rechnet, stehen hier als „Auswertung läuft“.
+    const activeSims = recent.filter((r) => r.status === 'active' || r.status === 'finishing');
     const nonEmptyCategories = CATEGORY_ORDER.filter((c) =>
       scenarios.some((s) => s.category === c)
     );
@@ -1550,11 +1661,20 @@ export default function SimulationClient() {
       if (!s.variante) continue;
       variantenVon.set(s.variante.von, [...(variantenVon.get(s.variante.von) ?? []), s]);
     }
+    // U15 (Owner-Entscheid 12.11.2026): Empfehlung aus der schwächsten Fähigkeit der jüngsten Auswertung; das
+    // gerade gespielte Szenario steht nicht zuerst. Bewertet kein Szenario des Katalogs diese Fähigkeit (z. B. nach
+    // einem selbst vorbereiteten Gespräch), gilt der Kaltstart — sonst stünde die Begründung über fremden Karten.
+    const recoSkill =
+      insight && grundszenarien.some((s) => s.competencies.some((c) => c.key === insight.skill)) ? insight.skill : null;
+    const recommended = recommendScenarios(grundszenarien, recoSkill, 3, insight?.scenarioId ?? null);
+    const recoFaehigkeit = recoSkill ? faehigkeit(recoSkill) : undefined;
+    const recoName = recoFaehigkeit ? faehigkeitText(recoFaehigkeit, locale).titel : (insight?.label ?? recoSkill ?? '');
+    // U21 (12.11.2026): Die Liste ist nach Stufe geordnet, und die Empfehlungen stehen darin nicht noch einmal.
+    // Wer nach einer Kategorie filtert, sieht diese Kategorie vollständig.
     const visibleScenarios =
       categoryFilter === 'all'
-        ? grundszenarien
-        : grundszenarien.filter((s) => s.category === categoryFilter);
-    const recommended = recommendScenarios(grundszenarien, insight?.weakestC ?? null, 3);
+        ? catalogOrder(grundszenarien, recommended)
+        : catalogOrder(grundszenarien.filter((s) => s.category === categoryFilter));
     const catLabel = (c: ScenarioCategory) =>
       c === 'mitarbeiterfuehrung'
         ? t.entry.catMitarbeiterfuehrung
@@ -1566,6 +1686,7 @@ export default function SimulationClient() {
 
     const openBriefing = (s: PublicScenario) => {
       setHeroImgFailed(false);
+      setBriefFocus(null);
       setScenario(s);
       setError(null);
       setBriefStep(0);
@@ -1609,6 +1730,15 @@ export default function SimulationClient() {
         <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
           {s.locale === 'en' ? ts.englishOnly : ts.germanOnly}
         </div>
+        {/* U21 (12.11.2026): schon gespielt, mit dem besten Ergebnis aus den eigenen abgeschlossenen Läufen. */}
+        {played[s.id] && (
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground" data-testid="played">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+            {played[s.id].best != null
+              ? t.entry.playedBest.replace('{pct}', String(played[s.id].best))
+              : t.entry.played}
+          </div>
+        )}
       </button>
       {/* Welle 3: Persönlichkeits-Varianten — dieselbe Lage, ein anderes Gegenüber. */}
       {(variantenVon.get(s.id) ?? []).length > 0 && (
@@ -1688,7 +1818,6 @@ export default function SimulationClient() {
           body: JSON.stringify({
             wishText: text.slice(0, 500),
             category: categoryFilter === 'all' ? null : categoryFilter,
-            weakestC: insight?.weakestC ?? null,
             locale,
           }),
         });
@@ -1785,7 +1914,7 @@ export default function SimulationClient() {
 
           {/* UX-W4 (01.10., Preis vor dem Klick): Kostenhinweis oben, nicht erst nach dem Katalog. */}
           <p className="text-xs text-muted-foreground" data-testid="start-cost-note-top">
-            {ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
+            {startCost}
           </p>
 
           {/* ── Fortsetzen-Streifen: nur bei offener Simulation ── */}
@@ -1798,6 +1927,9 @@ export default function SimulationClient() {
                 {activeSims.map((r) => {
                   const s = scenarioById.get(r.scenarioId);
                   if (!s) return null;
+                  // Paket 3 (12.11.2026): Die Auswertung rechnet — die Zeile führt zur Auswertungsseite, ohne
+                  // Restzeit und ohne Mülleimer.
+                  const evaluating = r.status === 'finishing';
                   const confirming = pendingDeleteId === r.id;
                   // W2-1: Restzeit im Fortsetzen-Streifen — die Zeitbox läuft
                   // ab Start in Echtzeit, auch außerhalb der Seite.
@@ -1827,17 +1959,22 @@ export default function SimulationClient() {
                         <span
                           className={cx(
                             'text-xs px-2 py-0.5 rounded-full border tabular-nums',
-                            remainMs > 0
-                              ? 'bg-sky-500/15 text-sky-800 dark:text-sky-400 border-sky-500/30'
-                              : 'bg-amber-500/15 text-amber-800 dark:text-amber-500 border-amber-500/30'
+                            evaluating
+                              ? 'bg-primary/10 text-primary border-primary/20'
+                              : remainMs > 0
+                                ? 'bg-sky-500/15 text-sky-800 dark:text-sky-400 border-sky-500/30'
+                                : 'bg-amber-500/15 text-amber-800 dark:text-amber-500 border-amber-500/30'
                           )}
+                          data-testid={evaluating ? 'resume-evaluating' : undefined}
                         >
-                          {remainMs > 0
-                            ? t.entry.resumeTimeLeft.replace('{min}', String(remainMin))
-                            : t.entry.resumeTimeUp}
+                          {evaluating
+                            ? t.entry.resumeEvaluating
+                            : remainMs > 0
+                              ? t.entry.resumeTimeLeft.replace('{min}', String(remainMin))
+                              : t.entry.resumeTimeUp}
                         </span>
                         {/* Mülleimer mit zweistufiger Bestätigung (endgültig, inkl. DB) */}
-                        {confirming ? (
+                        {evaluating ? null : confirming ? (
                           <span className="flex items-center gap-1.5">
                             <span className="text-xs text-rose-800 dark:text-rose-400 font-medium hidden sm:inline">
                               {ts.deleteConfirm}
@@ -1915,18 +2052,37 @@ export default function SimulationClient() {
                 <Sparkles className="h-3.5 w-3.5 text-primary" /> {t.entry.recoTitle}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {insight
-                  ? t.entry.recoReason.replace(
-                      '{c}',
-                      insight.weakestName ?? insight.weakestC
-                    )
-                  : t.entry.coldStartFrame}
+                {recoSkill ? t.entry.recoReason.replace('{c}', recoName) : t.entry.coldStartFrame}
               </p>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {recommended.map((s) => scenarioCard(s, true))}
               </div>
             </section>
           )}
+
+          {/* ── U22 (12.11.2026): „Mein echtes Gespräch vorbereiten“ — direkt unter den Empfehlungen, vor der
+              Gesamtliste, als eigener Streifen (Welle 4: für alle, privat). „Szenario wünschen“ bleibt am Ende
+              der Liste. ── */}
+          <button
+            onClick={() => {
+              setVorbError(null);
+              setVorbOpen(true);
+            }}
+            data-testid="prep-card"
+            className="pn-tile glass-panel w-full rounded-2xl border border-primary/40 p-4 sm:p-5 text-left flex items-center gap-4 transition-colors"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <MessagesSquare className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold leading-snug">{t.entry.prepTitle}</span>
+              <span className="mt-0.5 block text-sm text-muted-foreground leading-relaxed">{t.entry.prepBody}</span>
+              <span className="mt-1 block text-xs font-semibold text-primary sm:hidden">{t.entry.prepCta} →</span>
+            </span>
+            <span className="hidden sm:inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
+              {t.entry.prepCta} <ArrowRight className="h-4 w-4" />
+            </span>
+          </button>
 
           {/* ── Filterzeile: Alle · nicht-leere Kategorien (W1-5) ── */}
           {nonEmptyCategories.length > 1 && (
@@ -1964,21 +2120,6 @@ export default function SimulationClient() {
           {/* ── Szenario-Raster + Geister-Karte ── */}
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {visibleScenarios.map((s) => scenarioCard(s))}
-            {/* Geister-Karte (W1-5): der Wunsch wird Nachfrage-Statistik. */}
-            {/* Welle 4: „Mein echtes Gespräch vorbereiten“ — für alle, privat. */}
-            <button
-              onClick={() => {
-                setVorbError(null);
-                setVorbOpen(true);
-              }}
-              data-testid="prep-card"
-              className="pn-none rounded-2xl p-5 text-left border-2 border-dashed border-primary/40 hover:border-primary transition-colors flex flex-col items-start justify-center gap-2 min-h-[200px] text-muted-foreground hover:text-foreground"
-            >
-              <MessagesSquare className="h-6 w-6 text-primary" />
-              <h3 className="font-semibold leading-snug text-foreground">{t.entry.prepTitle}</h3>
-              <p className="text-sm leading-relaxed">{t.entry.prepBody}</p>
-              <span className="mt-1 text-xs font-semibold text-primary">{t.entry.prepCta} →</span>
-            </button>
             {/* Welle C: Self-Service-Builder — nur für Workspace-Admins. */}
             {isWorkspaceAdmin && (
               <button
@@ -1995,6 +2136,7 @@ export default function SimulationClient() {
                 </span>
               </button>
             )}
+            {/* Geister-Karte (W1-5): der Wunsch wird Nachfrage-Statistik. */}
             <button
               onClick={() => {
                 setWishDone(false);
@@ -2014,7 +2156,7 @@ export default function SimulationClient() {
           </section>
 
           {/* Preiszeile — EINMAL unter dem Raster, nicht je Karte (W2-4-Vorgriff). */}
-          <p className="text-xs text-muted-foreground text-center">{ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</p>
+          <p className="text-xs text-muted-foreground text-center">{startCost}</p>
         </div>
 
         {/* ── Welle 4: Dialog „Mein echtes Gespräch vorbereiten“ ── */}
@@ -2169,6 +2311,30 @@ export default function SimulationClient() {
             <ArrowLeft className="h-4 w-4" /> {ts.backToList}
           </button>
 
+          {/* U19 (12.11.2026): Der Fokus aus „Nochmal üben mit Fokus“ steht sichtbar im Briefing, über beiden
+              Spalten (am Handy also vor dem Start-Knopf), und lässt sich hier entfernen. */}
+          {briefFocus && (
+            <div
+              className="pn-none rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 flex items-start gap-2 text-sm"
+              data-testid="brief-focus"
+            >
+              <Sparkles className="h-4 w-4 text-accent shrink-0 mt-0.5" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="leading-relaxed break-words">
+                  <span className="font-semibold text-accent">{ts.briefFocusLabel}: </span>
+                  {briefFocus}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setBriefFocus(null)}
+                  className="mt-1 text-xs text-muted-foreground underline hover:text-foreground"
+                >
+                  {ts.briefFocusRemove}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] items-start">
             {/* ── Linke Spalte: Motto, Teaser, Kontext-Treppe, Sprachwahl ── */}
             <div className="space-y-4 order-2 lg:order-1">
@@ -2250,9 +2416,6 @@ export default function SimulationClient() {
                     </button>
                   ))}
                 </div>
-                {simMode === 'check' && (
-                  <p className="mt-2 text-xs text-amber-800 dark:text-amber-400 leading-relaxed">{ts.modeCheckHint}</p>
-                )}
               </div>
 
               {/* ── B2: Härtegrad der Persona ── */}
@@ -2277,7 +2440,13 @@ export default function SimulationClient() {
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{ts.hardnessHint}</p>
+                {/* U26 (12.11.2026): Stufe, Härtegrad und Prüfung an EINER Stelle erklärt; überall sonst steht
+                    nur noch der Wert. */}
+                <ul className="mt-3 space-y-1 text-xs text-muted-foreground leading-relaxed" data-testid="difficulty-help">
+                  <li>{ts.difficultyHelpLevel}</li>
+                  <li>{ts.difficultyHelpHardness}</li>
+                  <li>{ts.difficultyHelpCheck}</li>
+                </ul>
               </div>
             </div>
 
@@ -2332,7 +2501,7 @@ export default function SimulationClient() {
                     </span>
                   </div>
                   {/* W2-4: Preis VOR der Entscheidung, nicht erst im Dialog. */}
-                  <div className="text-[11px] text-white/65">{ts.startCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</div>
+                  <div className="text-[11px] text-white/65">{startCost}</div>
                   {/* EU-KI-VO Art. 50 (T1.5, Owner-GO 25.09.): Interaktions-Hinweis VOR dem Start —
                       sichtbar, nicht wegklickbar; der Fusszeilen-Hinweis im Chat bleibt zusaetzlich. */}
                   <div className="text-[11px] text-white/85 inline-flex items-center justify-center gap-1.5">
@@ -2533,6 +2702,9 @@ export default function SimulationClient() {
     const effTimeUp = timeUp || (startedMs != null && remainingMs === 0);
     // ── W2-2: Totsackgasse — Zeit um, aber kein auswertbares Gespräch ──
     const deadEnd = effTimeUp && userTurnCount < 3;
+    // Paket 3 (12.11.2026): Nach „Zeit um“ UND nach dem Ende durch die Rolle ist die Eingabe zu — es bleibt nur
+    // die Auswertung. Vorher blieb das Feld nach dem Ende durch die Rolle offen.
+    const inputClosed = effTimeUp || !!personaEnded;
     const b = scenario.candidateBriefing;
     return (
       <AppShell
@@ -2891,7 +3063,7 @@ export default function SimulationClient() {
                 </button>
               </div>
             )}
-            {micActive && !effTimeUp && (
+            {micActive && !inputClosed && (
               <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2 text-xs text-primary">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -2903,14 +3075,15 @@ export default function SimulationClient() {
             {/* Paket 1, C1 (12.11.2026): Die Meldung steht direkt über dem Eingabefeld. Vorher stand sie über dem
                 ersten Beitrag und war in einem längeren Gespräch aus dem Bild gescrollt.
                 W2-3: kein doppelter Fehlerbanner — im offenen Dialog zeigt der Dialog. */}
-            {error && !confirmOpen && !checkinOpen && !timeoutOpen && (
+            {error && !confirmOpen && !checkin && !timeoutOpen && (
               <div className="max-w-3xl mx-auto mb-2" role="alert">
                 {errorBanner}
               </div>
             )}
             <div className="max-w-3xl mx-auto flex items-end gap-2">
+              {/* Im Check-in gehört der geteilte Text ins Feld des Dialogs, nicht ins Gespräch dahinter. */}
               <textarea
-                value={input}
+                value={checkin ? '' : input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -2919,12 +3092,12 @@ export default function SimulationClient() {
                   }
                 }}
                 rows={2}
-                placeholder={personaEnded ? ts.endedHint : effTimeUp ? ts.timeUpPlaceholder : liveState !== 'off' ? ts.liveActive : ts.inputPlaceholder}
-                disabled={effTimeUp || liveState !== 'off'}
+                placeholder={inputClosed ? ts.inputClosed : liveState !== 'off' ? ts.liveActive : ts.inputPlaceholder}
+                disabled={inputClosed || liveState !== 'off'}
                 className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
               />
               {/* Paket 1, C11 (12.11.2026): Während das Mikrofon startet oder neu verbindet, ist der Knopf gesperrt. */}
-              {speechSupported && !effTimeUp && (
+              {speechSupported && !inputClosed && (
                 <button
                   onClick={() => (micActive ? stopMic() : startMic())}
                   disabled={micStarting || liveState === 'connecting' || liveNotice?.kind === 'reconnecting'}
@@ -2948,7 +3121,7 @@ export default function SimulationClient() {
               )}
               <button
                 onClick={() => void sendTurn()}
-                disabled={sending || !input.trim() || effTimeUp || liveState !== 'off'}
+                disabled={sending || !input.trim() || inputClosed || liveState !== 'off'}
                 className="btn-gradient text-white rounded-xl p-3 shadow-neon disabled:opacity-50"
                 aria-label={ts.send}
               >
@@ -3121,166 +3294,189 @@ export default function SimulationClient() {
           </div>
         )}
 
-        {/* Auswerten-Bestätigung (Kostenhinweis) */}
+        {/* U28, C25 (12.11.2026): Die folgenden vier Dialoge nutzen die Dialog-Komponente (Fokusfang, Escape,
+            role="dialog"). Die zwei Hinweise zum Mikrofon gehören dazu, weil sie auch über dem Check-in aufgehen:
+            als einfache Ebene wären sie dort nicht bedienbar. */}
+        {/* W5-4: Das Unternehmen verlangt die Einwilligung „Sprachaufnahme“ — Hinweis mit Link zur Einwilligung. */}
+        <Dialog
+          open={!!consentUrl}
+          onOpenChange={(open) => {
+            if (!open) setConsentUrl(null);
+          }}
+        >
+          <DialogContent className={DIALOG_BOX} data-testid="consent-needed">
+            <DialogTitle className={DIALOG_TITLE}>{ts.consentTitle}</DialogTitle>
+            <DialogDescription className="leading-relaxed">{ts.consentBody}</DialogDescription>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setConsentUrl(null)} className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors">{ts.consentLater}</button>
+              <a href={consentUrl ?? '#'} className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm">{ts.consentGo}</a>
+            </div>
+          </DialogContent>
+        </Dialog>
         {/* CP-3.4 (M21 Option 1) — Aufklärung vor der ersten Mikrofon-Nutzung. */}
-        {consentUrl && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" data-testid="consent-needed">
-            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
-              <h3 className="font-semibold text-lg">{ts.consentTitle}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{ts.consentBody}</p>
-              <div className="flex gap-2 justify-end">
-                <button onClick={() => setConsentUrl(null)} className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors">{ts.consentLater}</button>
-                <a href={consentUrl} className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm">{ts.consentGo}</a>
-              </div>
+        <Dialog open={micNoticeOpen} onOpenChange={setMicNoticeOpen}>
+          <DialogContent className={DIALOG_BOX}>
+            <DialogTitle className={DIALOG_TITLE}>{ts.micNoticeTitle}</DialogTitle>
+            <DialogDescription className="leading-relaxed">{ts.micNoticeBody}</DialogDescription>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setMicNoticeOpen(false)}
+                className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
+              >
+                {ts.micNoticeDecline}
+              </button>
+              <button
+                onClick={() => {
+                  micAckRef.current = true;
+                  try {
+                    localStorage.setItem(MIC_ACK_KEY, "1");
+                  } catch {
+                    /* Privatmodus — Sitzungs-Fallback micAckRef greift */
+                  }
+                  setMicNoticeOpen(false);
+                  // Im Check-in wird nur diktiert, nie das Live-Gespräch gestartet (Owner-Befund 01.11.2026).
+                  if (checkin) startDictation();
+                  else startMic();
+                }}
+                className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
+              >
+                {ts.micNoticeAccept}
+              </button>
             </div>
-          </div>
-        )}
-        {micNoticeOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
-              <h3 className="font-semibold text-lg">{ts.micNoticeTitle}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{ts.micNoticeBody}</p>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setMicNoticeOpen(false)}
-                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
-                >
-                  {ts.micNoticeDecline}
-                </button>
-                <button
-                  onClick={() => {
-                    micAckRef.current = true;
-                    try {
-                      localStorage.setItem(MIC_ACK_KEY, "1");
-                    } catch {
-                      /* Privatmodus — Sitzungs-Fallback micAckRef greift */
-                    }
-                    setMicNoticeOpen(false);
-                    startMic();
-                  }}
-                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm"
-                >
-                  {ts.micNoticeAccept}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
 
-        {confirmOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
-              <h3 className="font-semibold text-lg">{ts.confirmTitle}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{ts.confirmBody}</p>
-              {/* Preis vor dem Klick (29.09.): die Auswertung ist der einzige kostenpflichtige Schritt. */}
+        {/* Auswerten-Bestätigung (Kostenhinweis). Paket 3: „Ja, auswerten“ startet die Auswertung sofort. */}
+        <Dialog
+          open={confirmOpen}
+          onOpenChange={(open) => {
+            if (!open && !finishing) setConfirmOpen(false);
+          }}
+        >
+          <DialogContent className={DIALOG_BOX} data-testid="finish-confirm">
+            <DialogTitle className={DIALOG_TITLE}>{ts.confirmTitle}</DialogTitle>
+            <DialogDescription className="leading-relaxed">{ts.confirmBody}</DialogDescription>
+            {/* Preis vor dem Klick (29.09.): die Auswertung ist der einzige kostenpflichtige Schritt.
+                U23: Den Eurobetrag sehen nur Admins und Selbstzahler; sonst entfällt die Zeile. */}
+            {finishCost && (
               <p className="text-xs text-muted-foreground" data-testid="finish-cost-note">
-                {ts.finishCostNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
+                {finishCost}
               </p>
-              {userTurnCount < 3 && (
-                <p className="text-sm text-amber-800 dark:text-amber-400">{ts.notEnoughTurns}</p>
-              )}
-              {error && errorBanner}
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => setConfirmOpen(false)}
-                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors"
-                >
-                  {t.common.cancel}
-                </button>
-                <button
-                  onClick={() => {
-                    // A1: erst der Check-in, dann die Auswertung. Das geteilte
-                    // Eingabefeld wird geleert — ein liegengebliebener Entwurf
-                    // gehört zum beendeten Gespräch, nicht zur Reflexion.
-                    stopMic();
-                    setConfirmOpen(false);
-                    setCheckinOpen(true);
-                    setInput('');
-                  }}
-                  disabled={finishing || userTurnCount < 3}
-                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  {ts.confirmCta}
-                </button>
-              </div>
+            )}
+            {userTurnCount < 3 && (
+              <p className="text-sm text-amber-800 dark:text-amber-400">{ts.notEnoughTurns}</p>
+            )}
+            {error && errorBanner}
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                disabled={finishing}
+                className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                {t.common.cancel}
+              </button>
+              <button
+                onClick={() => void startEvaluation()}
+                disabled={finishing || userTurnCount < 3}
+                className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                {finishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {ts.confirmCta}
+              </button>
             </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
 
-        {/* A1: Coaching-Check-in — Selbstbild einholen, BEVOR das Ergebnis kommt
-            (Synthesia-Vergleich §7). Antwort fährt im Finish-Aufruf mit: kein
-            zusätzlicher Credit, keine zusätzliche Latenz. */}
-        {checkinOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="pn-none glass-panel rounded-2xl border border-border p-6 max-w-md w-full space-y-4 bg-card">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                  <GraduationCap className="h-5 w-5" />
-                </span>
-                <h3 className="font-semibold text-lg">{ts.checkinTitle}</h3>
-              </div>
-              <p className="text-sm leading-relaxed">{ts.checkinQuestion}</p>
-              <div className="flex items-end gap-2">
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  rows={4}
-                  maxLength={500}
-                  placeholder={ts.checkinPlaceholder}
-                  className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  autoFocus
-                />
-                {speechSupported && (
-                  <button
-                    onClick={() => (micActive ? stopMic() : startDictation())}
-                    disabled={micStarting}
-                    className={cx(
-                      'pn-none relative rounded-xl p-3 border transition-colors disabled:opacity-50',
-                      micActive
-                        ? 'border-primary/60 text-primary bg-primary/10 shadow-neon'
-                        : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
-                    )}
-                    aria-label={micActive ? ts.micStop : ts.micStart}
-                    title={micActive ? ts.micStop : ts.micStart}
-                  >
-                    <Mic className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-              {error && errorBanner}
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={() => void finishSimulation()}
-                  disabled={finishing}
-                  className="pn-none rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50"
-                >
-                  {ts.checkinSkip}
-                </button>
-                <button
-                  onClick={() => void finishSimulation(input)}
-                  disabled={finishing || !input.trim()}
-                  className="btn-gradient text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
-                >
-                  {finishing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4" />
-                  )}
-                  {ts.checkinSubmit}
-                </button>
-              </div>
-              {/* W1-13 (14.10.2026): die KI sagt in Ich-Form, was sie gerade tut (LXT Anhang F §4.4). */}
-              {finishing ? (
-                <AiWaitSteps
-                  steps={[t.aiWait.finishStep1, t.aiWait.finishStep2, t.aiWait.finishStep3]}
-                  intervalMs={8000}
-                  className="mt-3 text-center text-xs text-muted-foreground"
-                />
-              ) : null}
+        {/* Paket 3, S8 (12.11.2026): Check-in in zwei Fragen, während die Auswertung schon rechnet. Kein Nachhaken,
+            kein Wartetext; „Weiter“ und „Überspringen“ sind immer sichtbar. Schließen (Escape) heißt überspringen:
+            Danach geht es zur Auswertungsseite. Ein Klick neben den Dialog schließt ihn nicht (Text ginge verloren). */}
+        <Dialog
+          open={!!checkin}
+          onOpenChange={(open) => {
+            if (!open) checkinGo({ art: 'ueberspringen' });
+          }}
+        >
+          <DialogContent
+            className={DIALOG_BOX_CHECKIN}
+            data-testid="checkin"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              checkinFieldRef.current?.focus();
+            }}
+            onInteractOutside={(e) => e.preventDefault()}
+          >
+            <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+              <span>{ts.checkinStep.replace('{n}', checkin?.frage === 'anders' ? '2' : '1')}</span>
+              <button
+                type="button"
+                onClick={() => checkinGo({ art: 'ueberspringen' })}
+                disabled={checkinBusy}
+                className="font-semibold underline hover:text-foreground disabled:opacity-50"
+              >
+                {ts.checkinSkip}
+              </button>
             </div>
-          </div>
-        )}
+            <DialogTitle className={DIALOG_TITLE}>
+              {checkin?.frage === 'anders' ? ts.checkinQ2 : ts.checkinQ1}
+            </DialogTitle>
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={checkinFieldRef}
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  // Jede Eingabe lässt die 20 Sekunden neu beginnen.
+                  setCheckinInputAt(Date.now());
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    checkinGo({ art: 'weiter', text: input });
+                  }
+                }}
+                rows={3}
+                maxLength={CHECKIN_MAX_CHARS}
+                placeholder={ts.checkinFieldPh}
+                aria-label={checkin?.frage === 'anders' ? ts.checkinQ2 : ts.checkinQ1}
+                disabled={checkinBusy}
+                className="pn-field flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+              />
+              {speechSupported && (
+                <button
+                  type="button"
+                  onClick={() => (micActive ? stopMic() : startDictation())}
+                  disabled={micStarting || checkinBusy}
+                  className={cx(
+                    'pn-none relative rounded-xl p-3 border transition-colors disabled:opacity-50',
+                    micActive
+                      ? 'border-primary/60 text-primary bg-primary/10 shadow-neon'
+                      : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
+                  )}
+                  aria-label={micActive ? ts.micStop : ts.micStart}
+                  title={micActive ? ts.micStop : ts.micStart}
+                >
+                  <Mic className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+            <DialogDescription className="text-xs">{ts.checkinAutoHint}</DialogDescription>
+            {error && errorBanner}
+            <div className="flex items-center justify-between gap-3">
+              <span className="min-w-0 text-xs text-muted-foreground">
+                {checkin?.frage === 'gut' ? ts.checkinThen.replace('{q}', ts.checkinQ2) : null}
+              </span>
+              <button
+                type="button"
+                onClick={() => checkinGo({ art: 'weiter', text: input })}
+                disabled={checkinBusy}
+                className="btn-gradient shrink-0 text-white font-semibold rounded-lg px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                {ts.stepNext}
+                {checkinBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </AppShell>
     );
   }

@@ -19,7 +19,8 @@ import { buildAnalyzeRoleLabels } from '@/lib/analyze-payload';
 import { takePendingFile } from '@/lib/pending-file';
 import { useTranslation } from '@/i18n/useTranslation';
 import { AiWaitSteps } from '@/components/ui/ai-wait-steps';
-import { maxEurHint } from '@/lib/pricing-display';
+import { costNote, maxEurHint, showEurPrice } from '@/lib/pricing-display';
+import { useWorkspaceRole } from '@/lib/use-workspace-role';
 import Link from 'next/link';
 import {
   History,
@@ -54,6 +55,8 @@ export default function AnalyzeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, locale } = useTranslation();
+  // U23 (Owner-Entscheid 12.11.2026): Den Eurobetrag sehen nur Admins und Selbstzahler.
+  const showEur = showEurPrice(useWorkspaceRole());
   const { user } = useAuth();
 
   const [sessionId, setSessionId] = useState<string>('');
@@ -740,7 +743,7 @@ export default function AnalyzeClient() {
               </button>
               {/* Preis vor dem Klick (29.09.): 1 Credit, Maximalpreis wie Studio/Jobmap. */}
               <div className="mt-2 text-center text-xs text-muted-foreground" data-testid="analyze-cost-note">
-                {t.analyze.costNote.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}
+                {costNote(t.analyze.costNote, showEur ? maxEurHint(t.common.maxEurHint, locale) : null)}
               </div>
 
               {/* W1-13 (14.10.2026): die KI sagt in Ich-Form, was sie gerade tut (LXT Anhang F §4.4). */}

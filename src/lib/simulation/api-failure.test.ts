@@ -88,6 +88,14 @@ describe('decideApiFailure', () => {
     expect(decideApiFailure(500, { code: 'INTERNAL_ERROR', error: 'Internal server error' })).toEqual({ kind: 'text', key: 'genericError' });
     expect(decideApiFailure(400, { error: { formErrors: [], fieldErrors: {} } })).toEqual({ kind: 'text', key: 'genericError' });
     expect(decideApiFailure(500, null)).toEqual({ kind: 'text', key: 'genericError' });
-    expect(decideApiFailure(409, { code: 'ALREADY_FINISHED' })).toEqual({ kind: 'text', key: 'genericError' });
+  });
+
+  it('Paket 3: Lauf inzwischen beendet → zur Auswertungsseite statt roter Meldung', () => {
+    // turn/route.ts, timeout/route.ts und live/ticket/route.ts antworten so, wenn der Lauf nicht mehr `active` ist.
+    expect(decideApiFailure(409, { ok: false, code: 'ALREADY_FINISHED' })).toEqual({ kind: 'evaluation' });
+  });
+
+  it('Paket 3: Auswerten an einem abgebrochenen Lauf → eigener Satz', () => {
+    expect(decideApiFailure(409, { ok: false, code: 'ABORTED' })).toEqual({ kind: 'text', key: 'runAborted' });
   });
 });

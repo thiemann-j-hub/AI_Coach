@@ -43,7 +43,8 @@ type SimListItem = {
   scenarioId: string;
   scenarioTitle: string;
   personaName: string | null;
-  status: 'active' | 'finished';
+  // Paket 3 (12.11.2026): `finishing` = die Auswertung läuft gerade.
+  status: 'active' | 'finishing' | 'finished';
   createdAt: string;
   updatedAt: string;
   turnCount: number;
@@ -451,7 +452,11 @@ export default function RunsDashboardClient() {
                   it.sim.personaName,
                   `${t.simulation.attemptLabel} ${it.sim.attempt}`,
                   `${it.sim.turnCount} ${t.simulation.turnsLabel}`,
-                  it.sim.status === 'active' ? t.simulation.statusActive : t.simulation.statusFinished,
+                  it.sim.status === 'active'
+                    ? t.simulation.statusActive
+                    : it.sim.status === 'finishing'
+                      ? t.entry.resumeEvaluating
+                      : t.simulation.statusFinished,
                 ]
                   .filter(Boolean)
                   .join(' · ');
@@ -519,8 +524,8 @@ export default function RunsDashboardClient() {
                         const sid = sessionId.trim();
                         if (!sid) return;
                         router.push(`/runs/${encodeURIComponent(sid)}/${encodeURIComponent(it.run.id)}`);
-                      } else if (it.sim.status === 'finished') {
-                        // W1-7: die Auswertung hat eine eigene Adresse.
+                      } else if (it.sim.status === 'finished' || it.sim.status === 'finishing') {
+                        // W1-7: die Auswertung hat eine eigene Adresse. Läuft sie noch, zeigt die Seite den Fortschritt.
                         router.push(`/simulation/${encodeURIComponent(it.sim.id)}`);
                       } else {
                         // U20 (Paket 1, 12.11.2026): direkt ins laufende Gespräch — der Einstieg liest ?simId= und
@@ -534,7 +539,9 @@ export default function RunsDashboardClient() {
                         ? t.dashboard.openAnalysis
                         : it.sim.status === 'finished'
                           ? t.dashboard.openSim
-                          : t.entry.resumeTitle}
+                          : it.sim.status === 'finishing'
+                            ? t.entry.resumeEvaluating
+                            : t.entry.resumeTitle}
                     </span>
                     <ArrowRight className="h-5 w-5 group-hover/btn:translate-x-1 transition-transform" />
                   </button>

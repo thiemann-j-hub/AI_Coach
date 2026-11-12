@@ -30,6 +30,7 @@ export type ApiFailureTextKey =
   | 'turnLimit'
   | 'timeoutLimit'
   | 'scenarioGone'
+  | 'runAborted'
   | 'genericError';
 
 export interface PersonaEnde {
@@ -53,6 +54,8 @@ export type ApiFailureDecision =
   | { kind: 'timeUp' }
   /** Kein Fehler: die Rolle hat das Gespräch beendet (Karte statt roter Meldung). */
   | { kind: 'ended'; ende: PersonaEnde }
+  /** Kein Fehler: der Lauf wird schon ausgewertet oder ist ausgewertet. Der Client wechselt zur Auswertungsseite. */
+  | { kind: 'evaluation' }
   | { kind: 'text'; key: ApiFailureTextKey };
 
 /** Wartezeit, wenn der Server keine nennt. */
@@ -106,6 +109,11 @@ export function decideApiFailure(
   if (code === 'KI_AUS') return { kind: 'kiAus', text: serverText };
   if (code === 'TIME_UP') return { kind: 'timeUp' };
   if (code === 'ENDED') return { kind: 'ended', ende: endeOf(b.ende) };
+  // Paket 3 (12.11.2026): Der Lauf wurde inzwischen beendet (z. B. im zweiten Fenster). `turn`, `timeout` und die
+  // Karte fürs Sprechen melden das beim Speichern. Dort steht „Auswertung läuft“ oder das Ergebnis.
+  if (code === 'ALREADY_FINISHED') return { kind: 'evaluation' };
+  // `finish` an einem abgebrochenen Lauf: eigener kurzer Satz.
+  if (code === 'ABORTED') return text('runAborted');
   if (code === 'NOT_ENOUGH_TURNS') return text('notEnoughTurns');
   if (code === 'TURN_LIMIT') return text('turnLimit');
   if (code === 'TIMEOUT_LIMIT') return text('timeoutLimit');

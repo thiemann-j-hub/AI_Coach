@@ -7,7 +7,8 @@ import AppShell from '@/components/app/app-shell';
 import { authFetch } from '@/lib/api-client';
 import { CREDITS_REFRESH_EVENT } from '@/components/app/credit-balance';
 import { useTranslation } from '@/i18n/useTranslation';
-import { maxEurHint } from '@/lib/pricing-display';
+import { RUN_CREDITS, costNote, formatMaxEur, showEurPrice } from '@/lib/pricing-display';
+import { useWorkspaceRole } from '@/lib/use-workspace-role';
 
 interface Turn {
   role: 'interviewer' | 'person';
@@ -24,6 +25,9 @@ interface Turn {
  */
 export default function InterviewClient() {
   const { t, locale } = useTranslation();
+  // U23 (Owner-Entscheid 12.11.2026): Den Eurobetrag sehen nur Admins und Selbstzahler. Die Sätze des Interviews
+  // bringen „bis zu“ selbst mit — eingesetzt wird nur der Betrag (vorher stand „bis zu bis zu 4,90 €“ da).
+  const eur = showEurPrice(useWorkspaceRole()) ? formatMaxEur(RUN_CREDITS, locale) : null;
   const ti = t.interview;
   const router = useRouter();
   const params = useSearchParams();
@@ -155,7 +159,7 @@ export default function InterviewClient() {
             </div>
             <p className="text-sm leading-relaxed">{ti.introBody}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">{ti.introPrivacy}</p>
-            <p className="text-xs text-muted-foreground">{ti.introCost.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</p>
+            <p className="text-xs text-muted-foreground">{costNote(ti.introCost, eur)}</p>
             <div className="flex flex-wrap gap-2 justify-end">
               <button
                 type="button"
@@ -209,7 +213,7 @@ export default function InterviewClient() {
             </div>
             {fertig ? (
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
-                <p className="text-xs text-muted-foreground">{ti.finishHint.replace('{eur}', maxEurHint(t.common.maxEurHint, locale))}</p>
+                <p className="text-xs text-muted-foreground">{costNote(ti.finishHint, eur)}</p>
                 <button
                   type="button"
                   onClick={() => void finish()}
